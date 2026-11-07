@@ -1,0 +1,673 @@
+<title>Negotiation Clock Prototype</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+/*
+  Design plan
+  Subject: a deal you make with yourself. The deal is a ticket; accepting it stamps it; the ledger is a stack of torn stubs.
+  Color: one accent, an "approved" stamp green, on grey-green paper. Block type is shown by form, not hue:
+         focus = solid green ring, break = hatched ink ring.
+  Type: Archivo condensed (ticket printing) for numbers and headings; Atkinson Hyperlegible for everything you read.
+  Layout: one phone column, left-aligned text, the dial centered as the single bold object. No caps labels, no dot separators.
+*/
+:root {
+  --paper: #EDEFE9;
+  --card: #FBFCF9;
+  --ink: #1B211D;
+  --soft: #566058;
+  --rule: #C9D0C8;
+  --edge: #6F7A72;
+  --sheet: #FBFCF9;
+  --scrim: rgba(15, 20, 17, .52);
+  --deal: #1E6A46;
+  --on-deal: #FFFFFF;
+  --deal-soft: #DDEADF;
+  --hatch: rgba(27, 33, 29, .62);
+  --font-head: "Archivo", "Arial Narrow", "Segoe UI", sans-serif;
+  --font-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #17201B; --card: #1F2A24; --ink: #E6ECE7; --soft: #A3B0A7; --rule: #33413A; --edge: #74847A; --sheet: #26302B; --scrim: rgba(0, 0, 0, .6);
+    --deal: #6CCB97; --on-deal: #0F1A14; --deal-soft: #23382C; --hatch: rgba(230, 236, 231, .55); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #17201B; --card: #1F2A24; --ink: #E6ECE7; --soft: #A3B0A7; --rule: #33413A; --edge: #74847A; --sheet: #26302B; --scrim: rgba(0, 0, 0, .6);
+  --deal: #6CCB97; --on-deal: #0F1A14; --deal-soft: #23382C; --hatch: rgba(230, 236, 231, .55); color-scheme: dark;
+}
+@property --p { syntax: "<number>"; inherits: true; initial-value: 1; }
+
+html, body { height: 100%; }
+body { background: var(--paper); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.45; }
+* { box-sizing: border-box; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--deal); outline-offset: 2px; border-radius: 8px; }
+.vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.app { max-width: 440px; margin: 0 auto; min-height: 100%; display: flex; flex-direction: column;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* prototype strip: demo controls, not product */
+.proto { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; padding-block: 8px; font-size: 13px; color: var(--soft); border-bottom: 1px dashed var(--rule); }
+.proto strong { color: var(--ink); }
+.chipbtn { border: 1px solid var(--rule); background: transparent; border-radius: 999px; padding: 4px 10px; font-size: 13px; min-height: 32px; }
+.chipbtn[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+main { flex: 1; display: flex; flex-direction: column; gap: 20px; padding-block: 24px 124px; }
+h1, h2 { font-family: var(--font-head); margin: 0; text-wrap: balance; }
+h1 { font-size: 34px; line-height: 1.02; font-weight: 800; font-stretch: 78%; letter-spacing: -0.005em; }
+h2 { font-size: 24px; line-height: 1.1; font-weight: 750; font-stretch: 82%; }
+h3 { font-size: 16px; margin: 0; font-weight: 700; }
+p { margin: 0; }
+.soft { color: var(--soft); }
+.small { font-size: 14.5px; }
+.example { font-size: 14px; color: var(--soft); font-style: italic; }
+
+/* buttons */
+.primary, .secondary { width: 100%; min-height: 54px; border-radius: 12px; padding: 14px 18px; font-weight: 700; font-size: 17px; line-height: 1.4; display: block; text-align: center; }
+.primary small, .secondary small { display: block; }
+.primary:disabled { opacity: .5; cursor: not-allowed; }
+.primary { border: none; background: var(--deal); color: var(--on-deal); }
+.primary small { font-weight: 400; font-size: 14px; opacity: .9; }
+.secondary { border: 1.5px solid var(--edge); background: transparent; color: var(--ink); }
+.textbtn { background: none; border: none; color: var(--soft); text-decoration: underline; text-underline-offset: 3px; padding: 10px 16px; min-height: 44px; align-self: center; font-size: 15px; }
+.stack { display: flex; flex-direction: column; gap: 10px; }
+
+/* activity chips */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { border: 1.5px solid var(--edge); background: var(--card); border-radius: 999px; padding: 10px 17px; min-height: 44px; font-weight: 700; font-size: 16px; }
+.chip:is([aria-pressed="true"], [aria-checked="true"]) { border-color: var(--ink); background: var(--ink); color: var(--paper); }
+
+/* the deal ticket */
+.ticket.push { margin-top: auto; }
+.ticket { position: relative; background: var(--card); border-radius: 6px; box-shadow: 0 1px 0 var(--rule), 0 18px 34px -26px rgba(27,33,29,.6); }
+.ticket .body { padding: 22px 20px 18px; display: flex; flex-direction: column; gap: 14px; }
+.ticket .stub { position: relative; border-top: 2px dashed var(--rule); padding: 16px 20px 18px; display: flex; flex-direction: column; gap: 10px; }
+.ticket .stub::before, .ticket .stub::after { content: ""; position: absolute; top: -11px; width: 20px; height: 20px; border-radius: 50%; background: var(--paper); }
+.ticket .stub::before { left: -10px; } .ticket .stub::after { right: -10px; }
+.sentence { font-family: var(--font-head); font-size: 30px; line-height: 1.12; font-weight: 750; font-stretch: 80%; text-wrap: pretty; }
+.tok { font: inherit; background: none; border: none; padding: 0 1px; border-radius: 4px; color: inherit; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 5px; text-decoration-color: var(--edge); text-decoration-style: dashed; padding-block: 6px; margin-block: -6px; }
+.tok:hover, .tok[aria-expanded="true"] { text-decoration-style: solid; text-decoration-color: var(--deal); }
+.picker { display: flex; flex-wrap: wrap; gap: 8px; }
+.picker .chip { font-size: 15px; padding: 10px 16px; }
+.picker input { flex: 1 1 180px; min-width: 0; min-height: 44px; border: 1.5px solid var(--edge); border-radius: 10px; padding: 10px 12px; background: var(--paper); }
+.hint { font-size: 14px; color: var(--soft); text-align: center; }
+.stamp { position: absolute; right: 18px; top: 16px; font-family: var(--font-head); font-stretch: 70%; font-weight: 900; font-size: 30px; letter-spacing: .02em; color: var(--deal);
+  border: 3px solid var(--deal); border-radius: 8px; padding: 0 10px; transform: rotate(-9deg); opacity: 0; pointer-events: none; }
+.ticket.stamped .stamp { opacity: .92; animation: stamp .32s cubic-bezier(.2,1.6,.4,1); }
+@keyframes stamp { from { transform: rotate(-9deg) scale(1.9); opacity: 0; } }
+
+/* clock persona */
+.clockline { display: flex; gap: 12px; align-items: flex-start; }
+.clockface { flex: none; width: 34px; height: 34px; }
+.clockface .hand { transform-origin: 20px 20px; }
+.clockline.tick .hand.m { animation: tickm .45s ease-out; }
+@keyframes tickm { from { transform: rotate(-50deg); } }
+.bubble { padding-top: 4px; font-size: 17px; line-height: 1.45; }
+
+/* the dial: minute ticks, a ring that drains, solid for focus, hatched for a break */
+.timerwrap { display: grid; place-items: center; gap: 12px; }
+.dial { position: relative; width: min(68vw, 260px); aspect-ratio: 1; max-width: 100%; }
+.dial > * { position: absolute; border-radius: 50%; }
+.dial .ticks { inset: 0; opacity: .6; background: repeating-conic-gradient(from -.5deg, var(--edge) 0 1deg, transparent 1deg calc(360deg / var(--n)));
+  -webkit-mask: radial-gradient(circle closest-side, transparent 93%, #000 94%); mask: radial-gradient(circle closest-side, transparent 93%, #000 94%); }
+.dial .ticks5 { inset: 0; background: conic-gradient(from -1deg, var(--ink) 0 2deg, transparent 2deg);
+  -webkit-mask: radial-gradient(circle closest-side, transparent 88%, #000 89%); mask: radial-gradient(circle closest-side, transparent 88%, #000 89%); }
+.dial .edge { inset: 11%; transform: rotate(calc(var(--p) * 1turn)); }
+.dial .edge::before { content: ""; position: absolute; left: 50%; top: 8.5%; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; background: var(--ink); box-shadow: 0 0 0 3px var(--paper); }
+.dial.done .fill { opacity: .4; }
+.dial.done .edge { display: none; }
+.dial.heads .track { background: var(--deal-soft); }
+.note.heads { color: var(--ink); font-weight: 700; }
+.dial .track, .dial .fill { inset: 11%; -webkit-mask: radial-gradient(circle closest-side, transparent 66%, #000 67%); mask: radial-gradient(circle closest-side, transparent 66%, #000 67%); }
+.dial .track { background: var(--rule); }
+.dial .fill { -webkit-mask: conic-gradient(#000 calc(var(--p) * 1turn), transparent 0), radial-gradient(circle closest-side, transparent 66%, #000 67%);
+  -webkit-mask-composite: source-in; mask: conic-gradient(#000 calc(var(--p) * 1turn), transparent 0) intersect, radial-gradient(circle closest-side, transparent 66%, #000 67%); }
+.fill.focus { background: var(--deal); }
+.fill.break { background: repeating-linear-gradient(135deg, var(--hatch) 0 3px, transparent 3px 8px), var(--card); }
+.dial.sweep { animation: sweep .7s ease-out; }
+@keyframes sweep { from { --p: 0; } }
+.dial .face { inset: 24%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+.face .big { font-family: var(--font-head); font-size: 76px; font-weight: 800; font-stretch: 70%; line-height: .9; font-variant-numeric: tabular-nums; }
+.face .big.mmss { font-size: 58px; }
+.face .big.word { font-size: 52px; }
+.face .unit { font-size: 15px; color: var(--soft); }
+.now { display: flex; flex-direction: column; gap: 4px; }
+.kind { display: inline-flex; align-items: center; gap: 8px; font-size: 15px; color: var(--soft); }
+.swatch { width: 18px; height: 18px; border-radius: 50%; flex: none; }
+.swatch.focus { background: var(--deal); }
+.swatch.break { background: repeating-linear-gradient(135deg, var(--hatch) 0 2px, transparent 2px 5px), var(--card); box-shadow: inset 0 0 0 1px var(--edge); }
+.note { font-size: 15px; color: var(--soft); text-align: center; min-height: 22px; }
+.note.go { color: var(--deal); font-weight: 700; }
+
+.plan { display: flex; flex-direction: column; gap: 0; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+.plan li { list-style: none; display: grid; grid-template-columns: 18px 1fr auto; gap: 12px; align-items: center; padding: 12px 2px; border-bottom: 1px solid var(--rule); font-size: 15.5px; }
+.plan li span:nth-child(2) { min-width: 0; }
+
+.num { font-family: var(--font-head); font-stretch: 80%; font-weight: 700; font-size: 18px; font-variant-numeric: tabular-nums; }
+
+/* sheet */
+.scrim { position: fixed; inset: 0; background: var(--scrim); z-index: 20; display: flex; align-items: flex-end; justify-content: center; }
+.sheet { width: 100%; max-width: 440px; background: var(--sheet); border-top: 1px solid var(--rule); border-radius: 20px 20px 0 0; display: flex; flex-direction: column; gap: 14px;
+  padding: 18px max(18px, env(safe-area-inset-right, 0px)) calc(18px + env(safe-area-inset-bottom, 0px)) max(18px, env(safe-area-inset-left, 0px));
+  max-height: 92%; overflow-y: auto; }
+.grab { width: 40px; height: 4px; border-radius: 2px; background: var(--rule); align-self: center; }
+.sheet h2:focus { outline: none; }
+.option { text-align: left; border: 1.5px solid var(--edge); background: transparent; border-radius: 12px; padding: 14px 16px; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 2px 12px; width: 100%; min-height: 64px; }
+.option:hover, .option:active { border-color: var(--deal); box-shadow: inset 0 0 0 1px var(--deal); }
+.option strong { font-size: 17px; }
+.option span { grid-column: 1; color: var(--soft); font-size: 15px; }
+.option svg { grid-column: 2; grid-row: 1 / span 2; width: 20px; height: 20px; color: var(--soft); }
+.terms { display: flex; flex-direction: column; gap: 10px; }
+.term { position: relative; text-align: left; width: 100%; background: var(--paper); border: 1.5px solid var(--edge); border-radius: 6px; padding: 0; display: flex; flex-direction: column; }
+.term .top { padding: 12px 52px 10px 16px; font-family: var(--font-head); font-stretch: 78%; font-weight: 750; font-size: 24px; line-height: 1.1; }
+.term .cost { position: relative; border-top: 2px dashed var(--rule); padding: 10px 16px 12px; color: var(--soft); font-size: 15px; }
+.term .cost::before, .term .cost::after { content: ""; position: absolute; top: -9px; width: 16px; height: 16px; border-radius: 50%; background: var(--sheet); border: 1.5px solid var(--edge); }
+.term .cost::before { left: -9px; clip-path: inset(0 0 0 50%); } .term .cost::after { right: -9px; clip-path: inset(0 50% 0 0); }
+.term .radio { position: absolute; top: 14px; right: 14px; width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--edge); background: var(--card); display: grid; place-items: center; }
+.term[aria-checked="true"] { border-color: var(--deal); border-width: 2.5px; }
+.term[aria-checked="true"] .radio { border-color: var(--deal); background: var(--deal); }
+.term[aria-checked="true"] .radio::after { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--on-deal); }
+.term[aria-checked="true"] .cost { color: var(--ink); }
+.term .stamp { top: auto; bottom: 10px; right: 14px; font-size: 22px; padding: 0 8px; }
+
+.term.stamped .stamp { opacity: .92; animation: stamp .32s cubic-bezier(.2,1.6,.4,1); }
+.picked { font-size: 15px; color: var(--soft); }
+.picked b { color: var(--ink); }
+.field { display: flex; flex-direction: column; gap: 8px; }
+.field label { font-weight: 700; }
+.field input { border: 1.5px solid var(--edge); border-radius: 10px; padding: 12px; min-height: 48px; background: var(--paper); }
+.field input::placeholder { color: var(--soft); font-style: italic; }
+.countdown { height: 4px; border-radius: 2px; background: var(--rule); overflow: hidden; }
+.countdown i { display: block; height: 100%; background: var(--deal); width: 100%; }
+
+/* ledger: torn stubs */
+.tally { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.tally div { padding: 12px 10px 12px 0; display: flex; flex-direction: column; gap: 4px; }
+.tally div + div { border-left: 1px solid var(--rule); padding-left: 12px; }
+.tally b { font-family: var(--font-head); font-stretch: 72%; font-size: 34px; line-height: 1; font-weight: 800; font-variant-numeric: tabular-nums; }
+.tally div > span { font-size: 14px; color: var(--soft); line-height: 1.25; white-space: nowrap; }
+.stubs { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.stubs li { background: var(--card); display: grid; grid-template-columns: 84px 1fr; position: relative; padding-right: 8px;
+  -webkit-mask: linear-gradient(#000 0 0) left / calc(100% - 6px) 100% no-repeat, conic-gradient(from 225deg at right, #000 90deg, #0000 0) right top / 6px 12px repeat-y;
+  mask: linear-gradient(#000 0 0) left / calc(100% - 6px) 100% no-repeat, conic-gradient(from 225deg at right, #000 90deg, #0000 0) right top / 6px 12px repeat-y; }
+.stubs .t { position: relative; border-right: 2px dashed var(--rule); padding: 12px 8px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.stubs .t b { font-family: var(--font-head); font-stretch: 80%; font-weight: 750; font-size: 20px; line-height: 1; font-variant-numeric: tabular-nums; }
+.stubs .t small { font-size: 13px; color: var(--soft); letter-spacing: .04em; }
+.stubs .t::before, .stubs .t::after { content: ""; position: absolute; right: -7px; width: 12px; height: 12px; border-radius: 50%; background: var(--paper); }
+.stubs .t::before { top: -6px; } .stubs .t::after { bottom: -6px; }
+.stubs .what { padding: 12px 14px; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.stubs .what em { font-style: normal; font-size: 14.5px; color: var(--soft); }
+.stubs .what > span:nth-child(2) { font-family: var(--font-head); font-stretch: 80%; font-weight: 750; font-size: 20px; line-height: 1.15; }
+.stubs .mark { align-self: flex-start; margin-bottom: 4px; font-family: var(--font-head); font-stretch: 70%; font-weight: 900; font-size: 13px; letter-spacing: .03em; text-transform: uppercase;
+  color: var(--deal); border: 1.5px solid var(--deal); border-radius: 4px; padding: 0 5px; transform: rotate(-6deg); opacity: .85; }
+.insight { display: flex; flex-direction: column; gap: 12px; padding-top: 8px; }
+.insight-act { padding-left: 46px; }
+.trychip { border: 1.5px solid var(--deal); border-radius: 999px; background: transparent; color: var(--deal); font-weight: 700; padding: 8px 16px; min-height: 44px; }
+
+/* room */
+.people { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+.person { display: grid; grid-template-columns: 46px 1fr auto; gap: 12px; align-items: center; padding: 12px 2px; border-bottom: 1px solid var(--rule); }
+.mini { position: relative; width: 46px; height: 46px; }
+.mini > * { position: absolute; inset: 0; border-radius: 50%; }
+.mini .track, .mini .fill { -webkit-mask: radial-gradient(circle closest-side, transparent 72%, #000 73%); mask: radial-gradient(circle closest-side, transparent 72%, #000 73%); }
+.mini .track { background: var(--rule); }
+.mini .fill { -webkit-mask: conic-gradient(#000 calc(var(--p) * 1turn), transparent 0), radial-gradient(circle closest-side, transparent 72%, #000 73%); -webkit-mask-composite: source-in;
+  mask: conic-gradient(#000 calc(var(--p) * 1turn), transparent 0) intersect, radial-gradient(circle closest-side, transparent 72%, #000 73%); }
+.mini .ini { display: grid; place-items: center; font-weight: 700; font-size: 16px; }
+.person .who { min-width: 0; }
+.person .who small { display: block; color: var(--soft); font-size: 14.5px; }
+.state { font-size: 14.5px; text-align: right; color: var(--soft); }
+.state.on { color: var(--deal); font-weight: 700; }
+.checkins { display: flex; gap: 8px; }
+.checkins button { flex: 1; border: 1.5px solid var(--edge); background: transparent; border-radius: 12px; padding: 10px; min-height: 48px; font-weight: 700; }
+.checkins button[aria-checked="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+/* intercept */
+.n { font-family: var(--font-head); font-stretch: 92%; font-weight: 500; font-variant-numeric: tabular-nums; letter-spacing: .01em; }
+:is(h1, h2, .big, .num, .tally b, .stubs .t b, .stubs .what > span:nth-child(2), .sentence, .term .top) .n { font: inherit; letter-spacing: inherit; }
+.appicon { width: 54px; height: 54px; border-radius: 15px; background: linear-gradient(135deg, #F2A53A, #D9465F 60%, #7B3FD1); flex: none; display: grid; place-items: center; }
+.appicon svg { width: 28px; height: 28px; }
+
+/* tabs */
+nav.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: var(--card); border-top: 1px solid var(--rule);
+  padding: 0 max(16px, env(safe-area-inset-right, 0px)) env(safe-area-inset-bottom, 0px) max(16px, env(safe-area-inset-left, 0px)); }
+nav.tabs div { max-width: 440px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); }
+nav.tabs button { border: none; background: none; min-height: 60px; padding: 8px 4px; font-weight: 700; font-size: 13px; color: var(--soft); display: flex; flex-direction: column; align-items: center; gap: 3px; }
+nav.tabs svg { width: 24px; height: 24px; }
+nav.tabs button[aria-current="page"] { color: var(--deal); }
+body.modal nav.tabs { display: none; }
+.intercept-foot { margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+@media (prefers-reduced-motion: reduce) { .countdown { display: none; } }
+
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+</style>
+
+<div class="app">
+  <div class="proto" role="region" aria-label="Prototype controls">
+    <strong>Prototype</strong>
+    <span>Speed</span>
+    <button class="chipbtn" id="sp1" aria-pressed="false">1×</button>
+    <button class="chipbtn" id="sp30" aria-pressed="true">30×</button>
+    <button class="chipbtn" id="jump">Skip to end of block</button>
+    <button class="chipbtn" id="reset">Restart</button>
+    <span>Ledger and Room use sample data.</span>
+  </div>
+  <main id="view"></main>
+  <p id="sr" class="vh" aria-live="polite"></p>
+</div>
+<nav class="tabs" aria-label="Sections"><div>
+  <button id="tab-now"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 13V9M9 2h6"/></svg>Now</button>
+  <button id="tab-ledger"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg>Ledger</button>
+  <button id="tab-room"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.8c1.8.7 3 2.5 3.5 5.2"/></svg>Room</button>
+</div></nav>
+<div id="sheet-root"></div>
+
+<script>
+/* ---------- negotiation rules (mirrors docs/specs/001-negotiation-rules.md) ---------- */
+const FLOOR = 2, TRADE_CAP = 15;
+function nextOf(s, type) { return s.blocks.slice(s.idx + 1).find(b => b.type === type); }
+function makeOffer(s) {
+  const override = { kind: "override", addMin: 5 };
+  if (s.askCount === 0) return { terms: [{ kind: "freebie", addMin: 5 }], requiresIntention: false, override };
+  const terms = [{ kind: "borrow", addMin: 5, repay: 5 }];
+  const nf = nextOf(s, "focus");
+  if (nf && (nf.added || 0) + 5 <= TRADE_CAP) terms.push({ kind: "trade", addMin: 5, addToNextFocusMin: 5 });
+  return { terms, requiresIntention: s.askCount >= 2, override };
+}
+function borrowPreview(s) {
+  const nb = nextOf(s, "break");
+  if (!nb) return { from: 0, to: 0, carry: 5 };
+  const take = Math.min(Math.max(0, nb.min - FLOOR), 5);
+  return { from: nb.min, to: nb.min - take, carry: 5 - take };
+}
+function applyTerm(s, term, intention) {
+  const cur = s.blocks[s.idx];
+  if (term.kind === "borrow") { const p = borrowPreview(s), nb = nextOf(s, "break"); if (nb) nb.min = p.to; s.debt += p.carry; }
+  if (term.kind === "trade") { const nf = nextOf(s, "focus"); nf.min += 5; nf.added = (nf.added || 0) + 5; }
+  cur.min += term.addMin; s.durMs += term.addMin * 60000;
+  s.askCount++;
+  const text = { freebie: `5 more min of ${cur.label}`, borrow: `5 more min of ${cur.label}`, trade: `5 more min of ${cur.label}`, override: `5 more min of ${cur.label}` }[term.kind];
+  return { t: clockStr(), kind: term.kind, text, note: intention || "" };
+}
+const MARK = { freebie: "Free", borrow: "Borrowed", trade: "+Focus", bonus: "Bonus", override: "No terms", cleared: "Stopped" };
+const TERMS = { freebie: "On the house", borrow: "Borrowed from a later break", trade: "Traded for 5 more min of focus", bonus: "Kept going, next break 3 min longer", override: "No terms", cleared: "Stopped" };
+
+/* ---------- state ---------- */
+const ACTS = ["Reels", "TikTok", "YouTube", "Texting", "Gaming"];
+let speed = 30, vnow = Date.now(), lastReal = performance.now();
+let S, deal, ledger, sheet = null, checkin = null, picker = null, toast = null, tab = "now", mode = "start", opener = null, tried = false;
+
+function fresh() { deal = { act: "Reels", breakMin: 10, task: "Reading, BIO 180 ch. 7", focusMin: 8 }; ledger = []; S = null; sheet = null; picker = null; toast = null; }
+function buildSession(d) {
+  const blocks = [];
+  if (d.act) blocks.push({ type: "break", label: d.act, min: d.breakMin });
+  blocks.push({ type: "focus", label: d.task, min: d.focusMin });
+  blocks.push({ type: "break", label: "Your pick", min: 5 });
+  blocks.push({ type: "focus", label: d.task, min: d.focusMin + 4 });
+  blocks.push({ type: "break", label: "Your pick", min: 7 });
+  blocks.push({ type: "focus", label: d.task, min: d.focusMin + 8 });
+  return { blocks, idx: 0, startedAt: vnow, durMs: blocks[0].min * 60000, askCount: 0, debt: 0, bonusOffered: false };
+}
+const cur = () => S.blocks[S.idx];
+const remaining = () => Math.max(0, S.startedAt + S.durMs - vnow);
+const minsLeft = () => Math.ceil(remaining() / 60000);
+function clockStr(ms) { const d = new Date(ms ?? Date.now()); return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }).replace(/\s?([AP])M/i, (m, a) => a.toLowerCase() + "m"); }
+function shortTask() { return deal.task.split(",")[0].toLowerCase(); }
+function nameOf(b) { return b ? (b.type === "focus" ? shortTask() : "your break") : "the end"; }
+function nextBlock() { S.idx = Math.min(S.idx + 1, S.blocks.length - 1); S.startedAt = vnow; S.durMs = cur().min * 60000; S.askCount = 0; S.bonusOffered = false; closeSheet(); say(`${cur().type === "focus" ? "Focus" : "Break"}: ${cur().label}, ${cur().min} minutes.`); }
+function say(t) { const el = document.getElementById("sr"); if (el) el.textContent = t; }
+
+/* ---------- views ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const CLOCK = `<svg class="clockface" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="19" fill="var(--ink)"/><g stroke="var(--card)" stroke-width="1.6" stroke-linecap="round" opacity=".5"><path d="M20 4.5v2.5M35.5 20h-2.5M20 35.5V33M4.5 20H7"/></g><line class="hand h" x1="20" y1="20" x2="14.5" y2="14" stroke="var(--card)" stroke-width="3" stroke-linecap="round"/><line class="hand m" x1="20" y1="20" x2="28" y2="11" stroke="var(--card)" stroke-width="2.4" stroke-linecap="round"/><circle cx="20" cy="20" r="2.4" fill="var(--deal)"/></svg>`;
+const clockSays = html => `<div class="clockline tick">${CLOCK}<p class="bubble">${html}</p></div>`;
+const CHEV = `<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 5l5 5-5 5"/></svg>`;
+const dial = type => `<span class="ticks"></span><span class="ticks5"></span><span class="track"></span><span class="fill ${type}"></span><span class="edge"></span>`;
+function face(r, m) {
+  if (r <= 0) return { big: "0:00", cls: "mmss", unit: `${cur().label.split(",")[0]} is up` };
+  if (r < 180000) { const s = Math.ceil(r / 1000); return { big: `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`, cls: "mmss", unit: "left" }; }
+  return { big: String(m), cls: "", unit: (m === 1 ? "minute" : "minutes") + " left" };
+}
+const wrapNums = html => html.replace(/>([^<]+)</g, (m, t) => ">" + t.replace(/\d+/g, d => `<span class="n">${d}</span>`) + "<");
+
+function setTab(t) { tab = t; ["now", "ledger", "room"].forEach(x => $("#tab-" + x).setAttribute("aria-current", x === t ? "page" : "false")); }
+
+function focusKey(el) {
+  if (!el || el === document.body) return null;
+  if (el.id && el.id !== "sh") return "#" + el.id;
+  for (const a of ["data-act", "data-set", "data-sug", "data-ci", "data-pick", "data-term"]) if (el.hasAttribute(a)) return `[${a}="${el.getAttribute(a)}"]`;
+  return null;
+}
+let nextFocus = null;
+function render() {
+  const key = nextFocus || focusKey(document.activeElement); nextFocus = null;
+  const opening = sheet && sheet.focusMe;
+  const v = $("#view");
+  document.body.classList.toggle("modal", tab === "now" && mode === "intercept");
+  const html = tab === "ledger" ? ledgerView() : tab === "room" ? roomView() : mode === "intercept" ? interceptView() : !S ? startView() : runningView();
+  v.innerHTML = wrapNums(html);
+  renderSheet();
+  bind();
+  if (key && !opening) { const el = document.querySelector(key); if (el && !(sheet && !el.closest(".sheet"))) el.focus({ preventScroll: true }); }
+}
+
+const tokF = p => `<button class="tok" data-pick="focus" aria-controls="deal-picker" aria-expanded="${p === "focus"}" aria-label="Focus length, ${deal.focusMin} minutes, change">${deal.focusMin} minutes</button>`;
+const tokT = p => `<button class="tok" data-pick="task" aria-controls="deal-picker" aria-expanded="${p === "task"}" aria-label="Task, ${esc(shortTask())}, change">${esc(shortTask())}</button>`;
+function ticket(push) {
+  const p = picker;
+  const pk = p === "break" ? `<div class="picker" id="deal-picker" role="group" aria-label="Minutes of ${esc(deal.act)}">${[5, 10, 15, 20].map(n => `<button class="chip" data-set="breakMin:${n}" aria-pressed="${deal.breakMin === n}">${n} min</button>`).join("")}</div>`
+    : p === "focus" ? `<div class="picker" id="deal-picker" role="group" aria-label="Focus minutes">${[5, 8, 12, 15, 20].map(n => `<button class="chip" data-set="focusMin:${n}" aria-pressed="${deal.focusMin === n}">${n} min</button>`).join("")}</div>`
+    : p === "task" ? `<div class="picker" id="deal-picker"><label class="vh" for="task">What you'll work on</label><input id="task" value="${esc(deal.task)}"><button class="chip" id="taskdone">Done</button></div>` : "";
+  return `<section class="ticket${push ? " push" : ""}" id="ticket" aria-label="Your deal">
+    <div class="body">
+      <p class="sentence">${deal.act
+        ? `<button class="tok" data-pick="break" aria-controls="deal-picker" aria-expanded="${p === "break"}" aria-label="Break length, ${deal.breakMin} minutes, change">${deal.breakMin} more minutes</button> of ${esc(deal.act)}, then ${tokF(p)} of ${tokT(p)}.`
+        : `Straight in: ${tokF(p)} of ${tokT(p)}.`}</p>
+      ${pk}
+    </div>
+    <div class="stub">
+      <button class="primary" id="shake">Deal</button>
+      <p class="hint">Tap any underlined part to change it.</p>
+    </div>
+    <span class="stamp" aria-hidden="true">DEAL</span>
+  </section>`;
+}
+function startView() {
+  return `<h1>What are you doing right now?</h1>
+  <div class="chips" role="radiogroup" aria-label="What you're doing">
+    ${ACTS.map(a => `<button class="chip" role="radio" data-act="${a}" aria-checked="${deal.act === a}">${a}</button>`).join("")}
+  </div>
+  ${ticket()}
+  <button class="textbtn" id="nothing">${deal.act ? "Nothing, I'm ready to start" : "Actually, I'm on my phone"}</button>`;
+}
+function interceptView() {
+  return `<div style="display:flex;gap:14px;align-items:center"><span class="appicon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17" cy="7" r=".8" fill="#fff"/></svg></span>
+      <div><p class="soft">You opened Instagram</p><h1 style="font-size:34px">Make it a deal first?</h1></div></div>
+    ${ticket()}
+    <div class="intercept-foot"><button class="textbtn" id="letmein">Not now, just open Instagram</button>
+    <p class="soft small">Your Intercept shortcut opened this.</p></div>`;
+}
+function runningView() {
+  const b = cur(), isB = b.type === "break", r = remaining(), m = minsLeft();
+  const nxt = S.blocks[S.idx + 1], heads = r <= 120000 && r > 0;
+  const rest = S.blocks.slice(S.idx + 1, S.idx + 3);
+  const f = face(r, m);
+  const note = toast ? `<p class="note go" role="status">${esc(toast)}</p>`
+    : heads && isB ? `<p class="note heads">Two minutes left. Wrap up, then ${esc(nameOf(nxt))} for ${nxt ? nxt.min : 0} min.</p>`
+    : `<p class="note">${nxt ? `Then ${esc(nameOf(nxt))} for ${nxt.min} min.` : "Last block tonight."}</p>`;
+  return `<div class="now">
+    <span class="kind"><span class="swatch ${isB ? "break" : "focus"}" aria-hidden="true"></span>${isB ? "Break you chose" : "Focus"}</span>
+    <h1>${esc(b.label)}</h1>
+  </div>
+  <div class="timerwrap">
+    <div class="dial${S.justStarted ? " sweep" : ""}${r <= 0 ? " done" : ""}${heads ? " heads" : ""}" style="--p:${r <= 0 ? 1 : (r / S.durMs).toFixed(4)};--n:${b.min}" role="img" aria-label="${r <= 0 ? "Time is up" : m + " minutes left"}">
+      ${dial(isB ? "break" : "focus")}
+      <span class="face"><span class="big ${f.cls}" id="mins">${f.big}</span><span class="unit" id="unit">${esc(f.unit)}</span></span>
+    </div>
+    ${note}
+  </div>
+  <div class="stack">
+    ${isB
+      ? (heads ? `<button class="primary" id="startnow">Start ${esc(nameOf(nxt))} now</button>` : `<button class="secondary" id="startnow">Start ${esc(nameOf(nxt))} early</button>`)
+      : `<button class="textbtn" id="endearly">Stop for now</button>`}
+  </div>
+  <section class="stack" aria-labelledby="planh">
+    <h3 id="planh">Coming up</h3>
+    <ol class="plan">${rest.map(x => `<li><span class="swatch ${x.type}" aria-hidden="true"></span><span>${x.type === "break" ? "Break: " : ""}${esc(x.label)}</span><span class="num">${x.min} min</span></li>`).join("")}</ol>
+    ${S.debt > 0 ? `<p class="soft small">${S.debt} borrowed minutes come out of later breaks. Anything left is cleared tonight.</p>` : ""}
+  </section>`;
+}
+
+function renderSheet() {
+  const root = $("#sheet-root");
+  if (!sheet || !S || tab !== "now") { root.innerHTML = ""; setInert(); return; }
+  const b = cur(), nxt = S.blocks[S.idx + 1], over = remaining() <= 0;
+  let body = "";
+  if (sheet.kind === "boundary" && !sheet.asking) {
+    body = `<h2 id="sh" tabindex="-1">${esc(b.label)} time is up</h2>
+      <p class="soft">Next up: ${esc(nameOf(nxt))} for ${nxt ? nxt.min : 0} minutes.</p>
+      <button class="primary" id="go">Start ${esc(nameOf(nxt))}</button>
+      <button class="secondary" id="ask2">Ask for 5 more</button>`;
+  } else if (sheet.kind === "boundary" || sheet.kind === "offer") {
+    const offer = makeOffer(S);
+    const back = `<button class="secondary" id="nevermind">${over ? `Start ${esc(nameOf(nxt))} instead` : "Never mind"}</button>`;
+    const noterms = `<button class="textbtn" id="override">I need this. No terms.</button>`;
+    const termTicket = (i, top, cost, single) => single
+      ? `<div class="term" data-term="${i}"><span class="top">${top}</span><span class="cost">${cost}</span><span class="stamp" aria-hidden="true">DEAL</span></div>`
+      : `<button class="term" role="radio" aria-checked="${sheet.pick === i}" data-term="${i}"><span class="top">${top}</span><span class="radio" aria-hidden="true"></span><span class="cost">${cost}</span><span class="stamp" aria-hidden="true">DEAL</span></button>`;
+    if (offer.terms[0].kind === "freebie") {
+      sheet.pick = 0;
+      body = `<h2 id="sh" tabindex="-1">5 more minutes of ${esc(b.label)}?</h2>
+        ${clockSays("Sure. This one's on the house.")}
+        <div class="terms">${termTicket(0, `+5 min of ${esc(b.label)}`, "On the house. No catch.", true)}</div>
+        <button class="primary" id="seal">Deal</button>
+        ${back}`;
+    } else {
+      const bp = borrowPreview(S), nf = nextOf(S, "focus");
+      const needs = offer.requiresIntention && !(sheet.intention || "").trim();
+      if (needs && sheet.draft == null && !sheet.typing) sheet.draft = "Open the chapter";
+      const sug = ["Open the chapter", "Read one page", "Write one sentence"];
+      if (sheet.pick == null) sheet.pick = 0;
+      const Task = esc(shortTask().replace(/^./, c => c.toUpperCase()));
+      body = `<h2 id="sh" tabindex="-1">5 more minutes of ${esc(b.label)}?</h2>` + (needs
+        ? `${clockSays("Sure. First tell me the <b>first thing</b> you'll do when you start.")}
+          <div class="field">
+            <div class="chips" role="radiogroup" aria-label="First thing I'll do">${sug.map(x => `<button class="chip" role="radio" data-sug="${x}" aria-checked="${!sheet.typing && sheet.draft === x}">${x}</button>`).join("")}
+            <button class="chip" role="radio" id="typeown" aria-checked="${!!sheet.typing}">Type my own</button></div>
+            ${sheet.typing ? `<label for="intent" class="vh">First thing I'll do</label><input id="intent" placeholder="like “open ch. 7”" enterkeyhint="done" value="${esc(sheet.typed || "")}">` : ""}
+          </div>
+          <button class="primary" id="cont" ${(sheet.typing ? (sheet.typed || "").trim() : sheet.draft) ? "" : "disabled"}>Continue</button>
+          ${back}`
+        : `${clockSays(offer.requiresIntention ? "Got it. Now, where should the <b>5 minutes</b> come from?" : "OK. Where should the <b>5 minutes</b> come from?")}
+          ${sheet.intention ? `<p class="picked">First thing: <b>${esc(sheet.intention)}</b></p>` : ""}
+          <div class="terms" role="radiogroup" aria-label="Pick a deal">${offer.terms.map((t, i) => t.kind === "borrow"
+            ? termTicket(i, "Borrow from my next break", bp.from ? `Next break ${bp.from} → ${bp.to} min${bp.carry ? `, plus ${bp.carry} min from a later break` : ""}` : "Paid back later tonight")
+            : termTicket(i, "Add it to my next focus", `${Task} ${nf.min} → ${nf.min + 5} min`)).join("")}</div>
+          <button class="primary" id="seal">Deal</button>
+          ${back}`);
+    }
+    if (offer.terms[0].kind !== "freebie") body += noterms;
+  } else if (sheet.kind === "bonus") {
+    body = `<h2 id="sh" tabindex="-1">Want to keep going?</h2>
+      ${clockSays(`Keep going for <b>10</b> more minutes? Your next break gets <b>3</b> minutes longer.`)}
+      <button class="primary" id="bonusyes">Keep going</button>
+      <button class="secondary" id="bonusno">Take my break</button>
+      <div class="countdown" aria-hidden="true"><i id="cd"></i></div>
+      <p class="soft small" style="text-align:center">${sheet.paused ? "Take your time. Nothing happens until you pick." : "If you don't pick, your break starts on its own in about 30 seconds."}</p>
+      ${sheet.paused ? "" : `<button class="textbtn" id="moretime">More time to decide</button>`}`;
+  }
+  body = wrapNums(body);
+  root.innerHTML = `<div class="scrim"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sh"><span class="grab"></span>${body}</div></div>`;
+  setInert();
+  updateCountdown();
+  if (sheet.focusMe) { const h = $("#sh"); if (h) h.focus({ preventScroll: true }); sheet.focusMe = false; }
+}
+function setInert() {
+  const on = !!(sheet && S && tab === "now");
+  document.querySelectorAll(".app, nav.tabs").forEach(el => { if (on) el.setAttribute("inert", ""); else el.removeAttribute("inert"); });
+}
+function openSheet(s) { opener = document.activeElement; sheet = { ...s, focusMe: true }; say(s.kind === "bonus" ? "Focus block ended. Offer to keep going." : `${cur().label} time is up.`); }
+function closeSheet() { sheet = null; }
+
+function ledgerView() {
+  const n = k => ledger.filter(e => e.kind === k).length;
+  return `<h1>Today's deals</h1>
+  ${ledger.length === 0 ? `<p class="soft">Nothing yet. When you ask for more time, the deal and its terms land here.</p>` : ""}
+  ${ledger.length ? `<div class="tally">
+    <div><b>${(n("freebie") + n("override")) * 5}</b><span>min on the house</span></div>
+    <div><b>${n("borrow") * 5}</b><span>min from breaks</span></div>
+    <div><b>${n("trade") * 5 + n("bonus") * 10}</b><span>min to focus</span></div>
+  </div>
+  <ul class="stubs">${ledger.slice().reverse().map(e => `<li><span class="t"><b>${e.t.replace(/[ap]m$/, "")}</b><small>${e.t.slice(-2).toUpperCase()}</small></span><span class="what"><span class="mark" aria-hidden="true">${MARK[e.kind]}</span><span>${esc(e.text.replace(/ more min of /, " min of ").replace(/^(\d)/, "+$1"))}</span><em>${TERMS[e.kind]}</em>${e.note ? `<em>First thing: ${esc(e.note)}</em>` : ""}</span></li>`).join("")}</ul>` : ""}
+  <section class="insight" aria-labelledby="insh">
+    <h2 id="insh">This week</h2>
+    ${clockSays(`You bargain most <b>after 10 PM</b>, usually near the end of Reels. Want breaks after 10 to start a little shorter?`)}
+    <div class="insight-act"><button class="trychip" id="tryit" aria-pressed="${tried}">${tried ? "Done. Breaks after 10 start at 7 min" : "Try it this week"}</button></div>
+  </section>`;
+}
+function roomView() {
+  const ppl = [
+    { n: "Maya", i: "M", on: true, st: "Focusing", d: "Orgo problem set, 14 min left", p: .55, t: "focus" },
+    { n: "Jordan", i: "J", on: false, st: "On a break", d: "Texting, 3 min left", p: .4, t: "break" },
+    { n: "Priya", i: "P", on: false, st: "Deciding", d: "Break just ended", p: .04, t: "break" },
+    { n: "Sam", i: "S", on: false, st: "Between blocks", d: "Checked in: stuck", p: 0, t: "focus" },
+  ];
+  return `<h1>Late-night BIO crew</h1>
+  <p class="soft">4 friends. Messages wait until your break.</p>
+  <ul class="people">${ppl.map(p => `<li class="person"><span class="mini" aria-hidden="true" style="--p:${p.p}"><span class="track"></span><span class="fill ${p.t}"></span><span class="ini">${p.i}</span></span>
+    <span class="who"><strong>${p.n}</strong><small>${p.d}</small></span><span class="state ${p.on ? "on" : ""}">${p.st}</span></li>`).join("")}</ul>
+  <section class="stack"><h3>Your check-in</h3>
+    <div class="checkins" role="radiogroup" aria-label="Your check-in">${["Starting", "Stuck", "Done"].map(c => `<button role="radio" data-ci="${c}" aria-checked="${checkin === c}">${c}</button>`).join("")}</div>
+    <p class="soft small">${checkin ? `The room sees “${checkin}” at their next break.` : "One tap. The room sees it at their next break."}</p>
+  </section>`;
+}
+
+/* ---------- events ---------- */
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+function bind() {
+  document.querySelectorAll("[data-act]").forEach(b => b.onclick = () => { deal.act = b.dataset.act; render(); });
+  document.querySelectorAll("[data-pick]").forEach(b => b.onclick = () => { picker = picker === b.dataset.pick ? null : b.dataset.pick; render(); const t = $("#task"); if (t) t.focus(); });
+  document.querySelectorAll("[data-set]").forEach(b => b.onclick = () => { const [k, n] = b.dataset.set.split(":"); deal[k] = +n; picker = null; render(); });
+  const task = $("#task"); if (task) { task.oninput = e => { deal.task = e.target.value || "Studying"; }; task.onkeydown = e => { if (e.key === "Enter") { picker = null; render(); } }; }
+  on("#taskdone", () => { picker = null; render(); });
+  on("#shake", () => {
+    $("#ticket").classList.add("stamped"); $("#shake").disabled = true;
+    setTimeout(() => {
+      S = buildSession(deal); S.justStarted = true; mode = "start"; picker = null;
+      const first = S.blocks[0], fb = S.blocks.find(x => x.type === "focus");
+      toast = first.type === "break" ? `Deal. ${fb.label.split(",")[0]} starts at ${clockStr(Date.now() + first.min * 60000)}.` : "Deal. Go.";
+      setTimeout(() => { toast = null; if (S) S.justStarted = false; lastSig = ""; }, 3500);
+      say(toast); lastSig = ""; render();
+    }, reduce ? 0 : 650);
+  });
+  on("#nothing", () => { deal.act = deal.act ? null : "Reels"; render(); });
+  on("#letmein", () => { ledger.push({ t: clockStr(), kind: "override", text: "Opened Instagram without a deal", note: "" }); mode = "start"; render(); });
+  on("#ask", () => { openSheet({ kind: "offer", asking: true }); render(); });
+  on("#ask2", () => { sheet.asking = true; sheet.focusMe = true; render(); });
+  on("#startnow", () => { ledger.push({ t: clockStr(), kind: "cleared", text: `Ended ${cur().label} early`, note: "" }); nextBlock(); render(); });
+  on("#go", () => { nextBlock(); render(); });
+  on("#nevermind", () => dismiss());
+  on("#endearly", () => { ledger.push({ t: clockStr(), kind: "cleared", text: "Stopped for now", note: "" }); S = null; render(); });
+  on("#seal", () => seal());
+  on("#typeown", () => { sheet.typing = true; nextFocus = "#intent"; render(); });
+  on("#cont", () => { const v = sheet.typing ? (sheet.typed || "").trim() : sheet.draft; if (!v) return; sheet.intention = v; nextFocus = '[data-term="0"]'; render(); });
+  on("#override", () => take(makeOffer(S).override));
+  document.querySelectorAll("[data-term]").forEach(b => b.onclick = () => { if (b.getAttribute("role") !== "radio") return seal(); sheet.pick = +b.dataset.term; render(); });
+  const group = $(".terms[role=radiogroup]"); if (group) group.onkeydown = e => {
+    if (!["ArrowDown", "ArrowUp", "ArrowLeft", "ArrowRight"].includes(e.key)) return; e.preventDefault();
+    const n = group.querySelectorAll("[data-term]").length; sheet.pick = (sheet.pick + (e.key === "ArrowDown" || e.key === "ArrowRight" ? 1 : n - 1)) % n; nextFocus = `[data-term="${sheet.pick}"]`; render();
+  };
+  document.querySelectorAll("[data-sug]").forEach(b => b.onclick = () => { sheet.draft = b.dataset.sug; sheet.typing = false; render(); });
+  const intent = $("#intent"); if (intent) { intent.oninput = e => { sheet.typed = e.target.value; $("#cont").disabled = !e.target.value.trim(); }; intent.onkeydown = e => { if (e.key === "Enter" && e.target.value.trim()) { sheet.intention = e.target.value.trim(); nextFocus = '[data-term="0"]'; render(); } }; }
+  on("#bonusyes", () => takeBonus());
+  on("#bonusno", () => { S.bonusOffered = true; nextBlock(); render(); });
+  on("#moretime", () => { sheet.paused = true; nextFocus = "#bonusyes"; render(); });
+  on("#tryit", () => { tried = true; render(); });
+  document.querySelectorAll("[data-ci]").forEach(b => b.onclick = () => { checkin = b.dataset.ci; render(); });
+}
+function on(sel, fn) { const el = $(sel); if (el) el.onclick = fn; }
+function seal() {
+  const offer = makeOffer(S), i = sheet.pick || 0, t = document.querySelector(`[data-term="${i}"]`);
+  if (t) t.classList.add("stamped");
+  document.querySelectorAll(".sheet button").forEach(x => x.disabled = true);
+  setTimeout(() => take(offer.terms[i]), reduce ? 0 : 550);
+}
+function take(term) { ledger.push(applyTerm(S, term, sheet && sheet.intention)); closeSheet(); say(`Deal. ${cur().label} for ${minsLeft()} more minutes.`); render(); restoreFocus(); }
+function dismiss() { if (!sheet) return; if (sheet.kind === "bonus") { S.bonusOffered = true; nextBlock(); } else if (remaining() <= 0) nextBlock(); else closeSheet(); render(); restoreFocus(); }
+function restoreFocus() { const t = opener && document.body.contains(opener) ? opener : document.querySelector(".stack button, #view h1"); if (t) { if (!t.matches("button")) t.tabIndex = -1; t.focus({ preventScroll: true }); } }
+function takeBonus() {
+  cur().min += 10; S.durMs += 10 * 60000; const nb = nextOf(S, "break"); if (nb) nb.min += 3;
+  ledger.push({ t: clockStr(), kind: "bonus", text: `10 more min of ${shortTask()}`, note: "" }); S.bonusOffered = true; closeSheet(); render(); restoreFocus();
+}
+document.addEventListener("keydown", e => {
+  if (!sheet) return;
+  if (e.key === "Escape") { e.preventDefault(); dismiss(); }
+  if (e.key === "Tab") {
+    const f = [...document.querySelectorAll(".sheet button, .sheet input")]; if (!f.length) return;
+    const first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && (document.activeElement === first || document.activeElement.id === "sh")) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+});
+
+const focusTitle = () => { const h = $("#view h1"); if (h) { h.tabIndex = -1; h.focus({ preventScroll: true }); } };
+$("#tab-now").onclick = () => { setTab("now"); lastSig = ""; render(); focusTitle(); };
+$("#tab-ledger").onclick = () => { setTab("ledger"); render(); focusTitle(); };
+$("#tab-room").onclick = () => { setTab("room"); render(); focusTitle(); };
+$("#sp1").onclick = () => { speed = 1; $("#sp1").setAttribute("aria-pressed", "true"); $("#sp30").setAttribute("aria-pressed", "false"); };
+$("#sp30").onclick = () => { speed = 30; $("#sp30").setAttribute("aria-pressed", "true"); $("#sp1").setAttribute("aria-pressed", "false"); };
+$("#jump").onclick = () => { if (S) vnow = S.startedAt + S.durMs - 1000; };
+$("#reset").onclick = () => { fresh(); mode = "start"; setTab("now"); history.replaceState(null, "", location.pathname); render(); };
+
+/* ---------- clock loop: re-render only on structural change, update numbers in place ---------- */
+let lastSig = "";
+function updateCountdown() {
+  if (!sheet || sheet.kind !== "bonus") return;
+  const left = Math.max(0, Math.min(30, 30 - (Date.now() - sheet.at) / 1000));
+  const cd = $("#cd"); if (cd) cd.style.width = (left / 30 * 100).toFixed(1) + "%";
+}
+function tick() {
+  const now = performance.now(); vnow += (now - lastReal) * speed; lastReal = now;
+  if (S && tab === "now") {
+    const r = remaining(), b = cur();
+    if (r <= 0 && !sheet) {
+      if (b.type === "break") openSheet({ kind: "boundary", asking: false });
+      else if (!S.bonusOffered && S.idx < S.blocks.length - 1) openSheet({ kind: "bonus", at: Date.now() });
+      else nextBlock();
+    }
+    if (sheet && sheet.kind === "bonus") {
+      const a = document.activeElement, inside = a && a.closest && a.closest(".sheet") && a.id !== "sh";
+      if (inside) sheet.at = Math.max(sheet.at, Date.now() - 20000);
+      if (!sheet.paused && Date.now() - sheet.at > 30000) { S.bonusOffered = true; nextBlock(); }
+      updateCountdown();
+    }
+    const heads = r <= 120000 && r > 0;
+    const sig = [S.idx, heads, r <= 0, sheet && sheet.kind, sheet && sheet.asking, !!toast].join("|");
+    if (sig !== lastSig) { if (lastSig && heads && !sheet) say(`2 minutes left of ${b.label}.`); lastSig = sig; render(); }
+    else {
+      const m = minsLeft(), mins = $("#mins"), d = $(".dial"), f = face(r, m);
+      if (mins && mins.textContent !== f.big) { mins.textContent = f.big; mins.className = "big " + f.cls; $("#unit").textContent = f.unit; if (m !== +d.dataset.m) { d.dataset.m = m; d.setAttribute("aria-label", `${m} minutes left`); } if (reduce) d.style.setProperty("--p", (r / S.durMs).toFixed(4)); }
+      if (d && !reduce && !S.justStarted) d.style.setProperty("--p", (r / S.durMs).toFixed(4));
+    }
+  }
+  requestAnimationFrame(tick);
+}
+
+/* ---------- hash entry points (for interviews and screenshots) ---------- */
+function seedLedger() {
+  ledger = [
+    { t: "9:12pm", kind: "freebie", text: "5 more min of Reels", note: "" },
+    { t: "9:58pm", kind: "bonus", text: "10 more min of reading", note: "" },
+    { t: "10:31pm", kind: "borrow", text: "5 more min of TikTok", note: "" },
+    { t: "10:37pm", kind: "trade", text: "5 more min of TikTok", note: "Do problem 4" },
+  ];
+}
+function fromHash() {
+  const h = location.hash.slice(1);
+  fresh(); mode = "start"; setTab("now");
+  const run = (left, ask) => { S = buildSession(deal); S.startedAt = vnow - (S.durMs - left); S.askCount = ask || 0; };
+  if (h === "intercept") mode = "intercept";
+  else if (h === "running") run(6.3 * 60000);
+  else if (h === "heads-up") run(100000);
+  else if (h === "boundary") { run(0); sheet = { kind: "boundary", asking: false, focusMe: true }; }
+  else if (h === "offer-free") { run(0); sheet = { kind: "boundary", asking: true, focusMe: true }; }
+  else if (h === "offer-terms") { run(0, 1); sheet = { kind: "boundary", asking: true, focusMe: true }; }
+  else if (h === "offer-intention") { run(0, 2); sheet = { kind: "boundary", asking: true, focusMe: true }; }
+  else if (h === "bonus") { run(9 * 60000); S.idx = 1; S.durMs = cur().min * 60000; S.startedAt = vnow - S.durMs; sheet = { kind: "bonus", at: Date.now(), focusMe: true }; }
+  else if (h === "focus") { run(9 * 60000); S.idx = 1; S.durMs = cur().min * 60000; S.startedAt = vnow - S.durMs * .4; }
+  else if (h === "ledger") { seedLedger(); setTab("ledger"); }
+  else if (h === "room") setTab("room");
+  lastSig = S ? [S.idx, remaining() <= 120000 && remaining() > 0, remaining() <= 0, sheet && sheet.kind, sheet && sheet.asking, false].join("|") : "";
+  render();
+}
+window.addEventListener("hashchange", fromHash);
+fromHash();
+requestAnimationFrame(tick);
+</script>
