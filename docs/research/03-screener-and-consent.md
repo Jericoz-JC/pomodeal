@@ -17,7 +17,7 @@ Don't ask about diagnoses, medication, grades or GPA.
 
 ## Consent (read aloud at the start, note "yes" with the time)
 
-> Before we start: this is a 45-minute conversation for a student project called Negotiation Clock. We'll ask how you study, then you'll try a prototype. I'll take notes with your first name only. [If recording:] I'd also like to record audio so we don't miss anything. Only our team hears it, and we delete it once we've written up our notes, within 2 weeks. You can skip any question, stop at any time, or ask us to delete your notes later, just text me. The thank-you is yours either way. Is that OK? [And is recording OK?]
+> Before we start: this is a 45-minute conversation for a student project called Pomodeal. We'll ask how you study, then you'll try a prototype. I'll take notes with your first name only. [If recording:] I'd also like to record audio so we don't miss anything. Only our team hears it, and we delete it once we've written up our notes, within 2 weeks. You can skip any question, stop at any time, or ask us to delete your notes later, just text me. The thank-you is yours either way. Is that OK? [And is recording OK?]
 
 If they say anything about a diagnosis, medication or health: don't write it down, and don't ask follow-ups. Gently steer back to what happened that night.
 

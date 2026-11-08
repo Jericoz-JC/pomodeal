@@ -8,8 +8,8 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["icon.svg", "apple-touch-icon.png"],
       manifest: {
-        name: "Negotiation Clock",
-        short_name: "Deal",
+        name: "Pomodeal",
+        short_name: "Pomodeal",
         description: "A study timer that negotiates with you.",
         theme_color: "#1E6A46",
         background_color: "#EDEFE9",

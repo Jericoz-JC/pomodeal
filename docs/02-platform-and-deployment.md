@@ -39,7 +39,7 @@ Why not extension-first: the extension can't reach the phone, which is where the
 ## Repo shape
 
 ```
-negotiation-clock/
+pomodeal/
   apps/
     web/          React + Vite PWA
     extension/    WXT extension

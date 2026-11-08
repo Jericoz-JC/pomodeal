@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Renamed to **Pomodeal** (docs, package names, PWA manifest, device-id key). Tagline: "A study timer that makes deals with you."
+- Stack and hosting plan (`docs/07-stack-and-hosting.md`): Cloudflare Pages + Convex + Better Auth; Cloudflare `_headers` for the service worker.
+
 ## v0.2.0 (2026-11-07)
 
 - Monorepo with npm workspaces: `apps/web`, `packages/core`, `convex/`.

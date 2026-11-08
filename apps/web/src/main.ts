@@ -11,7 +11,7 @@ const url = import.meta.env.VITE_CONVEX_URL as string | undefined;
 
 function deviceId(): string {
   try {
-    const k = "nc.device";
+    const k = "pomodeal.device";
     const existing = localStorage.getItem(k);
     if (existing) return existing;
     const id = crypto.randomUUID();
@@ -26,9 +26,9 @@ if (url) {
   const client = new ConvexClient(url);
   client.onUpdate(api.sessions.current, { deviceId: deviceId() }, (s) => {
     document.documentElement.dataset.backend = "live";
-    if (s) console.info("[nc] running session", s._id);
+    if (s) console.info("[pomodeal] running session", s._id);
   });
   (window as unknown as { nc: unknown }).nc = { client, api, deviceId: deviceId() };
 } else {
-  console.info("[nc] VITE_CONVEX_URL not set; running without the backend");
+  console.info("[pomodeal] VITE_CONVEX_URL not set; running without the backend");
 }

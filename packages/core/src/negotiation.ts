@@ -1,4 +1,4 @@
-// Negotiation rules for Negotiation Clock.
+// Negotiation rules for Pomodeal.
 // Source of truth: docs/specs/001-negotiation-rules.md. Pure functions only: no I/O, no clocks.
 // Both clients and Convex call these so a deal is identical everywhere.
 

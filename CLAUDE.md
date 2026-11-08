@@ -1,4 +1,4 @@
-# Negotiation Clock
+# Pomodeal
 
 A study timer that negotiates with you instead of fighting you, plus small private study rooms for friend groups. Built for students whose brains bargain with time. Never position it as an ADHD or health product.
 

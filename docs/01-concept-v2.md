@@ -1,4 +1,6 @@
-# Negotiation Clock: Concept v2
+# Pomodeal: Concept v2
+
+*Formerly the working name "Negotiation Clock". Renamed Nov 7, 2026.*
 
 Iteration on [00-thesis-original.md](00-thesis-original.md) · Nov 7, 2026
 
@@ -63,10 +65,10 @@ The original idea was a context-aware Pomodoro that knows *when* someone picked 
 | --- | --- | --- |
 | **A website / PWA alone** | Nothing about other apps | No Screen Time access at all |
 | **Native iOS app + Screen Time API** (FamilyControls, DeviceActivity, ManagedSettings; needs Apple's Family Controls entitlement) | User picks apps → you get **opaque tokens**. You can **shield (block) those apps** on a schedule, get callbacks when usage crosses a threshold ("20 min on picked apps"), and **render** usage charts inside your app | The usage report runs in a sandbox that **cannot send data out**: no network, no writes to your app. Your code never sees app names or raw usage, so you can't upload it to Convex or show it to friends |
-| **iOS Shortcuts automations** ("When Instagram is opened / closed" → *Get Contents of URL*) | Works **with the PWA**. Per-app, opt-in, user-installed. Can POST `app + opened/closed + time` to a Convex HTTP endpoint, or **open Negotiation Clock first** whenever Instagram opens | Setup is manual per app; must turn off "Ask Before Running"; iOS may show a banner; only covers apps the user picks; no history before setup |
+| **iOS Shortcuts automations** ("When Instagram is opened / closed" → *Get Contents of URL*) | Works **with the PWA**. Per-app, opt-in, user-installed. Can POST `app + opened/closed + time` to a Convex HTTP endpoint, or **open Pomodeal first** whenever Instagram opens | Setup is manual per app; must turn off "Ask Before Running"; iOS may show a banner; only covers apps the user picks; no history before setup |
 | **Android** (UsageStatsManager) | Full per-app usage history to a native app with permission | Not reachable from the web either |
 
-**The interesting one is Shortcuts.** It turns the Quick Deal into an *interception*: you open Instagram, and Negotiation Clock opens first asking "Reels for 10, then 8 min of reading. Deal?" The app [one sec](https://one-sec.app) uses this exact pattern for a breathing pause, so it works and users accept it. Add one sec to the competitor table: it intercepts but doesn't negotiate or go social.
+**The interesting one is Shortcuts.** It turns the Quick Deal into an *interception*: you open Instagram, and Pomodeal opens first asking "Reels for 10, then 8 min of reading. Deal?" The app [one sec](https://one-sec.app) uses this exact pattern for a breathing pause, so it works and users accept it. Add one sec to the competitor table: it intercepts but doesn't negotiate or go social.
 
 **Three tiers of context, shipped in order:**
 
@@ -108,11 +110,13 @@ Every feature should make one arrow in this loop faster, more honest, or more so
 | W1 / W4 retention | Still starting sessions after 1 and 4 weeks | Timer apps die by week 2; this is the real test |
 | Weekly one-question check-in | "Did this week go better than usual?" 1–5 | Cheap qualitative signal |
 
-## 5. Name ideas (working name stays until beta)
+## 5. Name: Pomodeal
 
-Deal · Fair Trade · Haggle · Two Sides · Ledger · Terms · Handshake · "One More" · Quid
+Decided Nov 7, 2026. "Pomo" puts it in the study-timer category people already search for; "deal" names the mechanic. USPTO search for POMODEAL came back clear; pomodeal.com is available.
 
-Criteria: says "deal with yourself", no medical connotation, short, domain + Chrome Web Store name available.
+- Always pair the name with a line that says what it is, so "deal" doesn't read as a coupon site: **"A study timer that makes deals with you."**
+- Never write "the Pomodoro Technique" in marketing copy (Francesco Cirillo claims it as a trademark). "Pomodeal" alone is fine.
+- "Negotiation" stays as the word for how it works (the negotiation rules, the negotiation sheet).
 
 ## 6. Biggest risks
 
