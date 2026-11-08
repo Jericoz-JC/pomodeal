@@ -8,7 +8,7 @@ Exact steps to put Pomodeal on Cloudflare Pages with WorkOS sign-in, and how inv
 | --- | --- | --- |
 | Convex | `tremendous-lark-56` | `affable-hound-751` (functions deployed) |
 | WorkOS AuthKit | Auto-provisioned by `npx convex dev` (convex.json → `authKit.dev`) | Staging environment created in the Convex dashboard (no card needed); switch to a production environment before public launch |
-| Web | `npm run dev` on http://localhost:5173 | Cloudflare Worker → pomodeal.chrisgems5.workers.dev, then pomodeal.com |
+| Web | `npm run dev` on http://localhost:5173 | Cloudflare Worker → pomodeal.chrisgems5.workers.dev, then pomodeal.app |
 
 ---
 
@@ -24,8 +24,8 @@ Exact steps to put Pomodeal on Cloudflare Pages with WorkOS sign-in, and how inv
    - Dashboard: Production → Settings → Environment Variables → add `WORKOS_CLIENT_ID` = the client id.
    - Or CLI: `npx convex env set --prod WORKOS_CLIENT_ID client_01…`
 3. In the **WorkOS dashboard** for that production environment:
-   - **Redirects:** add `https://pomodeal.com/callback` and `https://pomodeal.pages.dev/callback` (use your real `*.pages.dev` name from step C). Set the **sign-out redirect** to `https://pomodeal.com`.
-   - **Authentication → Sessions → CORS / allowed origins:** add `https://pomodeal.com` and `https://pomodeal.pages.dev`.
+   - **Redirects:** add `https://pomodeal.app/callback` and `https://pomodeal.pages.dev/callback` (use your real `*.pages.dev` name from step C). Set the **sign-out redirect** to `https://pomodeal.app`.
+   - **Authentication → Sessions → CORS / allowed origins:** add `https://pomodeal.app` and `https://pomodeal.pages.dev`.
    - **Authentication methods:** turn on **Magic Auth** (email code). For **Google**, production needs your own Google OAuth client (WorkOS walks you through it); dev works without one.
 
 ## C. Cloudflare (Worker with static assets)
@@ -51,8 +51,8 @@ The app works out its own sign-in callback from the URL it's opened on, so there
 
 ## D. Domain (5 min plus DNS time)
 
-1. Cloudflare → **Domain Registration → Register Domains** → `pomodeal.com`. (If you bought it on Vercel: add the site to Cloudflare, then change the nameservers in Vercel's domain settings to the two Cloudflare shows.)
-2. Worker → **Settings → Domains & Routes → Add → Custom domain** → `pomodeal.com`, then again for `www.pomodeal.com`.
+1. Cloudflare → **Domain Registration → Register Domains** → `pomodeal.app`. (If you bought it on Vercel: add the site to Cloudflare, then change the nameservers in Vercel's domain settings to the two Cloudflare shows.)
+2. Worker → **Settings → Domains & Routes → Add → Custom domain** → `pomodeal.app`, then again for `www.pomodeal.app`.
 
 ## E. First sign-in (you become the first member)
 
@@ -61,7 +61,7 @@ The app works out its own sign-in callback from the URL it's opened on, so there
    npx convex run --prod beta:seedInvite '{"maxUses":1,"note":"Chris"}'
    ```
    It prints a code like `"K7MPX2QA"`.
-2. Open `https://pomodeal.com/?invite=K7MPX2QA` → **Accept invite** → sign up with WorkOS → the ticket gets stamped and you're in.
+2. Open `https://pomodeal.app/?invite=K7MPX2QA` → **Accept invite** → sign up with WorkOS → the ticket gets stamped and you're in.
 3. Make yourself an admin (unlimited invites):
    ```bash
    npx convex run --prod beta:makeAdmin '{"displayName":"Chris Jobi"}'
@@ -73,7 +73,7 @@ The app works out its own sign-in callback from the URL it's opened on, so there
 ## How beta access works
 
 ```
-friend gets link ──► pomodeal.com/?invite=CODE ──► "You're invited" ticket
+friend gets link ──► pomodeal.app/?invite=CODE ──► "You're invited" ticket
         │                                              │ Accept invite
         │                                              ▼
         │                                   WorkOS sign-up (email code or Google)
@@ -101,5 +101,5 @@ npx convex data --prod invites                                        # which co
 
 ## Known limits for the beta
 
-- The WorkOS refresh token is stored in the browser's localStorage (`devMode: true`). Before a public launch, set up a WorkOS custom auth domain (e.g. `auth.pomodeal.com`) so it can use a secure cookie instead.
+- The WorkOS refresh token is stored in the browser's localStorage (`devMode: true`). Before a public launch, set up a WorkOS custom auth domain (e.g. `auth.pomodeal.app`) so it can use a secure cookie instead.
 - The study screens are still the prototype. Sessions and the ledger are stored per member on the server, but the screens don't call those functions yet; that's the Phase 1 port.

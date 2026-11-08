@@ -4,7 +4,7 @@ Date: 2026-11-07 · Status: accepted (Chris chose Cloudflare Pages on Nov 7)
 
 ## Context
 
-The working name was Negotiation Clock. Chris found pomodeal.com available and a clear USPTO search. For hosting, the PWA is static files plus Convex, so any static host works; the free tiers differ on commercial use and collaborators.
+The working name was Negotiation Clock. Chris found pomodeal.app available and a clear USPTO search. For hosting, the PWA is static files plus Convex, so any static host works; the free tiers differ on commercial use and collaborators.
 
 ## Decision
 

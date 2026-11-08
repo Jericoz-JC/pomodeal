@@ -24,7 +24,7 @@ Keep your existing sites on Vercel. Only Pomodeal moves.
 | --- | --- | --- | --- |
 | **Cloudflare Pages** | Hosts the PWA (static files) | Static requests not metered; about 500 builds a month; Functions share the Workers free quota of 100k requests a day | Practically never for a static PWA |
 | **Convex** (Free plan) | Database, realtime sync, scheduled block ends, file storage | About 1M function calls a month, 0.5 GB database, 1 GB database bandwidth, up to 6 developers | Around a few hundred daily users with rooms on; Starter is pay-as-you-go after that |
-| **Cloudflare Registrar** | pomodeal.com | Sells at wholesale cost with no markup (about $10–11 a year for .com) | |
+| **Cloudflare Registrar** | pomodeal.app | Sells at wholesale cost with no markup (about $10–11 a year for .com) | |
 | **GitHub** | Code, PRs, Actions | Unlimited private repos and collaborators | |
 | **WorkOS AuthKit** | Sign-in (magic link and Google), hosted login pages, user dashboard | Free up to 1M monthly active users | Not in this lifetime of the beta |
 | **Resend** | Magic-link emails | Free tier covers a beta | When sign-ups pass a few thousand a month |
@@ -63,9 +63,9 @@ Keep your existing sites on Vercel. Only Pomodeal moves.
 
 ## Domain plan
 
-- `pomodeal.com` serves the app (the PWA works best on the root domain, with no extra hop to `app.`).
-- `www.pomodeal.com` redirects to the root.
-- Later: `pomodeal.com/privacy` and `/terms` as static pages, needed for the Chrome Web Store listing.
+- `pomodeal.app` serves the app (the PWA works best on the root domain, with no extra hop to `app.`).
+- `www.pomodeal.app` redirects to the root.
+- Later: `pomodeal.app/privacy` and `/terms` as static pages, needed for the Chrome Web Store listing.
 
 If you'd rather buy on Vercel since your other domains are there: buy it, then in Vercel's domain settings change its nameservers to the two Cloudflare gives you when you add the site to Cloudflare. Cloudflare needs to run DNS for the root domain to point at Pages.
 

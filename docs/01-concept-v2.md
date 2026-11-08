@@ -112,7 +112,7 @@ Every feature should make one arrow in this loop faster, more honest, or more so
 
 ## 5. Name: Pomodeal
 
-Decided Nov 7, 2026. "Pomo" puts it in the study-timer category people already search for; "deal" names the mechanic. USPTO search for POMODEAL came back clear; pomodeal.com is available.
+Decided Nov 7, 2026. "Pomo" puts it in the study-timer category people already search for; "deal" names the mechanic. USPTO search for POMODEAL came back clear; pomodeal.app is available.
 
 - Always pair the name with a line that says what it is, so "deal" doesn't read as a coupon site: **"A study timer that makes deals with you."**
 - Never write "the Pomodoro Technique" in marketing copy (Francesco Cirillo claims it as a trademark). "Pomodeal" alone is fine.

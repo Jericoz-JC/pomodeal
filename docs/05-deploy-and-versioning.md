@@ -18,7 +18,7 @@ Each of these opens a browser to sign in.
    - Build output directory: `apps/web/dist`
    - Environment variables (Production): `CONVEX_DEPLOY_KEY` = the key from step 3, and `NODE_VERSION` = `22`
    - Preview environment: leave `CONVEX_DEPLOY_KEY` unset (previews build without a backend), or add a Convex **preview** deploy key later so each branch gets its own backend.
-5. **Domain:** buy `pomodeal.com` on Cloudflare Registrar (or on Vercel, then switch its nameservers to Cloudflare's). In the Pages project → Custom domains → add `pomodeal.com` and `www.pomodeal.com`.
+5. **Domain:** buy `pomodeal.app` on Cloudflare Registrar (or on Vercel, then switch its nameservers to Cloudflare's). In the Pages project → Custom domains → add `pomodeal.app` and `www.pomodeal.app`.
 
 **Vercel instead:** vercel.com → Add New Project → import the repo (vercel.json sets the build) → add `CONVEX_DEPLOY_KEY` (Production). Note the Hobby limits in `07-stack-and-hosting.md`.
 
