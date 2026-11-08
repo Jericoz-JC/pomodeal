@@ -36,23 +36,26 @@ export const LANDING_CSS = `
 #pd-gate .ld-top .mark { display: flex; align-items: center; gap: 10px; font-family: var(--font-head); font-stretch: 78%; font-weight: 800; font-size: 23px; }
 #pd-gate .ld-top .mark img { width: 30px; height: 30px; border-radius: 8px; }
 #pd-gate .ld-pill { font-size: 14px; color: var(--soft); }
+#pd-gate .ld-pill.inv { color: var(--ink); border: 1.5px dashed var(--deal); border-radius: 999px; padding: 4px 10px; font-weight: 700; }
+#pd-gate .ld-pill.inv b { font-family: var(--font-head); font-stretch: 85%; letter-spacing: .06em; }
 
-#pd-gate .ld-hero { display: grid; gap: 18px; padding: 18px 0 8px; }
+#pd-gate .ld-hero { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; padding: 18px 0 8px; }
 #pd-gate .ld-copy { display: flex; flex-direction: column; gap: 10px; }
 #pd-gate .ld h1 { font-family: var(--font-head); font-stretch: 72%; font-weight: 800; font-size: clamp(40px, 11vw, 78px); line-height: .94; letter-spacing: -.01em; margin: 0; color: var(--ink); }
 #pd-gate .ld h1 span { display: block; white-space: nowrap; }
 #pd-gate .ld-copy { position: relative; }
-#pd-gate .ld-reply { display: inline-block; align-self: flex-start; font-family: var(--font-head); font-stretch: 70%; font-weight: 900; font-size: 26px; color: var(--deal);
-  border: 3px double var(--deal); border-radius: 8px; padding: 0 10px; transform: rotate(-6deg); margin: 2px 0 0 4px; animation: ld-stamp .32s .5s cubic-bezier(.2,1.6,.4,1) both; }
+#pd-gate .num { font-family: var(--font-head); font-stretch: 85%; font-weight: 700; font-variant-numeric: tabular-nums; }
 #pd-gate .ld-sub { font-size: 17px; line-height: 1.45; color: var(--soft); max-width: 34ch; margin: 0; }
 
-#pd-gate .ld-stage { position: relative; display: grid; justify-items: center; }
+#pd-gate .ld-stage { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center; min-width: 0; }
 #pd-gate .ld-dial { width: min(50vw, 196px); aspect-ratio: 1; }
 #pd-gate .ld-dial svg { width: 100%; height: 100%; display: block; overflow: visible; }
 #pd-gate .ld-dial .tick { stroke: var(--soft); stroke-width: 1.4; opacity: .7; }
 #pd-gate .ld-dial .tick.maj { stroke: var(--ink); stroke-width: 2.4; opacity: 1; }
 #pd-gate .ld-dial .track { stroke: var(--track); }
-#pd-gate .ld-dial .brk { animation: ld-drain 30s linear infinite; }
+#pd-gate .ld-dial .brk { transition: stroke-dashoffset 1s linear; }
+#pd-gate .ld-dial .cd { font-family: var(--font-head); font-stretch: 72%; font-weight: 800; font-size: 50px; fill: var(--ink); font-variant-numeric: tabular-nums; }
+#pd-gate .ld-dial .cdl { font-family: var(--font-head); font-stretch: 85%; font-weight: 700; font-size: 19px; fill: var(--soft); }
 #pd-gate .ld-dial .foc { stroke: var(--ink); opacity: .82; transition: stroke .45s ease, opacity .45s ease; }
 #pd-gate .ld-dial.ld-dealt .foc { stroke: var(--deal); opacity: 1; }
 #pd-gate .ld-dial .face { fill: var(--ink); }
@@ -62,7 +65,7 @@ export const LANDING_CSS = `
 @keyframes ld-drain { from { stroke-dashoffset: 0; } to { stroke-dashoffset: var(--brk); } }
 @keyframes ld-spin { to { transform: rotate(360deg); } }
 
-#pd-gate .ld-ticket { position: relative; width: min(100%, 420px); margin-top: calc(-1 * min(10vw, 40px)); background: var(--card); border-radius: 6px;
+#pd-gate .ld-ticket { position: relative; width: 100%; max-width: 420px; min-width: 0; scroll-margin-bottom: calc(130px + env(safe-area-inset-bottom, 0px)); margin-top: -24px; background: var(--card); border-radius: 6px;
   box-shadow: 0 0 0 1px var(--rule), 0 24px 44px -28px var(--lift); }
 #pd-gate .ld-body { padding: 14px 18px 12px; display: flex; flex-direction: column; gap: 10px; }
 #pd-gate .ld-meta { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-family: var(--font-head); font-stretch: 80%; font-weight: 700; font-size: 14px; color: var(--soft); min-height: 38px; }
@@ -77,12 +80,12 @@ export const LANDING_CSS = `
 @keyframes ld-thud { 40% { transform: translateY(2px); } }
 #pd-gate .ld-sentence { font-family: var(--font-head); font-stretch: 80%; font-weight: 750; font-size: 28px; line-height: 1.08; margin: 0; color: var(--ink); }
 #pd-gate .ld-sentence em { font-style: normal; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 5px; text-decoration-color: var(--deal); }
-#pd-gate .ld-acts { display: flex; gap: 6px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: -18px; padding-inline: 18px; }
+#pd-gate .ld-acts { display: flex; gap: 6px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: -18px; padding-inline: 18px; -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); }
 #pd-gate .ld-acts[hidden] { display: none; }
 #pd-gate .ld-acts::-webkit-scrollbar { display: none; }
-#pd-gate .ld-acts button { flex: none; border: 1.5px solid var(--edge); background: transparent; color: var(--ink); border-radius: 999px; padding: 8px 14px; min-height: 44px; font: inherit; font-weight: 700; font-size: 15px; cursor: pointer; }
+#pd-gate .ld-acts button { flex: none; border: 1.5px solid var(--edge); background: transparent; color: var(--ink); border-radius: 999px; padding: 8px 12px; min-height: 44px; font: inherit; font-weight: 700; font-size: 14.5px; cursor: pointer; }
 #pd-gate .ld-acts button[aria-checked="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-#pd-gate .ld-acts button[aria-disabled="true"]:not([aria-checked="true"]) { opacity: .45; }
+#pd-gate .ld-acts button[aria-disabled="true"]:not([aria-checked="true"]) { color: var(--soft); border-style: dashed; }
 #pd-gate .ld-terms { display: flex; flex-direction: column; gap: 6px; }
 #pd-gate .ld-terms[hidden] { display: none; }
 #pd-gate .ld-terms button { display: grid; grid-template-columns: 64px 1fr; text-align: left; background: var(--card); border: 1.5px solid var(--edge); border-radius: 6px; padding: 0; min-height: 52px; font: inherit; color: var(--ink); cursor: pointer; }
@@ -100,6 +103,8 @@ export const LANDING_CSS = `
 #pd-gate .ld-deal[hidden] { display: none; }
 #pd-gate .ld-deal.ld-ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--edge); }
 #pd-gate .ld-deal.ld-press { transform: scale(.97); }
+#pd-gate .ld-deal.ld-nudge { animation: ld-nudge 1.2s ease-in-out 2; }
+@keyframes ld-nudge { 50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--deal) 28%, transparent); } }
 
 #pd-gate .ld-signin { display: flex; flex-direction: column; gap: 10px; scroll-margin-top: 20px; padding-top: 6px; }
 #pd-gate .ld-signin h2 { font-family: var(--font-head); font-stretch: 80%; font-weight: 800; font-size: 28px; margin: 0; }
@@ -144,26 +149,34 @@ export const LANDING_CSS = `
   padding: 10px max(16px, env(safe-area-inset-right, 0px)) calc(4px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
   background: color-mix(in srgb, var(--paper) 90%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: 1px solid var(--rule); }
 #pd-gate .ld-dock .ld-more { margin: 0; }
+#pd-gate .ld-dock-note { margin: 0 0 8px; font-size: 14px; color: var(--soft); text-align: center; }
+#pd-gate .ld-dock-inv { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 0 0 8px; padding: 6px 12px; border: 1.5px dashed var(--deal); border-radius: 10px; font-size: 14px; color: var(--soft); }
+#pd-gate .ld-dock-inv b { font-family: var(--font-head); font-stretch: 85%; font-weight: 800; font-size: 18px; letter-spacing: .08em; color: var(--ink); }
 #pd-gate .ld.app .ld-how { display: none; }
 
 @media (max-width: 899px) {
   #pd-gate .ld-signin .ld-prov.solid { display: none; }
-  #pd-gate .ld-reply { position: absolute; right: 0; top: calc(clamp(40px, 11vw, 78px) * .94 + 4px); margin: 0; }
   #pd-gate .ld-hero { gap: 14px; }
+  #pd-gate .ld-in { padding-bottom: calc(130px + env(safe-area-inset-bottom, 0px)); }
+  #pd-gate .ld-dial { width: min(46vw, 176px); }
+}
+@media (max-width: 899px) and (max-height: 760px) {
+  #pd-gate .ld-sub { display: none; }
+  #pd-gate .ld-dial { width: min(38vw, 140px); }
 }
 @media (min-width: 900px) {
   #pd-gate .ld-in { padding-top: 22px; }
   #pd-gate .ld-hero { grid-template-columns: 1.15fr 1fr; grid-template-areas: "copy stage" "signin stage"; column-gap: 56px; row-gap: 28px; align-items: start; padding-top: 6vh; }
   #pd-gate .ld-copy { grid-area: copy; } #pd-gate .ld-stage { grid-area: stage; } #pd-gate .ld-signin { grid-area: signin; max-width: 400px; }
   #pd-gate .ld h1 { font-size: clamp(56px, 5.6vw, 78px); } #pd-gate .ld h1 .hang { margin-left: -.36em; }
-  #pd-gate .ld-dial { width: 300px; } #pd-gate .ld-ticket { margin-top: -56px; }
+  #pd-gate .ld-dial { width: 300px; } #pd-gate .ld-ticket { margin-top: -36px; }
   #pd-gate .ld-how { grid-template-columns: repeat(2, 1fr); column-gap: 56px; padding-top: 80px; }
   #pd-gate .ld-how h2 { grid-column: 1 / -1; }
   #pd-gate .ld-dock { display: none; }
   #pd-gate .ld-foot { padding-bottom: 40px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  #pd-gate .ld-dial .brk, #pd-gate .ld-dial .hand-m, #pd-gate .ld-dial .hand-h, #pd-gate .ld-reply, #pd-gate .ld-stamped .ld-stamp, #pd-gate .ld-ticket.ld-thud, #pd-gate .ld-say p.pop { animation: none; }
+  #pd-gate .ld-dial .brk, #pd-gate .ld-deal.ld-nudge, #pd-gate .ld-stamped .ld-stamp, #pd-gate .ld-ticket.ld-thud, #pd-gate .ld-say p.pop { animation: none; }
 }
 `;
 
@@ -178,26 +191,24 @@ const LABEL: Record<Provider, string> = { GitHubOAuth: "GitHub", GoogleOAuth: "G
 /** The clock persona: hands at 10:10, one green dot. */
 const CLOCK = `<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="19" fill="var(--ink)"/><g stroke="var(--card)" stroke-width="1.6" stroke-linecap="round" opacity=".5"><path d="M20 4.5v2.5M35.5 20h-2.5M20 35.5V33M4.5 20H7"/></g><line x1="20" y1="20" x2="14.5" y2="14" stroke="var(--card)" stroke-width="3" stroke-linecap="round"/><line x1="20" y1="20" x2="28" y2="11" stroke="var(--card)" stroke-width="2.4" stroke-linecap="round"/><circle cx="20" cy="20" r="2.4" fill="var(--deal)"/></svg>`;
 
-/** The dial shows the deal itself: a 10-minute striped break from 12 o'clock, a gap, then an 8-minute focus block. */
+/** The dial shows the deal itself: a striped break from 12 o'clock, a gap, then the focus block,
+ *  with a live countdown in the middle. It is an instrument, not a character; the persona lives in the ticket. */
+const R = 90, CIRC = 2 * Math.PI * R, PER_MIN = CIRC / 60, GAP = 3;
 function dial(): string {
-  const R = 90, C = 2 * Math.PI * R, perMin = C / 60, gap = 3;
-  const brk = 10 * perMin, foc = 8 * perMin - gap;
   let ticks = "";
   for (let i = 0; i < 60; i++) {
     const a = (i / 60) * 2 * Math.PI, maj = i % 5 === 0;
     const r1 = 117, r2 = maj ? 104 : 110;
     ticks += `<line class="tick${maj ? " maj" : ""}" x1="${(120 + r1 * Math.sin(a)).toFixed(1)}" y1="${(120 - r1 * Math.cos(a)).toFixed(1)}" x2="${(120 + r2 * Math.sin(a)).toFixed(1)}" y2="${(120 - r2 * Math.cos(a)).toFixed(1)}"/>`;
   }
-  const focStartDeg = -90 + 60 + (gap / C) * 360;
-  return `<svg viewBox="0 0 240 240" aria-hidden="true" style="--brk:${brk.toFixed(1)}">
+  return `<svg viewBox="0 0 240 240" aria-hidden="true">
     <defs><pattern id="ld-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="8" height="8" fill="var(--break-base)"/><rect width="3" height="8" fill="var(--break-stripe)"/></pattern></defs>
     ${ticks}
     <circle class="track" cx="120" cy="120" r="${R}" fill="none" stroke-width="16"/>
-    <circle class="brk" cx="120" cy="120" r="${R}" fill="none" stroke="url(#ld-hatch)" stroke-width="16" stroke-dasharray="${brk.toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 120 120)"/>
-    <circle class="foc" cx="120" cy="120" r="${R}" fill="none" stroke-width="16" stroke-dasharray="${foc.toFixed(1)} ${C.toFixed(1)}" transform="rotate(${focStartDeg.toFixed(2)} 120 120)"/>
-    <circle class="face" cx="120" cy="120" r="40"/>
-    <g class="hands" stroke-linecap="round"><line class="hand-h" x1="120" y1="120" x2="106" y2="105" stroke-width="7"/><line class="hand-m" x1="120" y1="120" x2="137" y2="100" stroke-width="5"/></g>
-    <circle cx="120" cy="120" r="5" fill="var(--deal)"/>
+    <circle class="brk" id="ld-brk" cx="120" cy="120" r="${R}" fill="none" stroke="url(#ld-hatch)" stroke-width="16" transform="rotate(-90 120 120)"/>
+    <circle class="foc" id="ld-foc" cx="120" cy="120" r="${R}" fill="none" stroke-width="16"/>
+    <text class="cd" id="ld-cd" x="120" y="126" text-anchor="middle">10:00</text>
+    <text class="cdl" id="ld-cdl" x="120" y="152" text-anchor="middle">of Reels</text>
   </svg>`;
 }
 
@@ -208,25 +219,22 @@ export function landingHTML(o: LandingOptions): string {
   const primary: Provider = o.ios && o.providers.includes("AppleOAuth") ? "AppleOAuth" : o.providers.includes("GoogleOAuth") ? "GoogleOAuth" : o.providers[0];
   const second = (["AppleOAuth", "GoogleOAuth"] as Provider[]).find((p) => p !== primary && o.providers.includes(p));
   const extra = o.providers.filter((p) => p !== primary && p !== second);
-  const verb = o.invite ? "Accept" : "Continue";
-  const btn = (p: Provider, solid: boolean) => `<button class="ld-prov${solid ? " solid" : ""}" data-prov="${p}">${ICON[p]}${verb} with ${LABEL[p]}</button>`;
-  const others = [...(second ? [second] : []), ...extra];
-  const moreDock = `<p class="ld-more">Or use ${others.map((p) => `<button data-prov="${p}">${LABEL[p]}</button>`).join(", ")}${others.length ? " or " : ""}<button data-email>email</button></p>`;
-  const moreSignin = `<p class="ld-more">Or use ${extra.map((p) => `<button data-prov="${p}">${LABEL[p]}</button>`).join(", ")}${extra.length ? " or " : ""}<button data-email>email</button></p>`;
+  const verb = o.invite ? "Accept with" : "Sign in with";
+  const btn = (p: Provider, solid: boolean) => `<button class="ld-prov${solid ? " solid" : ""}" data-prov="${p}">${ICON[p]}${verb} ${LABEL[p]}</button>`;
+  const list = (ps: Provider[]) => `<p class="ld-more">Or use ${ps.map((p) => `<button data-prov="${p}">${LABEL[p]}</button>`).join(", ")}${ps.length ? " or " : ""}<button data-email>email</button></p>`;
   const install = o.standalone ? ""
     : o.install === "prompt" ? `<p class="ld-install">Keep it on your home screen. <button id="ld-install">Install Pomodeal</button></p>`
     : o.install === "ios" ? `<p class="ld-install">To keep it on your home screen, tap Share, then Add to Home Screen.</p>` : "";
+  const code = o.invite ? esc(o.invite) : "";
   return `<div class="ld${o.standalone ? " app" : ""}"><div class="ld-in">
-    <header class="ld-top"><div class="mark"><img src="/icon-192.png" alt="">Pomodeal</div><span class="ld-pill">Private beta</span></header>
+    <header class="ld-top"><div class="mark"><img src="/icon-192.png" alt="">Pomodeal</div>${o.invite ? `<span class="ld-pill inv">Invite <b>${code}</b></span>` : `<span class="ld-pill">Private beta</span>`}</header>
 
     <section class="ld-hero">
       <div class="ld-copy">
-        ${o.invite
-          ? `<h1><span>You’re in.</span><span>Make a deal.</span></h1>`
-          : `<h1><span class="hang">“10 more minutes,</span><span>then I’ll start.”</span></h1><span class="ld-reply" aria-hidden="true">Deal.</span>`}
+        ${o.invite ? `<h1><span>You’re in.</span><span>Make a deal.</span></h1>` : `<h1><span class="hang">“10 more minutes,</span><span>then I’ll start.”</span></h1>`}
         <p class="ld-sub">${o.invite
-          ? "A friend saved you a spot. Pomodeal plans the break you’re on, then a short focus block, and keeps the terms fair."
-          : "Tell it what you’re scrolling. You get the break, then a short focus block. Want more time? It makes you a fair deal."}</p>
+          ? "A friend saved you a spot. Say what you’re scrolling, and Pomodeal turns it into a planned break, then a short focus block."
+          : "Say what you’re scrolling. Pomodeal turns it into a planned break, then a short focus block. Want more time? It tells you what it costs."}</p>
       </div>
 
       <div class="ld-stage">
@@ -236,13 +244,13 @@ export function landingHTML(o: LandingOptions): string {
             <div class="ld-meta"><span>No. 0001, ${esc(clock12(new Date()))}</span><span class="ld-slot" aria-hidden="true">DEAL</span></div>
             <p class="ld-sentence" id="ld-sentence">10 min of <em>Reels</em>, then 8 min of reading.</p>
             <div class="ld-acts" role="radiogroup" aria-label="What you’re on right now">${ACTS.map((a, i) => `<button role="radio" aria-checked="${i === 0}" tabindex="${i === 0 ? 0 : -1}" data-act="${a}">${a}</button>`).join("")}</div>
-            <div class="ld-terms" id="ld-terms" role="group" aria-label="Where the 5 minutes come from" hidden>
-              <button data-term="borrow"><span class="fig">5→2</span><span class="txt"><b>Borrow from next break</b><span>Next break 5 → 2 min</span></span></button>
-              <button data-term="trade"><span class="fig">8→13</span><span class="txt"><b>Add to next focus</b><span>Reading 8 → 13 min</span></span></button>
-            </div>
           </div>
           <div class="ld-perf">
             <div class="ld-say">${CLOCK}<p id="ld-say" aria-live="polite">Pick what you’re on, then tap Deal.</p></div>
+            <div class="ld-terms" id="ld-terms" role="group" aria-labelledby="ld-say" hidden>
+              <button data-term="borrow"><span class="fig">−5</span><span class="txt"><b>Borrow from next break</b><span>Next break 7 → 2 min</span></span></button>
+              <button data-term="trade"><span class="fig">+5</span><span class="txt"><b>Add to next focus</b><span>Reading 8 → 13 min</span></span></button>
+            </div>
             <button class="ld-deal" id="ld-deal">Deal</button>
           </div>
           <span class="ld-stamp" aria-hidden="true">DEAL</span>
@@ -250,12 +258,12 @@ export function landingHTML(o: LandingOptions): string {
       </div>
 
       <div class="ld-signin" id="ld-signin">
-        <h2>${o.invite ? "Keep your deal" : "Got an invite?"}</h2>
-        ${o.invite ? `<div class="ld-invite"><span>Your invite</span><b>${esc(o.invite)}</b></div>`
-          : `<p class="ld-note">Open your friend’s link on this device. Already in? Sign in below.</p>`}
+        <h2>${o.invite ? "Keep your deal" : "Already in?"}</h2>
+        ${o.invite ? `<div class="ld-invite"><span>Your invite</span><b>${code}</b></div>`
+          : `<p class="ld-note">New here? Open the invite link a friend sent you.</p>`}
         ${btn(primary, true)}
         ${second ? btn(second, false) : ""}
-        ${moreSignin}
+        ${list(extra)}
         ${install}
       </div>
     </section>
@@ -265,8 +273,8 @@ export function landingHTML(o: LandingOptions): string {
       <div class="ld-row"><h3>Start from where you are</h3><p>No empty timer to stare at. Tell it what you’re doing and the break you’re already on becomes the first block, with a short focus block after it.</p></div>
       <div class="ld-row"><h3>Ask for more, honestly</h3><p>Five more minutes always works. The first one’s free. After that you see what it costs before you take it.</p>
         <div class="ld-art" aria-hidden="true">
-          <div class="ld-term on"><span class="fig">5→2</span><span class="txt"><b>Borrow from next break</b><span>Next break 5 → 2 min</span></span></div>
-          <div class="ld-term"><span class="fig">8→13</span><span class="txt"><b>Add to next focus</b><span>Reading 8 → 13 min</span></span></div>
+          <div class="ld-term on"><span class="fig">−5</span><span class="txt"><b>Borrow from next break</b><span>Next break 7 → 2 min</span></span></div>
+          <div class="ld-term"><span class="fig">+5</span><span class="txt"><b>Add to next focus</b><span>Reading 8 → 13 min</span></span></div>
         </div></div>
       <div class="ld-row"><h3>See your patterns, not a streak</h3><p>Every deal lands in a ledger. You’ll see when you bargain most, and nothing resets to zero.</p>
         <div class="ld-art" aria-hidden="true">
@@ -283,20 +291,38 @@ export function landingHTML(o: LandingOptions): string {
 
     <footer class="ld-foot">No streaks. No shame. Your deals stay private unless you share them with a room.</footer>
   </div>
-  <div class="ld-dock" id="ld-dock">${btn(primary, true)}${moreDock}</div>
+  <div class="ld-dock" id="ld-dock">
+    ${o.invite ? `<p class="ld-dock-inv"><span>Your invite</span><b>${code}</b></p>` : `<p class="ld-dock-note">Invite-only for now. Already in?</p>`}
+    ${btn(primary, true)}${list(o.providers.filter((p) => p !== primary))}
+  </div>
   </div>`;
 }
 
 export function bindLanding(root: HTMLElement, a: LandingActions) {
-  const $ = <T extends HTMLElement>(s: string) => root.querySelector<T>(s);
-  const sentence = $("#ld-sentence")!, say = $("#ld-say")!, ticket = $("#ld-ticket")!, dialEl = $("#ld-dial")!, dealBtn = $<HTMLButtonElement>("#ld-deal")!, terms = $("#ld-terms")!, acts = $(".ld-acts")!;
-  const chips = [...root.querySelectorAll<HTMLButtonElement>("[data-act]")];
+  const $ = <T extends Element>(s: string) => root.querySelector<T>(s);
+  const sentence = $<HTMLElement>("#ld-sentence")!, say = $<HTMLElement>("#ld-say")!, ticket = $<HTMLElement>("#ld-ticket")!, dialEl = $<HTMLElement>("#ld-dial")!;
+  const dealBtn = $<HTMLButtonElement>("#ld-deal")!, terms = $<HTMLElement>("#ld-terms")!, acts = $<HTMLElement>(".ld-acts")!;
+  const brk = $<SVGCircleElement>("#ld-brk")!, foc = $<SVGCircleElement>("#ld-foc")!, cd = $<SVGTextElement>("#ld-cd")!, cdl = $<SVGTextElement>("#ld-cdl")!;
+  const chips = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-act]"));
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  let act = "Reels", dealt = false, asks = 0, breakMin = 10, focusMin = 8;
-  const later = (min: number) => clock12(new Date(Date.now() + min * 60000));
-  const speak = (t: string) => { say.textContent = t; say.classList.remove("pop"); void say.offsetWidth; say.classList.add("pop"); };
-  const paint = () => { sentence.innerHTML = `${breakMin} min of <em>${act}</em>, then ${focusMin} min of reading.`; };
-  const stamp = () => { ticket.classList.remove("ld-stamped", "ld-thud"); void ticket.offsetWidth; ticket.classList.add("ld-stamped", "ld-thud"); };
+  let act = "Reels", dealt = false, asks = 0, breakMin = 10, focusMin = 8, left = 600, timer = 0;
+  const n = (x: string | number) => `<span class="num">${x}</span>`;
+  const later = (min: number) => n(clock12(new Date(Date.now() + min * 60000)));
+  const speak = (html: string) => { say.innerHTML = html; say.classList.remove("pop"); void say.offsetWidth; say.classList.add("pop"); };
+  const reveal = () => ticket.scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" });
+
+  // Ring geometry follows the deal: break arc = time left in the break, focus arc right after it.
+  function ring() {
+    const brkLen = Math.max(0, (left / 60) * PER_MIN), focLen = focusMin * PER_MIN - GAP;
+    brk.setAttribute("stroke-dasharray", `${brkLen.toFixed(1)} ${CIRC.toFixed(1)}`);
+    foc.setAttribute("stroke-dasharray", `${focLen.toFixed(1)} ${CIRC.toFixed(1)}`);
+    const startDeg = -90 + (breakMin / 60) * 360 + (GAP / CIRC) * 360;
+    foc.setAttribute("transform", `rotate(${startDeg.toFixed(2)} 120 120)`);
+    cd.textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}`;
+    cdl.textContent = `of ${act}`;
+  }
+  function paint() { sentence.innerHTML = `${breakMin} min of <em>${act}</em>, then ${focusMin} min of reading.`; ring(); }
+  function stamp(on = true) { ticket.classList.remove("ld-stamped", "ld-thud"); if (!on) return; void ticket.offsetWidth; ticket.classList.add("ld-stamped", "ld-thud"); }
 
   function pick(b: HTMLButtonElement) {
     if (dealt) return;
@@ -306,34 +332,41 @@ export function bindLanding(root: HTMLElement, a: LandingActions) {
   }
   chips.forEach((b, i) => {
     b.addEventListener("click", () => pick(b));
-    b.addEventListener("keydown", (e) => {
+    b.addEventListener("keydown", (e: KeyboardEvent) => {
       const d = e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : e.key === "ArrowLeft" || e.key === "ArrowUp" ? -1 : 0;
       if (!d || dealt) return;
-      e.preventDefault(); const n = chips[(i + d + chips.length) % chips.length]; pick(n); n.focus();
+      e.preventDefault(); const next = chips[(i + d + chips.length) % chips.length]; pick(next); next.focus();
     });
   });
 
+  function run() { // the break counts down for real once the deal is made
+    clearInterval(timer);
+    timer = window.setInterval(() => { if (left > 0) { left--; ring(); } }, 1000);
+  }
   function deal() {
-    dealt = true; stamp(); dialEl.classList.add("ld-dealt");
+    dealt = true; stamp(); dialEl.classList.add("ld-dealt"); run();
     chips.forEach((x) => x.setAttribute("aria-disabled", "true"));
-    dealBtn.textContent = "Ask for 5 more"; dealBtn.classList.add("ld-ghost");
+    dealBtn.textContent = "Ask for 5 more"; dealBtn.classList.add("ld-ghost"); dealBtn.classList.remove("ld-nudge");
     speak(`Deal. ${act} until ${later(breakMin)}, then reading.`);
   }
   function ask() {
     asks++;
-    if (asks === 1) { breakMin += 5; paint(); speak("Sure. First one’s on the house."); }
-    else { terms.hidden = false; acts.hidden = true; dealBtn.hidden = true; speak("This one costs something. Where does it come from?"); }
+    if (asks === 1) { breakMin += 5; left += 300; paint(); speak(`Sure. First one’s on the house. ${act} until ${later(left / 60)}.`); return; }
+    // the second ask is a real negotiation: the stamp comes off until a term is picked
+    stamp(false); acts.hidden = true; terms.hidden = false; dealBtn.hidden = true;
+    speak("This one costs something. Where do the 5 minutes come from?");
+    terms.querySelector<HTMLButtonElement>("button")?.focus({ preventScroll: true }); reveal();
   }
   terms.querySelectorAll<HTMLButtonElement>("[data-term]").forEach((b) => b.addEventListener("click", () => {
-    breakMin += 5; if (b.dataset.term === "trade") focusMin += 5;
+    breakMin += 5; left += 300; if (b.dataset.term === "trade") focusMin += 5;
     paint(); stamp(); terms.hidden = true;
-    speak(b.dataset.term === "trade" ? "Deal. Reading gets 5 minutes longer. It’s in your ledger." : "Deal. Your next break gets shorter. It’s in your ledger.");
-    dealBtn.hidden = false; dealBtn.textContent = "Make it real"; dealBtn.classList.remove("ld-ghost"); dealBtn.dataset.final = "1"; dealBtn.focus();
+    speak(b.dataset.term === "trade" ? `Deal. Reading goes to ${n(focusMin)} min. It’s in your ledger.` : "Deal. Your next break gets shorter. It’s in your ledger.");
+    dealBtn.hidden = false; dealBtn.textContent = "Keep this deal"; dealBtn.classList.remove("ld-ghost"); dealBtn.dataset.final = "1"; dealBtn.focus({ preventScroll: true }); reveal();
   }));
   dealBtn.addEventListener("click", () => {
     if (dealBtn.dataset.final) {
-      const visible = [...root.querySelectorAll<HTMLButtonElement>(".ld-prov.solid")].find((x) => x.offsetParent);
-      visible?.focus(); visible?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
+      const target = Array.from(root.querySelectorAll<HTMLButtonElement>(".ld-prov.solid")).find((x) => x.offsetParent);
+      target?.focus(); target?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
       return;
     }
     if (!dealt) deal(); else ask();
@@ -341,27 +374,21 @@ export function bindLanding(root: HTMLElement, a: LandingActions) {
 
   root.querySelectorAll<HTMLButtonElement>("[data-prov]").forEach((b) => b.addEventListener("click", () => { b.disabled = true; a.signInWith(b.dataset.prov as Provider); }));
   root.querySelectorAll<HTMLButtonElement>("[data-email]").forEach((b) => b.addEventListener("click", a.signIn));
-  $("#ld-install")?.addEventListener("click", a.install);
+  $<HTMLButtonElement>("#ld-install")?.addEventListener("click", a.install);
+  paint();
 
   // ?demo=dealt / asked / terms sets the demo state for screenshots and reviews.
   const demo = new URLSearchParams(location.search).get("demo");
   if (demo) { deal(); if (demo === "asked" || demo === "terms") ask(); if (demo === "terms") ask(); return; }
 
-  // A short scripted take on first load, like a product video; any touch or key hands control over.
+  // A short scripted take on first load: it picks what you're on and points at Deal, but the stamp is yours.
   if (reduce) return;
   const timers: number[] = [];
   const cancel = () => { timers.forEach(clearTimeout); root.removeEventListener("pointerdown", cancel, true); root.removeEventListener("keydown", cancel, true); };
   root.addEventListener("pointerdown", cancel, true); root.addEventListener("keydown", cancel, true);
   const at = (ms: number, f: () => void) => timers.push(window.setTimeout(f, ms));
-  at(700, () => pick(chips[1]));
-  at(1600, () => dealBtn.classList.add("ld-press"));
-  at(1800, () => { dealBtn.classList.remove("ld-press"); deal(); });
-  at(4600, () => {
-    dealt = false; act = "Reels"; breakMin = 10; focusMin = 8; paint();
-    ticket.classList.remove("ld-stamped"); dialEl.classList.remove("ld-dealt");
-    chips.forEach((x, i) => { x.removeAttribute("aria-disabled"); x.setAttribute("aria-checked", String(i === 0)); x.tabIndex = i === 0 ? 0 : -1; });
-    dealBtn.textContent = "Deal"; dealBtn.classList.remove("ld-ghost");
-    speak("Your turn. Pick what you’re on, then tap Deal.");
-    cancel();
-  });
+  at(900, () => pick(chips[1]));
+  at(1700, () => speak("TikTok, right? Your move. Tap Deal."));
+  at(1900, () => dealBtn.classList.add("ld-nudge"));
+  at(4500, cancel);
 }
