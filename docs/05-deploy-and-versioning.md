@@ -14,7 +14,7 @@ Each of these opens a browser to sign in.
 3. **Convex production key:** Convex dashboard → project → Settings → URL & deploy key → generate a **production deploy key**.
 4. **Cloudflare Pages:** dash.cloudflare.com → Workers & Pages → Create → Pages → Connect to Git → pick the `pomodeal` repo. Build settings:
    - Framework preset: None
-   - Build command: `npm run build:ci` (deploys Convex when `CONVEX_DEPLOY_KEY` is set, otherwise builds the web app only)
+   - Build command: `npm run build` (or `build:ci`; both deploy Convex when `CONVEX_DEPLOY_KEY` is set, otherwise builds the web app only)
    - Build output directory: `apps/web/dist`
    - Environment variables (Production): `CONVEX_DEPLOY_KEY` = the key from step 3, and `NODE_VERSION` = `22`
    - Preview environment: leave `CONVEX_DEPLOY_KEY` unset (previews build without a backend), or add a Convex **preview** deploy key later so each branch gets its own backend.

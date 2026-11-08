@@ -34,7 +34,7 @@ Cloudflare now creates Git-connected sites as **Workers**. `wrangler.jsonc` in t
 
 1. https://dash.cloudflare.com → **Workers & Pages → Create** → import **Jericoz-JC/pomodeal** from GitHub. Project name `pomodeal`.
 2. **Settings → Build:**
-   - Build command: `npm run build:ci`
+   - Build command: `npm run build` (same as `build:ci`)
    - Deploy command: `npx wrangler deploy`
 3. **Settings → Build → Variables and secrets** (build-time, not the Runtime box):
 

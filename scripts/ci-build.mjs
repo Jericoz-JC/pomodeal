@@ -1,4 +1,4 @@
-// Build entry for Cloudflare Workers Builds (and any CI).
+// `npm run build` (and `build:ci`): the build entry for Cloudflare Workers Builds, any CI, and local builds.
 // With CONVEX_DEPLOY_KEY set (production, or a preview key): deploy Convex functions + schema,
 // then build the PWA against that deployment's URL.
 // Without it (e.g. a preview branch with no key): build the PWA only, against .env.production.
@@ -17,7 +17,7 @@ const branch = process.env.WORKERS_CI_BRANCH || process.env.CF_PAGES_BRANCH || "
 console.log(`[ci-build] branch=${branch || "(unknown)"} deployKey=${key ? key.split("|")[0] : "(not set)"}`);
 
 if (key) {
-  run('npx convex deploy --cmd "npm run build" --cmd-url-env-var-name VITE_CONVEX_URL');
+  run('npx convex deploy --cmd "npm run build:web" --cmd-url-env-var-name VITE_CONVEX_URL');
 } else if (branch === "main") {
   console.error(
     "CONVEX_DEPLOY_KEY is not visible to this build, so the backend would not deploy.\n" +
@@ -26,5 +26,5 @@ if (key) {
   process.exit(1);
 } else {
   console.log("CONVEX_DEPLOY_KEY not set: building the web app without deploying Convex.");
-  run("npm run build");
+  run("npm run build:web");
 }
