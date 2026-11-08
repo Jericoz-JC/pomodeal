@@ -17,7 +17,7 @@ Each of these opens a browser to sign in.
    - Build command: `npm run build` (or `build:ci`; both deploy Convex when `CONVEX_DEPLOY_KEY` is set, otherwise builds the web app only)
    - Build output directory: `apps/web/dist`
    - Environment variables (Production): `CONVEX_DEPLOY_KEY` = the key from step 3, and `NODE_VERSION` = `22`
-   - Preview environment: leave `CONVEX_DEPLOY_KEY` unset (previews build without a backend), or add a Convex **preview** deploy key later so each branch gets its own backend.
+   - Preview environment: leave `CONVEX_DEPLOY_KEY` unset (previews build without a backend), or add a Convex **preview** deploy key later so each branch gets its own backend. On Cloudflare Workers Builds, branches see the same build variables as `main`, so they see the production key too. `scripts/ci-build.mjs` skips the Convex deploy on any branch other than `main` that holds a `prod:` key and builds the web app only.
 5. **Domain:** buy `pomodeal.app` on Cloudflare Registrar (or on Vercel, then switch its nameservers to Cloudflare's). In the Pages project → Custom domains → add `pomodeal.app` and `www.pomodeal.app`.
 
 **Vercel instead:** vercel.com → Add New Project → import the repo (vercel.json sets the build) → add `CONVEX_DEPLOY_KEY` (Production). Note the Hobby limits in `07-stack-and-hosting.md`.

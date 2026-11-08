@@ -3,6 +3,9 @@
 // then build the PWA against that deployment's URL.
 // Without it (e.g. a preview branch with no key): build the PWA only, against .env.production.
 // On the production branch a missing key fails the build, so the site never ships ahead of its backend.
+// Cloudflare Workers Builds gives every branch the same build variables, so branch builds see the
+// production key too. Convex refuses a prod key outside `main` ("non-production build environment"),
+// and a branch must never deploy prod anyway, so branches holding a prod key build the PWA only.
 import { spawnSync } from "node:child_process";
 
 const run = (cmd) => {
@@ -16,7 +19,12 @@ const branch = process.env.WORKERS_CI_BRANCH || process.env.CF_PAGES_BRANCH || "
 // The part before "|" names the deployment (e.g. "prod:affable-hound-751") and is not secret.
 console.log(`[ci-build] branch=${branch || "(unknown)"} deployKey=${key ? key.split("|")[0] : "(not set)"}`);
 
-if (key) {
+const prodKeyOnBranch = key.startsWith("prod:") && branch !== "" && branch !== "main";
+
+if (prodKeyOnBranch) {
+  console.log(`Production deploy key on branch "${branch}": building the web app without deploying Convex.`);
+  run("npm run build:web");
+} else if (key) {
   run('npx convex deploy --cmd "npm run build:web" --cmd-url-env-var-name VITE_CONVEX_URL');
 } else if (branch === "main") {
   console.error(
