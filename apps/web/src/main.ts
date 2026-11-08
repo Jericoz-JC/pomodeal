@@ -1,31 +1,85 @@
-// v0.2 shell: the screens are still the design prototype (synced from prototypes/quick-deal by
-// scripts/sync-prototype.mjs). This module wires the PWA and the Convex connection so the
-// backend is live from day one; Phase 1 moves the screens to components backed by convex/sessions.ts.
+// App shell. The screens are still the design prototype (synced from prototypes/quick-deal by
+// scripts/sync-prototype.mjs); this module adds sign-in (WorkOS AuthKit), the Convex connection,
+// and the invite-only beta gate on top. Phase 1 moves the screens to components backed by convex/sessions.ts.
 import { ConvexClient } from "convex/browser";
+import { ConvexError } from "convex/values";
+import { createClient } from "@workos-inc/authkit-js";
 import { api } from "../../../convex/_generated/api";
+import { mountGate, type GateState } from "./gate";
 
-const url = (import.meta.env.VITE_CONVEX_URL as string | undefined) || undefined;
+const convexUrl = (import.meta.env.VITE_CONVEX_URL as string | undefined) || undefined;
+const workosClientId = (import.meta.env.VITE_WORKOS_CLIENT_ID as string | undefined) || undefined;
+const redirectUri = (import.meta.env.VITE_WORKOS_REDIRECT_URI as string | undefined) || `${location.origin}/callback`;
+const INVITE_KEY = "pomodeal.invite";
 
-function deviceId(): string {
+/** An invite code from ?invite=CODE, remembered across the sign-in redirect. */
+function pendingInvite(): string | null {
+  const fromUrl = new URLSearchParams(location.search).get("invite");
   try {
-    const k = "pomodeal.device";
-    const existing = localStorage.getItem(k);
-    if (existing) return existing;
-    const id = crypto.randomUUID();
-    localStorage.setItem(k, id);
-    return id;
+    if (fromUrl) sessionStorage.setItem(INVITE_KEY, fromUrl.trim().toUpperCase());
+    return sessionStorage.getItem(INVITE_KEY);
   } catch {
-    return "anonymous";
+    return fromUrl ? fromUrl.trim().toUpperCase() : null;
   }
 }
+function clearInvite() { try { sessionStorage.removeItem(INVITE_KEY); } catch { /* storage blocked */ } }
 
-if (url) {
-  const client = new ConvexClient(url);
-  client.onUpdate(api.sessions.current, { deviceId: deviceId() }, (s) => {
-    document.documentElement.dataset.backend = "live";
-    if (s) console.info("[pomodeal] running session", s._id);
+async function start() {
+  if (!convexUrl) { console.info("[pomodeal] no backend configured; prototype only"); return; }
+  const convex = new ConvexClient(convexUrl);
+  if (!workosClientId) { console.info("[pomodeal] no WorkOS client id; running without sign-in"); return; }
+
+  let invite = pendingInvite();
+  const authkit = await createClient(workosClientId, {
+    redirectUri,
+    // Refresh token in localStorage. Production cookies need a WorkOS custom auth domain; revisit before public launch.
+    devMode: true,
+    onRedirectCallback: () => {
+      history.replaceState(null, "", invite ? `/?invite=${encodeURIComponent(invite)}` : "/");
+    },
   });
-  (window as unknown as { nc: unknown }).nc = { client, api, deviceId: deviceId() };
-} else {
-  console.info("[pomodeal] VITE_CONVEX_URL not set; running without the backend");
+
+  const gate = mountGate({
+    signIn: () => void authkit.signIn(),
+    signUp: () => void authkit.signUp(),
+    signOut: () => { clearInvite(); authkit.signOut({ returnTo: location.origin }); },
+    createInvite: async () => { await convex.mutation(api.beta.createInvite, {}); },
+    closeInvites: () => history.replaceState(null, "", "/"),
+  });
+
+  const user = authkit.getUser();
+  if (!user) { gate.setState({ kind: "signedOut", invite }); return; }
+
+  convex.setAuth(async ({ forceRefreshToken }) => {
+    try { return await authkit.getAccessToken({ forceRefresh: forceRefreshToken }); } catch { return null; }
+  });
+
+  let claiming = false;
+  convex.onUpdate(api.beta.me, {}, async (me) => {
+    if (me.status === "member") {
+      clearInvite(); invite = null;
+      gate.setState({ kind: "member" } satisfies GateState, { displayName: me.displayName, invitesLeft: me.invitesLeft });
+      return;
+    }
+    if (me.status === "signedOut") { gate.setState({ kind: "loading" }); return; } // token still attaching
+    if (invite && !claiming) {
+      claiming = true;
+      gate.setState({ kind: "claiming", invite });
+      try {
+        const name = [user.firstName, user.lastName].filter(Boolean).join(" ") || user.email.split("@")[0];
+        await convex.mutation(api.beta.claim, { code: invite, displayName: name });
+      } catch (e) {
+        clearInvite(); invite = null;
+        const data = e instanceof ConvexError ? (e.data as { message?: unknown }) : null;
+        gate.setState({ kind: "claimError", message: data && typeof data.message === "string" ? data.message : "Something went wrong. Try the link again." });
+      }
+      return;
+    }
+    if (!claiming) gate.setState({ kind: "waitlist", email: user.email });
+  });
+
+  convex.onUpdate(api.beta.myInvites, {}, (t) => gate.setTickets(t));
+  (window as unknown as { pomodeal: unknown }).pomodeal = { convex, api, authkit };
 }
+
+start().catch((e) => console.error("[pomodeal] startup failed", e));

@@ -14,5 +14,8 @@
     "typescript": "^7.0.2",
     "vite": "^8.3.6",
     "vite-plugin-pwa": "^2.0.0"
+  },
+  "dependencies": {
+    "@workos-inc/authkit-js": "^0.20.5"
   }
 }

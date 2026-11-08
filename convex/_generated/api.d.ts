@@ -8,6 +8,8 @@
  * @module
  */
 
+import type * as beta from "../beta.js";
+import type * as lib_members from "../lib/members.js";
 import type * as sessions from "../sessions.js";
 
 import type {
@@ -17,6 +19,8 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  beta: typeof beta;
+  "lib/members": typeof lib_members;
   sessions: typeof sessions;
 }>;
 
