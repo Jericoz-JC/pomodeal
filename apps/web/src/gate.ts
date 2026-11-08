@@ -12,11 +12,14 @@ export type GateState =
 
 export interface InviteTicket { code: string; uses: number; maxUses: number }
 
-export type Provider = "GitHubOAuth" | "GoogleOAuth" | "AppleOAuth" | "MicrosoftOAuth";
+import { LANDING_CSS, bindLanding, landingHTML, type Provider } from "./landing";
+export type { Provider };
 
 export interface GateActions {
   providers: Provider[];
   signInWith(provider: Provider): void;
+  install(): void;
+  appEnv(): { standalone: boolean; install: "ios" | "prompt" | null };
   signIn(): void;
   signUp(): void;
   signOut(): void;
@@ -104,7 +107,7 @@ const LABEL: Record<Provider, string> = { GitHubOAuth: "GitHub", GoogleOAuth: "G
 
 export function mountGate(actions: GateActions) {
   const style = document.createElement("style");
-  style.textContent = CSS;
+  style.textContent = CSS + LANDING_CSS;
   document.head.append(style);
   const gate = document.createElement("div");
   gate.id = "pd-gate";
@@ -141,31 +144,8 @@ export function mountGate(actions: GateActions) {
       case "loading":
         return `<div class="wrap">${MARK}<p class="soft" role="status">Loading…</p></div>`;
       case "signedOut": {
-        const buttons = actions.providers.map((p) => `<button class="prov${p === "AppleOAuth" ? " dark" : ""}" data-prov="${p}">${ICON[p]}Continue with ${LABEL[p]}</button>`).join("")
-          + `<button class="textbtn" id="pd-email">Use email instead</button>`;
-        const invite = state.invite;
-        return `<div class="wrap landing">${MARK}
-          <div class="col">
-            <h1>${invite ? "You're invited to Pomodeal" : "A study timer that makes deals with you."}</h1>
-            <p class="lede">Start from where you are. Ten more minutes of Reels is fine, as long as there's a deal for what comes next.</p>
-            <div class="sample" role="img" aria-label="Example deal: 10 minutes of Reels, then 8 minutes of reading"><span class="serial">No. 0412, 10:41pm</span>
-              <p class="deal">10 min of Reels, then 8 min of reading.</p><span class="stamp" aria-hidden="true">DEAL</span></div>
-          </div>
-          <div class="signin">
-            ${invite
-              ? `<section class="ticket"><div class="body"><span class="soft">Your invite code</span><span class="code">${esc(invite)}</span></div>
-                 <div class="stub"><h2>Accept your invite</h2>${buttons}</div></section>`
-              : `<h2>Sign in</h2><p class="soft">Pomodeal is in a small invite-only beta. If you're in, sign in. If not, ask a friend who is for their invite link.</p>${buttons}`}
-            <p class="fine">No streaks, no shame. Your deals stay private unless you share them with a room.</p>
-          </div>
-          <div class="col steps-col">
-            <ol class="steps">
-              <li><span class="n">1</span><p><b>Make a deal</b><span>Say what you're doing right now. The break you're already on becomes part of the plan, then a short focus block.</span></p></li>
-              <li><span class="n">2</span><p><b>Ask for more, honestly</b><span>"5 more minutes" always works. The first one's free; after that, you see what it costs before you take it.</span></p></li>
-              <li><span class="n">3</span><p><b>Study with friends</b><span>Small private rooms. See who's focusing; messages wait until everyone's on a break.</span></p></li>
-            </ol>
-          </div>
-</div>`;
+        const env = actions.appEnv();
+        return landingHTML({ invite: state.invite, providers: actions.providers, standalone: env.standalone, install: env.install });
       }
       case "claiming":
         return `<div class="wrap">${MARK}<section class="ticket"><div class="body"><span class="soft">Invite code</span><span class="code">${esc(state.invite)}</span></div>
@@ -190,6 +170,8 @@ export function mountGate(actions: GateActions) {
     document.body.style.overflow = show ? "hidden" : "";
     if (!show) { gate.innerHTML = ""; return; }
     gate.innerHTML = view();
+    gate.classList.toggle("ld-on", state.kind === "signedOut" && !invitesOpen);
+    if (state.kind === "signedOut" && !invitesOpen) bindLanding(gate, { signInWith: actions.signInWith, signIn: actions.signIn, install: actions.install });
     gate.querySelector<HTMLElement>("#pd-signin")?.addEventListener("click", actions.signIn);
     gate.querySelector<HTMLElement>("#pd-email")?.addEventListener("click", actions.signIn);
     gate.querySelectorAll<HTMLButtonElement>("[data-prov]").forEach((b) => b.addEventListener("click", () => { b.disabled = true; actions.signInWith(b.dataset.prov as Provider); }));

@@ -16,6 +16,12 @@ const workosClientId = (import.meta.env.VITE_WORKOS_CLIENT_ID as string | undefi
 const redirectUri = (import.meta.env.VITE_WORKOS_REDIRECT_URI as string | undefined) || `${location.origin}/callback`;
 const INVITE_KEY = "pomodeal.invite";
 
+// Install support: Chrome/Android offer a prompt we can trigger; iOS Safari needs Share → Add to Home Screen.
+let installPrompt: { prompt(): Promise<void> } | null = null;
+window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); installPrompt = e as unknown as { prompt(): Promise<void> }; });
+const standalone = matchMedia("(display-mode: standalone)").matches || (navigator as unknown as { standalone?: boolean }).standalone === true;
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !/crios|fxios/i.test(navigator.userAgent);
+
 /** An invite code from ?invite=CODE, remembered across the sign-in redirect. */
 function pendingInvite(): string | null {
   const fromUrl = new URLSearchParams(location.search).get("invite");
@@ -45,6 +51,8 @@ async function start() {
 
   const gate = mountGate({
     providers,
+    appEnv: () => ({ standalone, install: standalone ? null : installPrompt ? "prompt" : isIOS ? "ios" : null }),
+    install: () => { void installPrompt?.prompt(); },
     // One-tap social sign-in: same PKCE flow as signIn(), but skips the AuthKit chooser by naming the provider.
     signInWith: async (provider) => {
       const url = new URL(await authkit.getSignInUrl());
