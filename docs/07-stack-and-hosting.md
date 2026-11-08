@@ -4,7 +4,7 @@ Nov 7, 2026. Free-tier figures come from third-party summaries of each vendor's 
 
 ## Recommendation in one line
 
-**Cloudflare Pages for the web app, Convex for the backend, the domain on Cloudflare DNS** (buy it on Cloudflare Registrar, or buy it on Vercel and point its nameservers at Cloudflare). Everything stays free through the beta. The repo builds on Vercel too, so this is a reversible choice.
+**Cloudflare Pages for the web app, Convex for the backend, WorkOS AuthKit for sign-in, the domain on Cloudflare DNS** (buy it on Cloudflare Registrar, or buy it on Vercel and point its nameservers at Cloudflare). Everything stays free through the beta. The repo builds on Vercel too, so this is a reversible choice.
 
 ## Why not Vercel, when everything else is already there
 
@@ -26,7 +26,7 @@ Keep your existing sites on Vercel. Only Pomodeal moves.
 | **Convex** (Free plan) | Database, realtime sync, scheduled block ends, file storage | About 1M function calls a month, 0.5 GB database, 1 GB database bandwidth, up to 6 developers | Around a few hundred daily users with rooms on; Starter is pay-as-you-go after that |
 | **Cloudflare Registrar** | pomodeal.com | Sells at wholesale cost with no markup (about $10–11 a year for .com) | |
 | **GitHub** | Code, PRs, Actions | Unlimited private repos and collaborators | |
-| **Better Auth + `@convex-dev/better-auth`** | Sign-in (magic link and Google) | Open source; no per-user fees | |
+| **WorkOS AuthKit** | Sign-in (magic link and Google), hosted login pages, user dashboard | Free up to 1M monthly active users | Not in this lifetime of the beta |
 | **Resend** | Magic-link emails | Free tier covers a beta | When sign-ups pass a few thousand a month |
 | **Web Push (VAPID)** | Block-end notifications | Free, browser-native | |
 | **Chrome Web Store** | Extension listing | $5 one-time developer fee | |
@@ -40,7 +40,7 @@ Keep your existing sites on Vercel. Only Pomodeal moves.
 | Web app | Vite + React + TypeScript, `vite-plugin-pwa` | **No Tailwind.** The design lives in our own CSS tokens (paper, ink, one green, the hatch); Tailwind would pull it back toward the template look |
 | Shared logic | `packages/core`, pure TS, vitest | New. Rules and timer math, already tested |
 | Backend | Convex | Same |
-| Auth | Better Auth via the Convex-maintained component | Decided: it's the actively maintained option; the extension gets its token through the handshake in the extension roadmap |
+| Auth | **WorkOS AuthKit** via `@convex-dev/workos` (`ConvexProviderWithAuthKit`) | Decided Nov 7: Convex has an official integration that can provision AuthKit for us, login pages are hosted, and there's a user dashboard for the beta. The extension gets the AuthKit access token through the handshake in the extension roadmap |
 | Files | Convex file storage | **R2 dropped** until voice memos exist and usage says otherwise |
 | Push | Web Push from a Convex Node action, triggered by the scheduled block-end job | Spelled out |
 | Extension | WXT, Manifest V3 | Same; see `06-chrome-extension-roadmap.md` |
@@ -68,3 +68,16 @@ Keep your existing sites on Vercel. Only Pomodeal moves.
 - Later: `pomodeal.com/privacy` and `/terms` as static pages, needed for the Chrome Web Store listing.
 
 If you'd rather buy on Vercel since your other domains are there: buy it, then in Vercel's domain settings change its nameservers to the two Cloudflare gives you when you add the site to Cloudflare. Cloudflare needs to run DNS for the root domain to point at Pages.
+
+## Keeping the beta inside the free tiers
+
+WorkOS manages *who* gets in. It doesn't cap Convex usage, so the resource controls live in our own backend:
+
+| Lever | How | Why |
+| --- | --- | --- |
+| **Invite-only access** | A `betaInvites` table in Convex (email, invitedBy, room). On first sign-in, a user without an invite lands on a "You're on the list" screen and gets no data access. Room owners can invite up to 11 friends | Caps the number of active users, which caps everything else. Works regardless of WorkOS plan features |
+| **Per-user rate limits** | Convex rate-limiter component, keyed by user id: asks for more time, check-ins, messages, room joins | Stops a stuck client or a bad loop from burning the monthly function-call allowance |
+| **Presence budget** | Heartbeat every 45 s only while the app is visible; stop when hidden | Presence is the biggest usage driver |
+| **Room size cap** | 12 people, enforced in the join mutation | Keeps fan-out predictable |
+| **Usage alerts** | Check the Convex dashboard's usage page weekly; set a spending cap of $0 until we decide to pay | No surprise bills |
+| **Kill switch** | A `flags` document in Convex (e.g. `roomsEnabled`, `pushEnabled`) read by the client | Turn off an expensive feature in seconds without a deploy |

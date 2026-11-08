@@ -55,7 +55,7 @@ pomodeal/
 ## Things to verify in Phase 0 spikes (don't trust this doc, prove it)
 
 1. Convex `scheduler.runAt` → Web Push lands on an installed iOS PWA within a few seconds of the boundary.
-2. Auth library choice: Better Auth (Convex component) vs Convex Auth. Check current maturity and whether the extension handshake works with each.
+2. Auth: WorkOS AuthKit via Convex's integration (decided Nov 7, 2026; see 07-stack-and-hosting.md). Check current maturity and whether the extension handshake works with each.
 3. `externally_connectable` token handoff web → extension, and token refresh.
 4. MV3 alarm + side panel + content-script overlay survives the service worker being killed.
 5. YouTube IFrame API play/pause on block change (desktop only for now).

@@ -3,7 +3,7 @@
 ## Unreleased
 
 - Renamed to **Pomodeal** (docs, package names, PWA manifest, device-id key). Tagline: "A study timer that makes deals with you."
-- Stack and hosting plan (`docs/07-stack-and-hosting.md`): Cloudflare Pages + Convex + Better Auth; Cloudflare `_headers` for the service worker.
+- Stack and hosting plan (`docs/07-stack-and-hosting.md`): Cloudflare Pages + Convex + WorkOS AuthKit, plus invite list, rate limits and a kill switch to stay in free tiers; Cloudflare `_headers` for the service worker.
 
 ## v0.2.0 (2026-11-07)
 

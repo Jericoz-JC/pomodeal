@@ -89,7 +89,7 @@ If "it can't stop me on my phone" is the top beta complaint, build a thin native
 | Question | Proposed answer | Decide in |
 | --- | --- | --- |
 | Final name | Keep working name; shortlist in concept-v2 §5 | Before CWS listing (Phase 2) |
-| Better Auth vs Convex Auth | Spike S2 decides; requirement is a clean extension handshake | Phase 0 |
+| Better Auth vs Convex Auth | **Decided:** WorkOS AuthKit via Convex; spike S2 still proves the extension handshake | Done |
 | Convex storage vs R2 | Convex storage until voice memos have real usage | Phase 3 |
 | Chat / memo retention | Propose 7 days for chat, 48 h for voice memos | Phase 0 (C6) |
 | How to measure | North star + deal-keeping rate + retention + weekly 1-question check-in | Phase 0 (C7) |

@@ -9,6 +9,7 @@ The working name was Negotiation Clock. Chris found pomodeal.com available and a
 ## Decision
 
 - Product name: **Pomodeal**, tagline "A study timer that makes deals with you." "Negotiation" stays as the name of the mechanic.
+- Sign-in with **WorkOS AuthKit** through Convex's official integration (free up to 1M monthly active users), with our own invite list and rate limits in Convex controlling access and usage.
 - Host the web app on **Cloudflare Pages** with Convex as the backend. Keep `vercel.json` so the repo still deploys on Vercel if we switch back.
 
 ## Consequences
