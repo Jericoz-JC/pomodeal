@@ -10,16 +10,18 @@ A study timer that negotiates with you instead of fighting you, plus small priva
 
 ## Current phase
 
-**Phase 0: concepts and spikes.** No production code yet. Work goes into `docs/specs/`, `docs/decisions/`, and throwaway `spikes/`.
+**Phase 1: solo core, in a closed beta.** Live at https://pomodeal.app (invite-only, noindex). What's live and what's next: the "Where we are" section of [docs/03-roadmap.md](docs/03-roadmap.md).
 
-Chris chose to launch before interviewing: the design council iterates the prototype toward 10/10, and v0.2 ships the PWA shell + Convex backend (`docs/05-deploy-and-versioning.md`). Interviews are optional and later, using [docs/research/](docs/research/01-interview-plan.md); Gate 0 is decided Nov 21. Session notes go in `docs/research/sessions/` (first names only, never in a public repo, never record diagnoses).
+Chris chose to launch to friends before interviewing, so Phase 0's interview gate was skipped on purpose. Interviews stay optional ([docs/research/](docs/research/01-interview-plan.md)); session notes go in `docs/research/sessions/` (first names only, never in a public repo, never record diagnoses).
+
+Every push to `main` deploys the site **and** the production Convex backend (Cloudflare runs `npm run build`). Do design and feature work on a branch and ask before merging.
 
 ## Architecture (target)
 
 - `apps/web`: React + Vite + Tailwind PWA (primary product, phone-first)
-- `apps/extension`: WXT Manifest V3 extension (desktop enforcer, side panel)
+- `apps/extension` (not started): WXT Manifest V3 extension (desktop enforcer, side panel)
 - `packages/core`: pure TS timer math, negotiation rules, ledger. Both clients and Convex call it.
-- `packages/ui`: shared React components
+- `packages/ui` (not started): shared React components. Today the screens are the prototype engine in `prototypes/quick-deal/index.html`, bridged to Convex by `apps/web/src/main.ts`
 - `convex/`: schema, functions, scheduled block boundaries, Web Push
 
 ## Commands

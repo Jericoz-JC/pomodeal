@@ -4,6 +4,27 @@ Each phase ends with a **gate**: a question answered with real usage before the 
 
 Changes from the original thesis: added **Phase 0** (concepts and spikes before code), pulled a **thin social slice** forward into the first beta (it's the phone's only enforcement), and moved YouTube scenes from core to delight.
 
+## Where we are (Nov 7, 2026)
+
+Phase 0's interview gate was skipped on purpose: we launched a closed beta to friends first. Phase 1 is partly live at https://pomodeal.app.
+
+**Live**
+- Landing page with a playable deal, one-tap GitHub / Google / Apple sign-in (WorkOS AuthKit, demo social credentials), install hint
+- Invite-only beta: invite links (11 per member, unlimited for admins), waitlist screen, account menu
+- For members: Quick Deal, the dial with focus and break blocks, the 2-minute heads-up (in-app), asking for time (borrow / trade / override, a first step on the third ask), the bonus offer, end early, today's ledger. All server-side through Convex, so devices stay in sync
+- Installable PWA; every push to `main` deploys the site and the backend
+
+**Next, in order**
+1. Web Push at the heads-up and block end (VAPID keys, push subscriptions table, Convex scheduled action, service worker handler; iPhone needs the installed app)
+2. Motion and feel pass on the deal moment (stamp, block change, heads-up), on a branch
+3. `specs/006-privacy-inventory.md` for the users, invites, sessions and ledger tables (required before more friends join)
+4. Presets and a block builder; history beyond 24 hours
+5. Then Phase 1.5 rooms
+
+**Before any public launch:** WorkOS production credentials and a custom auth domain, remove `noindex`, privacy policy, age gate, delete-my-data.
+
+**YouTube, decided:** *scenes* (your own video or stream that plays and pauses with blocks) belong in the web app on desktop, after push notifications; on phone they play only after a tap. *Pausing your YouTube tab when a break ends* belongs to the Chrome extension (E2), because a web page can't control other tabs.
+
 ---
 
 ## Phase 0: Flesh out before building (1–2 weeks)
@@ -76,7 +97,7 @@ Shared sessions (synced block stacks), break-only chat with focus-time queueing,
 
 ## Phase 4: Insights
 
-Weekly recap (best focus windows, most-negotiated activities, net ledger), ramp-up suggestions learned from history, YouTube scenes.
+Weekly recap (best focus windows, most-negotiated activities, net ledger), ramp-up suggestions learned from history. (YouTube scenes may ship earlier on desktop; see "Where we are".)
 
 ## Phase 5 (only if the evidence says so): Native mobile
 

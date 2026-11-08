@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Closed beta live at https://pomodeal.app: Cloudflare Worker + Convex production + WorkOS AuthKit with one-tap GitHub / Google / Apple sign-in.
+- Invite-only beta: invite codes and links, 11 invites per member, waitlist, admin commands.
+- Landing page with a playable deal ticket (four design-council rounds), install hint, noindex for the closed beta.
+- App screens after design-council rounds 5–10 (average 7.67 → 8.22).
+- Phase 1: members' screens run on the real backend (start, ask, next, bonus, end, today's ledger), synced across devices.
+- Build: `npm run build` deploys Convex first when `CONVEX_DEPLOY_KEY` is set, so every push to `main` ships site and backend together.
+
 - Renamed to **Pomodeal** (docs, package names, PWA manifest, device-id key). Tagline: "A study timer that makes deals with you."
 - Stack and hosting plan (`docs/07-stack-and-hosting.md`): Cloudflare Pages + Convex + WorkOS AuthKit, plus invite list, rate limits and a kill switch to stay in free tiers; Cloudflare `_headers` for the service worker.
 

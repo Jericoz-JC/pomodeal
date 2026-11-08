@@ -73,7 +73,7 @@ Messages are versioned (`auth/v1`, `deal/v1`, …), carry a request id, validate
 | --- | --- | --- | --- |
 | E0 | **Spike** (Phase 0 S2 and S3) | WXT skeleton with side panel, alarm and overlay survives the worker being killed; handshake passes a token from localhost | 2–3 days |
 | E1 | **Side panel timer** | Dial, Coming up and deal sheets in the side panel, live-synced with the phone through Convex (start on phone, see it on desktop within 1 s) | 1 week |
-| E2 | **Break-end enforcement** | Nudge and Dim levels, Ask for 5 more from the overlay writes the same ledger entry as the app | 1 week |
+| E2 | **Break-end enforcement** | Nudge and Dim levels, Ask for 5 more from the overlay writes the same ledger entry as the app; optional: pause a playing YouTube tab when the break ends (youtube.com permission requested only when turned on) | 1 week |
 | E3 | **Intention vs reality** | Domain/time per block in the ledger ("Planned: reading. Mostly on docs.google.com, 4 min on youtube.com"), with export and delete | 1 week |
 | E4 | **Focus guard + Close level** | Distraction list in options; guard overlay; close-after-ignored | 3–4 days |
 | E5 | **Store release** | Unlisted Chrome Web Store listing, privacy policy page, data disclosure, screenshots; Edge Add-ons submission | 3–4 days plus review time |
