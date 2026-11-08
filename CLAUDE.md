@@ -26,6 +26,7 @@ Chris chose to launch before interviewing: the design council iterates the proto
 
 - `npm test`: core negotiation rules (vitest). `npm run dev` + `npx convex dev`: local app + backend. `npm run build`: syncs the prototype into `apps/web` and builds the PWA.
 - `apps/web/index.html` is generated from `prototypes/quick-deal/index.html`; edit the prototype.
+- Commits and PRs: no AI co-author trailers or "Generated with" footers (Chris's rule; the repo is public).
 - Versioning and release steps: `docs/05-deploy-and-versioning.md`. Tag every release, update `CHANGELOG.md`.
 
 ## Conventions
