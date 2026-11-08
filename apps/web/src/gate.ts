@@ -19,7 +19,7 @@ export interface GateActions {
   providers: Provider[];
   signInWith(provider: Provider): void;
   install(): void;
-  appEnv(): { standalone: boolean; install: "ios" | "prompt" | null };
+  appEnv(): { standalone: boolean; ios: boolean; install: "ios" | "prompt" | null };
   signIn(): void;
   signUp(): void;
   signOut(): void;
@@ -145,7 +145,7 @@ export function mountGate(actions: GateActions) {
         return `<div class="wrap">${MARK}<p class="soft" role="status">Loading…</p></div>`;
       case "signedOut": {
         const env = actions.appEnv();
-        return landingHTML({ invite: state.invite, providers: actions.providers, standalone: env.standalone, install: env.install });
+        return landingHTML({ invite: state.invite, providers: actions.providers, standalone: env.standalone, ios: env.ios, install: env.install });
       }
       case "claiming":
         return `<div class="wrap">${MARK}<section class="ticket"><div class="body"><span class="soft">Invite code</span><span class="code">${esc(state.invite)}</span></div>

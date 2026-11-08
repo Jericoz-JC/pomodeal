@@ -1,12 +1,11 @@
-// The first screen people see (signed out): a live, playable deal in front of a draining dial,
-// the clock persona in the middle, and one-tap sign-in. When opened as an installed PWA it drops
-// the explainer sections and shows only the hook + sign-in.
+// The first screen people see (signed out). One playable deal in front of a dial that shows the
+// deal itself (a striped break, then a focus block), the clock persona in the middle, and sign-in
+// that's always one thumb away on phones. Installed as a PWA, it drops the explainer.
 //
 // Design plan
-//   Subject: the bargain students already make with themselves. The hero quotes it back to them.
-//   One bold object: the dial (minute ticks, hatched break draining) with the deal ticket tucked in front.
-//   Everything else is quiet: paper, ink, one approval green. Archivo condensed + Atkinson Hyperlegible.
-//   Motion: the dial drains slowly; tapping Deal stamps the ticket and turns the arc green. Nothing else moves.
+//   Subject: the bargain students already make with themselves. The headline quotes it; a stamp answers it.
+//   One bold object: the dial + ticket. Everything else is quiet: paper, ink, one approval green.
+//   Motion: a 4.5 s scripted take on first load (pick, deal, stamp, the clock talks), then it's yours.
 
 export type Provider = "GitHubOAuth" | "GoogleOAuth" | "AppleOAuth" | "MicrosoftOAuth";
 
@@ -14,6 +13,7 @@ export interface LandingOptions {
   invite: string | null;
   providers: Provider[];
   standalone: boolean;
+  ios: boolean;
   install: "ios" | "prompt" | null;
 }
 
@@ -24,83 +24,100 @@ export interface LandingActions {
 }
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c] as string));
+const clock12 = (d: Date) => d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }).replace(/\s?([AP])M/i, (_m, a: string) => a.toLowerCase() + "m");
 
 export const LANDING_CSS = `
 #pd-gate.ld-on { padding: 0; background: var(--paper); }
 #pd-gate .ld { position: relative; min-height: 100%; overflow-x: clip; }
-#pd-gate .ld::before { content: ""; position: fixed; inset: 0; pointer-events: none; opacity: .05; z-index: 0;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
-#pd-gate .ld > * { position: relative; z-index: 1; }
-#pd-gate .ld-in { max-width: 1080px; margin: 0 auto; padding: calc(16px + env(safe-area-inset-top, 0px)) max(18px, env(safe-area-inset-right, 0px)) 0 max(18px, env(safe-area-inset-left, 0px)); }
+#pd-gate .ld::before { content: ""; position: fixed; inset: 0; pointer-events: none; opacity: .05; z-index: 0; background-image: var(--noise); background-size: 120px 60px; }
+#pd-gate .ld > :not(.ld-dock) { position: relative; z-index: 1; }
+#pd-gate .ld-in { max-width: 1080px; margin: 0 auto; padding: calc(14px + env(safe-area-inset-top, 0px)) max(18px, env(safe-area-inset-right, 0px)) 0 max(18px, env(safe-area-inset-left, 0px)); }
 #pd-gate .ld-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-#pd-gate .ld-top .mark { display: flex; align-items: center; gap: 10px; font-family: var(--font-head); font-stretch: 78%; font-weight: 800; font-size: 24px; }
-#pd-gate .ld-top .mark img { width: 32px; height: 32px; border-radius: 9px; }
-#pd-gate .ld-pill { font-size: 14px; font-weight: 700; color: var(--deal); border: 1.5px solid var(--deal); border-radius: 999px; padding: 4px 12px; }
+#pd-gate .ld-top .mark { display: flex; align-items: center; gap: 10px; font-family: var(--font-head); font-stretch: 78%; font-weight: 800; font-size: 23px; }
+#pd-gate .ld-top .mark img { width: 30px; height: 30px; border-radius: 8px; }
+#pd-gate .ld-pill { font-size: 14px; color: var(--soft); }
 
-#pd-gate .ld-hero { display: grid; gap: 28px; padding: 28px 0 8px; }
-#pd-gate .ld-copy { display: flex; flex-direction: column; gap: 14px; }
-#pd-gate .ld h1 { font-family: var(--font-head); font-stretch: 72%; font-weight: 800; font-size: clamp(44px, 12vw, 84px); line-height: .92; letter-spacing: -.01em; margin: 0; text-wrap: balance; }
-#pd-gate .ld h1 .q { color: var(--soft); }
-#pd-gate .ld .ld-sub { font-size: 18px; line-height: 1.5; color: var(--soft); max-width: 36ch; margin: 0; }
-#pd-gate .ld .ld-sub b { color: var(--ink); }
+#pd-gate .ld-hero { display: grid; gap: 18px; padding: 18px 0 8px; }
+#pd-gate .ld-copy { display: flex; flex-direction: column; gap: 10px; }
+#pd-gate .ld h1 { font-family: var(--font-head); font-stretch: 72%; font-weight: 800; font-size: clamp(40px, 11vw, 78px); line-height: .94; letter-spacing: -.01em; margin: 0; color: var(--ink); }
+#pd-gate .ld h1 span { display: block; white-space: nowrap; }
+#pd-gate .ld-copy { position: relative; }
+#pd-gate .ld-reply { display: inline-block; align-self: flex-start; font-family: var(--font-head); font-stretch: 70%; font-weight: 900; font-size: 26px; color: var(--deal);
+  border: 3px double var(--deal); border-radius: 8px; padding: 0 10px; transform: rotate(-6deg); margin: 2px 0 0 4px; animation: ld-stamp .32s .5s cubic-bezier(.2,1.6,.4,1) both; }
+#pd-gate .ld-sub { font-size: 17px; line-height: 1.45; color: var(--soft); max-width: 34ch; margin: 0; }
 
-/* the stage: dial behind, ticket in front */
-.ld-stage { position: relative; display: grid; justify-items: center; }
-#pd-gate .ld-dial { width: min(78vw, 300px); aspect-ratio: 1; }
+#pd-gate .ld-stage { position: relative; display: grid; justify-items: center; }
+#pd-gate .ld-dial { width: min(50vw, 196px); aspect-ratio: 1; }
 #pd-gate .ld-dial svg { width: 100%; height: 100%; display: block; overflow: visible; }
-#pd-gate .ld-dial .tick { stroke: var(--edge); stroke-width: 1.4; }
-#pd-gate .ld-dial .tick.maj { stroke: var(--ink); stroke-width: 2.2; }
-#pd-gate .ld-dial .track { stroke: var(--rule); }
-#pd-gate .ld-dial .arc { transform: rotate(-90deg); transform-origin: 50% 50%; animation: ld-drain 24s linear infinite; }
-#pd-gate .ld-dial.ld-dealt .arc { animation: none; stroke: var(--deal); stroke-dashoffset: 0; transition: stroke .4s ease; }
-@keyframes ld-drain { from { stroke-dashoffset: 0; } to { stroke-dashoffset: var(--c); } }
-#pd-gate .ld-dial .hand-m { transform-origin: 120px 120px; animation: ld-spin 24s linear infinite; }
-#pd-gate .ld-dial .hand-h { transform-origin: 120px 120px; animation: ld-spin 288s linear infinite; }
+#pd-gate .ld-dial .tick { stroke: var(--soft); stroke-width: 1.4; opacity: .7; }
+#pd-gate .ld-dial .tick.maj { stroke: var(--ink); stroke-width: 2.4; opacity: 1; }
+#pd-gate .ld-dial .track { stroke: var(--track); }
+#pd-gate .ld-dial .brk { animation: ld-drain 30s linear infinite; }
+#pd-gate .ld-dial .foc { stroke: var(--ink); opacity: .82; transition: stroke .45s ease, opacity .45s ease; }
+#pd-gate .ld-dial.ld-dealt .foc { stroke: var(--deal); opacity: 1; }
+#pd-gate .ld-dial .face { fill: var(--ink); }
+#pd-gate .ld-dial .hands { stroke: var(--paper); }
+#pd-gate .ld-dial .hand-m { transform-origin: 120px 120px; animation: ld-spin 30s linear infinite; }
+#pd-gate .ld-dial .hand-h { transform-origin: 120px 120px; animation: ld-spin 360s linear infinite; }
+@keyframes ld-drain { from { stroke-dashoffset: 0; } to { stroke-dashoffset: var(--brk); } }
 @keyframes ld-spin { to { transform: rotate(360deg); } }
 
-#pd-gate .ld-ticket { position: relative; width: min(100%, 420px); margin-top: calc(-1 * min(26vw, 104px)); background: var(--card); border-radius: 6px;
-  box-shadow: 0 1px 0 var(--rule), 0 24px 44px -28px rgba(27,33,29,.7); }
-#pd-gate .ld-ticket .ld-body { padding: 18px 20px 16px; display: flex; flex-direction: column; gap: 12px; }
-#pd-gate .ld-ticket .ld-meta { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-family: var(--font-head); font-stretch: 80%; font-weight: 700; font-size: 14px; color: var(--soft); }
-#pd-gate .ld-ticket .ld-slot { width: 92px; height: 38px; border: 1.5px dashed var(--edge); border-radius: 8px; transform: rotate(-6deg); flex: none; }
-#pd-gate .ld-ticket .ld-sentence { font-family: var(--font-head); font-stretch: 80%; font-weight: 750; font-size: 30px; line-height: 1.1; margin: 0; }
-#pd-gate .ld-ticket .ld-sentence em { font-style: normal; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 5px; text-decoration-color: var(--deal); }
-#pd-gate .ld-ticket .ld-acts { display: flex; flex-wrap: wrap; gap: 6px; }
-#pd-gate .ld-ticket .ld-acts button { border: 1.5px solid var(--edge); background: transparent; color: var(--ink); border-radius: 999px; padding: 8px 14px; min-height: 40px; font: inherit; font-weight: 700; font-size: 15px; cursor: pointer; }
-#pd-gate .ld-ticket .ld-acts button[aria-checked="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-#pd-gate .ld-ticket .ld-perf { position: relative; border-top: 2px dashed var(--rule); padding: 14px 20px 18px; display: flex; flex-direction: column; gap: 10px; }
-#pd-gate .ld-ticket .ld-perf::before, #pd-gate .ld-ticket .ld-perf::after { content: ""; position: absolute; top: -11px; width: 20px; height: 20px; border-radius: 50%; background: var(--paper); }
-#pd-gate .ld-ticket .ld-perf::before { left: -10px; } #pd-gate .ld-ticket .ld-perf::after { right: -10px; }
-#pd-gate .ld-deal { width: 100%; min-height: 54px; border: none; border-radius: 12px; background: var(--deal); color: var(--on-deal); font-family: var(--font-head); font-stretch: 85%; font-weight: 800; font-size: 21px; cursor: pointer; }
-#pd-gate .ld-deal:disabled { opacity: .55; cursor: default; }
-#pd-gate .ld-ticket .ld-stamp { position: absolute; right: 18px; top: 10px; font-family: var(--font-head); font-stretch: 70%; font-weight: 900; font-size: 30px; color: var(--deal);
-  border: 3px double var(--deal); border-radius: 8px; padding: 0 10px; transform: rotate(-9deg); opacity: 0; pointer-events: none; }
-#pd-gate .ld-ticket.ld-stamped .ld-stamp { opacity: .92; animation: ld-stamp .32s cubic-bezier(.2,1.6,.4,1); }
-@keyframes ld-stamp { from { transform: rotate(-9deg) scale(1.9); opacity: 0; } }
-#pd-gate .ld-say { display: flex; gap: 12px; align-items: flex-start; width: min(100%, 420px); margin-top: 14px; min-height: 52px; }
-#pd-gate .ld-say svg { width: 36px; height: 36px; flex: none; }
-#pd-gate .ld-say p { margin: 0; padding-top: 6px; font-size: 17px; line-height: 1.45; }
-#pd-gate .ld-say .more { margin-left: 4px; border: none; background: none; color: var(--deal); font: inherit; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; padding: 0; }
+#pd-gate .ld-ticket { position: relative; width: min(100%, 420px); margin-top: calc(-1 * min(10vw, 40px)); background: var(--card); border-radius: 6px;
+  box-shadow: 0 0 0 1px var(--rule), 0 24px 44px -28px var(--lift); }
+#pd-gate .ld-body { padding: 14px 18px 12px; display: flex; flex-direction: column; gap: 10px; }
+#pd-gate .ld-meta { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-family: var(--font-head); font-stretch: 80%; font-weight: 700; font-size: 14px; color: var(--soft); min-height: 38px; }
+#pd-gate .ld-slot { position: relative; width: 92px; height: 38px; border: 1.5px dashed var(--wait-edge); border-radius: 8px; transform: rotate(-6deg); flex: none; display: grid; place-items: center;
+  font-family: var(--font-head); font-stretch: 70%; font-weight: 900; font-size: 24px; color: var(--rule); }
+#pd-gate .ld-stamped .ld-slot { border-color: transparent; color: transparent; }
+#pd-gate .ld-stamp { position: absolute; right: 18px; top: 14px; width: 92px; height: 38px; display: grid; place-items: center; font-family: var(--font-head); font-stretch: 70%; font-weight: 900; font-size: 26px; color: var(--deal);
+  border: 3px double var(--deal); border-radius: 8px; transform: rotate(-6deg); opacity: 0; pointer-events: none; }
+#pd-gate .ld-stamped .ld-stamp { opacity: .95; animation: ld-stamp .32s cubic-bezier(.2,1.6,.4,1); }
+#pd-gate .ld-ticket.ld-thud { animation: ld-thud .3s ease-out; }
+@keyframes ld-stamp { from { transform: rotate(-6deg) scale(1.9); opacity: 0; } }
+@keyframes ld-thud { 40% { transform: translateY(2px); } }
+#pd-gate .ld-sentence { font-family: var(--font-head); font-stretch: 80%; font-weight: 750; font-size: 28px; line-height: 1.08; margin: 0; color: var(--ink); }
+#pd-gate .ld-sentence em { font-style: normal; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 5px; text-decoration-color: var(--deal); }
+#pd-gate .ld-acts { display: flex; gap: 6px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: -18px; padding-inline: 18px; }
+#pd-gate .ld-acts[hidden] { display: none; }
+#pd-gate .ld-acts::-webkit-scrollbar { display: none; }
+#pd-gate .ld-acts button { flex: none; border: 1.5px solid var(--edge); background: transparent; color: var(--ink); border-radius: 999px; padding: 8px 14px; min-height: 44px; font: inherit; font-weight: 700; font-size: 15px; cursor: pointer; }
+#pd-gate .ld-acts button[aria-checked="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+#pd-gate .ld-acts button[aria-disabled="true"]:not([aria-checked="true"]) { opacity: .45; }
+#pd-gate .ld-terms { display: flex; flex-direction: column; gap: 6px; }
+#pd-gate .ld-terms[hidden] { display: none; }
+#pd-gate .ld-terms button { display: grid; grid-template-columns: 64px 1fr; text-align: left; background: var(--card); border: 1.5px solid var(--edge); border-radius: 6px; padding: 0; min-height: 52px; font: inherit; color: var(--ink); cursor: pointer; }
+#pd-gate .ld-terms .fig { display: grid; place-items: center; border-right: 2px dotted var(--rule); font-family: var(--font-head); font-stretch: 75%; font-weight: 800; font-size: 20px; }
+#pd-gate .ld-terms .txt { padding: 8px 12px; } #pd-gate .ld-terms .txt b { display: block; font-family: var(--font-head); font-stretch: 82%; font-weight: 800; font-size: 17px; } #pd-gate .ld-terms .txt span { color: var(--soft); font-size: 14px; }
+#pd-gate .ld-perf { position: relative; border-top: 2px dashed var(--rule); padding: 10px 18px 14px; display: flex; flex-direction: column; gap: 8px; }
+#pd-gate .ld-perf::before, #pd-gate .ld-perf::after { content: ""; position: absolute; top: -11px; width: 20px; height: 20px; border-radius: 50%; background: var(--paper); box-shadow: inset 0 0 0 1px var(--rule); }
+#pd-gate .ld-perf::before { left: -10px; clip-path: inset(0 0 0 50%); } #pd-gate .ld-perf::after { right: -10px; clip-path: inset(0 50% 0 0); }
+#pd-gate .ld-say { display: flex; gap: 10px; align-items: center; min-height: 40px; }
+#pd-gate .ld-say svg { width: 30px; height: 30px; flex: none; }
+#pd-gate .ld-say p { margin: 0; font-size: 16px; line-height: 1.35; color: var(--ink); }
+#pd-gate .ld-say p.pop { animation: ld-pop .16s ease-out; }
+@keyframes ld-pop { from { transform: scale(.94); opacity: .2; } }
+#pd-gate .ld-deal { width: 100%; min-height: 52px; border: none; border-radius: 12px; background: var(--deal); color: var(--on-deal); font-family: var(--font-head); font-stretch: 85%; font-weight: 800; font-size: 21px; cursor: pointer; }
+#pd-gate .ld-deal[hidden] { display: none; }
+#pd-gate .ld-deal.ld-ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--edge); }
+#pd-gate .ld-deal.ld-press { transform: scale(.97); }
 
-/* sign in */
-.ld-signin { display: flex; flex-direction: column; gap: 10px; scroll-margin-top: 20px; }
-#pd-gate .ld-signin h2 { font-family: var(--font-head); font-stretch: 80%; font-weight: 800; font-size: 26px; margin: 0; }
-#pd-gate .ld-signin .ld-note { color: var(--soft); margin: 0 0 4px; font-size: 16px; line-height: 1.45; }
+#pd-gate .ld-signin { display: flex; flex-direction: column; gap: 10px; scroll-margin-top: 20px; padding-top: 6px; }
+#pd-gate .ld-signin h2 { font-family: var(--font-head); font-stretch: 80%; font-weight: 800; font-size: 28px; margin: 0; }
+#pd-gate .ld-note { color: var(--soft); margin: 0 0 4px; font-size: 16px; line-height: 1.45; }
 #pd-gate .ld-invite { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 12px 16px; border: 1.5px dashed var(--deal); border-radius: 10px; }
 #pd-gate .ld-invite span { color: var(--soft); font-size: 15px; }
 #pd-gate .ld-invite b { font-family: var(--font-head); font-stretch: 85%; font-weight: 800; font-size: 22px; letter-spacing: .08em; }
-#pd-gate .ld .ld-prov { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 54px; border-radius: 12px; border: 1.5px solid var(--edge);
+#pd-gate .ld-prov { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 54px; border-radius: 12px; border: 1.5px solid var(--edge);
   background: var(--card); color: var(--ink); font: inherit; font-weight: 700; font-size: 17px; cursor: pointer; }
-#pd-gate .ld .ld-prov svg { width: 22px; height: 22px; flex: none; }
-#pd-gate .ld .ld-prov.solid { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-#pd-gate .ld .ld-prov:disabled { opacity: .6; }
-#pd-gate .ld .ld-link { background: none; border: none; color: var(--soft); text-decoration: underline; text-underline-offset: 3px; padding: 10px 16px; min-height: 44px; align-self: center; font: inherit; font-size: 15px; cursor: pointer; }
-#pd-gate .ld .ld-fine { color: var(--soft); font-size: 14px; text-align: center; margin: 0; }
-#pd-gate .ld-install { display: flex; gap: 10px; align-items: center; justify-content: center; font-size: 14.5px; color: var(--soft); margin: 2px 0 0; text-align: center; }
-#pd-gate .ld-install button { border: 1.5px solid var(--edge); background: transparent; color: var(--ink); border-radius: 999px; padding: 6px 14px; min-height: 40px; font: inherit; font-weight: 700; cursor: pointer; }
+#pd-gate .ld-prov svg { width: 22px; height: 22px; flex: none; }
+#pd-gate .ld-prov.solid { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+#pd-gate .ld-prov:disabled { opacity: .6; }
+#pd-gate .ld-more { margin: 2px 0 0; text-align: center; color: var(--soft); font-size: 15px; }
+#pd-gate .ld-more button { background: none; border: none; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; font: inherit; font-weight: 700; padding: 10px 0; min-height: 44px; cursor: pointer; }
+#pd-gate .ld-install { display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap; font-size: 14.5px; color: var(--soft); margin: 2px 0 0; text-align: center; }
+#pd-gate .ld-install button { border: 1.5px solid var(--edge); background: transparent; color: var(--ink); border-radius: 999px; padding: 6px 14px; min-height: 44px; font: inherit; font-weight: 700; cursor: pointer; }
 
-/* how it works: the app's own objects, not feature cards */
-.ld-how { padding: 44px 0 20px; display: grid; gap: 34px; }
+#pd-gate .ld-how { padding: 44px 0 20px; display: grid; gap: 34px; }
 #pd-gate .ld-how h2 { font-family: var(--font-head); font-stretch: 78%; font-weight: 800; font-size: clamp(30px, 7vw, 44px); line-height: 1; margin: 0; max-width: 18ch; }
 #pd-gate .ld-row { display: grid; gap: 14px; }
 #pd-gate .ld-row h3 { font-family: var(--font-head); font-stretch: 82%; font-weight: 800; font-size: 22px; margin: 0; }
@@ -108,41 +125,46 @@ export const LANDING_CSS = `
 #pd-gate .ld-art { display: flex; flex-direction: column; gap: 8px; }
 #pd-gate .ld-term { display: grid; grid-template-columns: 70px 1fr; background: var(--card); border: 1.5px solid var(--edge); border-radius: 6px; }
 #pd-gate .ld-term .fig { display: grid; place-items: center; border-right: 2px dotted var(--rule); font-family: var(--font-head); font-stretch: 75%; font-weight: 800; font-size: 22px; }
-#pd-gate .ld-term .txt { padding: 10px 14px; }
-#pd-gate .ld-term .txt b { display: block; font-family: var(--font-head); font-stretch: 82%; font-weight: 800; font-size: 18px; }
-#pd-gate .ld-term .txt span { color: var(--soft); font-size: 14.5px; }
+#pd-gate .ld-term .txt { padding: 10px 14px; } #pd-gate .ld-term .txt b { display: block; font-family: var(--font-head); font-stretch: 82%; font-weight: 800; font-size: 18px; } #pd-gate .ld-term .txt span { color: var(--soft); font-size: 14.5px; }
 #pd-gate .ld-term.on { border-color: var(--deal); box-shadow: inset 0 0 0 1px var(--deal); }
-#pd-gate .ld-stub { display: grid; grid-template-columns: 70px 1fr auto; align-items: center; background: var(--card); }
+#pd-gate .ld-stub { display: grid; grid-template-columns: 70px 1fr auto; align-items: center; background: var(--card); -webkit-mask: var(--zig); mask: var(--zig); }
 #pd-gate .ld-stub .t { text-align: center; border-right: 2px dashed var(--rule); padding: 10px 6px; font-family: var(--font-head); font-stretch: 80%; font-weight: 750; font-size: 18px; }
 #pd-gate .ld-stub .w { padding: 10px 14px; } #pd-gate .ld-stub .w b { display: block; font-family: var(--font-head); font-stretch: 80%; font-weight: 750; font-size: 17px; } #pd-gate .ld-stub .w span { color: var(--soft); font-size: 14px; }
-#pd-gate .ld-stub .m { margin-right: 14px; font-family: var(--font-head); font-stretch: 70%; font-weight: 900; font-size: 13px; color: var(--deal); border: 1.5px solid var(--deal); border-radius: 4px; padding: 0 5px; transform: rotate(-6deg); }
+#pd-gate .ld-stub .m { margin-right: 18px; font-family: var(--font-head); font-stretch: 70%; font-weight: 900; font-size: 13px; color: var(--deal); border: 1.5px solid var(--deal); border-radius: 4px; padding: 0 5px; transform: rotate(-6deg); }
 #pd-gate .ld-people { display: flex; flex-direction: column; background: var(--card); border-radius: 8px; padding: 4px 14px; }
 #pd-gate .ld-people div { display: grid; grid-template-columns: 34px 1fr auto; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--rule); font-size: 15.5px; }
 #pd-gate .ld-people div:last-child { border-bottom: none; }
 #pd-gate .ld-people i { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-weight: 700; font-size: 14px; border: 3px solid var(--rule); }
 #pd-gate .ld-people i.f { border-color: var(--deal); } #pd-gate .ld-people i.b { border-style: dashed; border-color: var(--edge); }
 #pd-gate .ld-people em { font-style: normal; color: var(--soft); font-size: 14px; }
-#pd-gate .ld-foot { padding: 30px 0 calc(110px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--rule); margin-top: 20px; display: flex; flex-direction: column; gap: 6px; color: var(--soft); font-size: 14.5px; }
+#pd-gate .ld-foot { padding: 28px 0 calc(130px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--rule); margin-top: 20px; color: var(--soft); font-size: 14.5px; }
 
-/* sticky sign-in on phones until the real buttons are on screen */
-.ld-cta { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; padding: 10px max(16px, env(safe-area-inset-right, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
-  background: color-mix(in srgb, var(--paper) 88%, transparent); backdrop-filter: blur(8px); border-top: 1px solid var(--rule); transition: transform .25s ease; }
-#pd-gate .ld-cta.away { transform: translateY(110%); }
-#pd-gate .ld-cta button { width: 100%; min-height: 52px; border: none; border-radius: 12px; background: var(--ink); color: var(--paper); font: inherit; font-weight: 700; font-size: 17px; cursor: pointer; }
+/* phones: sign-in lives in a dock that stays under the thumb */
+#pd-gate .ld-dock { position: fixed; z-index: 5; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; gap: 0;
+  padding: 10px max(16px, env(safe-area-inset-right, 0px)) calc(4px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  background: color-mix(in srgb, var(--paper) 90%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: 1px solid var(--rule); }
+#pd-gate .ld-dock .ld-more { margin: 0; }
+#pd-gate .ld.app .ld-how { display: none; }
 
-#pd-gate .ld.app .ld-how, #pd-gate .ld.app .ld-foot .more-only { display: none; }
-#pd-gate .ld.app .ld-foot { padding-bottom: calc(30px + env(safe-area-inset-bottom, 0px)); }
-
+@media (max-width: 899px) {
+  #pd-gate .ld-signin .ld-prov.solid { display: none; }
+  #pd-gate .ld-reply { position: absolute; right: 0; top: calc(clamp(40px, 11vw, 78px) * .94 + 4px); margin: 0; }
+  #pd-gate .ld-hero { gap: 14px; }
+}
 @media (min-width: 900px) {
-  #pd-gate .ld-hero { grid-template-columns: 1fr 1fr; grid-template-areas: "copy stage" "signin stage"; column-gap: 56px; row-gap: 26px; align-items: start; padding-top: 6vh; }
+  #pd-gate .ld-in { padding-top: 22px; }
+  #pd-gate .ld-hero { grid-template-columns: 1.15fr 1fr; grid-template-areas: "copy stage" "signin stage"; column-gap: 56px; row-gap: 28px; align-items: start; padding-top: 6vh; }
   #pd-gate .ld-copy { grid-area: copy; } #pd-gate .ld-stage { grid-area: stage; } #pd-gate .ld-signin { grid-area: signin; max-width: 400px; }
+  #pd-gate .ld h1 { font-size: clamp(56px, 5.6vw, 78px); } #pd-gate .ld h1 .hang { margin-left: -.36em; }
+  #pd-gate .ld-dial { width: 300px; } #pd-gate .ld-ticket { margin-top: -56px; }
   #pd-gate .ld-how { grid-template-columns: repeat(2, 1fr); column-gap: 56px; padding-top: 80px; }
   #pd-gate .ld-how h2 { grid-column: 1 / -1; }
-  #pd-gate .ld-row { grid-template-columns: 1fr; }
-  #pd-gate .ld-cta { display: none; }
+  #pd-gate .ld-dock { display: none; }
   #pd-gate .ld-foot { padding-bottom: 40px; }
 }
-@media (prefers-reduced-motion: reduce) { #pd-gate .ld-dial .arc, #pd-gate .ld-dial .hand-m, #pd-gate .ld-dial .hand-h { animation: none; } #pd-gate .ld-ticket.ld-stamped .ld-stamp { animation: none; } #pd-gate .ld-cta { transition: none; } }
+@media (prefers-reduced-motion: reduce) {
+  #pd-gate .ld-dial .brk, #pd-gate .ld-dial .hand-m, #pd-gate .ld-dial .hand-h, #pd-gate .ld-reply, #pd-gate .ld-stamped .ld-stamp, #pd-gate .ld-ticket.ld-thud, #pd-gate .ld-say p.pop { animation: none; }
+}
 `;
 
 const ICON: Record<Provider, string> = {
@@ -154,85 +176,104 @@ const ICON: Record<Provider, string> = {
 const LABEL: Record<Provider, string> = { GitHubOAuth: "GitHub", GoogleOAuth: "Google", AppleOAuth: "Apple", MicrosoftOAuth: "Microsoft" };
 
 /** The clock persona: hands at 10:10, one green dot. */
-const CLOCK = (size: number) => `<svg viewBox="0 0 40 40" width="${size}" height="${size}" aria-hidden="true"><circle cx="20" cy="20" r="19" fill="var(--ink)"/><g stroke="var(--card)" stroke-width="1.6" stroke-linecap="round" opacity=".5"><path d="M20 4.5v2.5M35.5 20h-2.5M20 35.5V33M4.5 20H7"/></g><line x1="20" y1="20" x2="14.5" y2="14" stroke="var(--card)" stroke-width="3" stroke-linecap="round"/><line x1="20" y1="20" x2="28" y2="11" stroke="var(--card)" stroke-width="2.4" stroke-linecap="round"/><circle cx="20" cy="20" r="2.4" fill="var(--deal)"/></svg>`;
+const CLOCK = `<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="19" fill="var(--ink)"/><g stroke="var(--card)" stroke-width="1.6" stroke-linecap="round" opacity=".5"><path d="M20 4.5v2.5M35.5 20h-2.5M20 35.5V33M4.5 20H7"/></g><line x1="20" y1="20" x2="14.5" y2="14" stroke="var(--card)" stroke-width="3" stroke-linecap="round"/><line x1="20" y1="20" x2="28" y2="11" stroke="var(--card)" stroke-width="2.4" stroke-linecap="round"/><circle cx="20" cy="20" r="2.4" fill="var(--deal)"/></svg>`;
 
+/** The dial shows the deal itself: a 10-minute striped break from 12 o'clock, a gap, then an 8-minute focus block. */
 function dial(): string {
-  const c = 2 * Math.PI * 84;
+  const R = 90, C = 2 * Math.PI * R, perMin = C / 60, gap = 3;
+  const brk = 10 * perMin, foc = 8 * perMin - gap;
   let ticks = "";
   for (let i = 0; i < 60; i++) {
     const a = (i / 60) * 2 * Math.PI, maj = i % 5 === 0;
-    const r1 = 116, r2 = maj ? 102 : 108;
+    const r1 = 117, r2 = maj ? 104 : 110;
     ticks += `<line class="tick${maj ? " maj" : ""}" x1="${(120 + r1 * Math.sin(a)).toFixed(1)}" y1="${(120 - r1 * Math.cos(a)).toFixed(1)}" x2="${(120 + r2 * Math.sin(a)).toFixed(1)}" y2="${(120 - r2 * Math.cos(a)).toFixed(1)}"/>`;
   }
-  return `<svg viewBox="0 0 240 240" aria-hidden="true" style="--c:${c.toFixed(1)}">
-    <defs><pattern id="ld-hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="var(--card)"/><rect width="2" height="7" fill="var(--hatch)" opacity=".7"/></pattern></defs>
+  const focStartDeg = -90 + 60 + (gap / C) * 360;
+  return `<svg viewBox="0 0 240 240" aria-hidden="true" style="--brk:${brk.toFixed(1)}">
+    <defs><pattern id="ld-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="8" height="8" fill="var(--break-base)"/><rect width="3" height="8" fill="var(--break-stripe)"/></pattern></defs>
     ${ticks}
-    <circle class="track" cx="120" cy="120" r="84" fill="none" stroke-width="24"/>
-    <circle class="arc" cx="120" cy="120" r="84" fill="none" stroke="url(#ld-hatch)" stroke-width="24" stroke-dasharray="${c.toFixed(1)}"/>
-    <circle cx="120" cy="120" r="44" fill="var(--ink)"/>
-    <g stroke="var(--paper)" stroke-linecap="round"><line class="hand-h" x1="120" y1="120" x2="104" y2="104" stroke-width="7"/><line class="hand-m" x1="120" y1="120" x2="139" y2="98" stroke-width="5"/></g>
-    <circle cx="120" cy="120" r="5.5" fill="var(--deal)"/>
+    <circle class="track" cx="120" cy="120" r="${R}" fill="none" stroke-width="16"/>
+    <circle class="brk" cx="120" cy="120" r="${R}" fill="none" stroke="url(#ld-hatch)" stroke-width="16" stroke-dasharray="${brk.toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 120 120)"/>
+    <circle class="foc" cx="120" cy="120" r="${R}" fill="none" stroke-width="16" stroke-dasharray="${foc.toFixed(1)} ${C.toFixed(1)}" transform="rotate(${focStartDeg.toFixed(2)} 120 120)"/>
+    <circle class="face" cx="120" cy="120" r="40"/>
+    <g class="hands" stroke-linecap="round"><line class="hand-h" x1="120" y1="120" x2="106" y2="105" stroke-width="7"/><line class="hand-m" x1="120" y1="120" x2="137" y2="100" stroke-width="5"/></g>
+    <circle cx="120" cy="120" r="5" fill="var(--deal)"/>
   </svg>`;
 }
 
 const ACTS = ["Reels", "TikTok", "YouTube", "Texting"];
 
 export function landingHTML(o: LandingOptions): string {
-  const buttons = o.providers.map((p, i) => `<button class="ld-prov${i === 0 ? " solid" : ""}" data-prov="${p}">${ICON[p]}Continue with ${LABEL[p]}</button>`).join("");
-  const now = new Date();
-  const time = now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }).replace(/\s?([AP])M/i, (_m, a: string) => a.toLowerCase() + "m");
+  // Students mostly sign in with Apple (iPhone) or Google; the rest stay one tap away.
+  const primary: Provider = o.ios && o.providers.includes("AppleOAuth") ? "AppleOAuth" : o.providers.includes("GoogleOAuth") ? "GoogleOAuth" : o.providers[0];
+  const second = (["AppleOAuth", "GoogleOAuth"] as Provider[]).find((p) => p !== primary && o.providers.includes(p));
+  const extra = o.providers.filter((p) => p !== primary && p !== second);
+  const verb = o.invite ? "Accept" : "Continue";
+  const btn = (p: Provider, solid: boolean) => `<button class="ld-prov${solid ? " solid" : ""}" data-prov="${p}">${ICON[p]}${verb} with ${LABEL[p]}</button>`;
+  const others = [...(second ? [second] : []), ...extra];
+  const moreDock = `<p class="ld-more">Or use ${others.map((p) => `<button data-prov="${p}">${LABEL[p]}</button>`).join(", ")}${others.length ? " or " : ""}<button data-email>email</button></p>`;
+  const moreSignin = `<p class="ld-more">Or use ${extra.map((p) => `<button data-prov="${p}">${LABEL[p]}</button>`).join(", ")}${extra.length ? " or " : ""}<button data-email>email</button></p>`;
   const install = o.standalone ? ""
-    : o.install === "prompt" ? `<p class="ld-install">Use it like an app. <button id="ld-install">Install Pomodeal</button></p>`
-    : o.install === "ios" ? `<p class="ld-install">On iPhone, tap Share, then Add to Home Screen.</p>` : "";
+    : o.install === "prompt" ? `<p class="ld-install">Keep it on your home screen. <button id="ld-install">Install Pomodeal</button></p>`
+    : o.install === "ios" ? `<p class="ld-install">To keep it on your home screen, tap Share, then Add to Home Screen.</p>` : "";
   return `<div class="ld${o.standalone ? " app" : ""}"><div class="ld-in">
     <header class="ld-top"><div class="mark"><img src="/icon-192.png" alt="">Pomodeal</div><span class="ld-pill">Private beta</span></header>
 
     <section class="ld-hero">
       <div class="ld-copy">
-        <h1>${o.invite ? "You're in.<br><span class=\"q\">Make your first deal.</span>" : "<span class=\"q\">“10 more minutes,</span><br>then I’ll start.”"}</h1>
+        ${o.invite
+          ? `<h1><span>You’re in.</span><span>Make a deal.</span></h1>`
+          : `<h1><span class="hang">“10 more minutes,</span><span>then I’ll start.”</span></h1><span class="ld-reply" aria-hidden="true">Deal.</span>`}
         <p class="ld-sub">${o.invite
-          ? "A friend saved you a spot. Pomodeal is a study timer that makes deals with you. The break you're on now becomes part of the plan, and the clock keeps the terms honest when you ask for more."
-          : "Pomodeal takes you up on it. The break you're already on becomes part of a deal, the clock keeps the terms <b>honest</b>, and your friends can see you're in it too."}</p>
+          ? "A friend saved you a spot. Pomodeal plans the break you’re on, then a short focus block, and keeps the terms fair."
+          : "Tell it what you’re scrolling. You get the break, then a short focus block. Want more time? It makes you a fair deal."}</p>
       </div>
 
       <div class="ld-stage">
         <div class="ld-dial" id="ld-dial">${dial()}</div>
         <section class="ld-ticket" id="ld-ticket" aria-label="Try a deal">
           <div class="ld-body">
-            <div class="ld-meta"><span>No. 0001, ${esc(time)}</span><span class="ld-slot" aria-hidden="true"></span></div>
+            <div class="ld-meta"><span>No. 0001, ${esc(clock12(new Date()))}</span><span class="ld-slot" aria-hidden="true">DEAL</span></div>
             <p class="ld-sentence" id="ld-sentence">10 min of <em>Reels</em>, then 8 min of reading.</p>
-            <div class="ld-acts" role="radiogroup" aria-label="What you're doing right now">${ACTS.map((a, i) => `<button role="radio" aria-checked="${i === 0}" data-act="${a}">${a}</button>`).join("")}</div>
+            <div class="ld-acts" role="radiogroup" aria-label="What you’re on right now">${ACTS.map((a, i) => `<button role="radio" aria-checked="${i === 0}" tabindex="${i === 0 ? 0 : -1}" data-act="${a}">${a}</button>`).join("")}</div>
+            <div class="ld-terms" id="ld-terms" role="group" aria-label="Where the 5 minutes come from" hidden>
+              <button data-term="borrow"><span class="fig">5→2</span><span class="txt"><b>Borrow from next break</b><span>Next break 5 → 2 min</span></span></button>
+              <button data-term="trade"><span class="fig">8→13</span><span class="txt"><b>Add to next focus</b><span>Reading 8 → 13 min</span></span></button>
+            </div>
           </div>
-          <div class="ld-perf"><button class="ld-deal" id="ld-deal">Deal</button></div>
+          <div class="ld-perf">
+            <div class="ld-say">${CLOCK}<p id="ld-say" aria-live="polite">Pick what you’re on, then tap Deal.</p></div>
+            <button class="ld-deal" id="ld-deal">Deal</button>
+          </div>
           <span class="ld-stamp" aria-hidden="true">DEAL</span>
         </section>
-        <div class="ld-say" aria-live="polite">${CLOCK(36)}<p id="ld-say">Try it. Pick what you're doing, then tap Deal.</p></div>
       </div>
 
       <div class="ld-signin" id="ld-signin">
-        <h2>${o.invite ? "Keep your deal" : "Sign in"}</h2>
+        <h2>${o.invite ? "Keep your deal" : "Got an invite?"}</h2>
         ${o.invite ? `<div class="ld-invite"><span>Your invite</span><b>${esc(o.invite)}</b></div>`
-          : `<p class="ld-note">Invite-only for now. If a friend sent you a link, open it on this device. If you're already in, sign in.</p>`}
-        ${buttons}
-        <button class="ld-link" id="ld-email">Use email instead</button>
+          : `<p class="ld-note">Open your friend’s link on this device. Already in? Sign in below.</p>`}
+        ${btn(primary, true)}
+        ${second ? btn(second, false) : ""}
+        ${moreSignin}
         ${install}
       </div>
     </section>
 
     <section class="ld-how" aria-labelledby="ld-how-h">
       <h2 id="ld-how-h">How a deal works</h2>
-      <div class="ld-row"><h3>Start from where you are</h3><p>No empty timer to stare at. Tell it what you're doing and the break you're already on becomes the first block, with a short focus block after it.</p></div>
-      <div class="ld-row"><h3>Ask for more, honestly</h3><p>Five more minutes always works. The first one's free. After that you see what it costs before you take it.</p>
+      <div class="ld-row"><h3>Start from where you are</h3><p>No empty timer to stare at. Tell it what you’re doing and the break you’re already on becomes the first block, with a short focus block after it.</p></div>
+      <div class="ld-row"><h3>Ask for more, honestly</h3><p>Five more minutes always works. The first one’s free. After that you see what it costs before you take it.</p>
         <div class="ld-art" aria-hidden="true">
           <div class="ld-term on"><span class="fig">5→2</span><span class="txt"><b>Borrow from next break</b><span>Next break 5 → 2 min</span></span></div>
           <div class="ld-term"><span class="fig">8→13</span><span class="txt"><b>Add to next focus</b><span>Reading 8 → 13 min</span></span></div>
         </div></div>
-      <div class="ld-row"><h3>See your patterns, not a streak</h3><p>Every deal lands in a ledger. You'll see when you bargain most, and nothing resets to zero.</p>
+      <div class="ld-row"><h3>See your patterns, not a streak</h3><p>Every deal lands in a ledger. You’ll see when you bargain most, and nothing resets to zero.</p>
         <div class="ld-art" aria-hidden="true">
           <div class="ld-stub"><span class="t">10:37</span><span class="w"><b>+5 min of TikTok</b><span>Traded for 5 more min of focus</span></span><span class="m">+FOCUS</span></div>
           <div class="ld-stub"><span class="t">9:12</span><span class="w"><b>+5 min of Reels</b><span>On the house</span></span><span class="m">FREE</span></div>
         </div></div>
-      <div class="ld-row"><h3>Study with your people</h3><p>Small private rooms for friends. See who's focusing, and messages wait until everyone's on a break.</p>
+      <div class="ld-row"><h3>Study with your people</h3><p>Small private rooms for friends. See who’s focusing, and messages wait until everyone’s on a break.</p>
         <div class="ld-people" aria-hidden="true">
           <div><i class="f">M</i><span>Maya</span><em>Focusing, 14 min left</em></div>
           <div><i class="b">J</i><span>Jordan</span><em>On a break</em></div>
@@ -240,51 +281,87 @@ export function landingHTML(o: LandingOptions): string {
         </div></div>
     </section>
 
-    <footer class="ld-foot"><span>No streaks. No shame. Your deals stay private unless you share them with a room.</span><span class="more-only">Pomodeal is in a small private beta with friends.</span></footer>
+    <footer class="ld-foot">No streaks. No shame. Your deals stay private unless you share them with a room.</footer>
   </div>
-  <div class="ld-cta" id="ld-cta"><button id="ld-cta-btn">${o.invite ? "Accept invite" : "Sign in"}</button></div>
+  <div class="ld-dock" id="ld-dock">${btn(primary, true)}${moreDock}</div>
   </div>`;
 }
 
 export function bindLanding(root: HTMLElement, a: LandingActions) {
   const $ = <T extends HTMLElement>(s: string) => root.querySelector<T>(s);
-  let act = "Reels", dealt = false, asks = 0;
-  const sentence = $("#ld-sentence")!, say = $("#ld-say")!, ticket = $("#ld-ticket")!, dialEl = $("#ld-dial")!, dealBtn = $<HTMLButtonElement>("#ld-deal")!;
-  const later = (min: number) => new Date(Date.now() + min * 60000).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }).replace(/\s?([AP])M/i, (_m, x: string) => x.toLowerCase() + "m");
+  const sentence = $("#ld-sentence")!, say = $("#ld-say")!, ticket = $("#ld-ticket")!, dialEl = $("#ld-dial")!, dealBtn = $<HTMLButtonElement>("#ld-deal")!, terms = $("#ld-terms")!, acts = $(".ld-acts")!;
+  const chips = [...root.querySelectorAll<HTMLButtonElement>("[data-act]")];
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let act = "Reels", dealt = false, asks = 0, breakMin = 10, focusMin = 8;
+  const later = (min: number) => clock12(new Date(Date.now() + min * 60000));
+  const speak = (t: string) => { say.textContent = t; say.classList.remove("pop"); void say.offsetWidth; say.classList.add("pop"); };
+  const paint = () => { sentence.innerHTML = `${breakMin} min of <em>${act}</em>, then ${focusMin} min of reading.`; };
+  const stamp = () => { ticket.classList.remove("ld-stamped", "ld-thud"); void ticket.offsetWidth; ticket.classList.add("ld-stamped", "ld-thud"); };
 
-  root.querySelectorAll<HTMLButtonElement>("[data-act]").forEach((b) => b.addEventListener("click", () => {
+  function pick(b: HTMLButtonElement) {
     if (dealt) return;
     act = b.dataset.act!;
-    root.querySelectorAll("[data-act]").forEach((x) => x.setAttribute("aria-checked", String(x === b)));
-    sentence.innerHTML = `10 min of <em>${act}</em>, then 8 min of reading.`;
+    chips.forEach((x) => { const on = x === b; x.setAttribute("aria-checked", String(on)); x.tabIndex = on ? 0 : -1; });
+    paint();
+  }
+  chips.forEach((b, i) => {
+    b.addEventListener("click", () => pick(b));
+    b.addEventListener("keydown", (e) => {
+      const d = e.key === "ArrowRight" || e.key === "ArrowDown" ? 1 : e.key === "ArrowLeft" || e.key === "ArrowUp" ? -1 : 0;
+      if (!d || dealt) return;
+      e.preventDefault(); const n = chips[(i + d + chips.length) % chips.length]; pick(n); n.focus();
+    });
+  });
+
+  function deal() {
+    dealt = true; stamp(); dialEl.classList.add("ld-dealt");
+    chips.forEach((x) => x.setAttribute("aria-disabled", "true"));
+    dealBtn.textContent = "Ask for 5 more"; dealBtn.classList.add("ld-ghost");
+    speak(`Deal. ${act} until ${later(breakMin)}, then reading.`);
+  }
+  function ask() {
+    asks++;
+    if (asks === 1) { breakMin += 5; paint(); speak("Sure. First one’s on the house."); }
+    else { terms.hidden = false; acts.hidden = true; dealBtn.hidden = true; speak("This one costs something. Where does it come from?"); }
+  }
+  terms.querySelectorAll<HTMLButtonElement>("[data-term]").forEach((b) => b.addEventListener("click", () => {
+    breakMin += 5; if (b.dataset.term === "trade") focusMin += 5;
+    paint(); stamp(); terms.hidden = true;
+    speak(b.dataset.term === "trade" ? "Deal. Reading gets 5 minutes longer. It’s in your ledger." : "Deal. Your next break gets shorter. It’s in your ledger.");
+    dealBtn.hidden = false; dealBtn.textContent = "Make it real"; dealBtn.classList.remove("ld-ghost"); dealBtn.dataset.final = "1"; dealBtn.focus();
   }));
   dealBtn.addEventListener("click", () => {
-    if (!dealt) {
-      dealt = true;
-      ticket.classList.add("ld-stamped");
-      dialEl.classList.add("ld-dealt");
-      root.querySelectorAll<HTMLButtonElement>("[data-act]").forEach((x) => (x.disabled = true));
-      dealBtn.textContent = "Ask for 5 more";
-      say.innerHTML = `Deal. ${act} until ${later(10)}, then reading.`;
+    if (dealBtn.dataset.final) {
+      const visible = [...root.querySelectorAll<HTMLButtonElement>(".ld-prov.solid")].find((x) => x.offsetParent);
+      visible?.focus(); visible?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
       return;
     }
-    asks++;
-    if (asks === 1) say.innerHTML = `Sure. First one's on the house.`;
-    else if (asks === 2) say.innerHTML = `OK, but this one comes out of your next break.`;
-    else { say.innerHTML = `That's the whole idea. Sign in and make it real.`; dealBtn.disabled = true; $("#ld-signin")?.scrollIntoView({ behavior: "smooth", block: "start" }); }
+    if (!dealt) deal(); else ask();
   });
 
   root.querySelectorAll<HTMLButtonElement>("[data-prov]").forEach((b) => b.addEventListener("click", () => { b.disabled = true; a.signInWith(b.dataset.prov as Provider); }));
-  $("#ld-email")?.addEventListener("click", a.signIn);
+  root.querySelectorAll<HTMLButtonElement>("[data-email]").forEach((b) => b.addEventListener("click", a.signIn));
   $("#ld-install")?.addEventListener("click", a.install);
-  $("#ld-cta-btn")?.addEventListener("click", () => $("#ld-signin")?.scrollIntoView({ behavior: "smooth", block: "start" }));
 
-  // ?demo=dealt / ?demo=asked plays the demo for screenshots and reviews.
+  // ?demo=dealt / asked / terms sets the demo state for screenshots and reviews.
   const demo = new URLSearchParams(location.search).get("demo");
-  if (demo) { dealBtn.click(); if (demo === "asked") dealBtn.click(); }
+  if (demo) { deal(); if (demo === "asked" || demo === "terms") ask(); if (demo === "terms") ask(); return; }
 
-  const cta = $("#ld-cta"), target = $("#ld-signin");
-  if (cta && target && "IntersectionObserver" in window) {
-    new IntersectionObserver(([e]) => cta.classList.toggle("away", e.isIntersecting), { root: root.closest("#pd-gate"), threshold: 0.25 }).observe(target);
-  }
+  // A short scripted take on first load, like a product video; any touch or key hands control over.
+  if (reduce) return;
+  const timers: number[] = [];
+  const cancel = () => { timers.forEach(clearTimeout); root.removeEventListener("pointerdown", cancel, true); root.removeEventListener("keydown", cancel, true); };
+  root.addEventListener("pointerdown", cancel, true); root.addEventListener("keydown", cancel, true);
+  const at = (ms: number, f: () => void) => timers.push(window.setTimeout(f, ms));
+  at(700, () => pick(chips[1]));
+  at(1600, () => dealBtn.classList.add("ld-press"));
+  at(1800, () => { dealBtn.classList.remove("ld-press"); deal(); });
+  at(4600, () => {
+    dealt = false; act = "Reels"; breakMin = 10; focusMin = 8; paint();
+    ticket.classList.remove("ld-stamped"); dialEl.classList.remove("ld-dealt");
+    chips.forEach((x, i) => { x.removeAttribute("aria-disabled"); x.setAttribute("aria-checked", String(i === 0)); x.tabIndex = i === 0 ? 0 : -1; });
+    dealBtn.textContent = "Deal"; dealBtn.classList.remove("ld-ghost");
+    speak("Your turn. Pick what you’re on, then tap Deal.");
+    cancel();
+  });
 }

@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => {
         name: "Pomodeal",
         short_name: "Pomodeal",
         description: "A study timer that negotiates with you.",
-        theme_color: "#1E6A46",
+        theme_color: "#EDEFE9",
         background_color: "#EDEFE9",
         display: "standalone",
         start_url: "/",

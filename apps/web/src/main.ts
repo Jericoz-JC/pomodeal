@@ -51,7 +51,7 @@ async function start() {
 
   const gate = mountGate({
     providers,
-    appEnv: () => ({ standalone, install: standalone ? null : installPrompt ? "prompt" : isIOS ? "ios" : null }),
+    appEnv: () => ({ standalone, ios: isIOS, install: standalone ? null : installPrompt ? "prompt" : isIOS ? "ios" : null }),
     install: () => { void installPrompt?.prompt(); },
     // One-tap social sign-in: same PKCE flow as signIn(), but skips the AuthKit chooser by naming the provider.
     signInWith: async (provider) => {
