@@ -12,7 +12,11 @@ export type GateState =
 
 export interface InviteTicket { code: string; uses: number; maxUses: number }
 
+export type Provider = "GitHubOAuth" | "GoogleOAuth" | "AppleOAuth" | "MicrosoftOAuth";
+
 export interface GateActions {
+  providers: Provider[];
+  signInWith(provider: Provider): void;
   signIn(): void;
   signUp(): void;
   signOut(): void;
@@ -49,6 +53,35 @@ const CSS = `
 #pd-gate .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 #pd-gate .copy { border: 1.5px solid var(--edge); background: transparent; border-radius: 999px; padding: 8px 16px; min-height: 44px; font: inherit; font-weight: 700; cursor: pointer; color: var(--ink); }
 #pd-gate :focus-visible { outline: 3px solid var(--deal); outline-offset: 2px; border-radius: 8px; }
+#pd-gate .lede { font-size: 18px; color: var(--soft); max-width: 34ch; }
+#pd-gate .sample { position: relative; background: var(--card); border-radius: 6px; padding: 18px 18px 16px; box-shadow: 0 1px 0 var(--rule), 0 18px 34px -26px rgba(27,33,29,.6); }
+#pd-gate .sample .serial { font-family: var(--font-head); font-stretch: 80%; font-weight: 700; font-size: 14px; color: var(--soft); }
+#pd-gate .sample .deal { font-family: var(--font-head); font-stretch: 80%; font-weight: 750; font-size: 26px; line-height: 1.12; margin-top: 6px; padding-right: 86px; }
+#pd-gate .sample .stamp { top: 18px; }
+#pd-gate .steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; border-top: 1px solid var(--rule); }
+#pd-gate .steps li { display: grid; grid-template-columns: 36px 1fr; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--rule); }
+#pd-gate .steps li p { margin: 0; }
+#pd-gate .steps .n { font-family: var(--font-head); font-stretch: 75%; font-weight: 800; font-size: 26px; line-height: 1; color: var(--deal); }
+#pd-gate .steps b { display: block; font-size: 17px; margin-bottom: 2px; }
+#pd-gate .steps span { color: var(--soft); font-size: 15.5px; line-height: 1.4; }
+#pd-gate .signin { display: flex; flex-direction: column; gap: 10px; }
+#pd-gate .signin h2 { font-family: var(--font-head); font-stretch: 80%; font-weight: 800; font-size: 24px; margin: 0; }
+#pd-gate .prov { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 54px; border-radius: 12px; border: 1.5px solid var(--edge);
+  background: var(--card); color: var(--ink); font: inherit; font-weight: 700; font-size: 17px; cursor: pointer; }
+#pd-gate .prov svg { width: 22px; height: 22px; flex: none; }
+#pd-gate .prov.dark { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+#pd-gate .prov:disabled { opacity: .6; }
+#pd-gate .fine { font-size: 14px; color: var(--soft); text-align: center; }
+@media (min-width: 900px) {
+  #pd-gate .wrap.landing { max-width: 980px; display: grid; grid-template-columns: 1.2fr 1fr; grid-template-areas: "mark mark" "intro signin" "steps signin"; column-gap: 64px; row-gap: 28px; align-items: start; padding-top: 4vh; }
+  #pd-gate .wrap.landing > .mark { grid-area: mark; }
+  #pd-gate .wrap.landing > .col:first-of-type { grid-area: intro; }
+  #pd-gate .wrap.landing > .signin { grid-area: signin; }
+  #pd-gate .wrap.landing > .steps-col { grid-area: steps; }
+  #pd-gate .wrap.landing .signin { position: sticky; top: 24px; background: var(--card); border-radius: 14px; padding: 24px; box-shadow: 0 1px 0 var(--rule); }
+  #pd-gate .wrap.landing h1 { font-size: 56px; }
+}
+#pd-gate .col { display: flex; flex-direction: column; gap: 22px; }
 #pd-account { position: fixed; z-index: 15; top: calc(8px + env(safe-area-inset-top, 0px)); right: max(10px, env(safe-area-inset-right, 0px));
   width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid var(--edge); background: var(--card); color: var(--ink);
   font-family: var(--font-head); font-weight: 800; font-size: 17px; cursor: pointer; }
@@ -61,6 +94,13 @@ const CSS = `
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c] as string));
 const MARK = `<div class="mark"><img src="/icon-192.png" alt="">Pomodeal</div>`;
+const ICON: Record<Provider, string> = {
+  GitHubOAuth: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.25 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>`,
+  GoogleOAuth: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.5 12.27c0-.85-.08-1.67-.22-2.45H12v4.64h6.46a5.52 5.52 0 0 1-2.4 3.62v3h3.88c2.27-2.09 3.56-5.17 3.56-8.81Z"/><path fill="#34A853" d="M12 24c3.24 0 5.96-1.07 7.94-2.9l-3.88-3.01c-1.07.72-2.45 1.15-4.06 1.15-3.12 0-5.77-2.11-6.71-4.95H1.28v3.1A12 12 0 0 0 12 24Z"/><path fill="#FBBC05" d="M5.29 14.29a7.2 7.2 0 0 1 0-4.58v-3.1H1.28a12 12 0 0 0 0 10.78l4.01-3.1Z"/><path fill="#EA4335" d="M12 4.77c1.76 0 3.34.61 4.59 1.8l3.44-3.44A11.98 11.98 0 0 0 1.28 6.61l4.01 3.1C6.23 6.88 8.88 4.77 12 4.77Z"/></svg>`,
+  AppleOAuth: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.37 12.73c-.02-2.3 1.88-3.4 1.96-3.46a4.23 4.23 0 0 0-3.33-1.8c-1.42-.14-2.77.84-3.49.84-.72 0-1.83-.82-3.01-.8a4.47 4.47 0 0 0-3.78 2.29c-1.61 2.8-.41 6.94 1.16 9.21.77 1.11 1.68 2.36 2.88 2.31 1.16-.05 1.6-.75 3-.75s1.8.75 3.02.72c1.25-.02 2.04-1.13 2.8-2.24a9.9 9.9 0 0 0 1.27-2.6 4.05 4.05 0 0 1-2.48-3.72ZM14.07 5.98c.64-.78 1.07-1.85.95-2.93-.92.04-2.04.61-2.7 1.38-.59.68-1.11 1.78-.97 2.83 1.03.08 2.07-.52 2.72-1.28Z"/></svg>`,
+  MicrosoftOAuth: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#F25022" d="M1 1h10.5v10.5H1z"/><path fill="#7FBA00" d="M12.5 1H23v10.5H12.5z"/><path fill="#00A4EF" d="M1 12.5h10.5V23H1z"/><path fill="#FFB900" d="M12.5 12.5H23V23H12.5z"/></svg>`,
+};
+const LABEL: Record<Provider, string> = { GitHubOAuth: "GitHub", GoogleOAuth: "Google", AppleOAuth: "Apple", MicrosoftOAuth: "Microsoft" };
 
 export function mountGate(actions: GateActions) {
   const style = document.createElement("style");
@@ -100,16 +140,33 @@ export function mountGate(actions: GateActions) {
     switch (state.kind) {
       case "loading":
         return `<div class="wrap">${MARK}<p class="soft" role="status">Loading…</p></div>`;
-      case "signedOut":
-        return state.invite
-          ? `<div class="wrap">${MARK}<h1>You're invited</h1>
-            <section class="ticket"><div class="body"><span class="soft">Invite code</span><span class="code">${esc(state.invite)}</span></div>
-              <div class="stub"><p>Pomodeal is a study timer that makes deals with you, plus small private rooms for your friends.</p>
-              <button class="primary" id="pd-signup">Accept invite</button></div></section>
-            <div class="foot"><button class="textbtn" id="pd-signin">I already have an account</button></div></div>`
-          : `<div class="wrap">${MARK}<h1>A study timer that makes deals with you.</h1>
-            <p class="soft">Pomodeal is in a small private beta. Sign in if you're in, or ask a friend who is for an invite link.</p>
-            <button class="primary" id="pd-signin">Sign in</button></div>`;
+      case "signedOut": {
+        const buttons = actions.providers.map((p) => `<button class="prov${p === "AppleOAuth" ? " dark" : ""}" data-prov="${p}">${ICON[p]}Continue with ${LABEL[p]}</button>`).join("")
+          + `<button class="textbtn" id="pd-email">Use email instead</button>`;
+        const invite = state.invite;
+        return `<div class="wrap landing">${MARK}
+          <div class="col">
+            <h1>${invite ? "You're invited to Pomodeal" : "A study timer that makes deals with you."}</h1>
+            <p class="lede">Start from where you are. Ten more minutes of Reels is fine, as long as there's a deal for what comes next.</p>
+            <div class="sample" role="img" aria-label="Example deal: 10 minutes of Reels, then 8 minutes of reading"><span class="serial">No. 0412, 10:41pm</span>
+              <p class="deal">10 min of Reels, then 8 min of reading.</p><span class="stamp" aria-hidden="true">DEAL</span></div>
+          </div>
+          <div class="signin">
+            ${invite
+              ? `<section class="ticket"><div class="body"><span class="soft">Your invite code</span><span class="code">${esc(invite)}</span></div>
+                 <div class="stub"><h2>Accept your invite</h2>${buttons}</div></section>`
+              : `<h2>Sign in</h2><p class="soft">Pomodeal is in a small invite-only beta. If you're in, sign in. If not, ask a friend who is for their invite link.</p>${buttons}`}
+            <p class="fine">No streaks, no shame. Your deals stay private unless you share them with a room.</p>
+          </div>
+          <div class="col steps-col">
+            <ol class="steps">
+              <li><span class="n">1</span><p><b>Make a deal</b><span>Say what you're doing right now. The break you're already on becomes part of the plan, then a short focus block.</span></p></li>
+              <li><span class="n">2</span><p><b>Ask for more, honestly</b><span>"5 more minutes" always works. The first one's free; after that, you see what it costs before you take it.</span></p></li>
+              <li><span class="n">3</span><p><b>Study with friends</b><span>Small private rooms. See who's focusing; messages wait until everyone's on a break.</span></p></li>
+            </ol>
+          </div>
+</div>`;
+      }
       case "claiming":
         return `<div class="wrap">${MARK}<section class="ticket"><div class="body"><span class="soft">Invite code</span><span class="code">${esc(state.invite)}</span></div>
           <div class="stub"><p role="status">Stamping your ticket…</p></div><span class="stamp" aria-hidden="true">DEAL</span></section></div>`;
@@ -134,6 +191,8 @@ export function mountGate(actions: GateActions) {
     if (!show) { gate.innerHTML = ""; return; }
     gate.innerHTML = view();
     gate.querySelector<HTMLElement>("#pd-signin")?.addEventListener("click", actions.signIn);
+    gate.querySelector<HTMLElement>("#pd-email")?.addEventListener("click", actions.signIn);
+    gate.querySelectorAll<HTMLButtonElement>("[data-prov]").forEach((b) => b.addEventListener("click", () => { b.disabled = true; actions.signInWith(b.dataset.prov as Provider); }));
     gate.querySelector<HTMLElement>("#pd-signup")?.addEventListener("click", actions.signUp);
     gate.querySelector<HTMLElement>("#pd-signout")?.addEventListener("click", actions.signOut);
     gate.querySelector<HTMLElement>("#pd-close")?.addEventListener("click", () => { invitesOpen = false; actions.closeInvites(); render(); });
