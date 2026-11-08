@@ -7,8 +7,8 @@ Exact steps to put Pomodeal on Cloudflare Pages with WorkOS sign-in, and how inv
 | Piece | Dev | Production |
 | --- | --- | --- |
 | Convex | `tremendous-lark-56` | `affable-hound-751` (functions deployed) |
-| WorkOS AuthKit | Auto-provisioned by `npx convex dev` (convex.json → `authKit.dev`) | Created once in the Convex dashboard (step B) |
-| Web | `npm run dev` on http://localhost:5173 | Cloudflare Pages → pomodeal.com |
+| WorkOS AuthKit | Auto-provisioned by `npx convex dev` (convex.json → `authKit.dev`) | Staging environment created in the Convex dashboard (no card needed); switch to a production environment before public launch |
+| Web | `npm run dev` on http://localhost:5173 | Cloudflare Worker → pomodeal.chrisgems5.workers.dev, then pomodeal.com |
 
 ---
 
@@ -28,33 +28,31 @@ Exact steps to put Pomodeal on Cloudflare Pages with WorkOS sign-in, and how inv
    - **Authentication → Sessions → CORS / allowed origins:** add `https://pomodeal.com` and `https://pomodeal.pages.dev`.
    - **Authentication methods:** turn on **Magic Auth** (email code). For **Google**, production needs your own Google OAuth client (WorkOS walks you through it); dev works without one.
 
-## C. Cloudflare Pages (5 min)
+## C. Cloudflare (Worker with static assets)
 
-1. https://dash.cloudflare.com → **Workers & Pages → Create → Pages → Connect to Git** → authorize GitHub → pick **Jericoz-JC/pomodeal**.
-2. **Set up builds and deployments:**
-   - Project name: `pomodeal` (gives `pomodeal.pages.dev`)
-   - Production branch: `main`
-   - Framework preset: **None**
+Cloudflare now creates Git-connected sites as **Workers**. `wrangler.jsonc` in the repo tells the deploy where the built site is and serves `index.html` for app routes like `/callback` and `/invite`.
+
+1. https://dash.cloudflare.com → **Workers & Pages → Create** → import **Jericoz-JC/pomodeal** from GitHub. Project name `pomodeal`.
+2. **Settings → Build:**
    - Build command: `npm run build:ci`
-   - Build output directory: `apps/web/dist`
-   - Root directory: leave empty
-3. **Environment variables → Production:**
+   - Deploy command: `npx wrangler deploy`
+3. **Settings → Build → Variables and secrets** (build-time, not the Runtime box):
 
    | Name | Value | Type |
    | --- | --- | --- |
-   | `CONVEX_DEPLOY_KEY` | `prod:…` from step A | **Encrypt** |
-   | `NODE_VERSION` | `22` | Plain text |
-   | `VITE_WORKOS_CLIENT_ID` | production `client_01…` from step B | Plain text |
-   | `VITE_WORKOS_REDIRECT_URI` | `https://pomodeal.com/callback` (use the pages.dev URL until the domain is attached) | Plain text |
+   | `CONVEX_DEPLOY_KEY` | production deploy key | **Secret** |
+   | `NODE_VERSION` | `22` | Text |
+   | `VITE_WORKOS_CLIENT_ID` | `client_01M6WA8X7W5DGJVTK9GY015Q4Y` (production WorkOS) | Text |
 
-   Leave **Preview** empty: preview builds then ship the app without a backend or sign-in.
-4. **Save and Deploy.** The first build runs `convex deploy` (functions to `affable-hound-751`) and then builds the PWA against it.
+   Runtime variables aren't needed: the site is static files.
+4. Every push to `main` builds and deploys. Live at https://pomodeal.chrisgems5.workers.dev until the domain is attached.
+
+The app works out its own sign-in callback from the URL it's opened on, so there's no redirect variable. Every address it's served from must be listed in WorkOS **Redirects** (`<origin>/callback`) and **CORS** (`<origin>`).
 
 ## D. Domain (5 min plus DNS time)
 
 1. Cloudflare → **Domain Registration → Register Domains** → `pomodeal.com`. (If you bought it on Vercel: add the site to Cloudflare, then change the nameservers in Vercel's domain settings to the two Cloudflare shows.)
-2. Pages project → **Custom domains → Set up a domain** → `pomodeal.com`, then again for `www.pomodeal.com`.
-3. Update `VITE_WORKOS_REDIRECT_URI` to `https://pomodeal.com/callback` if you'd used the pages.dev URL, and redeploy.
+2. Worker → **Settings → Domains & Routes → Add → Custom domain** → `pomodeal.com`, then again for `www.pomodeal.com`.
 
 ## E. First sign-in (you become the first member)
 
