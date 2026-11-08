@@ -59,6 +59,9 @@ S1 Convex scheduler → Web Push on installed iOS PWA · S2 Auth library + exten
 
 ## Phase 2: Chrome extension enforcer (3 weeks)
 
+Detailed plan, permissions and milestones E0–E5: [06-chrome-extension-roadmap.md](06-chrome-extension-roadmap.md). E0 (spike) can run now.
+
+
 - Side panel timer, popup Quick Deal
 - Break-end enforcement: dim overlay → close tab (user-configurable)
 - Domain logging for intention vs reality (domain + time only)

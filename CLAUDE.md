@@ -12,7 +12,7 @@ A study timer that negotiates with you instead of fighting you, plus small priva
 
 **Phase 0: concepts and spikes.** No production code yet. Work goes into `docs/specs/`, `docs/decisions/`, and throwaway `spikes/`.
 
-Interviews run Nov 11–18, 2026 using [docs/research/](docs/research/01-interview-plan.md); Gate 0 is decided Nov 21. Session notes go in `docs/research/sessions/` (first names only, never in a public repo, never record diagnoses).
+Chris chose to launch before interviewing: the design council iterates the prototype toward 10/10, and v0.2 ships the PWA shell + Convex backend (`docs/05-deploy-and-versioning.md`). Interviews are optional and later, using [docs/research/](docs/research/01-interview-plan.md); Gate 0 is decided Nov 21. Session notes go in `docs/research/sessions/` (first names only, never in a public repo, never record diagnoses).
 
 ## Architecture (target)
 
@@ -21,6 +21,12 @@ Interviews run Nov 11–18, 2026 using [docs/research/](docs/research/01-intervi
 - `packages/core`: pure TS timer math, negotiation rules, ledger. Both clients and Convex call it.
 - `packages/ui`: shared React components
 - `convex/`: schema, functions, scheduled block boundaries, Web Push
+
+## Commands
+
+- `npm test`: core negotiation rules (vitest). `npm run dev` + `npx convex dev`: local app + backend. `npm run build`: syncs the prototype into `apps/web` and builds the PWA.
+- `apps/web/index.html` is generated from `prototypes/quick-deal/index.html`; edit the prototype.
+- Versioning and release steps: `docs/05-deploy-and-versioning.md`. Tag every release, update `CHANGELOG.md`.
 
 ## Conventions
 
