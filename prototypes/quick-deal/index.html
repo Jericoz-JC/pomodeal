@@ -84,6 +84,7 @@ button { cursor: pointer; }
 /* prototype strip: demo controls, not product */
 .proto { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; padding-block: 8px; font-size: .8125rem; color: var(--soft); border-bottom: 1px dashed var(--rule); }
 .proto strong { color: var(--ink); }
+body.live .proto { display: none; }
 .chipbtn { border: 1px solid var(--rule); background: transparent; border-radius: 999px; padding: 4px 10px; font-size: .8125rem; min-height: 32px; }
 .chipbtn[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 
@@ -459,6 +460,8 @@ const TERMS = { freebie: "On the house", borrow: "Borrowed from a later break", 
 /* ---------- state ---------- */
 const ACTS = ["Reels", "TikTok", "YouTube", "Texting", "Gaming"];
 let speed = 30, vnow = Date.now(), lastReal = performance.now();
+/* BE is the live backend, attached by the app shell for signed-in members; without it this is the design demo */
+let BE = null;
 let nudged = false, S, deal, ledger, sheet = null, checkin = null, picker = null, toast = null, tab = "now", mode = "start", opener = null, tried = false, arrowing = false, unseen = 0, studied = 0;
 
 function fresh() { nudged = false; deal = { act: "Reels", breakMin: 10, task: "Reading, BIO 180 ch. 7", focusMin: 8 }; ledger = []; S = null; sheet = null; picker = null; toast = null; unseen = 0; studied = 0; }
@@ -477,7 +480,7 @@ const cur = () => S.blocks[S.idx];
 const remaining = () => Math.max(0, S.startedAt + S.durMs - vnow);
 const minsLeft = () => Math.ceil(remaining() / 60000);
 /* the prototype tells one late-night story: its wall clock starts at 10:41pm */
-const DEMO_SHIFT = (() => { const d = new Date(); d.setHours(22, 41, 0, 0); return d.getTime() - Date.now(); })();
+let DEMO_SHIFT = (() => { const d = new Date(); d.setHours(22, 41, 0, 0); return d.getTime() - Date.now(); })();
 function clockStr(ms) { const d = new Date((ms ?? Date.now()) + DEMO_SHIFT); return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }).replace(/\s?([AP])M/i, (m, a) => a.toLowerCase() + "m"); }
 function shortTask() { return deal.task.split(",")[0].toLowerCase(); }
 /* one wording for the task everywhere: "Reading BIO 180 ch. 7" as a title, "reading BIO 180 ch. 7" mid-sentence */
@@ -489,7 +492,7 @@ const cap = s => s.replace(/^./, c => c.toUpperCase());
 /* the task as it sits in the deal sentence: "BIO 180 ch. 7" (the part after the comma) */
 const taskTail = () => { const i = deal.task.indexOf(","); return (i >= 0 ? deal.task.slice(i + 1) : deal.task).trim() || deal.task; };
 function bankFocus() { if (S && cur().type === "focus") studied += Math.round(Math.min(vnow - S.startedAt, S.durMs) / 60000); }
-function nextBlock() { bankFocus(); S.idx = Math.min(S.idx + 1, S.blocks.length - 1); S.startedAt = vnow; S.durMs = cur().min * 60000; S.askCount = 0; S.bonusOffered = false; closeSheet(); say(`${cur().type === "focus" ? "Focus" : "Break"}: ${title(cur().label)}, ${cur().min} minutes.`); }
+function nextBlock() { if (BE && S) BE.next(S.idx); bankFocus(); S.idx = Math.min(S.idx + 1, S.blocks.length - 1); S.startedAt = vnow; S.durMs = cur().min * 60000; S.askCount = 0; S.bonusOffered = false; closeSheet(); say(`${cur().type === "focus" ? "Focus" : "Break"}: ${title(cur().label)}, ${cur().min} minutes.`); }
 function say(t) { const el = document.getElementById("sr"); if (el) el.textContent = t; }
 function buzz() { try { if (navigator.vibrate) navigator.vibrate(18); } catch (e) {} }
 
@@ -626,6 +629,7 @@ function interceptView() {
     </div>`;
 }
 function presence(still) {
+  if (BE) return "";
   const faces = `<span class="faces">${ROOM.slice(0, 3).map(p => mini(p, "sm")).join("")}</span>`;
   /* while you focus, the room is company, not a door out */
   if (still) return `<div class="presence">${faces}<span>${S && S.with ? "Focusing with Maya" : "Maya’s focusing too"}</span></div>`;
@@ -769,13 +773,16 @@ function ledgerView() {
     <div><b>${deals}</b><span>deals made</span></div>
     <div><b>${n("trade") * 5 + n("bonus") * 10}</b><span>min added to focus</span></div>
   </div>` : ""}
-  <section class="insight" aria-label="This week">
+  ${BE ? "" : `<section class="insight" aria-label="This week">
     ${clockSays(`This week, most of your deals happened after 10pm. Want a longer first break at night?`)}
     <div class="insight-act"><button class="trychip" id="tryit" aria-pressed="${tried}">${tried ? N("Done. Tonight's first break is 15 min") : "Try it tonight"}</button></div>
-  </section>
+  </section>`}
   ${ledger.length ? `<ul class="stubs" aria-label="Deals, newest first">${ledger.map((e, i) => `<li class="stubcard">${stubInner(e, i)}</li>`).reverse().join("")}</ul>` : ""}`;
 }
 function roomView() {
+  if (BE) return `<h1>Rooms</h1>
+  <p class="soft">Rooms for your friend group open soon: see who's focusing, and messages wait until everyone's on a break.</p>
+  <p class="soft">For now, invite friends from the account button at the top. Each invite is one ticket.</p>`;
   const running = S && remaining() > 0;
   const me = { n: "You", i: "Y", live: running, p: running ? +(remaining() / S.durMs).toFixed(3) : 0, t: running ? cur().type : "none",
     left: running && !checkin ? minsLeft() : null, u: running ? (cur().type === "focus" ? "min left" : "min of break") : "",
@@ -832,6 +839,7 @@ function bind() {
     const serial = String(412 + ledger.length).padStart(4, "0");
     const go = () => {
       S = buildSession(deal); S.justStarted = true; S.serial = serial; mode = "start"; picker = null;
+      if (BE) { saveDeal(); BE.start(deal); }
       const first = S.blocks[0];
       toast = first.type === "break" ? `Deal. ${cap(shortTask())} starts at ${clockStr(Date.now() + first.min * 60000)}.` : "Deal. Go.";
       setTimeout(() => { toast = null; if (S) S.justStarted = false; lastSig = ""; }, 3500);
@@ -848,10 +856,10 @@ function bind() {
   on("#startnow", () => { ledger.push({ t: clockStr(), kind: "cleared", text: `Ended ${cur().label} early`, note: "" }); nextBlock(); render(); });
   on("#go", () => { nextBlock(); render(); });
   on("#nevermind", () => dismiss());
-  on("#endearly", () => { bankFocus(); ledger.push({ t: clockStr(), kind: "cleared", text: "Stopped for now", note: "" }); S = null; render(); });
+  on("#endearly", () => { if (BE) BE.end(); bankFocus(); ledger.push({ t: clockStr(), kind: "cleared", text: "Stopped for now", note: "" }); S = null; render(); });
   on("#seal", () => seal("0"));
   on("#toroom", () => { setTab("room"); render(); focusTitle(); });
-  on("#toledger", () => { if (!ledger.length) seedLedger(); setTab("ledger"); render(); focusTitle(); });
+  on("#toledger", () => { if (!ledger.length && !BE) seedLedger(); setTab("ledger"); render(); focusTitle(); });
   on("#typeown", () => { sheet.typing = true; if (!arrowing) nextFocus = "#intent"; render(); });
   /* tapping a term ticket is the deal. On the third ask, borrowing or trading also needs the first thing you'll do;
      "No terms" never does. */
@@ -907,12 +915,13 @@ function seal(i) {
   const t = document.querySelector(`[data-term="${i}"]`); if (t) t.classList.add("stamped");
   buzz(); sheet.sealing = true; $(".sheet").classList.add("busy");
   document.querySelectorAll(".sheet button").forEach(x => x.disabled = true);
-  setTimeout(() => take(term), reduce || !t ? 0 : 650);
+  setTimeout(() => take(term, i), reduce || !t ? 0 : 650);
 }
-function take(term) { ledger.push(applyTerm(S, term, sheet && sheet.intention)); if (tab !== "ledger") unseen++; closeSheet(); say(`Deal. ${title(cur().label)} for ${minsLeft()} more minutes.`); render(); restoreFocus(); }
+function take(term, i) { const intention = sheet && sheet.intention; if (BE) BE.ask(i === "x" ? "override" : +i, intention); ledger.push(applyTerm(S, term, intention)); if (tab !== "ledger") unseen++; closeSheet(); say(`Deal. ${title(cur().label)} for ${minsLeft()} more minutes.`); render(); restoreFocus(); }
 function dismiss() { if (!sheet) return; if (sheet.kind === "bonus") { S.bonusOffered = true; nextBlock(); } else if (remaining() <= 0) nextBlock(); else closeSheet(); render(); restoreFocus(); }
 function restoreFocus() { const t = opener && document.body.contains(opener) ? opener : document.querySelector(".act button, #view h1"); if (t) { if (!t.matches("button")) t.tabIndex = -1; t.focus({ preventScroll: true }); } }
 function takeBonus() {
+  if (BE) BE.bonus();
   cur().min += 10; S.durMs += 10 * 60000; const nb = nextOf(S, "break"); if (nb) nb.min += 3;
   ledger.push({ t: clockStr(), kind: "bonus", text: `10 more min of ${shortTask()}`, note: "" }); if (tab !== "ledger") unseen++; S.bonusOffered = true; closeSheet(); render(); restoreFocus();
 }
@@ -957,7 +966,8 @@ function updateCountdown() {
   if (!sheet.paused && !sheet.warned && left <= 20) { sheet.warned = true; say("Your break starts in 20 seconds. More time to decide stops it."); }
 }
 function tick() {
-  const now = performance.now(); vnow += (now - lastReal) * speed; lastReal = now;
+  /* live mode reads the real clock: animation frames pause in background tabs, real time does not */
+  const now = performance.now(); if (BE) vnow = Date.now(); else vnow += (now - lastReal) * speed; lastReal = now;
   if (S && tab === "now") {
     const r = remaining(), b = cur();
     if (r <= 0 && !sheet) {
@@ -1007,7 +1017,45 @@ function fromHash() {
   lastSig = S ? [S.idx, remaining() <= 120000 && remaining() > 0, remaining() <= 0, sheet && sheet.kind, sheet && sheet.asking, false].join("|") : "";
   render();
 }
-window.addEventListener("hashchange", fromHash);
+window.addEventListener("hashchange", () => { if (!BE) fromHash(); });
 fromHash();
 requestAnimationFrame(tick);
+
+/* ---------- live mode ----------
+   The app shell (apps/web/src/main.ts) attaches the Convex backend once a member is signed in.
+   Every action still updates the screen at once; the server's copy (same rules, packages/core)
+   then replaces the local one, so a phone and a laptop show the same session. */
+const DEAL_KEY = "pomodeal.deal";
+function saveDeal() { try { localStorage.setItem(DEAL_KEY, JSON.stringify(deal)); } catch (e) {} }
+const SERVER_TEXT = (e) => {
+  if (e.kind === "forgiven") return `Cleared ${e.minutes} borrowed min`;
+  if (e.kind === "bonus") return `${e.minutes} more min of ${title(e.blockLabel).split(" ")[0].toLowerCase()}`;
+  return `${e.minutes} more min of ${e.blockLabel}`;
+};
+window.pomodealApp = {
+  attach(backend) {
+    if (BE) return;
+    BE = backend; speed = 1; vnow = Date.now(); lastReal = performance.now(); DEMO_SHIFT = 0;
+    document.body.classList.add("live");
+    fresh(); deal.task = "Reading";
+    try { const d = JSON.parse(localStorage.getItem(DEAL_KEY) || "null"); if (d && d.task) deal = { ...deal, ...d }; } catch (e) {}
+    if (location.hash) history.replaceState(null, "", location.pathname + location.search);
+    mode = "start"; setTab("now"); lastSig = ""; render();
+  },
+  /** the running session from the server, or null */
+  session(doc) {
+    if (!BE) return;
+    if (!doc) { if (S && !sheet) { S = null; lastSig = ""; render(); } return; }
+    const extra = S && S.id === doc._id ? { serial: S.serial, justStarted: S.justStarted, with: S.with }
+      : { serial: String(Math.floor(doc.createdAt / 1000) % 10000).padStart(4, "0") };
+    S = { ...doc.state, id: doc._id, ...extra };
+    lastSig = ""; if (!sheet) render();
+  },
+  /** today's ledger from the server, newest first */
+  ledger(entries) {
+    if (!BE) return;
+    ledger = entries.slice().reverse().map(e => ({ t: clockStr(e.at), kind: e.kind === "forgiven" ? "cleared" : e.kind, text: SERVER_TEXT(e), note: e.intention || "" }));
+    if (tab === "ledger") render();
+  },
+};
 </script>

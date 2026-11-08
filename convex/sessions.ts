@@ -2,7 +2,7 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx } from "./_generated/server";
-import { advance, applyTerm, buildSession, endSession, makeOffer, type LedgerEntry } from "../packages/core/src";
+import { advance, applyBonus, applyTerm, buildSession, endSession, makeOffer, type LedgerEntry } from "../packages/core/src";
 import { currentMember, requireMember } from "./lib/members";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -85,11 +85,26 @@ export const ask = mutation({
   },
 });
 
+/** Move to the next block. Idempotent: two open devices can both call it at a block's end, but only the
+ *  first advance from `fromIdx` counts. */
 export const next = mutation({
+  args: { sessionId: v.id("sessions"), fromIdx: v.number() },
+  handler: async (ctx, { sessionId, fromIdx }) => {
+    const { s } = await ownSession(ctx, sessionId);
+    if (s.state.idx !== fromIdx) return;
+    await ctx.db.patch(sessionId, { state: advance(s.state, Date.now()) });
+  },
+});
+
+/** The clock's offer at the end of a focus block: keep going for 10 more, and the next break grows by 3. */
+export const bonus = mutation({
   args: { sessionId: v.id("sessions") },
   handler: async (ctx, { sessionId }) => {
-    const { s } = await ownSession(ctx, sessionId);
-    await ctx.db.patch(sessionId, { state: advance(s.state, Date.now()) });
+    const { user, s } = await ownSession(ctx, sessionId);
+    if (s.state.blocks[s.state.idx].type !== "focus" || s.state.bonusOffered) return;
+    const { session, entry } = applyBonus(s.state, Date.now());
+    await ctx.db.patch(sessionId, { state: session });
+    await log(ctx, user._id, sessionId, entry);
   },
 });
 

@@ -5,6 +5,7 @@ import { ConvexClient } from "convex/browser";
 import { ConvexError } from "convex/values";
 import { createClient } from "@workos-inc/authkit-js";
 import { api } from "../../../convex/_generated/api";
+import type { Id } from "../../../convex/_generated/dataModel";
 import { mountGate, type GateState, type Provider } from "./gate";
 
 // Which one-tap buttons to show; each must be enabled in WorkOS → Authentication → Providers.
@@ -78,6 +79,7 @@ async function start() {
     if (me.status === "member") {
       clearInvite(); invite = null;
       gate.setState({ kind: "member" } satisfies GateState, { displayName: me.displayName, invitesLeft: me.invitesLeft });
+      goLive(convex);
       return;
     }
     if (me.status === "signedOut") { gate.setState({ kind: "loading" }); return; } // token still attaching
@@ -99,6 +101,38 @@ async function start() {
 
   convex.onUpdate(api.beta.myInvites, {}, (t) => gate.setTickets(t));
   (window as unknown as { pomodeal: unknown }).pomodeal = { convex, api, authkit };
+}
+
+/** The screens (the design prototype's engine) talk to Convex once someone is a member. */
+interface LiveApp {
+  attach(be: Backend): void;
+  session(doc: unknown): void;
+  ledger(entries: unknown[]): void;
+}
+interface Backend {
+  start(deal: { act: string | null; breakMin: number; task: string; focusMin: number }): void;
+  ask(pick: number | "override", intention?: string): void;
+  next(fromIdx: number): void;
+  bonus(): void;
+  end(): void;
+}
+let live = false;
+function goLive(convex: ConvexClient) {
+  const app = (window as unknown as { pomodealApp?: LiveApp }).pomodealApp;
+  if (live || !app) return;
+  live = true;
+  let sessionId: Id<"sessions"> | null = null;
+  const report = (what: string) => (e: unknown) => console.error(`[pomodeal] ${what} failed`, e);
+  const be: Backend = {
+    start: (d) => void convex.mutation(api.sessions.start, { deal: { activity: d.act ?? null, breakMin: d.breakMin, task: d.task, focusMin: d.focusMin } }).catch(report("start")),
+    ask: (pick, intention) => { if (sessionId) void convex.mutation(api.sessions.ask, { sessionId, pick, ...(intention ? { intention } : {}) }).catch(report("ask")); },
+    next: (fromIdx) => { if (sessionId) void convex.mutation(api.sessions.next, { sessionId, fromIdx }).catch(report("next")); },
+    bonus: () => { if (sessionId) void convex.mutation(api.sessions.bonus, { sessionId }).catch(report("bonus")); },
+    end: () => { if (sessionId) void convex.mutation(api.sessions.end, { sessionId }).catch(report("end")); },
+  };
+  app.attach(be);
+  convex.onUpdate(api.sessions.current, {}, (doc) => { sessionId = doc ? doc._id : null; app.session(doc); });
+  convex.onUpdate(api.sessions.today, { now: Date.now() }, (entries) => app.ledger(entries));
 }
 
 start().catch((e) => console.error("[pomodeal] startup failed", e));
