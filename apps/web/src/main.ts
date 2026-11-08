@@ -5,7 +5,11 @@ import { ConvexClient } from "convex/browser";
 import { ConvexError } from "convex/values";
 import { createClient } from "@workos-inc/authkit-js";
 import { api } from "../../../convex/_generated/api";
-import { mountGate, type GateState } from "./gate";
+import { mountGate, type GateState, type Provider } from "./gate";
+
+// Which one-tap buttons to show; each must be enabled in WorkOS → Authentication → Providers.
+const providers = ((import.meta.env.VITE_AUTH_PROVIDERS as string | undefined) || "GitHubOAuth,GoogleOAuth,AppleOAuth")
+  .split(",").map((p) => p.trim()).filter(Boolean) as Provider[];
 
 const convexUrl = (import.meta.env.VITE_CONVEX_URL as string | undefined) || undefined;
 const workosClientId = (import.meta.env.VITE_WORKOS_CLIENT_ID as string | undefined) || undefined;
@@ -40,6 +44,13 @@ async function start() {
   });
 
   const gate = mountGate({
+    providers,
+    // One-tap social sign-in: same PKCE flow as signIn(), but skips the AuthKit chooser by naming the provider.
+    signInWith: async (provider) => {
+      const url = new URL(await authkit.getSignInUrl());
+      url.searchParams.set("provider", provider);
+      location.assign(url.toString());
+    },
     signIn: () => void authkit.signIn(),
     signUp: () => void authkit.signUp(),
     signOut: () => { clearInvite(); authkit.signOut({ returnTo: location.origin }); },

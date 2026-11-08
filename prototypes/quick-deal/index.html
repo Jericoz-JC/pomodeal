@@ -688,7 +688,7 @@ function renderSheet() {
       <button class="textbtn" id="ask2">Ask for ${N(5)} more minutes</button>`;
   } else if (sheet.kind === "boundary" || sheet.kind === "offer") {
     const offer = makeOffer(S);
-    const back = `<button class="textbtn" id="nevermind">${over ? `Start ${esc(nameOf(nxt))} instead` : "Never mind"}</button>`;
+    const back = `<button class="secondary" id="nevermind">${over ? `Start ${esc(nameOf(nxt))} instead` : "Never mind"}</button>`;
     const ask = `5 more minutes of ${esc(title(b.label))}?`;
     if (offer.terms[0].kind === "freebie") {
       body = `<span class="grab" aria-hidden="true"></span>
@@ -710,7 +710,9 @@ function renderSheet() {
       const tickets = `${offer.terms.map((t, i) => t.kind === "borrow"
           ? termTicket(i, bp.from ? figArrow(bp.from, bp.to) : "Later", "Borrow from next break", borrowCost)
           : termTicket(i, figArrow(nf.min, nf.min + 5), "Add to next focus", `Next ${esc(shortTask())} block ${arrow(nf.min, nf.min + 5)} min.`)).join("")}
-        ${termTicket("x", "0", "No terms. I need this.", "Costs nothing. It goes in the ledger.")}`;
+`;
+      /* the override always works, but stays a quiet link under the healthier choice */
+      const noterms = `<button class="textbtn" data-term="x">No terms. I need this.</button>`;
       if (needs) {
         /* the third ask: the clock fills in a first thing; tapping it opens one sideways row of choices */
         const shown = sheet.typing ? ((sheet.typed || "").trim() || "type it") : sheet.draft;
@@ -723,13 +725,15 @@ function renderSheet() {
           ${pick}
           ${sheet.need ? `<p class="need" id="needtxt">Type the first thing, or pick one above.</p>` : ""}
           <div class="terms" role="group" aria-label="Where the 5 minutes come from">${tickets}</div>
-          ${back}`;
+          ${back}
+          ${noterms}`;
       } else {
         body = `<span class="grab" aria-hidden="true"></span>
           <h2 id="sh" tabindex="-1">${ask}</h2>
           ${clockSays("Sure. Where do the 5 minutes come from?", "fromh")}
           <div class="terms" role="group" aria-labelledby="fromh">${tickets}</div>
-          ${back}`;
+          ${back}
+          ${noterms}`;
       }
     }
   } else if (sheet.kind === "bonus") {
