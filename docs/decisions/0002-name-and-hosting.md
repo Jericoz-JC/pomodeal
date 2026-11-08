@@ -1,6 +1,6 @@
 # 0002: Name Pomodeal; host on Cloudflare Pages
 
-Date: 2026-11-07 · Status: name accepted; hosting proposed (waiting on Chris)
+Date: 2026-11-07 · Status: accepted (Chris chose Cloudflare Pages on Nov 7)
 
 ## Context
 

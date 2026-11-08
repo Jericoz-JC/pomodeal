@@ -2,22 +2,22 @@
 
 ## What's live in v0.2
 
-- **Web (Cloudflare Pages, or Vercel; see `07-stack-and-hosting.md`):** the installable PWA. Screens are the design prototype (synced from `prototypes/quick-deal/` at build), plus the service worker, manifest and icons.
+- **Web (Cloudflare Pages):** the installable PWA. Screens are the design prototype (synced from `prototypes/quick-deal/` at build), plus the service worker, manifest and icons.
 - **Backend (Convex):** `convex/schema.ts` (sessions, ledger) and `convex/sessions.ts` (start, ask, next, end, current, today), all built on the tested rules in `packages/core`. The web shell connects and subscribes on load; Phase 1 wires the screens to these functions.
 
 ## One-time setup (Chris, about 10 minutes)
 
 Each of these opens a browser to sign in.
 
-1. **GitHub:** `gh auth login` → GitHub.com → HTTPS → login with a web browser. Then from the repo: `gh repo create pomodeal --private --source . --push` and `git push origin --tags`.
+1. **GitHub:** done. Public repo at https://github.com/Jericoz-JC/pomodeal (commits use the GitHub no-reply email).
 2. **Convex:** `npx convex dev` → log in → create project "pomodeal". This writes `.env.local` with `VITE_CONVEX_URL` and `CONVEX_DEPLOYMENT`, generates `convex/_generated/`, and pushes the functions to a dev deployment. Leave it running while developing.
 3. **Convex production key:** Convex dashboard → project → Settings → URL & deploy key → generate a **production deploy key**.
-4. **Cloudflare Pages (recommended):** dash.cloudflare.com → Workers & Pages → Create → Pages → Connect to Git → pick the `pomodeal` repo. Build settings:
+4. **Cloudflare Pages:** dash.cloudflare.com → Workers & Pages → Create → Pages → Connect to Git → pick the `pomodeal` repo. Build settings:
    - Framework preset: None
-   - Build command: `npx convex deploy --cmd "npm run build" --cmd-url-env-var-name VITE_CONVEX_URL`
+   - Build command: `npm run build:ci` (deploys Convex when `CONVEX_DEPLOY_KEY` is set, otherwise builds the web app only)
    - Build output directory: `apps/web/dist`
    - Environment variables (Production): `CONVEX_DEPLOY_KEY` = the key from step 3, and `NODE_VERSION` = `22`
-   - For preview branches, either leave `CONVEX_DEPLOY_KEY` unset there (previews then build without a backend) or add a Convex **preview** deploy key.
+   - Preview environment: leave `CONVEX_DEPLOY_KEY` unset (previews build without a backend), or add a Convex **preview** deploy key later so each branch gets its own backend.
 5. **Domain:** buy `pomodeal.com` on Cloudflare Registrar (or on Vercel, then switch its nameservers to Cloudflare's). In the Pages project → Custom domains → add `pomodeal.com` and `www.pomodeal.com`.
 
 **Vercel instead:** vercel.com → Add New Project → import the repo (vercel.json sets the build) → add `CONVEX_DEPLOY_KEY` (Production). Note the Hobby limits in `07-stack-and-hosting.md`.

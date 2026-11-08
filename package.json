@@ -13,9 +13,13 @@
     "build": "npm run build -w apps/web",
     "test": "npm test -w packages/core",
     "typecheck": "tsc -p packages/core && tsc -p apps/web && tsc -p convex",
-    "shoot": "node prototypes/shoot.mjs"
+    "shoot": "node prototypes/shoot.mjs",
+    "build:ci": "node scripts/ci-build.mjs"
   },
   "dependencies": {
     "convex": "^1.49.0"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }
