@@ -1,8 +1,8 @@
 import { mutation, query } from "./_generated/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx } from "./_generated/server";
-import { advance, applyBonus, applyTerm, buildSession, endSession, makeOffer, type LedgerEntry } from "../packages/core/src";
+import { advance, applyBonus, applyTerm, buildSession, dealProblem, endSession, makeOffer, type LedgerEntry } from "../packages/core/src";
 import { currentMember, requireMember } from "./lib/members";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -51,13 +51,15 @@ export const today = query({
   },
 });
 
-/** Quick Deal: ends any running session (forgiving its debt) and starts a new one. */
+/** Quick Deal: ends any running session (forgiving its debt) and starts a new one. Lengths must be on offer (spec 007). */
 export const start = mutation({
   args: {
     deal: v.object({ activity: v.union(v.string(), v.null()), breakMin: v.number(), task: v.string(), focusMin: v.number() }),
   },
   handler: async (ctx, { deal }) => {
     const user = await requireMember(ctx);
+    const problem = dealProblem(deal);
+    if (problem) throw new ConvexError({ code: "BAD_DEAL", message: problem });
     const now = Date.now();
     const prev = await running(ctx, user._id);
     if (prev) {

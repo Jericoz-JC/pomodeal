@@ -7,6 +7,8 @@ export const BREAK_FLOOR_MIN = 2;
 export const TRADE_CAP_MIN = 15;
 export const BONUS_FOCUS_MIN = 10;
 export const BONUS_BREAK_MIN = 3;
+/** No focus block grows past this through trades or the bonus (spec 007). */
+export const FOCUS_CEILING_MIN = 75;
 
 export type BlockType = "focus" | "break";
 
@@ -63,7 +65,7 @@ export function makeOffer(s: SessionState): Offer {
   }
   const terms: Term[] = [{ kind: "borrow", addMin: ASK_MIN, repayMin: ASK_MIN }];
   const nf = nextIndexOf(s, "focus");
-  if (nf >= 0 && (s.blocks[nf].added ?? 0) + ASK_MIN <= TRADE_CAP_MIN) {
+  if (nf >= 0 && (s.blocks[nf].added ?? 0) + ASK_MIN <= TRADE_CAP_MIN && s.blocks[nf].min + ASK_MIN <= FOCUS_CEILING_MIN) {
     terms.push({ kind: "trade", addMin: ASK_MIN, addToNextFocusMin: ASK_MIN });
   }
   return { terms, requiresIntention: s.askCount >= 2, override };
@@ -111,7 +113,8 @@ export function applyTerm(s: SessionState, term: Term, now: number, intention?: 
 /** Clock-initiated "keep going" offer at the end of a focus block. */
 export function canOfferBonus(s: SessionState, pausedInLast5Min: boolean): boolean {
   const cur = s.blocks[s.idx];
-  return cur.type === "focus" && !s.bonusOffered && !pausedInLast5Min && s.idx < s.blocks.length - 1;
+  return cur.type === "focus" && !s.bonusOffered && !pausedInLast5Min && s.idx < s.blocks.length - 1
+    && cur.min + BONUS_FOCUS_MIN <= FOCUS_CEILING_MIN;
 }
 
 export function applyBonus(s: SessionState, now: number): { session: SessionState; entry: LedgerEntry } {

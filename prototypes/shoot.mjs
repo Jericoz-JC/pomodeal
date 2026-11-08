@@ -10,7 +10,11 @@ import { tmpdir } from "node:os";
 const here = dirname(fileURLToPath(import.meta.url));
 const out = resolve(process.argv[2] || join(here, "shots"));
 const page = resolve(here, process.argv[3] || "quick-deal/index.html");
-const STATES = ["start", "intercept", "running", "focus", "heads-up", "boundary", "offer-free", "offer-terms", "offer-intention", "bonus", "ledger", "room"];
+const STATES = ["start", "intercept", "running", "focus", "heads-up", "boundary", "offer-free", "offer-terms", "offer-intention", "bonus", "ledger", "room",
+  // spec 007: long blocks
+  "picker-focus", "picker-60", "start-60", "long-running", "long-halfway", "long-heads-up"];
+// ONLY=a,b limits a run to some states (quick review loops)
+const only = process.env.ONLY ? process.env.ONLY.split(",") : null;
 const EDGE = "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe";
 const PORT = 9333 + Math.floor(Math.random() * 500);
 const profile = join(tmpdir(), `nc-shoot-${Date.now()}`);
@@ -38,7 +42,7 @@ await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, devi
 const base = pathToFileURL(page).href;
 for (const scheme of ["light", "dark"]) {
   await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: scheme }] });
-  for (const s of STATES) {
+  for (const s of STATES.filter(x => !only || only.includes(x))) {
     await send("Page.navigate", { url: "about:blank" });
     await send("Page.navigate", { url: `${base}#${s}` });
     await wait(1200); // fonts + first render
@@ -47,4 +51,4 @@ for (const scheme of ["light", "dark"]) {
   }
 }
 await send("Browser.close").catch(() => {}); ws.close(); proc.kill();
-console.log(`Wrote ${STATES.length * 2} screenshots to ${out}`);
+console.log(`Wrote screenshots to ${out}`);
