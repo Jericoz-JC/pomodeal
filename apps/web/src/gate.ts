@@ -170,7 +170,10 @@ export function mountGate(actions: GateActions) {
     document.body.style.overflow = show ? "hidden" : "";
     if (!show) { gate.innerHTML = ""; return; }
     gate.innerHTML = view();
-    gate.classList.toggle("ld-on", state.kind === "signedOut" && !invitesOpen);
+    const landing = state.kind === "signedOut" && !invitesOpen;
+    gate.classList.toggle("ld-on", landing);
+    if (landing) { gate.removeAttribute("role"); gate.removeAttribute("aria-modal"); gate.removeAttribute("aria-label"); }
+    else { gate.setAttribute("role", "dialog"); gate.setAttribute("aria-modal", "true"); gate.setAttribute("aria-label", "Pomodeal beta"); }
     if (state.kind === "signedOut" && !invitesOpen) bindLanding(gate, { signInWith: actions.signInWith, signIn: actions.signIn, install: actions.install });
     gate.querySelector<HTMLElement>("#pd-signin")?.addEventListener("click", actions.signIn);
     gate.querySelector<HTMLElement>("#pd-email")?.addEventListener("click", actions.signIn);

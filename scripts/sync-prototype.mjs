@@ -21,7 +21,7 @@ const html = `<!doctype html>
 <meta name="theme-color" content="#18201C" media="(prefers-color-scheme: dark)">
 <meta name="robots" content="noindex, nofollow">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="icon" href="/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <!-- generated from prototypes/quick-deal/index.html by scripts/sync-prototype.mjs; edit the prototype, not this file -->

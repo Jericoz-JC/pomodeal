@@ -65,12 +65,16 @@ export const LANDING_CSS = `
 @keyframes ld-drain { from { stroke-dashoffset: 0; } to { stroke-dashoffset: var(--brk); } }
 @keyframes ld-spin { to { transform: rotate(360deg); } }
 
-#pd-gate .ld-ticket { position: relative; width: 100%; max-width: 420px; min-width: 0; scroll-margin-bottom: calc(130px + env(safe-area-inset-bottom, 0px)); margin-top: -24px; background: var(--card); border-radius: 6px;
+#pd-gate .ld-twrap { position: relative; width: 100%; max-width: 420px; min-width: 0; margin-top: -24px; margin-bottom: 40px; }
+#pd-gate .ld-peek { position: absolute; left: 0; right: 0; bottom: -36px; height: 70px; background: var(--stub); border-radius: 6px; transform: rotate(-2deg); transform-origin: 30% 0;
+  box-shadow: 0 0 0 1px var(--rule); display: flex; align-items: flex-end; justify-content: space-between; padding: 0 18px 8px; font-family: var(--font-head); font-stretch: 80%; font-weight: 700; font-size: 13px; color: var(--soft); }
+#pd-gate .ld-peek b { font-family: var(--font-head); font-stretch: 70%; font-weight: 900; font-size: 18px; color: var(--deal); border: 2.5px double var(--deal); border-radius: 6px; padding: 0 7px; transform: rotate(-7deg); }
+#pd-gate .ld-ticket { position: relative; width: 100%; min-width: 0; scroll-margin-bottom: calc(130px + env(safe-area-inset-bottom, 0px)); background: var(--card); border-radius: 6px;
   box-shadow: 0 0 0 1px var(--rule), 0 24px 44px -28px var(--lift); }
 #pd-gate .ld-body { padding: 14px 18px 12px; display: flex; flex-direction: column; gap: 10px; }
 #pd-gate .ld-meta { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-family: var(--font-head); font-stretch: 80%; font-weight: 700; font-size: 14px; color: var(--soft); min-height: 38px; }
 #pd-gate .ld-slot { position: relative; width: 92px; height: 38px; border: 1.5px dashed var(--wait-edge); border-radius: 8px; transform: rotate(-6deg); flex: none; display: grid; place-items: center;
-  font-family: var(--font-head); font-stretch: 70%; font-weight: 900; font-size: 24px; color: var(--rule); }
+  font-family: var(--font-head); font-stretch: 70%; font-weight: 900; font-size: 24px; color: transparent; }
 #pd-gate .ld-stamped .ld-slot { border-color: transparent; color: transparent; }
 #pd-gate .ld-stamp { position: absolute; right: 18px; top: 14px; width: 92px; height: 38px; display: grid; place-items: center; font-family: var(--font-head); font-stretch: 70%; font-weight: 900; font-size: 26px; color: var(--deal);
   border: 3px double var(--deal); border-radius: 8px; transform: rotate(-6deg); opacity: 0; pointer-events: none; }
@@ -80,7 +84,7 @@ export const LANDING_CSS = `
 @keyframes ld-thud { 40% { transform: translateY(2px); } }
 #pd-gate .ld-sentence { font-family: var(--font-head); font-stretch: 80%; font-weight: 750; font-size: 28px; line-height: 1.08; margin: 0; color: var(--ink); }
 #pd-gate .ld-sentence em { font-style: normal; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 5px; text-decoration-color: var(--deal); }
-#pd-gate .ld-acts { display: flex; gap: 6px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: -18px; padding-inline: 18px; -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); }
+#pd-gate .ld-acts { display: flex; gap: 6px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: -18px; padding: 5px 18px; margin-block: -5px; -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); }
 #pd-gate .ld-acts[hidden] { display: none; }
 #pd-gate .ld-acts::-webkit-scrollbar { display: none; }
 #pd-gate .ld-acts button { flex: none; border: 1.5px solid var(--edge); background: transparent; color: var(--ink); border-radius: 999px; padding: 8px 12px; min-height: 44px; font: inherit; font-weight: 700; font-size: 14.5px; cursor: pointer; }
@@ -98,7 +102,7 @@ export const LANDING_CSS = `
 #pd-gate .ld-say svg { width: 30px; height: 30px; flex: none; }
 #pd-gate .ld-say p { margin: 0; font-size: 16px; line-height: 1.35; color: var(--ink); }
 #pd-gate .ld-say p.pop { animation: ld-pop .16s ease-out; }
-@keyframes ld-pop { from { transform: scale(.94); opacity: .2; } }
+@keyframes ld-pop { from { transform: scale(.96); } }
 #pd-gate .ld-deal { width: 100%; min-height: 52px; border: none; border-radius: 12px; background: var(--deal); color: var(--on-deal); font-family: var(--font-head); font-stretch: 85%; font-weight: 800; font-size: 21px; cursor: pointer; }
 #pd-gate .ld-deal[hidden] { display: none; }
 #pd-gate .ld-deal.ld-ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--edge); }
@@ -149,15 +153,12 @@ export const LANDING_CSS = `
   padding: 10px max(16px, env(safe-area-inset-right, 0px)) calc(4px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
   background: color-mix(in srgb, var(--paper) 90%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-top: 1px solid var(--rule); }
 #pd-gate .ld-dock .ld-more { margin: 0; }
-#pd-gate .ld-dock-note { margin: 0 0 8px; font-size: 14px; color: var(--soft); text-align: center; }
-#pd-gate .ld-dock-inv { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 0 0 8px; padding: 6px 12px; border: 1.5px dashed var(--deal); border-radius: 10px; font-size: 14px; color: var(--soft); }
-#pd-gate .ld-dock-inv b { font-family: var(--font-head); font-stretch: 85%; font-weight: 800; font-size: 18px; letter-spacing: .08em; color: var(--ink); }
+#pd-gate .ld-dock { transition: transform .25s ease; }
+#pd-gate .ld-dock.away { transform: translateY(115%); }
 #pd-gate .ld.app .ld-how { display: none; }
 
 @media (max-width: 899px) {
-  #pd-gate .ld-signin .ld-prov.solid { display: none; }
   #pd-gate .ld-hero { gap: 14px; }
-  #pd-gate .ld-in { padding-bottom: calc(130px + env(safe-area-inset-bottom, 0px)); }
   #pd-gate .ld-dial { width: min(46vw, 176px); }
 }
 @media (max-width: 899px) and (max-height: 760px) {
@@ -169,7 +170,7 @@ export const LANDING_CSS = `
   #pd-gate .ld-hero { grid-template-columns: 1.15fr 1fr; grid-template-areas: "copy stage" "signin stage"; column-gap: 56px; row-gap: 28px; align-items: start; padding-top: 6vh; }
   #pd-gate .ld-copy { grid-area: copy; } #pd-gate .ld-stage { grid-area: stage; } #pd-gate .ld-signin { grid-area: signin; max-width: 400px; }
   #pd-gate .ld h1 { font-size: clamp(56px, 5.6vw, 78px); } #pd-gate .ld h1 .hang { margin-left: -.36em; }
-  #pd-gate .ld-dial { width: 300px; } #pd-gate .ld-ticket { margin-top: -36px; }
+  #pd-gate .ld-dial { width: 300px; } #pd-gate .ld-twrap { margin-top: -36px; }
   #pd-gate .ld-how { grid-template-columns: repeat(2, 1fr); column-gap: 56px; padding-top: 80px; }
   #pd-gate .ld-how h2 { grid-column: 1 / -1; }
   #pd-gate .ld-dock { display: none; }
@@ -239,9 +240,11 @@ export function landingHTML(o: LandingOptions): string {
 
       <div class="ld-stage">
         <div class="ld-dial" id="ld-dial">${dial()}</div>
+        <div class="ld-twrap">
+        <div class="ld-peek" aria-hidden="true"><span>No. 0000, last night</span><b>DEAL</b></div>
         <section class="ld-ticket" id="ld-ticket" aria-label="Try a deal">
           <div class="ld-body">
-            <div class="ld-meta"><span>No. 0001, ${esc(clock12(new Date()))}</span><span class="ld-slot" aria-hidden="true">DEAL</span></div>
+            <div class="ld-meta"><span>No. 0001, ${esc(clock12(new Date()))}</span><span class="ld-slot" aria-hidden="true"></span></div>
             <p class="ld-sentence" id="ld-sentence">10 min of <em>Reels</em>, then 8 min of reading.</p>
             <div class="ld-acts" role="radiogroup" aria-label="What you’re on right now">${ACTS.map((a, i) => `<button role="radio" aria-checked="${i === 0}" tabindex="${i === 0 ? 0 : -1}" data-act="${a}">${a}</button>`).join("")}</div>
           </div>
@@ -255,6 +258,7 @@ export function landingHTML(o: LandingOptions): string {
           </div>
           <span class="ld-stamp" aria-hidden="true">DEAL</span>
         </section>
+        </div>
       </div>
 
       <div class="ld-signin" id="ld-signin">
@@ -291,8 +295,7 @@ export function landingHTML(o: LandingOptions): string {
 
     <footer class="ld-foot">No streaks. No shame. Your deals stay private unless you share them with a room.</footer>
   </div>
-  <div class="ld-dock" id="ld-dock">
-    ${o.invite ? `<p class="ld-dock-inv"><span>Your invite</span><b>${code}</b></p>` : `<p class="ld-dock-note">Invite-only for now. Already in?</p>`}
+  <div class="ld-dock away" id="ld-dock" aria-hidden="true">
     ${btn(primary, true)}${list(o.providers.filter((p) => p !== primary))}
   </div>
   </div>`;
@@ -339,12 +342,17 @@ export function bindLanding(root: HTMLElement, a: LandingActions) {
     });
   });
 
+  const dock = $<HTMLElement>("#ld-dock"), signin = $<HTMLElement>("#ld-signin");
+  let signinVisible = false;
+  const syncDock = () => { const show = dealt && !signinVisible; dock?.classList.toggle("away", !show); dock?.setAttribute("aria-hidden", String(!show)); };
+  if (signin && "IntersectionObserver" in window) new IntersectionObserver(([e]) => { signinVisible = e.isIntersecting; syncDock(); }, { threshold: 0.2 }).observe(signin);
+
   function run() { // the break counts down for real once the deal is made
     clearInterval(timer);
     timer = window.setInterval(() => { if (left > 0) { left--; ring(); } }, 1000);
   }
   function deal() {
-    dealt = true; stamp(); dialEl.classList.add("ld-dealt"); run();
+    dealt = true; stamp(); dialEl.classList.add("ld-dealt"); run(); syncDock();
     chips.forEach((x) => x.setAttribute("aria-disabled", "true"));
     dealBtn.textContent = "Ask for 5 more"; dealBtn.classList.add("ld-ghost"); dealBtn.classList.remove("ld-nudge");
     speak(`Deal. ${act} until ${later(breakMin)}, then reading.`);
