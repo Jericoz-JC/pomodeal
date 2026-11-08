@@ -1,0 +1,13 @@
+// Cloudflare Workers static-assets deploy for the Pomodeal PWA.
+// Build: `npm run build:ci` (Convex deploy + Vite build). Deploy: `npx wrangler deploy`.
+// Build-time values (CONVEX_DEPLOY_KEY, NODE_VERSION, VITE_WORKOS_CLIENT_ID) live in the
+// dashboard under Settings → Build → Variables and secrets, not here.
+{
+  "name": "pomodeal",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./apps/web/dist",
+    // Every unknown path (/callback, /invite, …) serves index.html so the app can route it.
+    "not_found_handling": "single-page-application"
+  }
+}
