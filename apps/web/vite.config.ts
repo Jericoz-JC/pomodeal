@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => {
   plugins: [
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["icon.svg", "apple-touch-icon.png"],
+      includeAssets: ["icon.svg", "apple-touch-icon.png", "robots.txt"],
       manifest: {
         name: "Pomodeal",
         short_name: "Pomodeal",
