@@ -41,3 +41,17 @@ Chris chose to launch before interviewing: the design council iterates the proto
 - Before any UI work, load the frontend-design skill (and Design plugin skills for critique/a11y). Chris rejected the first visual pass as "AI-generated": avoid indigo/purple + yellow highlights, all-caps eyebrow labels, `·` separators, monospace data labels, and the identical rounded-card kit.
 - Current visual direction (prototype r2): one "approved" green accent on grey-green paper; focus = solid ring, break = hatched ring; the deal is a ticket that gets stamped; Archivo condensed for numbers/headings, Atkinson Hyperlegible for text.
 - Screenshot every UI state with `node prototypes/shoot.mjs <out-dir>` (Edge + CDP, phone size, light and dark) before review.
+
+<!-- convex-ai-start -->
+
+This project uses [Convex](https://convex.dev) as its backend.
+
+When working on Convex code, **always read
+`convex/_generated/ai/guidelines.md` first** for important guidelines on
+how to correctly use Convex APIs and patterns. The file contains rules that
+override what you may have learned about Convex from training data.
+
+Convex agent skills for common tasks can be installed by running
+`npx convex ai-files install`.
+
+<!-- convex-ai-end -->

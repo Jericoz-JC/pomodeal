@@ -1,8 +1,13 @@
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 
-export default defineConfig({
+export default defineConfig(({ mode }) => {
+  // `convex dev` writes CONVEX_URL to .env.local; `convex deploy --cmd-url-env-var-name` sets VITE_CONVEX_URL in CI.
+  const env = { ...loadEnv(mode, "../..", ""), ...process.env };
+  const convexUrl = env.VITE_CONVEX_URL || env.CONVEX_URL || "";
+  return {
   envDir: "../..",
+  define: { "import.meta.env.VITE_CONVEX_URL": JSON.stringify(convexUrl) },
   plugins: [
     VitePWA({
       registerType: "autoUpdate",
@@ -24,4 +29,5 @@ export default defineConfig({
       workbox: { globPatterns: ["**/*.{js,css,html,svg,png,woff2}"] },
     }),
   ],
+};
 });

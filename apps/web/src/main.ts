@@ -2,12 +2,9 @@
 // scripts/sync-prototype.mjs). This module wires the PWA and the Convex connection so the
 // backend is live from day one; Phase 1 moves the screens to components backed by convex/sessions.ts.
 import { ConvexClient } from "convex/browser";
-import { anyApi } from "convex/server";
+import { api } from "../../../convex/_generated/api";
 
-// anyApi until `convex dev` generates typed bindings in convex/_generated.
-const api = anyApi;
-
-const url = import.meta.env.VITE_CONVEX_URL as string | undefined;
+const url = (import.meta.env.VITE_CONVEX_URL as string | undefined) || undefined;
 
 function deviceId(): string {
   try {

@@ -9,7 +9,7 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 async function running(ctx: MutationCtx, deviceId: string): Promise<Doc<"sessions"> | null> {
   return ctx.db
     .query("sessions")
-    .withIndex("by_device_status", (q) => q.eq("deviceId", deviceId).eq("status", "running"))
+    .withIndex("by_deviceId_and_status", (q) => q.eq("deviceId", deviceId).eq("status", "running"))
     .first();
 }
 
@@ -22,7 +22,7 @@ export const current = query({
   handler: (ctx, { deviceId }) =>
     ctx.db
       .query("sessions")
-      .withIndex("by_device_status", (q) => q.eq("deviceId", deviceId).eq("status", "running"))
+      .withIndex("by_deviceId_and_status", (q) => q.eq("deviceId", deviceId).eq("status", "running"))
       .first(),
 });
 
@@ -31,7 +31,7 @@ export const today = query({
   handler: (ctx, { deviceId, now }) =>
     ctx.db
       .query("ledger")
-      .withIndex("by_device_at", (q) => q.eq("deviceId", deviceId).gte("at", now - DAY_MS))
+      .withIndex("by_deviceId_and_at", (q) => q.eq("deviceId", deviceId).gte("at", now - DAY_MS))
       .order("desc")
       .collect(),
 });

@@ -25,7 +25,7 @@ export default defineSchema({
     state: sessionState,
     status: v.union(v.literal("running"), v.literal("ended")),
     createdAt: v.number(),
-  }).index("by_device_status", ["deviceId", "status"]),
+  }).index("by_deviceId_and_status", ["deviceId", "status"]),
 
   ledger: defineTable({
     deviceId: v.string(),
@@ -35,5 +35,5 @@ export default defineSchema({
     blockLabel: v.string(),
     minutes: v.number(),
     intention: v.optional(v.string()),
-  }).index("by_device_at", ["deviceId", "at"]),
+  }).index("by_deviceId_and_at", ["deviceId", "at"]),
 });
