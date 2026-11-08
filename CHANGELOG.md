@@ -8,6 +8,7 @@
 - App screens after design-council rounds 5–10 (average 7.67 → 8.22).
 - Phase 1: members' screens run on the real backend (start, ask, next, bonus, end, today's ledger), synced across devices.
 - Build: `npm run build` deploys Convex first when `CONVEX_DEPLOY_KEY` is set, so every push to `main` ships site and backend together.
+- Longer study blocks: 30, 45 and 60 min next to 5–20 (spec 007). Long blocks hold their length, get a quarter-length break, a 5 min heads-up and a quiet halfway line; no block grows past 75 min. Quick deals of 20 now ramp to 25, not 28.
 
 - Renamed to **Pomodeal** (docs, package names, PWA manifest, device-id key). Tagline: "A study timer that makes deals with you."
 - Stack and hosting plan (`docs/07-stack-and-hosting.md`): Cloudflare Pages + Convex + WorkOS AuthKit, plus invite list, rate limits and a kill switch to stay in free tiers; Cloudflare `_headers` for the service worker.
