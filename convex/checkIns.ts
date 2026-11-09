@@ -19,6 +19,15 @@ export const lastWeekKey = query({
 });
 
 /** One answer per member per week: answering again in the same week replaces the answer, never adds a row. */
+/** When this member joined (epoch ms), or null. The client turns it into a local day key for shouldAskCheckIn. */
+export const joinedAt = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await currentMember(ctx);
+    return user ? user.joinedAt : null;
+  },
+});
+
 export const answer = mutation({
   args: {
     weekKey: v.string(),

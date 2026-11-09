@@ -308,6 +308,8 @@ export function weekKey(todayKey: string): string {
   return addDays(todayKey, -new Date(Date.UTC(y, m - 1, d)).getUTCDay());
 }
 
-export function shouldAskCheckIn(todayKey: string, lastAnsweredWeekKey: string | undefined): boolean {
-  return lastAnsweredWeekKey === undefined || lastAnsweredWeekKey < weekKey(todayKey);
+/** Once a week, first open on or after Sunday: not in the week the member joined, not twice in a week. */
+export function shouldAskCheckIn(todayKey: string, lastAnsweredWeekKey: string | undefined, joinedKey: string): boolean {
+  const thisWeek = weekKey(todayKey);
+  return thisWeek > weekKey(joinedKey) && lastAnsweredWeekKey !== thisWeek;
 }

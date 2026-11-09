@@ -315,10 +315,13 @@ function goLive(convex: ConvexClient) {
   convex.onUpdate(api.tasks.open, {}, (tasks) => { openTasks = tasks; pushCards(); });
   // Weekly check-in: ask on the first open on or after Sunday, local time (core decides from the last answered week).
   let lastWeek: string | null | undefined;
+  let joinedAt: number | null | undefined;
   const pushWeek = () => {
-    if (lastWeek === undefined) return;
-    app.weekCheckin(shouldAskCheckIn(dayKey(), lastWeek ?? undefined) ? weekKey(dayKey()) : null);
+    if (lastWeek === undefined || joinedAt === undefined) return;
+    if (joinedAt === null) { app.weekCheckin(null); return; }
+    app.weekCheckin(shouldAskCheckIn(dayKey(), lastWeek ?? undefined, localDayKey(joinedAt)) ? weekKey(dayKey()) : null);
   };
+  convex.onUpdate(api.checkIns.joinedAt, {}, (j) => { joinedAt = j; pushWeek(); });
   convex.onUpdate(api.checkIns.lastWeekKey, {}, (k) => { lastWeek = k; pushWeek(); });
   const armMidnight = () => setTimeout(() => { pushCards(); pushWeek(); armMidnight(); }, msToLocalMidnight(Date.now()));
   armMidnight();

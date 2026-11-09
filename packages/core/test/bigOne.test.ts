@@ -115,9 +115,12 @@ describe("AI limits, scrubbing and check-in week", () => {
   it("weekKey and shouldAskCheckIn", () => {
     expect(weekKey("2026-11-08")).toBe("2026-11-08");
     expect(weekKey("2026-11-11")).toBe("2026-11-08");
-    expect(shouldAskCheckIn("2026-11-11", "2026-11-08")).toBe(false);
-    expect(shouldAskCheckIn("2026-11-15", "2026-11-08")).toBe(true);
-    expect(shouldAskCheckIn("2026-11-11", undefined)).toBe(true);
+    // (today, last answered week, joined day)
+    expect(shouldAskCheckIn("2026-11-11", undefined, "2026-11-10")).toBe(false); // joined this week
+    expect(shouldAskCheckIn("2026-11-08", undefined, "2026-11-08")).toBe(false); // joined on the Sunday itself
+    expect(shouldAskCheckIn("2026-11-15", undefined, "2026-11-10")).toBe(true); // joined last week, unanswered
+    expect(shouldAskCheckIn("2026-11-11", "2026-11-08", "2026-10-01")).toBe(false); // answered this week
+    expect(shouldAskCheckIn("2026-11-15", "2026-11-08", "2026-10-01")).toBe(true); // answered last week
   });
 });
 

@@ -60,6 +60,14 @@ describe("check-in answers", () => {
     expect(await codeOf(a.as.mutation(api.checkIns.answer, { weekKey: "next week", answer: "same" }))).toBe("BAD_WEEK");
   });
 
+  test("joinedAt gives the member's own join time, null when signed out", async () => {
+    const t = newT();
+    const { as, userId } = await makeMember(t, "Ada");
+    const row = await t.run((ctx) => ctx.db.get(userId));
+    expect(await as.query(api.checkIns.joinedAt, {})).toBe(row!.joinedAt);
+    expect(await t.query(api.checkIns.joinedAt, {})).toBeNull();
+  });
+
   test("signed out is refused; lastWeekKey is null", async () => {
     const t = newT();
     expect(await codeOf(t.mutation(api.checkIns.answer, { weekKey: "2026-11-08", answer: "same" }))).toBe("NOT_A_MEMBER");
