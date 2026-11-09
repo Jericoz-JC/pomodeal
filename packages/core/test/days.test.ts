@@ -1,14 +1,37 @@
 // Spec 008: day keys, open terms, progress, comeback, spread, card.
 import { describe, expect, it } from "vitest";
 import {
-  addDays, addWorkedDay, cardFor, daysBetween, firstMoveFor, firstPaymentMinutes, isComeback,
-  openTerms, progressLabel, proposeSpread, type BigOne, type Piece,
+  addDays, addWorkedDay, cardFor, daysBetween, firstMoveFor, firstPaymentMinutes, isComeback, isDayKey,
+  openTerms, progressLabel, proposeSpread, SPREAD_MAX_DAYS, spreadProblem, type BigOne, type Piece,
 } from "../src";
 
 const base: BigOne = { title: "Essay", workedMin: 0, openTermsMin: 60, firstMove: "Open doc", status: "open", workedDays: [] };
 const piece = (o: Partial<Piece> = {}): Piece => ({ title: "p", minutes: 30, ...o });
 
 describe("day keys", () => {
+  it("isDayKey accepts real calendar dates only", () => {
+    expect(isDayKey("2026-11-08")).toBe(true);
+    expect(isDayKey("2028-02-29")).toBe(true);
+    expect(isDayKey("2026-02-29")).toBe(false);
+    expect(isDayKey("2026-13-01")).toBe(false);
+    expect(isDayKey("2026-1-8")).toBe(false);
+    expect(isDayKey("")).toBe(false);
+    expect(isDayKey("2026-11-08T00:00")).toBe(false);
+  });
+  it("spreadProblem checks days, pieces and minutes", () => {
+    const ok = [{ day: "2026-11-08", pieceIndex: 0, minutes: 30 }, { day: "2026-11-09", minutes: 20 }];
+    expect(spreadProblem(ok, 1, "2026-11-10")).toBeNull();
+    expect(spreadProblem([], 0, "2026-11-10")).toBeNull();
+    expect(spreadProblem(ok, 1, "nope")).not.toBeNull();
+    expect(spreadProblem([{ day: "2026-11-11", minutes: 20 }], 0, "2026-11-10")).not.toBeNull();
+    expect(spreadProblem([{ day: "bad", minutes: 20 }], 0, "2026-11-10")).not.toBeNull();
+    expect(spreadProblem([{ day: "2026-11-08", pieceIndex: 1, minutes: 20 }], 1, "2026-11-10")).not.toBeNull();
+    expect(spreadProblem([{ day: "2026-11-08", pieceIndex: 0.5, minutes: 20 }], 1, "2026-11-10")).not.toBeNull();
+    expect(spreadProblem([{ day: "2026-11-08", minutes: -1 }], 0, "2026-11-10")).not.toBeNull();
+    const tooMany = Array.from({ length: SPREAD_MAX_DAYS + 1 }, () => ({ day: "2026-11-08", minutes: 1 }));
+    expect(spreadProblem(tooMany, 0, "2026-11-10")).not.toBeNull();
+  });
+
   it("addDays crosses month and year", () => {
     expect(addDays("2026-01-31", 1)).toBe("2026-02-01");
     expect(addDays("2026-12-31", 1)).toBe("2027-01-01");

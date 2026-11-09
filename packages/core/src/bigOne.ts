@@ -1,6 +1,6 @@
 // Spec 008: big ones (multi-day tasks). Pure rules; no clock, no zone. Days are local "YYYY-MM-DD" keys.
 
-import { addDays, daysBetween } from "./days";
+import { addDays, daysBetween, isDayKey } from "./days";
 
 // ---------- types and limits ----------
 
@@ -108,7 +108,10 @@ export function bigOneProblem(input: {
   if (input.pieces) {
     if (input.pieces.length > MAX_PIECES) return `Up to ${MAX_PIECES} pieces.`;
     for (const p of input.pieces) {
-      if (!Number.isFinite(p.minutes) || p.minutes < PIECE_MIN || p.minutes > PIECE_MAX) return `Each piece is ${PIECE_MIN} to ${PIECE_MAX} minutes.`;
+      const pt = len(p.title);
+      if (pt < 1) return "Give each piece a name.";
+      if (pt > TITLE_MAX) return `Name each piece in ${TITLE_MAX} characters or fewer.`;
+      if (!Number.isInteger(p.minutes) || p.minutes < PIECE_MIN || p.minutes > PIECE_MAX) return `Each piece is ${PIECE_MIN} to ${PIECE_MAX} minutes.`;
     }
   }
   return null;
@@ -191,6 +194,23 @@ export function proposeSpread(
   const each = Math.floor(total / days);
   const extra = total - each * days;
   return Array.from({ length: days }, (_, d) => ({ day: addDays(todayKey, d), minutes: each + (d === 0 ? extra : 0) }));
+}
+
+/** A signed plan never needs more rows than a year of days. */
+export const SPREAD_MAX_DAYS = 366;
+
+/** Why a signed spread can't be stored, or null. Days are real keys on or before due; piece indexes exist. */
+export function spreadProblem(plan: SpreadDay[], pieceCount: number, dueKey: string): string | null {
+  if (!isDayKey(dueKey)) return "Pick a due day.";
+  if (plan.length > SPREAD_MAX_DAYS) return "That plan is too long.";
+  for (const d of plan) {
+    if (!isDayKey(d.day) || d.day > dueKey) return "Each day is on or before the due day.";
+    if (d.pieceIndex !== undefined && (!Number.isInteger(d.pieceIndex) || d.pieceIndex < 0 || d.pieceIndex >= pieceCount)) {
+      return "That piece isn't in the split.";
+    }
+    if (!Number.isFinite(d.minutes) || d.minutes < 0) return "Minutes can't be negative.";
+  }
+  return null;
 }
 
 export interface BigOneCard { title: string; startWith: string; progress: ProgressLabel | null; minutes: number; comeback: boolean; offerRespread: boolean }

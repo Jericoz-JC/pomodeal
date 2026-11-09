@@ -57,6 +57,16 @@ describe("types and validation", () => {
     expect(bigOneProblem({ ...ok, firstMove: "f".repeat(141) })).not.toBeNull();
   });
 
+  it("bigOneProblem checks piece titles and whole-minute pieces", () => {
+    const ok = { title: "Essay" };
+    expect(bigOneProblem({ ...ok, pieces: [{ title: "", minutes: 30 }] })).not.toBeNull();
+    expect(bigOneProblem({ ...ok, pieces: [{ title: "   ", minutes: 30 }] })).not.toBeNull();
+    expect(bigOneProblem({ ...ok, pieces: [{ title: "p".repeat(81), minutes: 30 }] })).not.toBeNull();
+    expect(bigOneProblem({ ...ok, pieces: [{ title: "p".repeat(80), minutes: 30 }] })).toBeNull();
+    expect(bigOneProblem({ ...ok, pieces: [{ title: "p", minutes: 30.5 }] })).not.toBeNull();
+    expect(bigOneProblem({ ...ok, pieces: [{ title: "p", minutes: Number.NaN }] })).not.toBeNull();
+  });
+
   it("bigOneProblem accepts edge input", () => {
     expect(bigOneProblem({ title: "  " + "a".repeat(80) + "  " })).toBeNull();
     expect(bigOneProblem({ title: "😀".repeat(20) })).toBeNull();
