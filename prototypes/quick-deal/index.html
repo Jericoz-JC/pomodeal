@@ -53,6 +53,8 @@
   --sel: #D4DFD5;
   --sel-card: #E8EFEA;
   --behind: var(--paper);
+  /* the slot the tape feeds from is a dark slit in both themes */
+  --slot: #1B211D;
   --font-head: "Archivo", "Arial Narrow", "Segoe UI", sans-serif;
   --font-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
   --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='60'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' seed='4'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2.6 2.2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
@@ -61,15 +63,15 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --paper: #18201C; --card: #27312C; --stub: #212A25; --chip: #2B3530; --ink: #E6ECE7; --soft: #A3B0A7; --rule: #33413A; --track: #2F3A35; --edge: #74847A; --edge-half: rgba(116, 132, 122, .6);
+    --paper: #18201C; --slot: #070A08; --card: #2E3A34; --stub: #212A25; --chip: #2B3530; --ink: #E6ECE7; --soft: #A3B0A7; --rule: #33413A; --track: #2F3A35; --edge: #74847A; --edge-half: rgba(116, 132, 122, .6);
     --sheet: #1D2521; --scrim: rgba(8, 12, 10, .5); --hi: rgba(255, 255, 255, .05); --lift: rgba(0, 0, 0, .5);
-    --deal: #6CCB97; --on-deal: #0F1A14; --deal-tint: rgba(108, 203, 151, .08); --break-base: #8E9A91; --break-stripe: rgba(24, 32, 28, .30); --wait: color-mix(in srgb, var(--ink) 60%, transparent); --wait-edge: color-mix(in srgb, var(--ink) 60%, transparent); --sel: #283C32; --sel-card: #2E4037; --gone: #E0A08C; --deal-ink: #6CCB97; color-scheme: dark;
+    --deal: #6CCB97; --on-deal: #0F1A14; --deal-tint: rgba(108, 203, 151, .08); --break-base: #A7B3AA; --break-stripe: rgba(24, 32, 28, .42); --wait: color-mix(in srgb, var(--ink) 60%, transparent); --wait-edge: color-mix(in srgb, var(--ink) 60%, transparent); --sel: #283C32; --sel-card: #2E4037; --gone: #E0A08C; --deal-ink: #6CCB97; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --paper: #18201C; --card: #27312C; --stub: #212A25; --chip: #2B3530; --ink: #E6ECE7; --soft: #A3B0A7; --rule: #33413A; --track: #2F3A35; --edge: #74847A; --edge-half: rgba(116, 132, 122, .6);
+  --paper: #18201C; --slot: #070A08; --card: #2E3A34; --stub: #212A25; --chip: #2B3530; --ink: #E6ECE7; --soft: #A3B0A7; --rule: #33413A; --track: #2F3A35; --edge: #74847A; --edge-half: rgba(116, 132, 122, .6);
   --sheet: #1D2521; --scrim: rgba(8, 12, 10, .5); --hi: rgba(255, 255, 255, .05); --lift: rgba(0, 0, 0, .5);
-  --deal: #6CCB97; --on-deal: #0F1A14; --deal-tint: rgba(108, 203, 151, .08); --break-base: #8E9A91; --break-stripe: rgba(24, 32, 28, .30); --wait: color-mix(in srgb, var(--ink) 60%, transparent); --wait-edge: color-mix(in srgb, var(--ink) 60%, transparent); --sel: #283C32; --sel-card: #2E4037; --gone: #E0A08C; --deal-ink: #6CCB97; color-scheme: dark;
+  --deal: #6CCB97; --on-deal: #0F1A14; --deal-tint: rgba(108, 203, 151, .08); --break-base: #A7B3AA; --break-stripe: rgba(24, 32, 28, .42); --wait: color-mix(in srgb, var(--ink) 60%, transparent); --wait-edge: color-mix(in srgb, var(--ink) 60%, transparent); --sel: #283C32; --sel-card: #2E4037; --gone: #E0A08C; --deal-ink: #6CCB97; color-scheme: dark;
 }
 @property --p { syntax: "<number>"; inherits: true; initial-value: 1; }
 
@@ -93,8 +95,12 @@ body.live .proto { display: none; }
 .chipbtn[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 
 /* the scroll area always clears the tab bar: 60px bar + safe area + 24px */
-main { flex: 1; display: flex; flex-direction: column; gap: 20px; padding-block: 24px calc(84px + env(safe-area-inset-bottom, 0px)); }
-body.modal main { padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }
+.desk { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.deskhead { display: none; }
+main { flex: 1; display: flex; flex-direction: column; gap: 20px; padding-block: 24px 26px; min-width: 0; }
+/* a phone screen ends on the top edge of the tape: the rest of it is below the fold */
+.desk > main { flex: none; }
+.tapeside { flex: none; margin-bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
 h1, h2 { font-family: var(--font-head); margin: 0; text-wrap: balance; }
 h1 { font-size: 2.125rem; line-height: 1.02; font-weight: 800; font-stretch: 78%; letter-spacing: -0.005em; }
 h2 { font-size: 1.5rem; line-height: 1.1; font-weight: 750; font-stretch: 82%; }
@@ -444,6 +450,8 @@ p { margin: 0; }
 /* not yet agreed: the stamp box is printed on the ticket, empty, dashed in ink. The word DEAL only exists once you agree. */
 .stampbox, .slot { position: relative; flex: none; border: 1.5px dashed var(--wait-edge); border-radius: 5px; }
 .stamp.ghost { visibility: hidden; }
+.stampbox::after { content: "stamp"; position: absolute; inset: 0; display: grid; place-items: center; font-size: .75rem; color: var(--soft); }
+.stamped .stampbox::after { content: none; }
 /* agreed: the green stamp comes down, hits the paper (about 150 ms in), squashes, rebounds and settles (see "motion" below) */
 .stamped .stamp.ghost { visibility: visible; animation: ink .56s linear backwards; }
 
@@ -515,28 +523,33 @@ button.term:focus-visible { outline-offset: 3px; }
 .timerwrap { display: grid; place-items: center; gap: 10px; }
 /* the tick ring follows the block (spec 007): one minor tick per block minute, a major every 5 min up to 30, every 15 above.
    --minor and --major are set per block from dialTicks(); the defaults draw a 60-minute face. */
-.dial { --in: 78.6%; --knob: 5.35%; --minor: 6deg; --major: 30deg; position: relative; width: min(76vw, 288px); aspect-ratio: 1; max-width: 100%; }
-.dial > * { position: absolute; border-radius: 50%; }
-.dial .tk1 { inset: 0; background: repeating-conic-gradient(from -.21deg, var(--edge) 0 .42deg, transparent .42deg var(--minor));
-  -webkit-mask: radial-gradient(circle closest-side, transparent 90.6%, #000 90.8% 94.2%, transparent 94.4%); mask: radial-gradient(circle closest-side, transparent 90.6%, #000 90.8% 94.2%, transparent 94.4%); }
-.dial .tk5 { inset: 0; opacity: .78; background: repeating-conic-gradient(from -.31deg, var(--ink) 0 .62deg, transparent .62deg var(--major));
-  -webkit-mask: radial-gradient(circle closest-side, transparent 90.6%, #000 90.8% 96.6%, transparent 96.8%); mask: radial-gradient(circle closest-side, transparent 90.6%, #000 90.8% 96.6%, transparent 96.8%); }
-.dial .tk0 { inset: 0; background: conic-gradient(from -.42deg, var(--ink) 0 .84deg, transparent 0);
-  -webkit-mask: radial-gradient(circle closest-side, transparent 90.6%, #000 90.8% 98.8%, transparent 99%); mask: radial-gradient(circle closest-side, transparent 90.6%, #000 90.8% 98.8%, transparent 99%); }
-.dial .track, .dial .fill { inset: 6%; }
-/* the empty part of the ring keeps a visible outline: 1px edge rules at both radii */
-.dial .track { background: radial-gradient(circle closest-side, var(--edge) 0 79.4%, var(--track) 79.8% 98.9%, var(--edge) 99.3%); -webkit-mask: radial-gradient(circle closest-side, transparent 78.2%, #000 78.6%); mask: radial-gradient(circle closest-side, transparent 78.2%, #000 78.6%); }
-.dial .fill { -webkit-mask: conic-gradient(#000 calc(var(--p) * 1turn), transparent 0), radial-gradient(circle closest-side, transparent calc(var(--in) - .4%), #000 var(--in));
-  -webkit-mask-composite: source-in; mask: conic-gradient(#000 calc(var(--p) * 1turn), transparent 0) intersect, radial-gradient(circle closest-side, transparent calc(var(--in) - .4%), #000 var(--in)); }
+.dial { position: relative; width: min(76vw, 288px); aspect-ratio: 1; max-width: 100%; container-type: inline-size; }
+.dial > * { position: absolute; inset: 0; border-radius: 50%; }
+/* the scale: a tick for every minute of this block, a longer one and a numeral every 5 (every 15 on long blocks).
+   The pointer reads against it, so the ring is a real gauge of minutes left, not just a shape. */
+.dial .scale { border-radius: 0; overflow: visible; width: 100%; height: 100%; }
+.scale .mn { stroke: var(--edge); stroke-width: .7; }
+.scale .mj { stroke: var(--ink); stroke-width: 1.1; opacity: .85; }
+.scale .z { stroke: var(--ink); stroke-width: 2; stroke-linecap: round; }
+.scale text { font-family: var(--font-head); font-stretch: 80%; font-weight: 650; font-size: 8.6px; fill: var(--soft); text-anchor: middle; dominant-baseline: central; font-variant-numeric: tabular-nums; }
+/* the ring is a slim band between two hairlines */
+.dial .track { background: radial-gradient(circle closest-side, transparent 75.6%, var(--edge) 76% 76.5%, var(--track) 76.9% 85.1%, var(--edge) 85.5% 86%, transparent 86.4%); }
+.dial .fill { -webkit-mask: conic-gradient(#000 calc(var(--p) * 1turn), transparent 0), radial-gradient(circle closest-side, transparent 75.6%, #000 76% 86%, transparent 86.4%);
+  -webkit-mask-composite: source-in; mask: conic-gradient(#000 calc(var(--p) * 1turn), transparent 0) intersect, radial-gradient(circle closest-side, transparent 75.6%, #000 76% 86%, transparent 86.4%); }
 .fill.focus { background: var(--deal); }
-.fill.break { background: repeating-linear-gradient(135deg, var(--break-stripe) 0 2px, transparent 2px 9px), var(--break-base); }
-.dial .edge { inset: 6%; transform: rotate(calc(var(--p) * 1turn)); }
-.dial .edge::before { content: ""; position: absolute; left: 50%; top: var(--knob); width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: var(--ink); box-shadow: 0 0 0 3px var(--paper); }
+.fill.break { background: repeating-linear-gradient(135deg, var(--break-stripe) 0 2px, transparent 2px 7px), var(--break-base); }
+/* the plate: a paper face with an engine-turned band, the kind of line work printed on tickets and banknotes */
+.dial .plate { inset: 14.5%; background: var(--card); box-shadow: 0 0 0 1px var(--rule), inset 0 2px 5px -2px var(--lift); }
+.dial .rosette { inset: 0; border-radius: 0; width: 100%; height: 100%; color: var(--edge); opacity: .42; }
+.rosette path { fill: none; stroke: currentColor; stroke-width: .32; }
+/* the pointer: one ink needle from the plate out to the scale, at the leading end of the time left */
+.dial .edge { border-radius: 0; transform: rotate(calc(var(--p) * 1turn)); }
+.dial .edge::before { content: ""; position: absolute; left: 50%; top: 0; width: 3px; height: 14.6%; margin-left: -1.5px; border-radius: 2px; background: var(--ink); box-shadow: 0 0 0 1.5px var(--card); }
 .dial.sweep { animation: sweep .7s ease-out; }
 @keyframes sweep { from { --p: 0; } }
 .dial .face { inset: 20%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-.face .big { font-family: var(--font-head); font-size: 80px; font-weight: 800; font-stretch: 70%; line-height: .9; }
-.face .big.mmss { font-size: 66px; }
+.face .big { font-family: var(--font-head); font-size: 80px; font-size: 27.8cqw; font-weight: 800; font-stretch: 70%; line-height: .9; }
+.face .big.mmss { font-size: 66px; font-size: 22.9cqw; }
 .face .unit { font-size: .9375rem; color: var(--soft); }
 .now { display: flex; flex-direction: column; gap: 4px; }
 .nowhead { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 36px; }
@@ -573,17 +586,18 @@ body.sheeted #view .act { visibility: hidden; }
 .rows + .soft { margin-top: -6px; }
 
 /* presence strip: the room, in one line */
-.rows { display: flex; flex-direction: column; border-top: 1px solid var(--rule); }
-.presence { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 52px; padding: 8px 2px; background: none; border: none; border-bottom: 1px solid var(--rule); text-align: left; font-size: 1rem; }
+.rows { display: flex; flex-direction: column; }
+.presence { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 48px; padding: 6px 2px; background: none; border: none; text-align: left; font-size: 1rem; line-height: 1.3; }
+.presence .see { flex: none; color: var(--deal-ink); text-decoration: underline; text-underline-offset: 3px; font-size: .9375rem; }
 .presence.lastline { color: var(--soft); font-size: .9375rem; min-height: 48px; }
 .presence.lastline > span:first-child { flex: 1; min-width: 0; }
 .presence .faces { display: flex; flex: none; gap: 4px; }
-.presence:not(.lastline) > span:nth-child(2) { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.presence > span:nth-child(2) { flex: 1; min-width: 0; }
 .presence svg { flex: none; width: 20px; height: 20px; color: var(--soft); }
 /* during focus the room is a line of company, not a link out */
 div.presence { cursor: default; color: var(--soft); }
 /* on the home screen, tonight so far sits at the bottom of the page instead of floating under the ticket */
-.rows.anchor { margin-top: auto; }
+
 
 /* sheet */
 .scrim { position: fixed; inset: 0; background: var(--scrim); -webkit-backdrop-filter: blur(1px); backdrop-filter: blur(1px); z-index: 20; display: flex; align-items: flex-end; justify-content: center; }
@@ -686,17 +700,45 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 .intercept-foot .caption { text-align: center; font-size: .875rem; color: var(--soft); }
 .skip { margin-block: -6px -4px; }
 
-/* tabs */
-nav.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; background: var(--card); border-top: 1px solid var(--rule);
-  padding: 0 max(16px, env(safe-area-inset-right, 0px)) env(safe-area-inset-bottom, 0px) max(16px, env(safe-area-inset-left, 0px)); }
-nav.tabs > div { max-width: 440px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); }
-nav.tabs button { border: none; background: none; min-height: 60px; padding: 8px 4px; font-weight: 700; font-size: .875rem; color: var(--soft); display: flex; flex-direction: column; align-items: center; gap: 3px; }
-nav.tabs .ic { position: relative; display: block; width: 24px; height: 24px; }
-nav.tabs svg { width: 24px; height: 24px; display: block; }
-nav.tabs .dot { font-family: var(--font-head); font-stretch: 85%; position: absolute; top: -5px; right: -11px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--deal); color: var(--on-deal);
-  font-size: .75rem; line-height: 18px; text-align: center; font-weight: 700; box-shadow: 0 0 0 2px var(--card); }
-nav.tabs button[aria-current="page"] { color: var(--deal); }
-body.modal nav.tabs { display: none; }
+/* ---------- the tape ----------
+   There is no navigation. Tonight's deals print out of a slot as one receipt tape: on a phone its top edge shows at the
+   bottom of the screen and you scroll down into it; on a desk it hangs beside the clock. The room opens from its row of faces. */
+.side[hidden] { display: none; }
+.tapeside { position: relative; margin: 0 -4px; padding-bottom: 28px; filter: drop-shadow(0 1px 0 var(--rule)) drop-shadow(0 10px 18px var(--lift)); }
+/* the slot the tape feeds from */
+.tapeside::before { content: ""; display: block; height: 7px; margin: 0 -7px; border-radius: 4px; background: var(--slot); box-shadow: inset 0 2px 2px rgba(0, 0, 0, .55), 0 1px 0 var(--hi); position: relative; z-index: 1; }
+.tape { display: flex; flex-direction: column; gap: 16px; background: var(--card); padding: 18px 20px 30px;
+  -webkit-mask: linear-gradient(#000 0 0) top / 100% calc(100% - 7px) no-repeat, conic-gradient(from -45deg at bottom, #000 90deg, #0000 0) bottom / 14px 7px repeat-x;
+  mask: linear-gradient(#000 0 0) top / 100% calc(100% - 7px) no-repeat, conic-gradient(from -45deg at bottom, #000 90deg, #0000 0) bottom / 14px 7px repeat-x; }
+.tapehead { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; min-height: 34px; }
+.tape h2 { font-size: 1.625rem; font-stretch: 78%; font-weight: 800; }
+.tape h2:focus { outline: none; }
+.tapeval { flex: none; font-size: .9375rem; color: var(--soft); }
+.tapeval.new { color: var(--deal-ink); font-weight: 700; }
+.tapeval.pop { animation: pop .3s cubic-bezier(.3, 1.6, .5, 1); transform-origin: 100% 50%; }
+/* on the tape a deal is a printed entry between perforations, not a separate torn stub */
+.tape .stubs { gap: 0; filter: none; }
+.tape .stubcard { -webkit-mask: none; mask: none; background: none; box-shadow: none; border-radius: 0; padding-right: 0; grid-template-columns: 68px 1fr; border-top: 1.5px dashed var(--edge-half); }
+.tape .stubcard .t { background: none; padding: 14px 8px 12px 0; align-items: flex-start; justify-content: flex-start; }
+.tape .stubcard .what { padding-right: 0; }
+/* a receipt totals at the bottom: one line each, a dotted leader, the figure on the right */
+.totals { margin: 0; padding-top: 12px; border-top: 3px double var(--edge); display: flex; flex-direction: column; gap: 6px; }
+.totals div { display: flex; align-items: baseline; gap: 8px; }
+.totals dt { color: var(--soft); font-size: .9375rem; }
+.totals div::before { content: ""; order: 1; flex: 1; border-bottom: 2px dotted var(--edge-half); transform: translateY(-4px); }
+.totals dd { order: 2; margin: 0; font-family: var(--font-head); font-stretch: 80%; font-weight: 750; font-size: 1.1875rem; font-variant-numeric: tabular-nums; }
+.totals .go dd { color: var(--deal-ink); }
+.tape .stubcard:first-child { border-top: 1px solid var(--edge-half); }
+.tape .stubcard .stamp { font-size: .875rem; padding: 2px 5px; }
+.tape .stubcard:nth-child(3n+1) .stamp { --tilt: -4deg; } .tape .stubcard:nth-child(3n+2) .stamp { --tilt: 2.5deg; } .tape .stubcard:nth-child(3n) .stamp { --tilt: -1.5deg; }
+.tape .stubcard .stamp { transform: rotate(var(--tilt)); }
+.tape .insight { padding-top: 14px; border-top: 1.5px dashed var(--edge-half); }
+.tape .trychip { border: none; border-radius: 0; padding: 0; min-height: 44px; background: none; text-decoration: underline; text-underline-offset: 3px; font-family: var(--font-body); font-weight: 400; font-stretch: normal; color: var(--deal-ink); }
+.tape .trychip[aria-pressed="true"] { background: none; text-decoration: none; color: var(--ink); }
+.tape .insight-act { padding-left: 52px; }
+.tapefoot { margin-top: 18px; padding-inline: 4px; font-size: .9375rem; color: var(--soft); }
+.back { align-self: flex-start; margin-block: -6px -8px; padding-inline: 0; }
+.rows:empty { display: none; }
 
 /* ---------- motion ----------
    Six moments, each answering something you did or something the clock did. Only transform and opacity move.
@@ -791,13 +833,40 @@ body.modal nav.tabs { display: none; }
 .stubs.pushing > .stubcard:not(.fresh) { animation: push .38s var(--lag, 0ms) cubic-bezier(.2, .8, .2, 1) backwards; }
 @keyframes push { from { transform: translateY(var(--push, 0px)); } }
 @keyframes stub-in { from { opacity: 0; transform: translateY(-16px) rotate(-2.5deg); } 70% { transform: rotate(.4deg); } }
-nav.tabs .dot.pop { animation: pop .3s cubic-bezier(.3, 1.6, .5, 1); }
 @keyframes pop { from { transform: scale(.4); opacity: 0; } }
 
+
+/* ---------- the desk (wide windows) ----------
+   Two things on a desk: the clock you are dealing with, large, and tonight's tape hanging from the top edge of the window.
+   No header bar, no columns of widgets. The room stays one line under the clock, as on a phone, and opens in the stage. */
+@media (min-width: 820px) {
+  .app { max-width: 1200px; padding-inline: clamp(28px, 5vw, 72px); }
+  .deskhead { display: flex; align-items: baseline; gap: 14px; position: absolute; top: 26px; font-family: var(--font-head); font-stretch: 76%; font-weight: 800; font-size: 1.25rem; line-height: 1; color: var(--soft); }
+  body.live .deskhead, .proto ~ .deskhead { position: static; padding-top: 22px; margin-bottom: -22px; }
+  .desk { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 372px); grid-template-areas: "stage tape"; align-items: start; column-gap: clamp(36px, 6vw, 96px); }
+  main { grid-area: stage; width: 100%; max-width: 520px; justify-self: center; padding-block: clamp(40px, 9vh, 92px) 48px; gap: 24px; }
+  .side { min-width: 0; }
+  .roomside { display: none; }
+  .tapeside { grid-area: tape; position: sticky; top: 0; align-self: start; margin: 0; }
+  .tape { max-height: calc(100vh - 40px); max-height: calc(100dvh - 40px); overflow-y: auto; scrollbar-width: thin; padding: 24px 24px 34px; }
+  /* the stage: one bold object, sized by the window's height so the way out of a block is never below the fold */
+  .dial { width: clamp(288px, 50vh, 460px); }
+  .timerwrap { gap: 16px; padding-block: 4px; }
+  h1 { font-size: 2.75rem; }
+  .ticket .line, .ticket .sentence { font-size: 1.12em; }
+  .keepon { display: none; }
+  /* a decision is made at the stage: the paper lands over the clock, the tape stays readable beside it */
+  .scrim { align-items: center; justify-content: flex-start; padding: 24px clamp(28px, 5vw, 72px); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .scrim::before { background: color-mix(in srgb, var(--paper) 78%, transparent); }
+  .sheet { max-width: 500px; margin-left: max(0px, calc((min(100vw, 1200px) - 2 * clamp(28px, 5vw, 72px) - 372px - clamp(36px, 6vw, 96px) - 500px) / 2 + max(0px, (100vw - 1200px) / 2))); border: 1px solid var(--rule); border-radius: 8px; padding: 22px 24px 20px; box-shadow: 0 1px 0 var(--rule), 0 22px 44px var(--lift); max-height: 90%; -webkit-mask: none; mask: none; }
+  .grab { display: none; }
+  @keyframes sheet-in { from { transform: translateY(18px); opacity: 0; } }
+  @keyframes sheet-out { to { transform: translateY(12px); opacity: 0; } }
+}
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
   /* reduced motion keeps the meaning as short crossfades: nothing moves, things appear and disappear */
-  .stamped .stamp.ghost, .dial.turn .fill:not(.was), .terms.deal-in > .term, .stubcard.fresh, nav.tabs .dot.pop { animation: fade .2s var(--lag, 0ms) ease-out backwards !important; }
+  .stamped .stamp.ghost, .dial.turn .fill:not(.was), .terms.deal-in > .term, .stubcard.fresh, .tapeval.pop { animation: fade .2s var(--lag, 0ms) ease-out backwards !important; }
   /* sheets simply appear and disappear: fading one over the page would lay two screens of text on each other */
   .dial .was { animation: fade-out .2s var(--lag, 0ms) ease-in forwards !important; }
   /* a closing sheet just goes: fading it would lay two screens of text over each other */
@@ -818,14 +887,14 @@ nav.tabs .dot.pop { animation: pop .3s cubic-bezier(.3, 1.6, .5, 1); }
     <button class="chipbtn" id="reset">Restart</button>
     <span>Ledger and Room use sample data.</span>
   </div>
-  <main id="view"></main>
+  <header class="deskhead" id="deskhead"></header>
+  <div class="desk">
+    <aside class="side roomside" id="side-room" aria-label="Your room" hidden></aside>
+    <main id="view"></main>
+    <aside class="side tapeside" id="side-ledger" aria-label="Today's deals" hidden></aside>
+  </div>
   <p id="sr" class="vh" aria-live="polite"></p>
 </div>
-<nav class="tabs" aria-label="Sections"><div>
-  <button id="tab-now"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 13V9M9 2h6"/></svg></span>Now</button>
-  <button id="tab-ledger"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg></span>Ledger</button>
-  <button id="tab-room"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.8c1.8.7 3 2.5 3.5 5.2"/></svg></span>Room</button>
-</div></nav>
 <div id="sheet-root"></div>
 <div id="panel-root"></div>
 
@@ -1090,7 +1159,17 @@ const STAMPBOX = `<span class="stampbox" aria-hidden="true"><span class="stamp g
 const GHOST = `<span class="slot" aria-hidden="true"><span class="stamp ghost">DEAL</span></span>`;
 /* on a ticket you tap, the empty box says what it is for */
 const TAPSLOT = `<span class="slot" aria-hidden="true"><span class="tap">Tap to stamp</span><span class="stamp ghost">DEAL</span></span>`;
-const dial = type => `<span class="tk1"></span><span class="tk5"></span><span class="tk0"></span><span class="track"></span><span class="fill ${type}"></span><span class="edge"></span>`;
+/* the dial's line work is drawn once per block as SVG: a scale sized to the block's minutes, and the plate's rosette */
+const polar = (r, deg) => { const a = (deg - 90) * Math.PI / 180; return `${(r * Math.cos(a)).toFixed(2)} ${(r * Math.sin(a)).toFixed(2)}`; };
+const ROSETTE = (() => { let d = ""; for (let j = 0; j < 6; j++) { d += `<path d="`; for (let t = 0; t <= 360; t += 2) d += `${t ? "L" : "M"}${polar(55 + 6.5 * Math.cos((t * 12 + j * 60) * Math.PI / 180), t)}`; d += `Z"/>`; } return `<svg class="rosette" viewBox="-100 -100 200 200" aria-hidden="true">${d}</svg>`; })();
+function scaleSvg(min) {
+  const n = Math.max(1, Math.round(min)), step = n > 30 ? 15 : 5; let h = "";
+  for (let m = 1; m < n; m++) { const a = m / n * 360, mj = m % step === 0; h += `<line class="${mj ? "mj" : "mn"}" x1="${polar(mj ? 90 : 93.5, a).replace(" ", `" y1="`)}" x2="${polar(98, a).replace(" ", `" y2="`)}"/>`; }
+  /* numerals sit on the plate's rim; one too close to the top would crowd the block's own length there */
+  for (let m = step; m < n; m += step) if ((n - m) / n * 360 >= 24 && m / n * 360 >= 24) h += `<text x="${polar(63.5, m / n * 360).replace(" ", `" y="`)}">${m}</text>`;
+  return `<svg class="scale" viewBox="-100 -100 200 200" aria-hidden="true">${h}<line class="z" x1="0" y1="-89" x2="0" y2="-99.5"/><text x="0" y="-63.5">${n}</text></svg>`;
+}
+const dial = (type, min) => `<span class="track"></span><span class="fill ${type}"></span><span class="plate">${ROSETTE}</span>${scaleSvg(min)}<span class="edge"></span>`;
 /* whole minutes until the last 30 seconds; heads-up keeps minute wording so it reads calm, not alarming */
 function face(r, m) {
   if (r <= 0) return { big: "0", cls: "", unit: `${title(cur().label).split(" ")[0]} is up` };
@@ -1103,18 +1182,29 @@ const ROOM = [
   { n: "Maya", i: "M", live: true, d: "Focusing on Orgo", left: 14, u: "min left", p: .55, t: "focus" },
   { n: "Jordan", i: "J", d: "On a break, texting", left: 3, u: "min of break", p: .4, t: "break" },
   { n: "Priya", i: "P", st: "Deciding", d: "Picking her next block", p: 0, t: "none" },
-  { n: "Sam", i: "S", st: "Stuck", d: "Checked in at 10:38pm", p: 0, t: "none" },
+  { n: "Sam", i: "S", st: "", d: "Checked in stuck at 10:38pm", p: 0, t: "none" },
 ];
 const mini = (p, size) => `<span class="mini${size ? " " + size : ""}${p.live ? " live" : ""}" aria-hidden="true" style="--p:${p.p}"><span class="track"></span>${p.t !== "none" ? `<span class="fill ${p.t}"></span>` : ""}<span class="ini">${p.i}</span></span>`;
 
-function setTab(t) { tab = t; if (t === "ledger") unseen = 0; ["now", "ledger", "room"].forEach(x => $("#tab-" + x).setAttribute("aria-current", x === t ? "page" : "false")); }
-function paintTabs() {
-  const b = $("#tab-ledger"), ic = b.querySelector(".ic"); let d = ic.querySelector(".dot");
-  if (unseen && tab !== "ledger") {
-    if (!d) { d = document.createElement("span"); d.className = "dot"; d.setAttribute("aria-hidden", "true"); ic.append(d); }
-    if (+d.textContent < unseen) { d.classList.remove("pop"); void d.offsetWidth; d.classList.add("pop"); }
-    d.textContent = unseen; b.setAttribute("aria-label", `Ledger, ${unseen} new`);
-  } else { if (d) d.remove(); b.removeAttribute("aria-label"); }
+/* each section keeps its own place on the page; coming back to Now always starts at the top */
+const scrollAt = {};
+const WIDE = matchMedia("(min-width: 820px)");
+function setTab(t) { if (t !== tab) { scrollAt[tab] = window.scrollY; requestAnimationFrame(() => window.scrollTo(0, t === "now" ? 0 : scrollAt[t] || 0)); } tab = t; }
+/* the head of the tape counts tonight; a deal you have not looked at yet is "new" until the tape is on screen */
+function navNow() { if (!S) return "Ready"; const r = remaining(); return r <= 0 ? "Time's up" : `${minsLeft()} min ${cur().type === "focus" ? "left" : "of break"}`; }
+function tapeSeen() { const t = $("#side-ledger"); if (!unseen || !t || t.hidden) return; if (t.getBoundingClientRect().top < innerHeight * .62) { unseen = 0; paintTape(); } }
+function paintTape() {
+  const v = $("#tapeval"); if (!v) return;
+  const deals = ledger.filter(e => e.kind !== "cleared").length, txt = unseen ? `${unseen} new` : deals ? `${deals} deal${deals === 1 ? "" : "s"}` : "";
+  if (unseen && +v.dataset.n < unseen) { v.classList.remove("pop"); void v.offsetWidth; v.classList.add("pop"); }
+  v.dataset.n = unseen; v.classList.toggle("new", !!unseen); if (v.textContent !== txt) v.textContent = txt;
+}
+/* the browser tab keeps the time when Pomodeal is behind your notes */
+const BASE_TITLE = document.title;
+function paintTitle() { const t = S ? `${navNow()}, ${cur().type === "focus" ? shortTask() : "break"} | Pomodeal` : BASE_TITLE; if (document.title !== t) document.title = t; }
+function deskHead() {
+  const d = new Date(Date.now() + (BE ? 0 : DEMO_SHIFT));
+  return `<span class="mark">Pomodeal</span><span class="day">${N(`${d.toLocaleDateString([], { weekday: "long" })}, ${clockStr()}`)}</span>`;
 }
 
 function focusKey(el) {
@@ -1130,10 +1220,22 @@ function render() {
   const v = $("#view");
   if (!S && pushAsk === "ask") pushAsk = null;
   document.body.classList.toggle("modal", tab === "now" && mode === "intercept");
-  v.innerHTML = tab === "ledger" ? ledgerView() : tab === "room" ? roomView() : mode === "intercept" ? interceptView() : !S ? startView() : runningView();
+  /* on a wide window the ledger and the room sit on the desk beside the clock, so those two sections fold into Now */
+  const wide = WIDE.matches && mode !== "intercept", roomOut = false;
+  /* the sample ledger is on the tape from the start, the way a real night's would be */
+  if (!BE && !ledger.length && location.hash !== "#empty") seedLedger();
+  v.innerHTML = tab === "room" ? roomView() : mode === "intercept" ? interceptView() : !S ? startView() : runningView();
+  const sl = $("#side-ledger"), sr = $("#side-room"), tapeOn = tab === "now" && mode !== "intercept";
+  sl.hidden = !tapeOn; sr.hidden = !roomOut; $(".desk").classList.toggle("noroom", wide && !roomOut);
+  const tapeHtml = tapeOn ? `<div class="tape">${ledgerView()}</div>${BE ? `<p class="tapefoot">Rooms for your friend group open soon. For now, invite friends from the account button at the top.</p>` : ""}` : "";
+  if (sl.dataset.sig !== tapeHtml || document.querySelector(".stubcard.fresh")) { sl.innerHTML = tapeHtml; sl.dataset.sig = tapeHtml; }
+  sr.innerHTML = roomOut ? roomView(true) : "";
+  /* phone: only the tape's top edge is on the first screen */
+  $("#deskhead").innerHTML = wide ? deskHead() : "";
+  paintTitle();
   renderSheet();
   renderPanel();
-  paintTabs();
+  paintTape(); tapeSeen();
   bind();
   syncWake();
   /* a fresh ledger stub pushes the pile down by its own height */
@@ -1294,16 +1396,11 @@ function closeWeek(msg, to) {
   return key;
 }
 function startView() {
-  const last = newest(ledger) || newest(SEED);
   const door = !fromCard && shownCards().length > 0, folded = door && !quickOpen;
   const tk = door ? `${quickDoor(!folded)}<div id="quickdeal"${folded ? " hidden" : ""}>${ticket(true)}</div>` : ticket(true);
   return `<h1 class="home">Make a deal</h1>${weekView()}${cardsView()}${tk}
   ${deal.act && !folded ? `<button class="textbtn skip" id="skipbreak">Skip the break, start ${esc(fromCard ? fromCard.title : shortTask())}</button>` : ""}
-  <section class="rows${folded ? "" : " anchor"}" aria-label="Tonight so far">
-    ${presence()}
-    <button class="presence lastline" id="toledger" aria-describedby="ledgerhint"><span>${N(lastLine(last))}</span>${CHEV}</button>
-    <span class="vh" id="ledgerhint">Opens the ledger</span>
-  </section>`;
+  <section class="rows${folded ? "" : " anchor"}" aria-label="Your room">${presence()}</section>`;
 }
 function interceptView() {
   return `<div style="display:flex;gap:14px;align-items:center"><span class="appicon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17" cy="7" r=".8" fill="#fff"/></svg></span>
@@ -1320,7 +1417,7 @@ function presence(still) {
   const faces = `<span class="faces">${ROOM.slice(0, 3).map(p => mini(p, "sm")).join("")}</span>`;
   /* while you focus, the room is company, not a door out */
   if (still) return `<div class="presence">${faces}<span>${S && S.with ? "Focusing with Maya" : "Maya’s focusing too"}</span></div>`;
-  return `<button class="presence" id="toroom">${faces}<span>${N("Maya’s focusing, 14 min left")}</span>${CHEV}</button>`;
+  return `<button class="presence" id="toroom">${faces}<span>${N("Maya, 14 min left")}</span><span class="see">See room</span></button>`;
 }
 function runningView() {
   const b = cur(), isB = b.type === "break", r = remaining(), m = minsLeft();
@@ -1352,7 +1449,7 @@ function runningView() {
   </div>
   <div class="timerwrap">
     <div class="dial${S.justStarted ? " sweep" : ""}${r <= 0 ? " done" : ""}${heads ? " heads" : ""}${tn != null ? " turn" : wd != null ? " wind" : ""}" style="--p:${r <= 0 ? 0 : (r / S.durMs).toFixed(4)};${dialTicks(S.durMs / 60000)}${dl != null ? ";" + lagVar(dl) : ""}" role="img" aria-label="${r <= 0 ? "Time is up" : m + " minutes left" + (half ? ", halfway" : "")}">
-      ${dial(isB ? "break" : "focus")}${tn != null && turnFrom && turnFrom.p > .005 ? `<span class="fill was ${turnFrom.type}" style="--p:${turnFrom.p.toFixed(4)}"></span>` : ""}
+      ${dial(isB ? "break" : "focus", S.durMs / 60000)}${tn != null && turnFrom && turnFrom.p > .005 ? `<span class="fill was ${turnFrom.type}" style="--p:${turnFrom.p.toFixed(4)}"></span>` : ""}
       <span class="face${ink != null ? " reink" : ""}"${ink != null ? ` style="${lagVar(ink)}"` : ""}><span class="big ${f.cls}" id="mins">${f.big}</span><span class="unit" id="unit">${quiet ? "" : esc(f.unit)}</span></span>
     </div>
     ${note}${aside}${keepOn}${askPush}
@@ -2050,7 +2147,7 @@ function bindPanel() {
 }
 function setInert() {
   const on = !!(sheet && S && tab === "now") || panelOpen();
-  document.querySelectorAll(".app, nav.tabs").forEach(el => { if (on) el.setAttribute("inert", ""); else el.removeAttribute("inert"); });
+  document.querySelectorAll(".app").forEach(el => { if (on) el.setAttribute("inert", ""); else el.removeAttribute("inert"); });
 }
 function openSheet(s) { opener = document.activeElement; const at = performance.now(); sheet = { ...s, focusMe: true, openedAt: at, termsAt: s.asking ? at : null }; say(s.kind === "bonus" ? "Focus block ended. Offer to keep going." : `${title(cur().label)} time is up.`); }
 function closeSheet() { sheet = null; }
@@ -2059,18 +2156,18 @@ function ledgerView() {
   const n = k => ledger.filter(e => e.kind === k).length;
   const deals = ledger.filter(e => e.kind !== "cleared").length;
   const any = ledger.length || studied;
-  return `<h1>Today's deals</h1>
+  return `<div class="tapehead"><h2 id="tapeh" tabindex="-1">Today's deals</h2><span class="tapeval" id="tapeval"></span></div>
   ${!any ? `<p class="soft">Nothing yet. When you ask for more time, the deal and its terms land here.</p>` : ""}
-  ${any ? `<div class="tally">
-    <div><b class="go">${studied}</b><span>min studied</span></div>
-    <div><b>${deals}</b><span>deals made</span></div>
-    <div><b>${n("trade") * 5 + n("bonus") * 10}</b><span>min added to focus</span></div>
-  </div>` : ""}
+  ${ledger.length ? `<ul class="stubs" aria-label="Deals, newest first">${ledger.map((e, i) => `<li class="stubcard${freshStub(e)}">${stubInner(e, i)}</li>`).reverse().join("")}</ul>` : ""}
+  ${any ? `<dl class="totals">
+    <div class="go"><dt>Studied</dt><dd>${N(studied)} min</dd></div>
+    <div><dt>Deals made</dt><dd>${deals}</dd></div>
+    <div><dt>Added to focus</dt><dd>${N(n("trade") * 5 + n("bonus") * 10)} min</dd></div>
+  </dl>` : ""}
   ${BE ? "" : `<section class="insight" aria-label="This week">
     ${clockSays(`This week, most of your deals happened after 10pm. Want a longer first break at night?`)}
     <div class="insight-act"><button class="trychip" id="tryit" aria-pressed="${tried}">${tried ? N("Done. Tonight's first break is 15 min") : "Try it tonight"}</button></div>
-  </section>`}
-  ${ledger.length ? `<ul class="stubs" aria-label="Deals, newest first">${ledger.map((e, i) => `<li class="stubcard${freshStub(e)}">${stubInner(e, i)}</li>`).reverse().join("")}</ul>` : ""}`;
+  </section>`}`;
 }
 /* a new stub tears in the first time the ledger shows it, and keeps tearing in smoothly across re-renders */
 function freshStub(e) {
@@ -2079,7 +2176,7 @@ function freshStub(e) {
   const el = now - e.freshAt; if (el >= 1000) { e.fresh = false; return ""; }
   return ` fresh" style="${lagVar(el)}`;
 }
-function roomView() {
+function roomView(side) {
   if (BE) return `<h1>Rooms</h1>
   <p class="soft">Rooms for your friend group open soon: see who's focusing, and messages wait until everyone's on a break.</p>
   <p class="soft">For now, invite friends from the account button at the top. Each invite is one ticket.</p>`;
@@ -2095,7 +2192,7 @@ function roomView() {
   const who = (p, extra) => `<span class="who"><strong>${p.n}</strong>${p.n === "Maya" && withMaya ? `<span class="joined">Joined</span>` : ""}<small>${N(esc(p.d))}</small>${extra || ""}</span>`;
   /* Sam is stuck: one quiet way to help, delivered when his break comes */
   const samExtra = nudged ? `<small id="nudged" tabindex="-1">${N("Nudge sent: “You got this, start with one page.”")}</small>` : `<button class="textbtn nudge" id="nudge">Send a nudge</button>`;
-  return `<h1>Late-night BIO crew</h1>
+  return `${side ? `<h2>Late-night BIO crew</h2>` : `<button class="textbtn back" id="backnow">Back to the clock</button><h1>Late-night BIO crew</h1>`}
   <p class="soft">${N("4 friends. Messages wait until your break.")}</p>
   <ul class="people" aria-label="Who's here">
     <li class="person you">${mini(me)}${who(me)}${state(me)}</li>
@@ -2260,7 +2357,7 @@ function bind() {
   });
   on("#seal", () => seal("0"));
   on("#toroom", () => { setTab("room"); render(); focusTitle(); });
-  on("#toledger", () => { if (!ledger.length && !BE) seedLedger(); setTab("ledger"); render(); focusTitle(); });
+  on("#backnow", () => { setTab("now"); lastSig = ""; render(); focusTitle(); });
   on("#typeown", () => { sheet.typing = true; if (!arrowing) nextFocus = "#intent"; render(); });
   /* tapping a term ticket is the deal. On the third ask, borrowing or trading also needs the first thing you'll do;
      "No terms" never does. */
@@ -2318,7 +2415,7 @@ function loadCard(id) {
   picker = deal.act ? null : "act";
   nextFocus = deal.act ? '[data-pick="break"]' : '[data-pick="act"]';
   render();
-  const t = $("#ticket"); if (t) t.scrollIntoView({ block: "start" });
+  const t = $("#ticket"); if (t) t.scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" });
   say(`${c.title} is on the ticket. Pick your break, then Deal.`);
 }
 /* a one-line field written on a ruled line grows to fit what's written (and again once the fonts land) */
@@ -2353,13 +2450,13 @@ function seal(i) {
 /* the announcement says what the deal cost, not only what it bought */
 function take(term, i) { const intention = sheet && sheet.intention; if (BE) BE.ask(i === "x" ? "override" : +i, intention);
   /* ADR 0005: remembered here at once; the server keeps the same pick on the user */
-  if (term.kind === "borrow" || term.kind === "trade") { lastRepay = term.kind; S.lastRepay = term.kind; } file(applyTerm(S, term, intention)); if (tab !== "ledger") unseen++; closeSheet(); beat("wind"); say(`Deal, ${lower(TERMS[term.kind])}. ${title(cur().label)} for ${minsLeft()} more minutes.${S.debt > 0 ? ` ${S.debt} borrowed minutes come out of later breaks.` : ""}`); render(); restoreFocus(); }
+  if (term.kind === "borrow" || term.kind === "trade") { lastRepay = term.kind; S.lastRepay = term.kind; } file(applyTerm(S, term, intention)); unseen++; closeSheet(); beat("wind"); say(`Deal, ${lower(TERMS[term.kind])}. ${title(cur().label)} for ${minsLeft()} more minutes.${S.debt > 0 ? ` ${S.debt} borrowed minutes come out of later breaks.` : ""}`); render(); restoreFocus(); }
 function dismiss() { if (!sheet) return; const moved = movedOn(); sendNotes(); if (moved) closeSheet(); else if (sheet.kind === "bonus") { S.bonusOffered = true; nextBlock(); } else if (remaining() <= 0) nextBlock(); else closeSheet(); render(); restoreFocus(); }
 function restoreFocus() { const t = opener && document.body.contains(opener) ? opener : document.querySelector(".act button, #view h1"); if (t) { if (!t.matches("button")) t.tabIndex = -1; t.focus({ preventScroll: true }); } }
 function takeBonus() {
   if (BE) BE.bonus();
   cur().min += 10; S.durMs += 10 * 60000; const nb = nextOf(S, "break"); if (nb) nb.min += 3;
-  file({ t: clockStr(), kind: "bonus", text: `10 more min of ${shortTask()}`, note: "" }); if (tab !== "ledger") unseen++; S.bonusOffered = true; closeSheet(); beat("wind"); render(); restoreFocus();
+  file({ t: clockStr(), kind: "bonus", text: `10 more min of ${shortTask()}`, note: "" }); unseen++; S.bonusOffered = true; closeSheet(); beat("wind"); render(); restoreFocus();
 }
 /* Escape never commits you to anything: it backs out one step, or does nothing */
 function escape() {
@@ -2388,9 +2485,10 @@ document.addEventListener("keydown", e => {
 });
 
 const focusTitle = () => { const h = $("#view h1"); if (h) { h.tabIndex = -1; h.focus({ preventScroll: true }); } };
-$("#tab-now").onclick = () => { setTab("now"); lastSig = ""; render(); focusTitle(); };
-$("#tab-ledger").onclick = () => { setTab("ledger"); render(); focusTitle(); };
-$("#tab-room").onclick = () => { setTab("room"); render(); focusTitle(); };
+/* crossing between phone and desk redraws; the foot and the browser tab keep time even when the page is not being painted */
+WIDE.addEventListener("change", () => { lastSig = ""; render(); });
+setInterval(() => { if (!S) return; if (BE) vnow = Date.now() + clockOffset; paintTitle(); }, 1000);
+addEventListener("scroll", tapeSeen, { passive: true });
 $("#sp1").onclick = () => { speed = 1; $("#sp1").setAttribute("aria-pressed", "true"); $("#sp30").setAttribute("aria-pressed", "false"); };
 $("#sp30").onclick = () => { speed = 30; $("#sp30").setAttribute("aria-pressed", "true"); $("#sp1").setAttribute("aria-pressed", "false"); };
 $("#jump").onclick = () => { if (S) vnow = S.startedAt + S.durMs - 1000; };
@@ -2560,7 +2658,7 @@ function fromHash() {
     weekAsk = { key: "2026-11-08" };
     if (h === "checkin-cards") bigOneCards = demoCards(DEMO_CARDS.slice(0, 2));
   }
-  else if (h === "ledger") { seedLedger(); setTab("ledger"); }
+  else if (h === "ledger") { seedLedger(); requestAnimationFrame(() => requestAnimationFrame(() => { const t = $("#side-ledger"); if (t) t.scrollIntoView({ block: "start" }); })); }
   else if (h === "room") setTab("room");
   lastSig = S ? signature() : ""; wasHeads = !!S && isHeads();
   render();
@@ -2652,7 +2750,7 @@ window.pomodealApp = {
     const old = new Map(ledger.map(e => [e.id, e])), first = !liveLedgerLoaded; liveLedgerLoaded = true;
     ledger = entries.slice().reverse().map(e => { const prev = old.get(e._id); return { id: e._id, t: clockStr(e.at), kind: e.kind === "forgiven" ? "cleared" : e.kind, text: SERVER_TEXT(e), note: e.intention || "",
       fresh: prev ? prev.fresh : !first, freshAt: prev ? prev.freshAt : undefined }; });
-    if (tab === "ledger") render();
+    if (tab === "now") render();
   },
 };
 </script>

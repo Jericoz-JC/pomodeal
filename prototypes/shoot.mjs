@@ -28,13 +28,14 @@ const STATES = ["start", "intercept", "running", "focus", "heads-up", "boundary"
 const only = process.env.ONLY ? process.env.ONLY.split(",") : null;
 const WIDTH = Number(process.env.WIDTH) || 390;
 const HEIGHT = Number(process.env.HEIGHT) || 844;
-const EDGE = "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe";
+// BROWSER=/path/to/chromium runs this on Linux or macOS
+const EDGE = process.env.BROWSER || "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe";
 const PORT = 9333 + Math.floor(Math.random() * 500);
 const profile = join(tmpdir(), `nc-shoot-${Date.now()}`);
 
 mkdirSync(out, { recursive: true });
 
-const proc = spawn(EDGE, ["--headless=new", `--remote-debugging-port=${PORT}`, `--user-data-dir=${profile}`, "--disable-gpu", "--hide-scrollbars", "about:blank"], { stdio: "ignore" });
+const proc = spawn(EDGE, ["--headless=new", `--remote-debugging-port=${PORT}`, `--user-data-dir=${profile}`, "--disable-gpu", ...(process.platform === "linux" ? ["--no-sandbox"] : []), "--hide-scrollbars", "about:blank"], { stdio: "ignore" });
 const wait = ms => new Promise(r => setTimeout(r, ms));
 
 let wsUrl;
