@@ -92,6 +92,20 @@ test("next reschedules for the new block", async () => {
   expect(fires.every((j) => j.args[0].version === 2)).toBe(true);
 });
 
+test("next on the last block leaves no pending fire", async () => {
+  const t = newT();
+  const { as } = await makeMember(t, "Ada");
+  const { sessionId } = await as.mutation(api.sessions.start, { deal });
+  const s0 = await t.run((ctx) => ctx.db.get(sessionId));
+  const last = s0!.state.blocks.length - 1;
+  for (let i = 0; i < last; i++) await as.mutation(api.sessions.next, { sessionId, fromIdx: i });
+  expect(await jobs(t, "push:fire")).toHaveLength(2); // the last block's own heads-up and end
+  await as.mutation(api.sessions.next, { sessionId, fromIdx: last });
+  expect(await jobs(t, "push:fire")).toHaveLength(0);
+  const s = await t.run((ctx) => ctx.db.get(sessionId));
+  expect(s!.state.scheduledIds).toEqual([]);
+});
+
 test("a fire with an old version schedules no send (spec test 11)", async () => {
   const t = newT();
   const { as } = await makeMember(t, "Ada");

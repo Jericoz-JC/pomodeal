@@ -31,16 +31,23 @@ type SessionState = Doc<"sessions">["state"];
 /**
  * The one place a session's state is written after it starts. Every change bumps `version` (stale scheduled
  * pushes check it) and keeps the scheduled ids, whatever the core rules returned. The pushes follow the write:
- * a running session gets its current block's heads-up and end rescheduled; an ended one has them cancelled.
+ * a running session gets its current block's heads-up and end rescheduled; an ended one, or a write with
+ * `schedule: false`, has them cancelled and none scheduled.
  */
-async function saveState(ctx: MutationCtx, s: Doc<"sessions">, state: SessionState, status?: "ended") {
+async function saveState(
+  ctx: MutationCtx,
+  s: Doc<"sessions">,
+  state: SessionState,
+  status?: "ended",
+  { schedule = true }: { schedule?: boolean } = {},
+) {
   const next: SessionState = {
     ...state,
     version: (s.state.version ?? 0) + 1,
     ...(s.state.scheduledIds ? { scheduledIds: s.state.scheduledIds } : {}),
   };
-  if (status) {
-    await ctx.db.patch(s._id, { status });
+  if (status) await ctx.db.patch(s._id, { status });
+  if (status || !schedule) {
     await cancelPushes(ctx, s._id, next); // writes `next`
   } else {
     await reschedule(ctx, s._id, next, Date.now()); // writes `next` with the new ids
@@ -181,7 +188,10 @@ export const next = mutation({
     if (s.state.idx !== fromIdx) return;
     const now = Date.now();
     await creditTask(ctx, s, focusMinutesDone(s.state, now), dayKey);
-    await saveState(ctx, s, advance(s.state, now));
+    // Core `advance` holds at the last block and restarts it. The client calls `next` there when the session's
+    // last block ends (and when it reopens later), so that restart must not schedule another heads-up and end.
+    const onLast = s.state.idx >= s.state.blocks.length - 1;
+    await saveState(ctx, s, advance(s.state, now), undefined, { schedule: !onLast });
   },
 });
 
