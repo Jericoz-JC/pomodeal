@@ -1,7 +1,8 @@
 // `npm run build` (and `build:ci`): the build entry for Cloudflare Workers Builds, any CI, and local builds.
-// With CONVEX_DEPLOY_KEY set (production, or a preview key): deploy Convex functions + schema,
-// then build the PWA against that deployment's URL.
-// Without it (e.g. a preview branch with no key): build the PWA only, against .env.production.
+// - On `main` with a production CONVEX_DEPLOY_KEY: deploy Convex functions + schema, then build the PWA against it.
+// - With a preview deploy key (any branch): deploy to that preview deployment, then build against it.
+// - Anywhere else, including branch builds that can see the production key (Cloudflare Workers Builds shares
+//   build variables across branches): build the PWA only, against .env.production. Only `main` ships production.
 // On the production branch a missing key fails the build, so the site never ships ahead of its backend.
 import { spawnSync } from "node:child_process";
 
@@ -14,9 +15,11 @@ const run = (cmd) => {
 const key = (process.env.CONVEX_DEPLOY_KEY || "").trim();
 const branch = process.env.WORKERS_CI_BRANCH || process.env.CF_PAGES_BRANCH || "";
 // The part before "|" names the deployment (e.g. "prod:affable-hound-751") and is not secret.
-console.log(`[ci-build] branch=${branch || "(unknown)"} deployKey=${key ? key.split("|")[0] : "(not set)"}`);
+const target = key ? key.split("|")[0] : "";
+const isProdKey = target.startsWith("prod:");
+console.log(`[ci-build] branch=${branch || "(unknown)"} deployKey=${target || "(not set)"}`);
 
-if (key) {
+if (key && (!isProdKey || branch === "main")) {
   run('npx convex deploy --cmd "npm run build:web" --cmd-url-env-var-name VITE_CONVEX_URL');
 } else if (branch === "main") {
   console.error(
@@ -25,6 +28,10 @@ if (key) {
   );
   process.exit(1);
 } else {
-  console.log("CONVEX_DEPLOY_KEY not set: building the web app without deploying Convex.");
+  console.log(
+    key
+      ? `Production deploy key on branch "${branch || "(unknown)"}": only main deploys production, so building the web app without deploying Convex.`
+      : "CONVEX_DEPLOY_KEY not set: building the web app without deploying Convex.",
+  );
   run("npm run build:web");
 }
