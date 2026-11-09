@@ -1,4 +1,4 @@
-# 0003: The dial's ring winds on by animating its fill
+# 0004: The dial's ring winds on by animating its fill
 
 Date: 2026-11-08 · Status: accepted (Chris, after the motion pass on `design/motion`)
 
