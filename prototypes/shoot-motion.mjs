@@ -32,7 +32,7 @@ const MOMENTS = {
   "time-up": { url: `${app}#running`, setup: "speed = 1", trigger: "(() => { vnow = S.startedAt + S.durMs - 30; return Date.now(); })()", ms: 1700, crop: [0, 0, W, H] },
   "offer-open": { url: `${app}#boundary`, setup: "S.askCount = 1", trigger: click("#ask2"), ms: 900, crop: [0, 300, W, H] },
   "offer-pick": { url: `${app}#offer-terms`, trigger: click('[data-term="0"]'), ms: 1200, crop: [0, 300, W, H] },
-  "ledger": { url: `${app}#offer-terms`, setup: `seedLedger(); document.querySelector('[data-term="1"]').click()`, settle: 1500, trigger: click("#tab-ledger"), ms: 1200, crop: [0, 40, W, 520] },
+  "ledger": { url: `${app}#offer-terms`, setup: `seedLedger(); document.querySelector('[data-term="1"]').click()`, settle: 1500, trigger: click("#tab-ledger"), ms: 1200, crop: [0, 40, W, 700] },
   "landing": { landing: true, ms: 3800, step: 120, crop: [0, 200, W, 580] },
 };
 const VARIANTS = [
@@ -108,7 +108,8 @@ async function record(m, v) {
     const url = await landingUrl();
     await cast(); t0 = Date.now(); await send("Page.navigate", { url });
   } else {
-    await send("Page.navigate", { url: m.url }); await wait(1300); // fonts + first render
+    await send("Page.navigate", { url: m.url }); await wait(600);
+    await evaluate("document.fonts.ready.then(() => true)"); await wait(400); // never record a font swap
     if (m.setup) { await evaluate(m.setup); await wait(m.settle || 200); }
     await cast(); await wait(250);
     if (m.trigger.tap) {

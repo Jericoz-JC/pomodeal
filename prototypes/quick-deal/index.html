@@ -406,6 +406,9 @@ body.modal nav.tabs { display: none; }
    A moment records when it began (JS `beat`); a re-render inside its window passes the elapsed time as a negative
    --lag, so the moment carries on where it was instead of restarting. Animation never drives time. */
 
+/* a line that replaces a 44px button keeps its height, so nothing above it moves */
+.held { min-height: 44px; display: grid; place-items: center; }
+
 /* 1. the stamp. The button gives under the thumb, the stamp comes down (ease-in), hits the paper at 28%, squashes,
    rebounds once and settles. The ticket dips on impact, and phones that can buzz, buzz at the same instant. */
 @keyframes ink {
@@ -419,27 +422,34 @@ body.modal nav.tabs { display: none; }
 @keyframes press { 35% { transform: scale(.965); } }
 @keyframes thud { 30% { transform: translateY(2px); } }
 .primary.pressed { animation: press .22s ease-out; }
+/* then the stub tears away: paper falls, it doesn't fade. The ticket's own edge clips it as it drops. */
+.ticket.torn .stub { opacity: 1; transform: translateY(70px) rotate(5deg); transition: transform .26s cubic-bezier(.5, 0, .75, 0); }
+/* the new session's ring draws in quickly and lands softly, so it never reads as a loading bar */
+.dial.sweep { animation-duration: .45s; animation-timing-function: cubic-bezier(.2, .8, .2, 1); }
 .ticket.stamped, .term.stamped { animation: thud .26s .15s ease-out; }
 
 /* 2. block change: whatever was left of the old ring lifts off, the knob runs one lap, and the new ring winds in
-   behind it in its own material (solid green for focus, the hatch for a break). The words in the middle rise in after. */
+   in its own material (solid green for focus, the hatch for a break). The words stay readable throughout. */
 .dial .was { z-index: 1; pointer-events: none; animation: ring-out .3s var(--lag, 0ms) cubic-bezier(.4, 0, .7, .4) forwards; }
 .dial.turn .fill:not(.was) { animation: ring-in .5s calc(var(--lag, 0ms) + 40ms) cubic-bezier(.45, 0, .2, 1) backwards; }
 .dial.turn :is(.edge, .face) { z-index: 2; }
 .dial.turn .edge { animation: lap .5s calc(var(--lag, 0ms) + 40ms) cubic-bezier(.45, 0, .2, 1) backwards; }
-.dial.turn .face > *, .now.turn > * { animation: rise .3s calc(var(--lag, 0ms) + 100ms) ease-out backwards; }
+/* the words are readable from the first frame: they only settle into place, they never fade */
+.dial.turn .face > *, .now.turn > * { animation: settle .3s var(--lag, 0ms) ease-out backwards; }
 @keyframes ring-out { to { opacity: 0; transform: scale(1.045); } }
-@keyframes ring-in { from { opacity: 0; transform: rotate(-.25turn) scale(.95); } 45% { opacity: 1; } }
+@keyframes ring-in { from { opacity: 0; transform: scale(.95); } 45% { opacity: 1; } }
 @keyframes lap { from { transform: rotate(0turn); } }
-@keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+@keyframes settle { from { transform: translateY(6px); } }
 
-/* 3. heads-up and time-up: one slow ripple off the ring (two at time-up), in the block's own color. No flashing,
-   nothing that repeats. The sheet that follows rises after the ripple, a little slower than a sheet you opened. */
-.dial .ripple { inset: 6%; border: 4px solid var(--deal); pointer-events: none; opacity: 0; animation: ripple 1.1s var(--lag, 0ms) cubic-bezier(.2, .6, .3, 1); }
-.dial .ripple.break { border-color: var(--break-base); }
-.dial .ripple + .ripple { animation-delay: calc(var(--lag, 0ms) + 420ms); }
-@keyframes ripple { from { opacity: .7; transform: scale(1); } to { opacity: 0; transform: scale(1.2); } }
-.act.fresh > * { animation: rise .3s var(--lag, 0ms) ease-out backwards; }
+/* 3. heads-up and time-up: the number in the dial is re-inked once, like a fresh stamp: pressed in a touch large,
+   it settles. No flashing, nothing that repeats. At time-up the sheet comes up at the same moment. */
+.face.reink .big { animation: reink .44s var(--lag, 0ms) linear backwards; }
+@keyframes reink {
+  0% { transform: scale(1.16); opacity: .35; animation-timing-function: cubic-bezier(.55, 0, .8, .3); }
+  30% { transform: scale(.96); opacity: 1; animation-timing-function: cubic-bezier(.2, .7, .3, 1); }
+  100% { transform: none; opacity: 1; }
+}
+.act.fresh > * { animation: settle .3s var(--lag, 0ms) ease-out backwards; }
 
 /* sheets rise from the bottom edge and slide back down when they close. The dimming is its own layer, so fading it
    never makes the sheet see-through. */
@@ -447,10 +457,13 @@ body.modal nav.tabs { display: none; }
 .scrim::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--scrim); }
 .scrim.rise::before { animation: fade .2s var(--lag, 0ms) ease-out backwards; }
 .scrim.rise .sheet { animation: sheet-in .34s var(--lag, 0ms) cubic-bezier(.2, .8, .2, 1) backwards; }
-.scrim.rise.calm::before { animation-duration: .4s; animation-delay: calc(var(--lag, 0ms) + 220ms); }
-.scrim.rise.calm .sheet { animation-duration: .44s; animation-delay: calc(var(--lag, 0ms) + 220ms); }
+.scrim.rise.calm::before { animation-duration: .36s; }
+.scrim.rise.calm .sheet { animation-duration: .4s; }
+/* at time-up the used half tears and is marked once the sheet has arrived, not while it is still moving */
+.scrim.rise.calm .tearrow .used { animation-delay: calc(var(--lag, 0ms) + 380ms); }
+.scrim.rise.calm .tearrow .usedwrap .stamp { animation-delay: calc(var(--lag, 0ms) + 520ms); }
 .scrim.leaving { pointer-events: none; }
-.scrim.leaving::before { animation: fade-out .24s ease-in forwards; }
+.scrim.leaving::before { animation: fade-out .16s ease-in forwards; }
 .scrim.leaving .sheet { animation: sheet-out .24s cubic-bezier(.5, 0, .8, .4) forwards; }
 @keyframes fade { from { opacity: 0; } }
 @keyframes fade-out { to { opacity: 0; } }
@@ -459,17 +472,16 @@ body.modal nav.tabs { display: none; }
 
 /* 4. asking for time: the terms come off the pad one by one, pivoting on their perforated edge. The one you tap is
    stamped, lifts a little, and the others fall away before the sheet closes. */
-.terms.deal-in > .term { transform-origin: 0 50%; animation: tear-in .34s calc(var(--lag, 0ms) + 120ms) cubic-bezier(.2, .8, .2, 1) backwards; }
-.terms.deal-in > .term:nth-child(2) { animation-delay: calc(var(--lag, 0ms) + 210ms); }
+.terms.deal-in > .term { transform-origin: 0 50%; animation: tear-in .34s calc(var(--lag, 0ms) + 30ms) cubic-bezier(.2, .8, .2, 1) backwards; }
+.terms.deal-in > .term:nth-child(2) { animation-delay: calc(var(--lag, 0ms) + 90ms); }
 @keyframes tear-in { from { opacity: 0; transform: translateX(-12px) rotate(-3deg); } 70% { transform: rotate(.5deg); } }
-.terms.picking > .term:not(.stamped) { animation: fall .26s .3s cubic-bezier(.5, 0, .8, .4) forwards; }
-.terms.picking > .term.stamped { animation: thud .26s .15s ease-out, lift .24s .44s ease-out forwards; }
+.terms.picking > .term:not(.stamped) { animation: fall .24s .22s cubic-bezier(.5, 0, .8, .4) forwards; }
+.terms.picking > .term.stamped { animation: thud .26s .15s ease-out, lift .22s .34s ease-out forwards; }
 @keyframes fall { to { opacity: 0; transform: translateY(10px) rotate(1.5deg); } }
 @keyframes lift { to { transform: translateY(-3px) scale(1.012); } }
 
-/* 5. ledger: the newest stub tears in on top of the pile, then its stamp lands. The tab's count pops once. */
+/* 5. ledger: the newest stub, already stamped, drops onto the top of the pile. The tab's count pops once. */
 .stubcard.fresh { transform-origin: 0 0; animation: stub-in .38s calc(var(--lag, 0ms) + 80ms) cubic-bezier(.2, .8, .2, 1) backwards; }
-.stubcard.fresh .stamp { animation: ink .5s calc(var(--lag, 0ms) + 380ms) linear backwards; }
 @keyframes stub-in { from { opacity: 0; transform: translateY(-16px) rotate(-2.5deg); } 70% { transform: rotate(.4deg); } }
 nav.tabs .dot.pop { animation: pop .3s cubic-bezier(.3, 1.6, .5, 1); }
 @keyframes pop { from { transform: scale(.4); opacity: 0; } }
@@ -477,13 +489,13 @@ nav.tabs .dot.pop { animation: pop .3s cubic-bezier(.3, 1.6, .5, 1); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
   /* reduced motion keeps the meaning as short crossfades: nothing moves, things appear and disappear */
-  .stamped .stamp.ghost, .stubcard.fresh .stamp, .dial.turn .fill:not(.was), .dial.turn .face > *, .now.turn > *, .act.fresh > *,
-  .terms.deal-in > .term, .stubcard.fresh, .scrim.rise, nav.tabs .dot.pop { animation: fade .2s var(--lag, 0ms) ease-out backwards !important; }
-  .scrim.rise::before, .scrim.rise .sheet { animation: none !important; }
+  .stamped .stamp.ghost, .dial.turn .fill:not(.was), .terms.deal-in > .term, .stubcard.fresh, nav.tabs .dot.pop { animation: fade .2s var(--lag, 0ms) ease-out backwards !important; }
+  /* sheets simply appear and disappear: fading one over the page would lay two screens of text on each other */
   .dial .was { animation: fade-out .2s var(--lag, 0ms) ease-in forwards !important; }
-  .scrim.leaving { animation: fade-out .16s ease-in forwards !important; }
+  /* a closing sheet just goes: fading it would lay two screens of text over each other */
+  .scrim.leaving { display: none; }
   .scrim.leaving::before, .scrim.leaving .sheet { animation: none !important; }
-  .terms.picking > .term:not(.stamped) { animation: fade-out .16s .3s ease-in forwards !important; }
+  .terms.picking > .term:not(.stamped) { animation: fade-out .16s .22s ease-in forwards !important; }
   .stamped .stamp.ghost { transform: rotate(var(--tilt)); }
 }
 </style>
@@ -674,7 +686,7 @@ function ticket(peek) {
     <div class="body">
       <div class="tickethead"><span class="serial">No. ${serial}<br>${clockStr()}</span>${STAMPBOX}</div>
       <p class="sentence">${deal.act
-        ? `${tokB(p)} of ${tokA(p)}, then <span class="nowrap">${tokF(p)} of</span> <span class="nowrap">${tokT(p)}.</span>`
+        ? `${tokB(p)} of <span class="nowrap">${tokA(p)},</span> then <span class="nowrap">${tokF(p)} of</span> <span class="nowrap">${tokT(p)}.</span>`
         : `${tokA(p)}. Straight into <span class="nowrap">${tokF(p)} of</span> <span class="nowrap">${tokT(p)}.</span>`}</p>
       ${pk}
     </div>
@@ -739,8 +751,7 @@ function runningView() {
   /* the next step always sits under the dial, in every state, so the dial never moves */
   const note = quiet ? `<p class="note"></p>` : toast ? `<p class="note go" role="status">${N(esc(toast))}</p>` : `<p class="note">${N(then)}</p>`;
   /* motion windows: a block change, the 2-minute heads-up, time up */
-  const tn = since("turn", 900), hu = since("heads", 1300), up = since("up", 1700);
-  const rip = n => `<span class="ripple${isB ? " break" : ""}" style="${lagVar(n)}"></span>`;
+  const tn = since("turn", 900), hu = since("heads", 700), up = since("up", 700), ink = hu ?? up;
   return `<div class="now${tn != null ? " turn" : ""}"${tn != null ? ` style="${lagVar(tn)}"` : ""}>
     <div class="nowhead">
       <span class="kind"><span class="swatch ${isB ? "break" : "focus"}" aria-hidden="true"></span>${isB ? "Break you chose" : "Focus"}</span>
@@ -750,8 +761,8 @@ function runningView() {
   </div>
   <div class="timerwrap">
     <div class="dial${S.justStarted ? " sweep" : ""}${r <= 0 ? " done" : ""}${heads ? " heads" : ""}${tn != null ? " turn" : ""}" style="--p:${r <= 0 ? 0 : (r / S.durMs).toFixed(4)}${tn != null ? ";" + lagVar(tn) : ""}" role="img" aria-label="${r <= 0 ? "Time is up" : m + " minutes left"}">
-      ${dial(isB ? "break" : "focus")}${tn != null && turnFrom && turnFrom.p > .005 ? `<span class="fill was ${turnFrom.type}" style="--p:${turnFrom.p.toFixed(4)}"></span>` : ""}${hu != null ? rip(hu) : ""}${up != null ? rip(up) + rip(up) : ""}
-      <span class="face"><span class="big ${f.cls}" id="mins">${f.big}</span><span class="unit" id="unit">${quiet ? "" : esc(f.unit)}</span></span>
+      ${dial(isB ? "break" : "focus")}${tn != null && turnFrom && turnFrom.p > .005 ? `<span class="fill was ${turnFrom.type}" style="--p:${turnFrom.p.toFixed(4)}"></span>` : ""}
+      <span class="face${ink != null ? " reink" : ""}"${ink != null ? ` style="${lagVar(ink)}"` : ""}><span class="big ${f.cls}" id="mins">${f.big}</span><span class="unit" id="unit">${quiet ? "" : esc(f.unit)}</span></span>
     </div>
     ${note}
   </div>
@@ -848,8 +859,8 @@ function renderSheet() {
       <h2 id="sh" tabindex="-1">Want to keep going?</h2>
       <div class="terms">${tick("div", ` id="bonusticket"`, nb ? figArrow(nb.min, nb.min + 3) : "+3", `+10 min of ${esc(shortTask())}`, GHOST, nb ? `Next break ${arrow(nb.min, nb.min + 3)} min.` : "Your break is 3 min longer.")}</div>
       <button class="primary" id="bonusyes">Deal</button>
-      <button class="secondary countbtn${sheet.paused ? "" : " counting"}" id="bonusno"><span>Take my break</span>${sheet.paused ? "" : `<small id="cdtext">${N("Starts on its own in 30 seconds")}</small>`}</button>
-      ${sheet.paused ? `<p class="soft small center">Take your time. Nothing happens until you pick.</p>` : `<button class="textbtn" id="moretime">More time to decide</button>`}`;
+      <button class="secondary countbtn${sheet.paused ? "" : " counting"}" id="bonusno"><span>Take my break</span>${sheet.paused ? `<small>Waits for you</small>` : `<small id="cdtext">${N("Starts on its own in 30 seconds")}</small>`}</button>
+      ${sheet.paused ? `<p class="soft small center held">Take your time. Nothing happens until you pick.</p>` : `<button class="textbtn" id="moretime">More time to decide</button>`}`;
   }
   const desc = body.includes('id="dealcost"') ? ` aria-describedby="dealcost"` : "";
   /* a sheet rises once when it opens; the terms come off the pad once when they first appear */
@@ -961,10 +972,10 @@ function bind() {
     };
     /* reduced motion: the stamp fades in, holds a moment, then the session starts */
     if (reduce) return void setTimeout(go, 450);
-    /* the stamp settles by 560 ms, then the stub tears off */
-    setTimeout(() => t.classList.add("torn"), 640);
+    /* the stamp has landed and rebounded by about 400 ms; then the stub tears off */
+    setTimeout(() => t.classList.add("torn"), 420);
     /* the inked stamp moves up into the running screen's stub */
-    setTimeout(() => { if (!document.startViewTransition) return go(); const vt = document.startViewTransition(go); vt.ready.catch(() => {}); }, 940);
+    setTimeout(() => { if (!document.startViewTransition) return go(); const vt = document.startViewTransition(go); vt.ready.catch(() => {}); }, 680);
   });
   on("#letmein", () => { file({ t: clockStr(), kind: "override", text: "Opened Instagram without a deal", note: "" }); unseen++; mode = "start"; render(); });
   on("#ask", () => { openSheet({ kind: "offer", asking: true }); render(); });
@@ -1017,9 +1028,10 @@ function pauseBonus() {
   if (!sheet || sheet.kind !== "bonus" || sheet.paused || sheet.sealing) return;
   sheet.paused = true;
   const cb = $("#bonusno"); if (cb) cb.classList.remove("counting");
-  const tx = $("#cdtext"); if (tx) tx.remove();
+  /* same size before and after: a press that paused the timer still lands on the button it started on */
+  const tx = $("#cdtext"); if (tx) { tx.removeAttribute("id"); tx.textContent = "Waits for you"; }
   const mt = $("#moretime");
-  if (mt && document.activeElement !== mt) { const p = document.createElement("p"); p.className = "soft small center"; p.textContent = "Take your time. Nothing happens until you pick."; mt.replaceWith(p); }
+  if (mt && document.activeElement !== mt) { const p = document.createElement("p"); p.className = "soft small center held"; p.textContent = "Take your time. Nothing happens until you pick."; mt.replaceWith(p); }
   say("Timer stopped. Nothing happens until you pick.");
 }
 document.addEventListener("focusin", e => { const t = e.target; if (t && t.closest && t.closest(".sheet") && t.id !== "sh") pauseBonus(); });
@@ -1031,7 +1043,7 @@ function seal(i) {
   const t = document.querySelector(`[data-term="${i}"]`); if (t) { t.classList.add("stamped"); const pad = t.closest(".terms"); if (pad) pad.classList.add("picking"); }
   buzz(14, reduce ? 0 : 150); sheet.sealing = true; $(".sheet").classList.add("busy");
   document.querySelectorAll(".sheet button").forEach(x => x.disabled = true);
-  setTimeout(() => take(term, i), !t || !t.classList.contains("term") ? 0 : reduce ? 450 : 700);
+  setTimeout(() => take(term, i), !t || !t.classList.contains("term") ? 0 : reduce ? 450 : 600);
 }
 function take(term, i) { const intention = sheet && sheet.intention; if (BE) BE.ask(i === "x" ? "override" : +i, intention); file(applyTerm(S, term, intention)); if (tab !== "ledger") unseen++; closeSheet(); say(`Deal. ${title(cur().label)} for ${minsLeft()} more minutes.`); render(); restoreFocus(); }
 function dismiss() { if (!sheet) return; if (sheet.kind === "bonus") { S.bonusOffered = true; nextBlock(); } else if (remaining() <= 0) nextBlock(); else closeSheet(); render(); restoreFocus(); }
@@ -1087,7 +1099,7 @@ function tick() {
   if (S && tab === "now") {
     const r = remaining(), b = cur();
     if (r <= 0 && !sheet) {
-      /* time up: two slow ripples off the dial and a soft double tap, then the sheet rises */
+      /* time up: the 0 is re-inked and a soft double tap, as the sheet rises */
       if (b.type === "break" || (!S.bonusOffered && S.idx < S.blocks.length - 1)) { beat("up"); buzz([12, 90, 12]); }
       if (b.type === "break") openSheet({ kind: "boundary", asking: false, calm: true });
       else if (!S.bonusOffered && S.idx < S.blocks.length - 1) openSheet({ kind: "bonus", at: Date.now(), paused: reduce, calm: true });
@@ -1102,7 +1114,7 @@ function tick() {
     }
     const heads = r <= 120000 && r > 0;
     const sig = [S.idx, heads, r <= 0, sheet && sheet.kind, sheet && sheet.asking, !!toast].join("|");
-    if (sig !== lastSig) { if (lastSig && heads && lastSig.split("|")[1] !== "true" && !sheet) { say(`2 minutes left of ${title(b.label)}.`); beat("heads"); } lastSig = sig; render(); }
+    if (sig !== lastSig) { if (lastSig && heads && lastSig.split("|")[1] !== "true" && !sheet) { say(`2 minutes left of ${title(b.label)}.`); beat("heads"); buzz(10); } lastSig = sig; render(); }
     else {
       const m = minsLeft(), mins = $("#mins"), d = $(".dial"), f = face(r, m);
       if (mins && mins.textContent !== f.big) { mins.textContent = f.big; mins.className = "big " + f.cls; $("#unit").textContent = sheet ? "" : f.unit; if (m !== +d.dataset.m) { d.dataset.m = m; d.setAttribute("aria-label", `${m} minutes left`); } if (reduce) d.style.setProperty("--p", (r / S.durMs).toFixed(4)); }

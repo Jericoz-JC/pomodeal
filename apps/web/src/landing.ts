@@ -191,9 +191,10 @@ export const LANDING_CSS = `
 #pd-gate .ld-intro .ld-arc.f { animation-delay: .22s; }
 @keyframes ld-arc { from { opacity: 0; transform: rotate(-50deg); } }
 #pd-gate .ld-sample { position: absolute; left: 0; right: 0; top: 0; z-index: 3; pointer-events: none; animation: ld-in .38s .12s cubic-bezier(.2, .8, .2, 1) backwards; }
-#pd-gate .ld-sample.ld-file { z-index: 1; transform-origin: 30% 0; animation: ld-file .42s cubic-bezier(.4, 0, .6, 1) forwards; }
+/* the stamped sample stays on top and slides down off the fresh one onto the pile: ink is never un-stamped */
+#pd-gate .ld-sample.ld-file { transform-origin: 30% 0; animation: ld-file .46s cubic-bezier(.5, 0, .75, .3) forwards; }
 @keyframes ld-in { from { opacity: 0; transform: translateY(18px); } }
-@keyframes ld-file { 70% { opacity: 1; } to { opacity: 0; transform: translateY(40px) rotate(-2deg) scale(.97); } }
+@keyframes ld-file { 75% { opacity: 1; } to { opacity: 0; transform: translateY(calc(100% - 30px)) rotate(-2deg) scale(.97); } }
 #pd-gate .ld-ticket.ld-under { opacity: 0; }
 /* the fresh ticket is simply there, like the next sheet on a pad; it settles a hair as the stamped one leaves */
 #pd-gate .ld-ticket.ld-fresh { animation: ld-fresh .3s ease-out; }
@@ -439,13 +440,12 @@ export function bindLanding(root: HTMLElement, a: LandingActions) {
   root.addEventListener("pointerdown", cancel, true); root.addEventListener("keydown", cancel, true);
   const at = (ms: number, f: () => void) => timers.push(window.setTimeout(f, ms));
   at(850, () => sampleBtn?.classList.add("ld-press"));
-  at(900, () => { sample.classList.add("ld-stamped", "ld-thud"); dialEl.classList.add("ld-dealt"); if (sampleSay) sampleSay.textContent = "Deal."; });
+  at(900, () => { sample.classList.add("ld-stamped", "ld-thud"); dialEl.classList.add("ld-dealt"); if (sampleSay) sampleSay.innerHTML = `Deal. Reels until ${later(breakMin)}, then reading.`; });
   at(1750, () => {
     sample.classList.add("ld-file"); ticket.classList.remove("ld-under"); ticket.classList.add("ld-fresh");
     peek?.classList.add("ld-bump"); dialEl.classList.remove("ld-dealt");
   });
   at(2250, () => sample.remove());
-  at(2450, () => speak("Your turn. Pick what you’re on, then tap Deal."));
-  at(2700, () => dealBtn.classList.add("ld-nudge"));
-  at(5200, cancel);
+  at(2300, cancel);
+  // the real ticket's own words never change during the take
 }
