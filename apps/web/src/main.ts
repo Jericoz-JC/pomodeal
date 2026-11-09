@@ -6,7 +6,7 @@ import { ConvexError } from "convex/values";
 import { createClient } from "@workos-inc/authkit-js";
 import { api } from "../../../convex/_generated/api";
 import type { Doc, Id } from "../../../convex/_generated/dataModel";
-import { cardsFor, type BigOneCardRow, type TaskType } from "../../../packages/core/src";
+import { cardsFor, proposeSpread, splitSlots, type BigOneCardRow, type Piece, type SpreadDay, type TaskType } from "../../../packages/core/src";
 import { localDayKey, msToLocalMidnight } from "./days";
 import { mountGate, type GateState, type Provider } from "./gate";
 import { enablePush, pushConfigured, pushSupported, type PushResult } from "./push";
@@ -120,6 +120,10 @@ interface LiveApp {
   env(e: { pushSupported: boolean; installed: boolean; iosSafari: boolean }): void;
 }
 interface DealArgs { act: string | null; breakMin: number; task: string; focusMin: number }
+/** What the split and spread sheets need about one big one, read from the open-tasks subscription (no refetch). */
+interface PlanTask { taskType?: TaskType; gutMin?: number; openTermsMin: number | null; pieces: Piece[]; dueDay?: string; spreadSignedAt?: number; slots: string[] }
+/** The result of a save or a signature: the server's own words when it refused. */
+type PlanResult = { ok: true } | { ok: false; message: string };
 interface Backend {
   start(deal: DealArgs): void;
   ask(pick: number | "override", intention?: string): void;
@@ -136,6 +140,13 @@ interface Backend {
   allBigOnes(): Promise<{ id: string; title: string; status: "open" | "set_aside" }[]>;
   /** From the "Turn on taps at block ends" tap only: the browser prompt, then this device's subscription. Never throws. */
   enablePush(): Promise<PushResult>;
+  /** Spec 008 planning on the card. The sheets get the big one from here (pieces with stampedAt/plannedDay, gut, due, type)
+   *  and the proposal from core's proposeSpread, computed here with today's local key; there is no LiveApp push for it. */
+  planOf(taskId: string): PlanTask | null;
+  proposeSpread(task: { taskType?: TaskType; pieces: Piece[]; openTermsMin: number | null }, dueDay: string): SpreadDay[];
+  /** Replaces the whole pieces array: callers send every piece back with its stampedAt and plannedDay. */
+  saveSplit(taskId: string, pieces: Piece[]): Promise<PlanResult>;
+  signSpread(taskId: string, dueDay: string, plan: SpreadDay[]): Promise<PlanResult>;
 }
 let live = false;
 function goLive(convex: ConvexClient) {
@@ -148,6 +159,18 @@ function goLive(convex: ConvexClient) {
   const syncClock = (sentAt: number, serverNow: number) => app.clock(serverNow - (sentAt + (Date.now() - sentAt) / 2));
   const report = (what: string) => (e: unknown) => console.error(`[pomodeal] ${what} failed`, e);
   const dayKey = () => localDayKey(Date.now());
+  /** Open big ones from the subscription below: the cards, and what the split and spread sheets read. */
+  let openTasks: Doc<"tasks">[] | null = null;
+  const refused = (what: string) => (e: unknown): PlanResult => {
+    report(what)(e);
+    const data = e instanceof ConvexError ? (e.data as { message?: unknown }) : null;
+    return { ok: false, message: data && typeof data.message === "string" ? data.message : "That didn't save. Try again." };
+  };
+  /** Only the stored fields, so nothing the screen added rides along to the validator. */
+  const cleanPiece = (p: Piece): Piece => ({
+    title: p.title, minutes: p.minutes,
+    ...(p.plannedDay !== undefined ? { plannedDay: p.plannedDay } : {}), ...(p.stampedAt !== undefined ? { stampedAt: p.stampedAt } : {}),
+  });
   const toDeal = (d: DealArgs) => ({ activity: d.act ?? null, breakMin: d.breakMin, task: d.task, focusMin: d.focusMin });
   const be: Backend = {
     start: (d) => {
@@ -187,6 +210,25 @@ function goLive(convex: ConvexClient) {
       if (r === "granted") be.logEvent("push_enabled");
       return r;
     },
+    planOf: (taskId) => {
+      const t = openTasks?.find((x) => x._id === taskId);
+      if (!t) return null;
+      return {
+        ...(t.taskType ? { taskType: t.taskType } : {}), ...(t.gutMin !== undefined ? { gutMin: t.gutMin } : {}),
+        openTermsMin: t.openTermsMin, pieces: (t.pieces ?? []).map(cleanPiece),
+        ...(t.dueDay !== undefined ? { dueDay: t.dueDay } : {}), ...(t.spreadSignedAt !== undefined ? { spreadSignedAt: t.spreadSignedAt } : {}),
+        slots: splitSlots(t.taskType),
+      };
+    },
+    proposeSpread: (task, dueDay) => proposeSpread(task, dayKey(), dueDay),
+    saveSplit: (taskId, pieces) =>
+      convex.mutation(api.tasks.saveSplit, { taskId: taskId as Id<"tasks">, pieces: pieces.map(cleanPiece) })
+        .then((): PlanResult => ({ ok: true }), refused("saveSplit")),
+    signSpread: (taskId, dueDay, plan) =>
+      convex.mutation(api.tasks.signSpread, {
+        taskId: taskId as Id<"tasks">, dueDay,
+        plan: plan.map((d) => ({ day: d.day, minutes: d.minutes, ...(d.pieceIndex !== undefined ? { pieceIndex: d.pieceIndex } : {}) })),
+      }).then((): PlanResult => ({ ok: true }), refused("signSpread")),
   };
   // no VAPID key in this build: no taps to offer, so neither the permission button nor the install sheet shows
   app.env({ pushSupported: pushConfigured() && pushSupported(), installed: standalone, iosSafari: pushConfigured() && isIOS });
@@ -202,7 +244,6 @@ function goLive(convex: ConvexClient) {
   convex.onUpdate(api.sessions.today, { now: Date.now() }, (entries) => app.ledger(entries));
 
   // Big-one cards: recomputed when the tasks change and at local midnight (comeback depends on today's key).
-  let openTasks: Doc<"tasks">[] | null = null;
   const pushCards = () => {
     if (!openTasks) return;
     app.bigOnes(cardsFor(openTasks.map(({ _id, ...t }) => ({ ...t, id: _id as string })), dayKey()));
