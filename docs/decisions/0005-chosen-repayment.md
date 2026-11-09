@@ -1,4 +1,4 @@
-# 0004: Repayment stays chosen, with one-tap accept
+# 0005: Repayment stays chosen, with one-tap accept
 
 Date: 2026-11-08 · Status: accepted
 

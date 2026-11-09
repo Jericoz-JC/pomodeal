@@ -1,8 +1,8 @@
 # Spec 008: Big ones
 
-Status: approved for planning (loop 1) · Phase 1, next 4 weeks · Owner: Chris · Decisions: [0004-chosen-repayment](../decisions/0004-chosen-repayment.md)
+Status: approved for planning (loop 1) · Phase 1, next 4 weeks · Owner: Chris · Decisions: [0005-chosen-repayment](../decisions/0005-chosen-repayment.md)
 Research: [Starting and splitting big tasks](../research/reports/Starting%20and%20splitting%20big%20tasks.md) (literature, competitors, feasibility, council record)
-Depends on: spec 007 (study lengths) being merged, since this spec uses its length set and ramp.
+Builds on: spec 007 (study lengths, merged in PR #1) and the motion pass (merged in PR #2). New screens reuse the motion pass's stamp, block-change and heads-up motion rather than adding their own.
 
 ## Why
 
@@ -153,7 +153,7 @@ tasks: defineTable({
 }).index("by_userId_and_status", ["userId", "status"]),
 
 // users gains
-lastRepay: v.optional(v.union(v.literal("borrow"), v.literal("trade"))),  // ADR 0004 pre-selection
+lastRepay: v.optional(v.union(v.literal("borrow"), v.literal("trade"))),  // ADR 0005 pre-selection
 
 // sessions gains
 taskId: v.optional(v.id("tasks")),        // + index by_taskId for task-scoped history
@@ -218,7 +218,7 @@ Once per week (first open on or after Sunday, local time), a card above Quick De
 
 ## Repayment (decided)
 
-Repayment stays **chosen**: from the second ask, the student picks borrow or trade, and the option they picked last time is pre-selected so it's one tap. Recorded in [ADR 0004](../decisions/0004-chosen-repayment.md). No rule change in `packages/core` beyond remembering the last pick.
+Repayment stays **chosen**: from the second ask, the student picks borrow or trade, and the option they picked last time is pre-selected so it's one tap. Recorded in [ADR 0005](../decisions/0005-chosen-repayment.md). No rule change in `packages/core` beyond remembering the last pick.
 
 ## What success looks like at the end of the beta
 
@@ -239,7 +239,7 @@ New stored behaviour fields: the last repayment choice, task titles, types, gut 
 
 | Week | Build | Done when |
 | --- | --- | --- |
-| 1 | Privacy inventory (006) for all tables. ADR 0004. `bigOne.ts` rules test-first. `tasks` table, `sessions.taskId`, `state.version`. Server-offset clock: `start` returns `serverNow`; client renders from the offset. | `npm test` covers every rule in the test list; schema deploys to dev |
+| 1 | Privacy inventory (006) for all tables. ADR 0005. `bigOne.ts` rules test-first. `tasks` table, `sessions.taskId`, `state.version`. Server-offset clock: `start` returns `serverNow`; client renders from the offset. | `npm test` covers every rule in the test list; schema deploys to dev |
 | 2 | The starting flow: chip, type and gut chips, first-payment ticket with first move, block-end bookmark and done, open terms, day-2 cards with progress, wake lock toggle, events. Screenshots at 375 px light and dark; design rounds per the build loop. | A tester goes from typing a title to a running block in under a minute, with no planning screen |
 | 3 | Split sheet with gut-vs-pieces, spread with sign, exam default, comeback card, re-spread link. Web Push (scheduler + version check + declarative payload), push subscriptions, install onboarding. | Real-device test on an iPhone (18.4+, installed) and an Android phone; zero duplicate pushes in a day of dogfooding |
 | 4 | Weekly check-in. Optional "Suggest pieces". Metrics query. Hardening, changelog, version tag, invite testers. | Everything works with `AI_SUGGEST_ENABLED` off |
@@ -264,7 +264,7 @@ Chris approved the phase without answering these; these are the defaults this sp
 
 ## Out of scope
 
-General history beyond 24 hours, presets and the block builder, earned-breaks mode, rooms, the weekly recap, the iOS Shortcuts intercept (documented as a power-user recipe later, not built), the motion pass, daily or scheduled reminders, calendar import, app badge, notification action buttons, parsing dates from titles, AI anywhere except Split.
+General history beyond 24 hours, presets and the block builder, earned-breaks mode, rooms, the weekly recap, the iOS Shortcuts intercept (documented as a power-user recipe later, not built), daily or scheduled reminders, calendar import, app badge, notification action buttons, parsing dates from titles, AI anywhere except Split.
 
 ## Test cases (written first)
 

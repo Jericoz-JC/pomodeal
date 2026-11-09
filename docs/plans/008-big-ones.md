@@ -12,7 +12,7 @@
 
 ## Global Constraints
 
-- Branch `feature/big-ones` (cut from `feature/study-lengths`, which must merge to `main` first). Never push to or merge into `main` without Chris saying so: every push to `main` deploys production.
+- Branch `feature/big-ones`, based on `main` (study lengths and the motion pass are already merged). New screens reuse the existing motion (stamp, block change, heads-up) and add no new animation. Never push to or merge into `main` without Chris saying so: every push to `main` deploys production.
 - Commits: plain messages, **no AI co-author trailers or "Generated with" footers** (Chris's rule; the repo is public).
 - Time is computed from stored `startedAt` + duration, never ticking intervals. Convex queries never call `Date.now()`; pass `now` or a day key from the client.
 - Day keys are local calendar dates `"YYYY-MM-DD"` computed on the client with local `Date` getters. Core only does arithmetic on keys.
@@ -212,7 +212,7 @@
   - Review Focus 2: `end` 6 min into a focus block credits 6; `start` of an unrelated Quick Deal while a big-one session runs credits the partial minutes to the big one; `remove` on a task with a running session deletes the task, sets that session's `taskId` to undefined, and `sessions.current` still returns it running.
   - A second member calling `blockNotes`, `saveSplit` or `remove` on the first member's task throws.
   - `saveSplit` with 13 pieces throws `BAD_BIG_ONE`.
-  - ADR 0004: an `ask` that picks a borrow term sets `users.lastRepay: "borrow"`; a trade sets `"trade"`; an override leaves it unchanged. `sessions.current` returns `lastRepay` alongside the session so the sheet can pre-select it.
+  - ADR 0005: an `ask` that picks a borrow term sets `users.lastRepay: "borrow"`; a trade sets `"trade"`; an override leaves it unchanged. `sessions.current` returns `lastRepay` alongside the session so the sheet can pre-select it.
   - `split_saved` and `spread_signed` events are logged by `saveSplit` and `signSpread`; `bookmark_written` by `blockNotes` when a non-empty bookmark is stored; `logClient` rejects any other kind.
 - [ ] **Step 2:** Run `npm run test:convex` and expect FAIL.
 - [ ] **Step 3:** Implement. `create` validates with `bigOneProblem` and `dealProblem`, inserts the task, then reuses the same session-start path as `sessions.start` (extract `startSession(ctx, user, deal, now, taskId?)` in `convex/sessions.ts`). Idempotency for `blockNotes`: store `notedIdx: v.optional(v.number())` on the session and skip when `notedIdx >= fromIdx`. Credit focus minutes in `next` (full block via `focusMinutesDone` at its end), `end`, and the replacement branch of `start`; only when the session has a `taskId` that still exists. `bookmark` uses `cleanLine`; `undefined` keeps the old one. `done: true` stamps the first unstamped piece or, with no pieces, sets `status: "done"`. Add `notedIdx` to the privacy inventory.
@@ -296,7 +296,7 @@ Load `frontend-design:frontend-design` before Task 8. Each UI task adds hash sta
 
 - [ ] **Step 1:** Render up to 3 cards above the Quick Deal field (title, "Start with: …", progress text from `ProgressLabel`: "1 stamped", "1 to go", "45 min in", "about 30 min left"; one button "{minutes} min"), and "All big ones" when `more > 0`. The ⋯ menu lists Split into pieces, Spread over the days left (both disabled until Week 3 tasks land), Start fresh on this one, Set aside, Delete (Delete asks "Delete Paper? This can't be undone." with "Delete" / "Keep it").
 - [ ] **Step 2:** Comeback cards use "{title}'s still here." / "Smaller first move today?" and show nothing about time away. Showing one calls `BE.logEvent("comeback_shown", taskId)` once per day; starting from it logs `comeback_started`. "All big ones" opens a list of open and set-aside big ones (from `api.tasks.all`) with Start and, for set-aside ones, "Bring it back" (`reopen`).
-- [ ] **Step 2b:** ADR 0004 in the boundary sheet: from the second ask, the term matching `lastRepay` is pre-selected so "Deal" accepts it in one tap.
+- [ ] **Step 2b:** ADR 0005 in the boundary sheet: from the second ask, the term matching `lastRepay` is pre-selected so "Deal" accepts it in one tap.
 - [ ] **Step 3:** Running focus screen: "Keep screen on" toggle, off by default, stored in `localStorage` key `pomodeal.wakelock` inside try/catch, hidden when `!("wakeLock" in navigator)`; request on focus start, release on break and end, re-request on `visibilitychange` to visible.
 - [ ] **Step 4:** Hash states `cards`, `cards-comeback`, `cards-more`, `running-wakelock`; screenshot all.
 - [ ] **Step 5:** Commit: `Prototype: big-one cards, comeback card, wake lock`.
