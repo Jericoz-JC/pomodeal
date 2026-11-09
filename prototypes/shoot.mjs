@@ -21,7 +21,9 @@ const STATES = ["start", "intercept", "running", "focus", "heads-up", "boundary"
   // spec 008: planning on the card
   "split", "split-exam", "split-pieces", "spread", "spread-exam", "spread-due", "respread", "cards-respread",
   // spec 008: optional AI, "Suggest pieces" in the split sheet
-  "split-ai-consent", "split-ai-filled"];
+  "split-ai-consent", "split-ai-filled",
+  // spec 008: weekly check-in
+  "checkin", "checkin-cards"];
 // ONLY=a,b limits a run to some states (quick review loops); WIDTH=375 checks the narrowest phone; HEIGHT=1400 sees a long screen whole
 const only = process.env.ONLY ? process.env.ONLY.split(",") : null;
 const WIDTH = Number(process.env.WIDTH) || 390;

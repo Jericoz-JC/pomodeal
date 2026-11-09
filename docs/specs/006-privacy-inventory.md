@@ -143,13 +143,12 @@ These live in the browser's `localStorage` on one device. Pomodeal never uploads
 | pomodeal.pushAsked | "1" once the "Turn on taps at block ends" button has been offered (spec 008) | Offer the push permission step once per device | Anyone using that browser | Until cleared | Clearing site data |
 | pomodeal.installSheet | "1" once the iPhone install sheet has been shown (spec 008) | Show the install sheet once per device | Anyone using that browser | Until cleared | Clearing site data |
 | pomodeal.installDone | "1" once the app has opened from the Home Screen (spec 008) | Log `install_done` once per device | Anyone using that browser | Until cleared | Clearing site data |
+| pomodeal.checkinSkipped | The week key (a Sunday's date) of the weekly question that was skipped with the x (spec 008) | Keep the question hidden until next week | Anyone using that browser | Until replaced or cleared | Clearing site data |
 | pomodeal.aiConsent | "yes" or "no", the answer to the AI disclosure (spec 008); "no" hides "Suggest pieces" on this device | Ask the disclosure once per device | Anyone using that browser | Until cleared | Clearing site data |
 
-## Tables planned in spec 008
-
-All fields in this section are planned (spec 008).
-
 ### checkIns
+
+One answer a week per member to "Did this week go better than usual?" (spec 008, Task 18). Answering again in the same week replaces the answer. Chris reads the counts through an internal metrics query; there is no follow-up question in the app.
 
 | Field | What it holds | Why | Who can see | Retention | Deleted by |
 | --- | --- | --- | --- | --- | --- |

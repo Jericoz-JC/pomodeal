@@ -11,6 +11,7 @@
 import type * as ai from "../ai.js";
 import type * as aiNode from "../aiNode.js";
 import type * as beta from "../beta.js";
+import type * as checkIns from "../checkIns.js";
 import type * as crons from "../crons.js";
 import type * as events from "../events.js";
 import type * as lib_events from "../lib/events.js";
@@ -18,6 +19,7 @@ import type * as lib_members from "../lib/members.js";
 import type * as lib_pushSchedule from "../lib/pushSchedule.js";
 import type * as lib_suggestions from "../lib/suggestions.js";
 import type * as lib_tasks from "../lib/tasks.js";
+import type * as metrics from "../metrics.js";
 import type * as push from "../push.js";
 import type * as pushNode from "../pushNode.js";
 import type * as sessions from "../sessions.js";
@@ -33,6 +35,7 @@ declare const fullApi: ApiFromModules<{
   ai: typeof ai;
   aiNode: typeof aiNode;
   beta: typeof beta;
+  checkIns: typeof checkIns;
   crons: typeof crons;
   events: typeof events;
   "lib/events": typeof lib_events;
@@ -40,6 +43,7 @@ declare const fullApi: ApiFromModules<{
   "lib/pushSchedule": typeof lib_pushSchedule;
   "lib/suggestions": typeof lib_suggestions;
   "lib/tasks": typeof lib_tasks;
+  metrics: typeof metrics;
   push: typeof push;
   pushNode: typeof pushNode;
   sessions: typeof sessions;

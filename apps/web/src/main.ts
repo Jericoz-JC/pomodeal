@@ -6,7 +6,7 @@ import { ConvexError } from "convex/values";
 import { createClient } from "@workos-inc/authkit-js";
 import { api } from "../../../convex/_generated/api";
 import type { Doc, Id } from "../../../convex/_generated/dataModel";
-import { cardsFor, proposeSpread, splitSlots, type BigOneCardRow, type Piece, type SpreadDay, type TaskType } from "../../../packages/core/src";
+import { cardsFor, proposeSpread, shouldAskCheckIn, splitSlots, weekKey, type BigOneCardRow, type Piece, type SpreadDay, type TaskType } from "../../../packages/core/src";
 import { localDayKey, msToLocalMidnight } from "./days";
 import { mountGate, type GateState, type Provider } from "./gate";
 import { enablePush, pushConfigured, pushSupported, type PushResult } from "./push";
@@ -116,6 +116,8 @@ interface LiveApp {
   clock(offsetMs: number): void;
   /** All open big ones, comeback first then newest worked; the screen shows the first CARDS_SHOWN. */
   bigOnes(cards: BigOneCardRow[]): void;
+  /** The Sunday's day key while the weekly question is due (and not skipped on this device), else null. */
+  weekCheckin(weekKey: string | null): void;
   /** What this device can do: Web Push in this tab, opened from the Home Screen, an iPhone Safari tab; and whether the
    *  server offers "Suggest pieces" (api.ai.enabled, so it is sent again whenever that changes). */
   env(e: { pushSupported: boolean; installed: boolean; iosSafari: boolean; aiSuggest: boolean }): void;
@@ -146,6 +148,8 @@ interface Backend {
   blockNotes(fromIdx: number, bookmark: string | undefined, done: boolean): void;
   taskMenu(taskId: string, action: "startFresh" | "setAside" | "reopen" | "remove"): void;
   logEvent(kind: "comeback_shown" | "comeback_started" | "install_done" | "push_enabled", taskId?: string): void;
+  /** One answer to the weekly question; answering again in the same week replaces it. Never throws. */
+  answerCheckIn(weekKey: string, answer: "better" | "same" | "worse"): void;
   /** Open and set-aside big ones for the "All big ones" list, read once when it opens (R24). */
   allBigOnes(): Promise<{ id: string; title: string; status: "open" | "set_aside" }[]>;
   /** From the "Turn on taps at block ends" tap only: the browser prompt, then this device's subscription. Never throws. */
@@ -220,6 +224,7 @@ function goLive(convex: ConvexClient) {
       if (sessionId) void convex.mutation(api.tasks.blockNotes, { sessionId, fromIdx, ...(bookmark ? { bookmark } : {}), done, dayKey: dayKey() }).catch(report("blockNotes"));
     },
     taskMenu: (taskId, action) => { void convex.mutation(api.tasks[action], { taskId: taskId as Id<"tasks"> }).catch(report(action)); },
+    answerCheckIn: (weekKey, answer) => { void convex.mutation(api.checkIns.answer, { weekKey, answer }).catch(report("checkIn")); },
     logEvent: (kind, taskId) => { void convex.mutation(api.events.logClient, { kind, ...(taskId ? { taskId: taskId as Id<"tasks"> } : {}) }).catch(report("logEvent")); },
     allBigOnes: async () => {
       const rows = await convex.query(api.tasks.all, {});
@@ -308,7 +313,14 @@ function goLive(convex: ConvexClient) {
     app.bigOnes(cardsFor(openTasks.map(({ _id, ...t }) => ({ ...t, id: _id as string })), dayKey()));
   };
   convex.onUpdate(api.tasks.open, {}, (tasks) => { openTasks = tasks; pushCards(); });
-  const armMidnight = () => setTimeout(() => { pushCards(); armMidnight(); }, msToLocalMidnight(Date.now()));
+  // Weekly check-in: ask on the first open on or after Sunday, local time (core decides from the last answered week).
+  let lastWeek: string | null | undefined;
+  const pushWeek = () => {
+    if (lastWeek === undefined) return;
+    app.weekCheckin(shouldAskCheckIn(dayKey(), lastWeek ?? undefined) ? weekKey(dayKey()) : null);
+  };
+  convex.onUpdate(api.checkIns.lastWeekKey, {}, (k) => { lastWeek = k; pushWeek(); });
+  const armMidnight = () => setTimeout(() => { pushCards(); pushWeek(); armMidnight(); }, msToLocalMidnight(Date.now()));
   armMidnight();
 }
 

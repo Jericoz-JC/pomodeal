@@ -271,6 +271,14 @@ p { margin: 0; }
 .bitem .more svg { width: 20px; height: 20px; }
 .bitem .more:focus-visible { outline-offset: -4px; }
 /* R30: with a big one waiting, a new deal is one quiet line under the cards; it opens the full ticket */
+/* spec 008 weekly check-in: a plain note on the paper above Quick Deal, one question, three answers, an x */
+.weekask { border: 1.5px solid var(--edge); border-radius: 6px; padding: 4px 6px 14px 16px; margin-bottom: 14px; }
+.weekask .wkhead { display: flex; align-items: flex-start; gap: 4px; }
+.weekask h2 { flex: 1; min-width: 0; padding-top: 10px; font-stretch: 76%; font-weight: 750; font-size: 1.25rem; line-height: 1.2; text-wrap: balance; }
+.weekask .wkx { flex: none; width: 44px; height: 44px; border: none; background: none; color: var(--soft); display: grid; place-items: center; }
+.weekask .wkx svg { width: 20px; height: 20px; }
+.weekask .wkopts { display: flex; flex-wrap: wrap; gap: 8px; padding-right: 8px; margin-top: 6px; }
+.weekask .wkopts .chip { padding: 8px 12px; background: transparent; box-shadow: inset 0 0 0 1.5px var(--soft); }
 .quickrow { display: flex; align-items: stretch; width: 100%; min-height: 64px; padding: 0; border: 1.5px dashed var(--wait-edge); border-radius: 6px; background: none; color: var(--ink); text-align: left;
   font-family: var(--font-head); font-stretch: 85%; font-weight: 700; font-size: 1.1875rem; line-height: 1.2; letter-spacing: .01em; }
 .quickrow .plus { flex: none; width: 56px; display: grid; place-items: center; color: var(--soft); background: radial-gradient(circle, var(--edge) 1.1px, transparent 1.6px) 100% 3px / 6px 7px repeat-y; }
@@ -1270,11 +1278,26 @@ function cardsView() {
    a break first needs the ticket, so then there is no door. */
 const PLUS = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>`;
 const quickDoor = open => `<button class="quickrow" id="quickopen" aria-expanded="${open}" aria-controls="quickdeal"><span class="plus">${PLUS}</span><span class="qt">Or make a quick deal</span><span class="chev" aria-hidden="true">${CHEV}</span></button>`;
+/* spec 008 "Weekly check-in": { key } while the question is up (the Sunday's day key), else null. Core decides when
+   (shouldAskCheckIn); the shell sends it here. Answering or the x hides it for the week. */
+let weekAsk = null;
+const XMARK = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>`;
+const SKIP_KEY = "pomodeal.checkinSkipped";
+const weekView = () => !weekAsk ? "" : `<section class="weekask" aria-labelledby="wkq">
+    <div class="wkhead"><h2 id="wkq">Did this week go better than usual?</h2><button class="wkx" id="wkskip" aria-label="Skip this question">${XMARK}</button></div>
+    <div class="wkopts" role="group" aria-labelledby="wkq">${[["better", "Better"], ["same", "About the same"], ["worse", "Worse"]].map(([a, l]) => `<button class="chip" data-wk="${a}">${l}</button>`).join("")}</div>
+  </section>`;
+function closeWeek(msg, to) {
+  const key = weekAsk && weekAsk.key; weekAsk = null;
+  if (msg) say(msg);
+  nextFocus = to || "#view h1"; render();
+  return key;
+}
 function startView() {
   const last = newest(ledger) || newest(SEED);
   const door = !fromCard && shownCards().length > 0, folded = door && !quickOpen;
   const tk = door ? `${quickDoor(!folded)}<div id="quickdeal"${folded ? " hidden" : ""}>${ticket(true)}</div>` : ticket(true);
-  return `<h1 class="home">Make a deal</h1>${cardsView()}${tk}
+  return `<h1 class="home">Make a deal</h1>${weekView()}${cardsView()}${tk}
   ${deal.act && !folded ? `<button class="textbtn skip" id="skipbreak">Skip the break, start ${esc(fromCard ? fromCard.title : shortTask())}</button>` : ""}
   <section class="rows${folded ? "" : " anchor"}" aria-label="Tonight so far">
     ${presence()}
@@ -2139,6 +2162,9 @@ function bind() {
   document.querySelectorAll("[data-card]").forEach(b => b.onclick = () => { const c = cardById(b.dataset.card); if (c) startCard(c, { act: null, breakMin: deal.breakMin, task: c.title, focusMin: c.minutes }); });
   document.querySelectorAll("[data-menu]").forEach(b => b.onclick = () => openPanel({ kind: "menu", id: b.dataset.menu }, `[data-menu="${b.dataset.menu}"]`));
   on("#allbig", () => openList());
+  /* spec 008 weekly check-in: an answer is sent once; the x hides the question until next week (this device only) */
+  document.querySelectorAll("[data-wk]").forEach(b => b.onclick = () => { const k = closeWeek("Thanks."); if (BE && k) BE.answerCheckIn(k, b.dataset.wk); });
+  on("#wkskip", () => { const k = closeWeek("Skipped until next week."); if (k) { try { localStorage.setItem(SKIP_KEY, k); } catch (e) {} } });
   /* spec 008: a comeback card's re-spread opens the spread sheet with a fresh proposal over the days left */
   document.querySelectorAll("[data-respread]").forEach(b => b.onclick = () => openSpread(b.dataset.respread, `[data-respread="${b.dataset.respread}"]`, true));
   /* R30: the folded Quick Deal opens in place and stays open for this visit; focus goes to its first part */
@@ -2451,7 +2477,7 @@ function demoPlanData() {
 }
 function fromHash() {
   const h = location.hash.slice(1);
-  fresh(); mode = "start"; setTab("now"); bigOneCards = []; demoAside = []; wakeOn = readWake(); pushAsk = null; demoPlans = demoPlanData();
+  fresh(); mode = "start"; setTab("now"); weekAsk = null; bigOneCards = []; demoAside = []; wakeOn = readWake(); pushAsk = null; demoPlans = demoPlanData();
   let after = null;
   const run = (left, ask) => { S = buildSession(deal); S.serial = "0412"; S.startedAt = vnow - (S.durMs - left); S.askCount = ask || 0; };
   if (h === "intercept") mode = "intercept";
@@ -2530,6 +2556,10 @@ function fromHash() {
     run(0); S.idx = 2; S.durMs = cur().min * 60000; S.startedAt = vnow - 20000;
     after = () => { panel = { kind: "install", back: null, focusMe: true, openedAt: performance.now() }; renderPanel(); };
   }
+  else if (h === "checkin" || h === "checkin-cards") {
+    weekAsk = { key: "2026-11-08" };
+    if (h === "checkin-cards") bigOneCards = demoCards(DEMO_CARDS.slice(0, 2));
+  }
   else if (h === "ledger") { seedLedger(); setTab("ledger"); }
   else if (h === "room") setTab("room");
   lastSig = S ? signature() : ""; wasHeads = !!S && isHeads();
@@ -2573,6 +2603,16 @@ window.pomodealApp = {
   },
   /** server time minus this device's time, in ms: time on screen is Date.now() + offset */
   clock(offsetMs) { if (Number.isFinite(offsetMs)) clockOffset = offsetMs; },
+  /** the Sunday's day key while the weekly question is due and not skipped on this device, else null */
+  weekCheckin(key) {
+    let skipped = null; try { skipped = localStorage.getItem(SKIP_KEY); } catch (e) {}
+    const next = key && key !== skipped ? { key } : null;
+    if ((next && next.key) === (weekAsk && weekAsk.key)) return;
+    weekAsk = next;
+    const a = document.activeElement;
+    if (tab !== "now" || S || mode !== "start" || (a && a.matches("#view input, #view textarea"))) return;
+    render();
+  },
   /** all open big ones (comeback first, then newest worked); the cards screen renders them */
   bigOnes(list) {
     const next = Array.isArray(list) ? list : [], same = bigOneCards && JSON.stringify(next) === JSON.stringify(bigOneCards);

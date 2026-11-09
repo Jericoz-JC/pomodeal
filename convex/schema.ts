@@ -148,6 +148,16 @@ export default defineSchema({
     .index("by_userId_and_dayKey", ["userId", "dayKey"])
     .index("by_dayKey", ["dayKey"]),
 
+  // Spec 008 weekly check-in: one answer per member per week (weekKey is the Sunday's local day key).
+  checkIns: defineTable({
+    userId: v.id("users"),
+    weekKey: v.string(),
+    answer: v.union(v.literal("better"), v.literal("same"), v.literal("worse")),
+    at: v.number(),
+  })
+    .index("by_userId_and_weekKey", ["userId", "weekKey"])
+    .index("by_at", ["at"]),
+
   // Beta metrics. Kinds and timings only, never titles, bookmarks or any typed text.
   events: defineTable({
     userId: v.id("users"),
