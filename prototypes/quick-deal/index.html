@@ -423,22 +423,27 @@ body.modal nav.tabs { display: none; }
 @keyframes thud { 30% { transform: translateY(2px); } }
 .primary.pressed { animation: press .22s ease-out; }
 /* then the stub tears away: paper falls, it doesn't fade. The ticket's own edge clips it as it drops. */
-.ticket.torn .stub { opacity: 1; transform: translateY(70px) rotate(5deg); transition: transform .26s cubic-bezier(.5, 0, .75, 0); }
-/* the new session's ring draws in quickly and lands softly, so it never reads as a loading bar */
-.dial.sweep { animation-duration: .45s; animation-timing-function: cubic-bezier(.2, .8, .2, 1); }
+.ticket.torn .stub { opacity: 1; transform: translateY(70px) rotate(5deg); transition: transform .3s cubic-bezier(.4, 0, .8, .3); }
+/* the stamped ticket shrinks into the session's header chip, so you see where the deal went */
+.ticket.torn, .dealtwrap.fresh { view-transition-name: dealticket; }
+::view-transition-group(dealticket) { animation-duration: .34s; animation-timing-function: cubic-bezier(.3, .7, .2, 1); }
+.dealtwrap.fresh { animation: none; }
+/* a ring always winds on from empty with the knob riding its leading edge: a new session, a new block, minutes you
+   just bought. This one move drives the ring's own --p (a registered property that only repaints the ring's mask),
+   the single exception to transform/opacity. Gentle and short, so it never reads as a loading spinner. */
+.dial.sweep { animation-duration: .6s; animation-timing-function: cubic-bezier(.3, .7, .2, 1); }
 .ticket.stamped, .term.stamped { animation: thud .26s .15s ease-out; }
 
-/* 2. block change: whatever was left of the old ring lifts off, the knob runs one lap, and the new ring winds in
+/* 2. block change: whatever was left of the old ring lifts off; once the sheet is out of the way the new ring winds on
    in its own material (solid green for focus, the hatch for a break). The words stay readable throughout. */
 .dial .was { z-index: 1; pointer-events: none; animation: ring-out .3s var(--lag, 0ms) cubic-bezier(.4, 0, .7, .4) forwards; }
-.dial.turn .fill:not(.was) { animation: ring-in .5s calc(var(--lag, 0ms) + 40ms) cubic-bezier(.45, 0, .2, 1) backwards; }
+.dial.turn { animation: sweep .6s calc(var(--lag, 0ms) + 140ms) cubic-bezier(.3, .7, .2, 1) backwards; }
+/* after a deal, the minutes you bought wind onto the empty ring as the sheet leaves */
+.dial.wind { animation: sweep .55s calc(var(--lag, 0ms) + 160ms) cubic-bezier(.3, .7, .2, 1) backwards; }
 .dial.turn :is(.edge, .face) { z-index: 2; }
-.dial.turn .edge { animation: lap .5s calc(var(--lag, 0ms) + 40ms) cubic-bezier(.45, 0, .2, 1) backwards; }
 /* the words are readable from the first frame: they only settle into place, they never fade */
 .dial.turn .face > *, .now.turn > * { animation: settle .3s var(--lag, 0ms) ease-out backwards; }
 @keyframes ring-out { to { opacity: 0; transform: scale(1.045); } }
-@keyframes ring-in { from { opacity: 0; transform: scale(.95); } 45% { opacity: 1; } }
-@keyframes lap { from { transform: rotate(0turn); } }
 @keyframes settle { from { transform: translateY(6px); } }
 
 /* 3. heads-up and time-up: the number in the dial is re-inked once, like a fresh stamp: pressed in a touch large,
@@ -460,8 +465,11 @@ body.modal nav.tabs { display: none; }
 .scrim.rise.calm::before { animation-duration: .36s; }
 .scrim.rise.calm .sheet { animation-duration: .4s; }
 /* at time-up the used half tears and is marked once the sheet has arrived, not while it is still moving */
-.scrim.rise.calm .tearrow .used { animation-delay: calc(var(--lag, 0ms) + 380ms); }
-.scrim.rise.calm .tearrow .usedwrap .stamp { animation-delay: calc(var(--lag, 0ms) + 520ms); }
+.scrim.rise.calm .tearrow .used { animation-delay: calc(var(--lag, 0ms) + 260ms); }
+.scrim.rise.calm .tearrow .usedwrap .stamp { animation-delay: calc(var(--lag, 0ms) + 380ms); }
+/* "Used" is a postmark, not an approval: it lands lighter than DEAL, no squash, no rebound */
+.tearrow .usedwrap .stamp { animation-name: post; animation-duration: .34s; animation-timing-function: ease-out; }
+@keyframes post { from { transform: scale(1.08) rotate(var(--tilt)); opacity: 0; } 45% { opacity: 1; } to { transform: rotate(var(--tilt)); opacity: 1; } }
 .scrim.leaving { pointer-events: none; }
 .scrim.leaving::before { animation: fade-out .16s ease-in forwards; }
 .scrim.leaving .sheet { animation: sheet-out .24s cubic-bezier(.5, 0, .8, .4) forwards; }
@@ -481,7 +489,10 @@ body.modal nav.tabs { display: none; }
 @keyframes lift { to { transform: translateY(-3px) scale(1.012); } }
 
 /* 5. ledger: the newest stub, already stamped, drops onto the top of the pile. The tab's count pops once. */
-.stubcard.fresh { transform-origin: 0 0; animation: stub-in .38s calc(var(--lag, 0ms) + 80ms) cubic-bezier(.2, .8, .2, 1) backwards; }
+.stubcard.fresh { z-index: 1; transform-origin: 0 0; animation: stub-in .38s var(--lag, 0ms) cubic-bezier(.2, .8, .2, 1) backwards; }
+/* the older stubs start where they were and are pushed down by the new one (--push is its height, set after render) */
+.stubs.pushing > .stubcard:not(.fresh) { animation: push .38s var(--lag, 0ms) cubic-bezier(.2, .8, .2, 1) backwards; }
+@keyframes push { from { transform: translateY(var(--push, 0px)); } }
 @keyframes stub-in { from { opacity: 0; transform: translateY(-16px) rotate(-2.5deg); } 70% { transform: rotate(.4deg); } }
 nav.tabs .dot.pop { animation: pop .3s cubic-bezier(.3, 1.6, .5, 1); }
 @keyframes pop { from { transform: scale(.4); opacity: 0; } }
@@ -496,7 +507,7 @@ nav.tabs .dot.pop { animation: pop .3s cubic-bezier(.3, 1.6, .5, 1); }
   .scrim.leaving { display: none; }
   .scrim.leaving::before, .scrim.leaving .sheet { animation: none !important; }
   .terms.picking > .term:not(.stamped) { animation: fade-out .16s .22s ease-in forwards !important; }
-  .stamped .stamp.ghost { transform: rotate(var(--tilt)); }
+  .stamped .stamp.ghost { transform: rotate(var(--tilt)); opacity: 1; }
 }
 </style>
 
@@ -667,6 +678,9 @@ function render() {
   renderSheet();
   paintTabs();
   bind();
+  /* a fresh ledger stub pushes the pile down by its own height */
+  const fs = document.querySelector(".stubcard.fresh");
+  if (fs) { const ul = fs.parentElement; ul.classList.add("pushing"); ul.style.setProperty("--push", `${-(fs.offsetHeight + 10)}px`); ul.style.setProperty("--lag", fs.style.getPropertyValue("--lag")); }
   if (key && !opening) { const el = document.querySelector(key); if (el && !(sheet && !el.closest(".sheet"))) el.focus({ preventScroll: true }); }
 }
 
@@ -751,7 +765,7 @@ function runningView() {
   /* the next step always sits under the dial, in every state, so the dial never moves */
   const note = quiet ? `<p class="note"></p>` : toast ? `<p class="note go" role="status">${N(esc(toast))}</p>` : `<p class="note">${N(then)}</p>`;
   /* motion windows: a block change, the 2-minute heads-up, time up */
-  const tn = since("turn", 900), hu = since("heads", 700), up = since("up", 700), ink = hu ?? up;
+  const tn = since("turn", 900), wd = since("wind", 900), hu = since("heads", 700), up = since("up", 700), ink = hu ?? up, dl = tn ?? wd;
   return `<div class="now${tn != null ? " turn" : ""}"${tn != null ? ` style="${lagVar(tn)}"` : ""}>
     <div class="nowhead">
       <span class="kind"><span class="swatch ${isB ? "break" : "focus"}" aria-hidden="true"></span>${isB ? "Break you chose" : "Focus"}</span>
@@ -760,7 +774,7 @@ function runningView() {
     <h1>${esc(title(b.label))}</h1>
   </div>
   <div class="timerwrap">
-    <div class="dial${S.justStarted ? " sweep" : ""}${r <= 0 ? " done" : ""}${heads ? " heads" : ""}${tn != null ? " turn" : ""}" style="--p:${r <= 0 ? 0 : (r / S.durMs).toFixed(4)}${tn != null ? ";" + lagVar(tn) : ""}" role="img" aria-label="${r <= 0 ? "Time is up" : m + " minutes left"}">
+    <div class="dial${S.justStarted ? " sweep" : ""}${r <= 0 ? " done" : ""}${heads ? " heads" : ""}${tn != null ? " turn" : wd != null ? " wind" : ""}" style="--p:${r <= 0 ? 0 : (r / S.durMs).toFixed(4)}${dl != null ? ";" + lagVar(dl) : ""}" role="img" aria-label="${r <= 0 ? "Time is up" : m + " minutes left"}">
       ${dial(isB ? "break" : "focus")}${tn != null && turnFrom && turnFrom.p > .005 ? `<span class="fill was ${turnFrom.type}" style="--p:${turnFrom.p.toFixed(4)}"></span>` : ""}
       <span class="face${ink != null ? " reink" : ""}"${ink != null ? ` style="${lagVar(ink)}"` : ""}><span class="big ${f.cls}" id="mins">${f.big}</span><span class="unit" id="unit">${quiet ? "" : esc(f.unit)}</span></span>
     </div>
@@ -975,7 +989,7 @@ function bind() {
     /* the stamp has landed and rebounded by about 400 ms; then the stub tears off */
     setTimeout(() => t.classList.add("torn"), 420);
     /* the inked stamp moves up into the running screen's stub */
-    setTimeout(() => { if (!document.startViewTransition) return go(); const vt = document.startViewTransition(go); vt.ready.catch(() => {}); }, 680);
+    setTimeout(() => { if (!document.startViewTransition) return go(); const vt = document.startViewTransition(go); vt.ready.catch(() => {}); }, 720);
   });
   on("#letmein", () => { file({ t: clockStr(), kind: "override", text: "Opened Instagram without a deal", note: "" }); unseen++; mode = "start"; render(); });
   on("#ask", () => { openSheet({ kind: "offer", asking: true }); render(); });
@@ -1045,13 +1059,14 @@ function seal(i) {
   document.querySelectorAll(".sheet button").forEach(x => x.disabled = true);
   setTimeout(() => take(term, i), !t || !t.classList.contains("term") ? 0 : reduce ? 450 : 600);
 }
-function take(term, i) { const intention = sheet && sheet.intention; if (BE) BE.ask(i === "x" ? "override" : +i, intention); file(applyTerm(S, term, intention)); if (tab !== "ledger") unseen++; closeSheet(); say(`Deal. ${title(cur().label)} for ${minsLeft()} more minutes.`); render(); restoreFocus(); }
+/* the announcement says what the deal cost, not only what it bought */
+function take(term, i) { const intention = sheet && sheet.intention; if (BE) BE.ask(i === "x" ? "override" : +i, intention); file(applyTerm(S, term, intention)); if (tab !== "ledger") unseen++; closeSheet(); beat("wind"); say(`Deal, ${lower(TERMS[term.kind])}. ${title(cur().label)} for ${minsLeft()} more minutes.${S.debt > 0 ? ` ${S.debt} borrowed minutes come out of later breaks.` : ""}`); render(); restoreFocus(); }
 function dismiss() { if (!sheet) return; if (sheet.kind === "bonus") { S.bonusOffered = true; nextBlock(); } else if (remaining() <= 0) nextBlock(); else closeSheet(); render(); restoreFocus(); }
 function restoreFocus() { const t = opener && document.body.contains(opener) ? opener : document.querySelector(".act button, #view h1"); if (t) { if (!t.matches("button")) t.tabIndex = -1; t.focus({ preventScroll: true }); } }
 function takeBonus() {
   if (BE) BE.bonus();
   cur().min += 10; S.durMs += 10 * 60000; const nb = nextOf(S, "break"); if (nb) nb.min += 3;
-  file({ t: clockStr(), kind: "bonus", text: `10 more min of ${shortTask()}`, note: "" }); if (tab !== "ledger") unseen++; S.bonusOffered = true; closeSheet(); render(); restoreFocus();
+  file({ t: clockStr(), kind: "bonus", text: `10 more min of ${shortTask()}`, note: "" }); if (tab !== "ledger") unseen++; S.bonusOffered = true; closeSheet(); beat("wind"); render(); restoreFocus();
 }
 /* Escape never commits you to anything: it backs out one step, or does nothing */
 function escape() {

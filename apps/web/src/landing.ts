@@ -191,14 +191,15 @@ export const LANDING_CSS = `
 #pd-gate .ld-intro .ld-arc.f { animation-delay: .22s; }
 @keyframes ld-arc { from { opacity: 0; transform: rotate(-50deg); } }
 #pd-gate .ld-sample { position: absolute; left: 0; right: 0; top: 0; z-index: 3; pointer-events: none; animation: ld-in .38s .12s cubic-bezier(.2, .8, .2, 1) backwards; }
-/* the stamped sample stays on top and slides down off the fresh one onto the pile: ink is never un-stamped */
-#pd-gate .ld-sample.ld-file { transform-origin: 30% 0; animation: ld-file .46s cubic-bezier(.5, 0, .75, .3) forwards; }
+/* the stamped sample drops toward the pile and is gone before the fresh ticket arrives: two tickets never overlap,
+   and ink is never un-stamped */
+#pd-gate .ld-sample.ld-file { transform-origin: 30% 0; animation: ld-file .4s cubic-bezier(.5, 0, .75, .3) forwards; }
 @keyframes ld-in { from { opacity: 0; transform: translateY(18px); } }
-@keyframes ld-file { 75% { opacity: 1; } to { opacity: 0; transform: translateY(calc(100% - 30px)) rotate(-2deg) scale(.97); } }
+@keyframes ld-file { 45% { opacity: 1; } to { opacity: 0; transform: translateY(40%) rotate(-2deg) scale(.96); } }
 #pd-gate .ld-ticket.ld-under { opacity: 0; }
-/* the fresh ticket is simply there, like the next sheet on a pad; it settles a hair as the stamped one leaves */
-#pd-gate .ld-ticket.ld-fresh { animation: ld-fresh .3s ease-out; }
-@keyframes ld-fresh { 30% { transform: translateY(-2px); } }
+/* then the fresh ticket, yours, comes up into the empty place */
+#pd-gate .ld-ticket.ld-fresh { animation: ld-fresh .3s ease-out backwards; }
+@keyframes ld-fresh { from { opacity: 0; transform: translateY(8px); } }
 #pd-gate .ld-peek.ld-bump { animation: ld-bump .32s .28s ease-out; }
 @keyframes ld-bump { 40% { transform: rotate(-2deg) translateY(4px); } }
 @keyframes ld-fade { from { opacity: 0; } }
@@ -441,11 +442,9 @@ export function bindLanding(root: HTMLElement, a: LandingActions) {
   const at = (ms: number, f: () => void) => timers.push(window.setTimeout(f, ms));
   at(850, () => sampleBtn?.classList.add("ld-press"));
   at(900, () => { sample.classList.add("ld-stamped", "ld-thud"); dialEl.classList.add("ld-dealt"); if (sampleSay) sampleSay.innerHTML = `Deal. Reels until ${later(breakMin)}, then reading.`; });
-  at(1750, () => {
-    sample.classList.add("ld-file"); ticket.classList.remove("ld-under"); ticket.classList.add("ld-fresh");
-    peek?.classList.add("ld-bump"); dialEl.classList.remove("ld-dealt");
-  });
-  at(2250, () => sample.remove());
-  at(2300, cancel);
+  at(1750, () => { sample.classList.add("ld-file"); peek?.classList.add("ld-bump"); dialEl.classList.remove("ld-dealt"); });
+  at(2120, () => { ticket.classList.remove("ld-under"); ticket.classList.add("ld-fresh"); });
+  at(2200, () => sample.remove());
+  at(2450, cancel);
   // the real ticket's own words never change during the take
 }
