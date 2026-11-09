@@ -1716,8 +1716,9 @@ function dropUndo(p) {
 
 /* ----- Suggest pieces (spec 008, optional AI) -----
    Only in this sheet. The first tap on a device shows the disclosure; the answer is kept in localStorage (in memory
-   when storage is blocked), and "I'll split it myself" hides the row on this device. Live, the app shell scrubs the
-   title (core's scrubForAI), asks Convex, and reports the suggestion row as it changes; ENV.aiSuggest is the server's
+   when storage is blocked), and "I'll split it myself" hides the row on this device. Live, the app shell sends only the
+   big one's id (the server sends the model its stored title, scrubbed, its type and gut size) and reports the
+   suggestion row as it changes, or "failed" when the row disappears or 90 s pass; ENV.aiSuggest is the server's
    switch (AI_SUGGEST_ENABLED). The suggestion fills the slots for editing; only what the student saves is stored, and
    Undo, Close or a save ends the row. The demo fills from a canned list. */
 const AI_KEY = "pomodeal.aiConsent";
@@ -1752,11 +1753,10 @@ function fillFromAI(p, pieces) {
   p.ai = { state: "filled", handle: p.ai && p.ai.handle };
 }
 function askAI(p) {
-  const c = cardById(p.id), t = p.task, today = localDay();
-  const daysLeft = isKey(t.dueDay) && t.dueDay >= today ? dayDiff(today, t.dueDay) + 1 : undefined;
+  const t = p.task;
   p.ai = { state: "wait" }; p.focusMe = true; p.focusSel = "#ai-note"; renderPanel(); say("Getting suggestions.");
   if (!BE || !BE.suggestPieces) { p.ai.timer = setTimeout(() => aiResult(p, { status: "ready", pieces: demoSuggest(t) }), 900); return; }
-  p.ai.handle = BE.suggestPieces(p.id, c ? c.title : "", daysLeft, r => aiResult(p, r));
+  p.ai.handle = BE.suggestPieces(p.id, r => aiResult(p, r));
 }
 function aiResult(p, r) {
   const a = p.ai;

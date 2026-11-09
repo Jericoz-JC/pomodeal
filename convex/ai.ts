@@ -29,14 +29,16 @@ export const enabled = query({
 });
 
 /**
- * Asks for pieces for one big one. `title` is already scrubbed on the client (scrubForAI) and is scrubbed again here.
+ * Asks for pieces for one big one. What is sent is built here from the stored big one, exactly as the disclosure says:
+ * its title with emails and phone numbers stripped (scrubForAI), its type and its gut size. Nothing the client types,
+ * and nothing else (R69, R70c).
  * `dayKey` is the client's local day; it must be within a day of the server's, so rotating keys can't reset the limit.
  * Refusals are values, not errors: "off" hides the button, "limit" shows the failure line.
  */
 export const requestSuggestion = mutation({
-  args: { taskId: v.id("tasks"), title: v.string(), daysLeft: v.optional(v.number()), dayKey: v.string() },
+  args: { taskId: v.id("tasks"), dayKey: v.string() },
   returns: v.union(v.id("pieceSuggestions"), v.object({ refused: v.union(v.literal("limit"), v.literal("off")) })),
-  handler: async (ctx, { taskId, title, daysLeft, dayKey }) => {
+  handler: async (ctx, { taskId, dayKey }) => {
     const user = await requireMember(ctx);
     const task = await ownTask(ctx, user, taskId);
     checkDayKey(dayKey);
@@ -44,10 +46,9 @@ export const requestSuggestion = mutation({
     if (Math.abs(daysBetween(utcKey(now), dayKey)) > 1) throw new ConvexError({ code: "BAD_DAY", message: "That isn't today." });
     if (!aiEnabled()) return { refused: "off" as const };
 
-    const clean = scrubForAI(title);
+    const clean = scrubForAI(task.title);
     const problem = bigOneProblem({ title: clean });
     if (problem) badBigOne(problem);
-    if (daysLeft !== undefined && (!Number.isInteger(daysLeft) || daysLeft < 1 || daysLeft > 366)) badBigOne("That isn't a number of days.");
 
     const mine = await ctx.db
       .query("aiUsage")
@@ -62,13 +63,12 @@ export const requestSuggestion = mutation({
 
     await clearSuggestions(ctx, taskId); // one live suggestion per big one
     const suggestionId = await ctx.db.insert("pieceSuggestions", { userId: user._id, taskId, status: "pending", createdAt: now });
-    // Exactly what the disclosure says: title, type, size, days left. Never the bookmark, never other big ones.
+    // Exactly what the disclosure says: title, type, size. Nothing else: never the bookmark, due day or other big ones.
     await ctx.scheduler.runAfter(0, internal.aiNode.suggestPieces, {
       suggestionId,
       title: clean,
       ...(task.taskType ? { taskType: task.taskType } : {}),
       ...(task.gutMin !== undefined ? { gutMin: task.gutMin } : {}),
-      ...(daysLeft !== undefined ? { daysLeft } : {}),
     });
     await logEvent(ctx, user._id, "ai_requested", { taskId });
     return suggestionId;

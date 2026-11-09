@@ -54,7 +54,7 @@ describe("the switch and the limits", () => {
     const t = newT();
     const { as, taskId } = await labReport(t);
     expect(await as.query(api.ai.enabled, {})).toBe(false);
-    expect(await as.mutation(api.ai.requestSuggestion, { taskId, title: "Lab report due Thursday", dayKey: today() })).toEqual({ refused: "off" });
+    expect(await as.mutation(api.ai.requestSuggestion, { taskId, dayKey: today() })).toEqual({ refused: "off" });
     expect(await suggestJobs(t)).toHaveLength(0);
     expect(await t.run((ctx) => ctx.db.query("aiUsage").take(10))).toHaveLength(0);
     expect(await t.run((ctx) => ctx.db.query("pieceSuggestions").take(10))).toHaveLength(0);
@@ -73,11 +73,11 @@ describe("the switch and the limits", () => {
     const { as, taskId } = await labReport(t);
     expect(await as.query(api.ai.enabled, {})).toBe(true);
     for (let i = 0; i < 10; i++) {
-      const r = await as.mutation(api.ai.requestSuggestion, { taskId, title: "Lab report due Thursday", dayKey: today() });
+      const r = await as.mutation(api.ai.requestSuggestion, { taskId, dayKey: today() });
       expect(typeof r).toBe("string");
     }
     expect(await suggestJobs(t)).toHaveLength(10);
-    expect(await as.mutation(api.ai.requestSuggestion, { taskId, title: "Lab report due Thursday", dayKey: today() })).toEqual({ refused: "limit" });
+    expect(await as.mutation(api.ai.requestSuggestion, { taskId, dayKey: today() })).toEqual({ refused: "limit" });
     expect(await suggestJobs(t)).toHaveLength(10);
     const usage = await t.run((ctx) => ctx.db.query("aiUsage").take(10));
     expect(usage.map((u) => u.count)).toEqual([10]);
@@ -96,7 +96,7 @@ describe("the switch and the limits", () => {
       for (let i = 0; i < 30; i++) await ctx.db.insert("aiUsage", { userId: other, dayKey: today(), count: 10 });
     });
     const { as, taskId } = await labReport(t, "Ada");
-    expect(await as.mutation(api.ai.requestSuggestion, { taskId, title: "Lab report", dayKey: today() })).toEqual({ refused: "limit" });
+    expect(await as.mutation(api.ai.requestSuggestion, { taskId, dayKey: today() })).toEqual({ refused: "limit" });
     expect(await suggestJobs(t)).toHaveLength(0);
   });
 
@@ -104,20 +104,34 @@ describe("the switch and the limits", () => {
     turnOn();
     const t = newT();
     const { as, taskId } = await labReport(t);
-    expect(await codeOf(as.mutation(api.ai.requestSuggestion, { taskId, title: "Lab report", dayKey: "2020-01-01" }))).toBe("BAD_DAY");
+    expect(await codeOf(as.mutation(api.ai.requestSuggestion, { taskId, dayKey: "2020-01-01" }))).toBe("BAD_DAY");
   });
 
-  test("the action gets the scrubbed title, type, gut size and days left, never the bookmark", async () => {
+  // R69, R70c: exactly what the disclosure says (title, type, size; nothing else), and the title is the stored one,
+  // scrubbed on the server, so nothing the client types reaches the model.
+  test("the action gets the stored title scrubbed, the type and the gut size, and nothing else", async () => {
     turnOn();
     const t = newT();
     const { as, taskId } = await labReport(t);
-    await t.run((ctx) => ctx.db.patch(taskId, { bookmark: "the secret bookmark" }));
-    await as.mutation(api.ai.requestSuggestion, { taskId, title: "Lab report for jo@uw.edu call 206-555-0101", daysLeft: 4, dayKey: today() });
+    await t.run((ctx) => ctx.db.patch(taskId, { title: "Lab report for jo@uw.edu call 206-555-0101", bookmark: "the secret bookmark", dueDay: "2026-12-01" }));
+    await as.mutation(api.ai.requestSuggestion, { taskId, dayKey: today() });
     const [job] = await suggestJobs(t);
     const args = job.args[0] as Record<string, unknown>;
     expect(args.title).toBe("Lab report for call");
-    expect(args).toMatchObject({ taskType: "writing", gutMin: 120, daysLeft: 4 });
+    expect(Object.keys(args).sort()).toEqual(["gutMin", "suggestionId", "taskType", "title"]);
+    expect(args).toMatchObject({ taskType: "writing", gutMin: 120 });
     expect(JSON.stringify(args)).not.toContain("secret");
+  });
+
+  test("a client-supplied title or days left is refused by the validator, so it can't reach the action", async () => {
+    turnOn();
+    const t = newT();
+    const { as, taskId } = await labReport(t);
+    const extra = { taskId, dayKey: today(), title: "Something the client typed" } as unknown as { taskId: Id<"tasks">; dayKey: string };
+    expect(await codeOf(as.mutation(api.ai.requestSuggestion, extra))).toBe("THREW");
+    const days = { taskId, dayKey: today(), daysLeft: 4 } as unknown as { taskId: Id<"tasks">; dayKey: string };
+    expect(await codeOf(as.mutation(api.ai.requestSuggestion, days))).toBe("THREW");
+    expect(await suggestJobs(t)).toHaveLength(0);
   });
 
   test("someone else's big one is not found", async () => {
@@ -125,7 +139,7 @@ describe("the switch and the limits", () => {
     const t = newT();
     const { taskId } = await labReport(t, "Ada");
     const { as: bo } = await makeMember(t, "Bo");
-    expect(await codeOf(bo.mutation(api.ai.requestSuggestion, { taskId, title: "x", dayKey: today() }))).toBe("NOT_FOUND");
+    expect(await codeOf(bo.mutation(api.ai.requestSuggestion, { taskId, dayKey: today() }))).toBe("NOT_FOUND");
   });
 });
 
@@ -133,7 +147,7 @@ describe("the suggestion row", () => {
   async function pending(t: TestConvex) {
     turnOn();
     const m = await labReport(t);
-    const id = (await m.as.mutation(api.ai.requestSuggestion, { taskId: m.taskId, title: "Lab report", dayKey: today() })) as Id<"pieceSuggestions">;
+    const id = (await m.as.mutation(api.ai.requestSuggestion, { taskId: m.taskId, dayKey: today() })) as Id<"pieceSuggestions">;
     return { ...m, id };
   }
 

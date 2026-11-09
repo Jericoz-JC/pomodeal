@@ -207,7 +207,7 @@ On the running screen during a focus block, a small toggle **"Keep screen on"**,
 ## Optional AI: "Suggest pieces" (week 4, first to cut)
 
 - Only inside the Split sheet. First use shows: **"This sends the title, type and size of this big one to Anthropic to suggest pieces. Nothing else. They keep it up to 30 days."** Buttons: **"Suggest pieces"** / **"I'll split it myself"**. Asked once per device, shown again from Settings.
-- Sent: title (emails and phone numbers stripped on the client), type, gut size, days left. Never the bookmark, never other big ones.
+- Sent: title (emails and phone numbers stripped, by the server from the stored title), type, gut size. Nothing else, so the disclosure stays true: never days left or the due day, never the bookmark, never other big ones.
 - Flow: mutation checks the per-user limit (**10 a day**) and a global cap (**300 a day**), writes a `pending` suggestion and schedules an internal action. The action calls **Claude Haiku 5.5** (`claude-haiku-5-5`) with structured output (`{ pieces: [{ title, minutes }] }`, strict schema, max 12 pieces enforced in core after parsing) at low effort, then writes `ready` or `failed` with an internal mutation. The sheet subscribes to the suggestion.
 - The suggestion fills the slots; the student edits. Only pieces the student saves are stored; the suggestion row is deleted on save or dismiss, and a daily cron deletes any left after 24 hours.
 - On failure: **"Couldn't get suggestions right now. Your slots are still here."** The app is complete with this switched off (`AI_SUGGEST_ENABLED` env var).

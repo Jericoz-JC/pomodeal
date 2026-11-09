@@ -73,7 +73,7 @@ Who can see, in every table: the signed-in student sees their own rows through t
 | firstMove | The first-move line, up to 140 characters (coursework text) | Start the next block | The student, Chris | Until deleted | Deleting the big one |
 | bookmark | The "Next time, start with" note, up to 140 characters (coursework text) | Resume next time | The student, Chris; never sent to AI | Until deleted | Deleting the big one |
 | pieces | Up to 12 pieces: title, minutes, plannedDay, stampedAt | Split and spread | The student, Chris | Until deleted | Deleting the big one |
-| dueDay | Local date key of the due day | Spread | The student, Chris; days left sent to AI on opt-in | Until deleted | Deleting the big one |
+| dueDay | Local date key of the due day | Spread | The student, Chris; never sent to AI | Until deleted | Deleting the big one |
 | spreadSignedAt | When the student signed a spread | Comeback rule | The student, Chris | Until deleted | Deleting the big one |
 | aiSuggested | Whether saved pieces came from a suggestion | Describe AI use | The student, Chris | Until deleted | Deleting the big one |
 | status | open, done or set_aside | Which cards show | The student, Chris | Until deleted | Deleting the big one |
@@ -172,4 +172,4 @@ It is asked once per device and shown again from Settings (Settings does not exi
 | --- | --- | --- | --- |
 | WorkOS | Sign-in details the student enters at sign-in | Signing in | Handles identity; Pomodeal stores only the resulting token identifier and the display name. |
 | The browser's push service (for example Apple, Google or Mozilla) | The device endpoint, and an encrypted payload holding the push text: the block's label and, at a break's end, the next block's label (for example "2 min to wrap up BIO 180 ch. 7."). Labels can be text the student typed (the deal's task or break activity). | At the heads-up (2 min, or 5 min on blocks of 45+) and block end of a running session, only on devices where the student turned push on | No daily reminders, nothing when no session runs. The payload is encrypted with the subscription keys, so the push service sees only the endpoint, timing and size. It is dropped if not delivered within 5 minutes. |
-| Anthropic | The title with emails and phone numbers stripped on the client, the type, the gut size, and days left | Only when the student taps "Suggest pieces" after the disclosure | Anthropic keeps request content up to 30 days. Never the bookmark, never other big ones. |
+| Anthropic | The title (the stored one, with emails and phone numbers stripped), the type, and the gut size. Nothing else | Only when the student taps "Suggest pieces" after the disclosure | Anthropic keeps request content up to 30 days. Never the bookmark, the due day or days left, never other big ones. |

@@ -1,7 +1,7 @@
 "use node";
 // Spec 008 "Suggest pieces": one call to Claude Haiku 5.5 with a strict JSON schema at low effort. Runs at most once
-// per request and is never retried by us (the SDK retries one transient failure). Any failure writes "failed"; the
-// sheet then says so and keeps the student's slots. Logs never hold the title or the model's output.
+// per request and is never retried (SDK retries off), so one counted request is at most one API call. Any failure
+// writes "failed"; the sheet then says so and keeps the student's slots. Logs never hold the title or the output.
 import Anthropic from "@anthropic-ai/sdk";
 import { v } from "convex/values";
 import { cleanSuggestion } from "../packages/core/src";
@@ -50,10 +50,9 @@ export const suggestPieces = internalAction({
     title: v.string(),
     taskType: v.optional(taskType),
     gutMin: v.optional(v.number()),
-    daysLeft: v.optional(v.number()),
   },
   returns: v.null(),
-  handler: async (ctx, { suggestionId, title, taskType, gutMin, daysLeft }) => {
+  handler: async (ctx, { suggestionId, title, taskType, gutMin }) => {
     const apiKey = process.env.ANTHROPIC_API_KEY;
     let raw: unknown = null;
     if (!apiKey) {
@@ -63,10 +62,9 @@ export const suggestPieces = internalAction({
         `Task title: ${title}`,
         ...(taskType ? [`Kind of task: ${TYPE_WORDS[taskType]}`] : []),
         ...(gutMin !== undefined ? [`Total size the student guessed: ${gutMin} minutes`] : []),
-        ...(daysLeft !== undefined ? [`Days until it is due, counting today: ${daysLeft}`] : []),
       ];
       try {
-        const client = new Anthropic({ apiKey, maxRetries: 1, timeout: TIMEOUT_MS });
+        const client = new Anthropic({ apiKey, maxRetries: 0, timeout: TIMEOUT_MS });
         const res = await client.messages.create({
           model: MODEL,
           max_tokens: MAX_TOKENS,

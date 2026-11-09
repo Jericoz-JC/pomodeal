@@ -6,7 +6,7 @@ import { ConvexError } from "convex/values";
 import { createClient } from "@workos-inc/authkit-js";
 import { api } from "../../../convex/_generated/api";
 import type { Doc, Id } from "../../../convex/_generated/dataModel";
-import { cardsFor, proposeSpread, scrubForAI, splitSlots, type BigOneCardRow, type Piece, type SpreadDay, type TaskType } from "../../../packages/core/src";
+import { cardsFor, proposeSpread, splitSlots, type BigOneCardRow, type Piece, type SpreadDay, type TaskType } from "../../../packages/core/src";
 import { localDayKey, msToLocalMidnight } from "./days";
 import { mountGate, type GateState, type Provider } from "./gate";
 import { enablePush, pushConfigured, pushSupported, type PushResult } from "./push";
@@ -158,9 +158,10 @@ interface Backend {
    *  fromSuggestion: the rows started as a suggestion (marks the big one aiSuggested, logs ai_accepted). */
   saveSplit(taskId: string, pieces: Piece[], fromSuggestion?: boolean): Promise<PlanResult>;
   signSpread(taskId: string, dueDay: string, plan: SpreadDay[]): Promise<PlanResult>;
-  /** Spec 008 "Suggest pieces", after the disclosure: the title leaves this device scrubbed (core's scrubForAI); the
-   *  server adds the type and gut size. daysLeft counts today, from the due day when there is one. Never throws. */
-  suggestPieces(taskId: string, title: string, daysLeft: number | undefined, onUpdate: (u: SuggestUpdate) => void): SuggestHandle;
+  /** Spec 008 "Suggest pieces", after the disclosure. Only the big one's id goes up: the server sends the model its
+   *  stored title (scrubbed), type and gut size, nothing else. A row that disappears, or no answer within
+   *  SUGGEST_WAIT_MS, ends the wait as "failed". Never throws. */
+  suggestPieces(taskId: string, onUpdate: (u: SuggestUpdate) => void): SuggestHandle;
 }
 let live = false;
 function goLive(convex: ConvexClient) {
@@ -185,6 +186,8 @@ function goLive(convex: ConvexClient) {
     title: p.title, minutes: p.minutes,
     ...(p.plannedDay !== undefined ? { plannedDay: p.plannedDay } : {}), ...(p.stampedAt !== undefined ? { stampedAt: p.stampedAt } : {}),
   });
+  /** How long the split sheet waits for a suggestion before it shows the failure line (the model call times out at 30 s). */
+  const SUGGEST_WAIT_MS = 90_000;
   /** The server's switch for "Suggest pieces" (api.ai.enabled), sent to the screens with the device facts. */
   let aiOn = false;
   const sendEnv = () => app.env({ pushSupported: pushConfigured() && pushSupported(), installed: standalone, iosSafari: pushConfigured() && isIOS, aiSuggest: aiOn });
@@ -246,12 +249,21 @@ function goLive(convex: ConvexClient) {
         taskId: taskId as Id<"tasks">, dueDay,
         plan: plan.map((d) => ({ day: d.day, minutes: d.minutes, ...(d.pieceIndex !== undefined ? { pieceIndex: d.pieceIndex } : {}) })),
       }).then((): PlanResult => ({ ok: true }), refused("signSpread")),
-    suggestPieces: (taskId, title, daysLeft, onUpdate) => {
+    suggestPieces: (taskId, onUpdate) => {
       let stop: (() => void) | null = null;
       let id: Id<"pieceSuggestions"> | null = null;
       let dismissed = false;
+      let settled = false;
+      let timer: ReturnType<typeof setTimeout> | null = null;
+      const stopTimer = () => { if (timer) clearTimeout(timer); timer = null; };
+      /** The sheet hears one answer: ready, failed or off. "pending" passes through while waiting. */
+      const settle = (u: SuggestUpdate) => {
+        if (settled) return;
+        if (u.status !== "pending") { settled = true; stopTimer(); }
+        onUpdate(u);
+      };
       const handle: SuggestHandle = {
-        unsubscribe: () => { stop?.(); stop = null; },
+        unsubscribe: () => { stop?.(); stop = null; stopTimer(); },
         dismiss: () => {
           handle.unsubscribe();
           if (dismissed) return;
@@ -259,18 +271,19 @@ function goLive(convex: ConvexClient) {
           if (id) void convex.mutation(api.ai.dismissSuggestion, { suggestionId: id }).catch(report("dismissSuggestion"));
         },
       };
-      convex.mutation(api.ai.requestSuggestion, {
-        taskId: taskId as Id<"tasks">, title: scrubForAI(title), dayKey: dayKey(), ...(daysLeft !== undefined ? { daysLeft } : {}),
-      }).then((r) => {
+      // No answer in time (the action stuck, the connection gone): stop waiting and say so; the sheet then dismisses the row.
+      timer = setTimeout(() => { timer = null; settle({ status: "failed" }); }, SUGGEST_WAIT_MS);
+      convex.mutation(api.ai.requestSuggestion, { taskId: taskId as Id<"tasks">, dayKey: dayKey() }).then((r) => {
         if (typeof r !== "string") {
           if (r.refused === "off") { aiOn = false; sendEnv(); }
-          onUpdate({ status: r.refused === "off" ? "off" : "failed" });
+          settle({ status: r.refused === "off" ? "off" : "failed" });
           return;
         }
         id = r;
         if (dismissed) { dismissed = false; handle.dismiss(); return; } // the sheet closed while asking
-        stop = convex.onUpdate(api.ai.suggestion, { suggestionId: r }, (row) => { if (row) onUpdate(row); });
-      }).catch((e: unknown) => { report("requestSuggestion")(e); onUpdate({ status: "failed" }); });
+        // a row that disappears while waiting (swept, or saved or dismissed elsewhere) is a failure, not a silent wait
+        stop = convex.onUpdate(api.ai.suggestion, { suggestionId: r }, (row) => settle(row ?? { status: "failed" }));
+      }).catch((e: unknown) => { report("requestSuggestion")(e); settle({ status: "failed" }); });
       return handle;
     },
   };
