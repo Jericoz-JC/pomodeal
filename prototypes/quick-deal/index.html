@@ -430,7 +430,7 @@ body.modal nav.tabs { display: none; }
 .dealtwrap.fresh { animation: none; }
 /* a ring always winds on from empty with the knob riding its leading edge: a new session, a new block, minutes you
    just bought. This one move drives the ring's own --p (a registered property that only repaints the ring's mask),
-   the single exception to transform/opacity. Gentle and short, so it never reads as a loading spinner. */
+   the single exception to transform/opacity (docs/decisions/0003). Gentle and short, so it never reads as a loading spinner. */
 .dial.sweep { animation-duration: .6s; animation-timing-function: cubic-bezier(.3, .7, .2, 1); }
 .ticket.stamped, .term.stamped { animation: thud .26s .15s ease-out; }
 
