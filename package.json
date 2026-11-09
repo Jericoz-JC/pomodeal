@@ -19,13 +19,15 @@
     "build:ci": "node scripts/ci-build.mjs"
   },
   "dependencies": {
-    "convex": "^1.49.0"
+    "convex": "^1.49.0",
+    "web-push": "^3.6.7"
   },
   "engines": {
     "node": ">=22"
   },
   "devDependencies": {
     "@edge-runtime/vm": "^5.0.0",
+    "@types/web-push": "^3.6.4",
     "convex-test": "^0.0.67",
     "vitest": "^5.1.0"
   }

@@ -12,7 +12,10 @@ import type * as beta from "../beta.js";
 import type * as events from "../events.js";
 import type * as lib_events from "../lib/events.js";
 import type * as lib_members from "../lib/members.js";
+import type * as lib_pushSchedule from "../lib/pushSchedule.js";
 import type * as lib_tasks from "../lib/tasks.js";
+import type * as push from "../push.js";
+import type * as pushNode from "../pushNode.js";
 import type * as sessions from "../sessions.js";
 import type * as tasks from "../tasks.js";
 
@@ -27,7 +30,10 @@ declare const fullApi: ApiFromModules<{
   events: typeof events;
   "lib/events": typeof lib_events;
   "lib/members": typeof lib_members;
+  "lib/pushSchedule": typeof lib_pushSchedule;
   "lib/tasks": typeof lib_tasks;
+  push: typeof push;
+  pushNode: typeof pushNode;
   sessions: typeof sessions;
   tasks: typeof tasks;
 }>;

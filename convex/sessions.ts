@@ -7,6 +7,7 @@ import {
   type LedgerEntry,
 } from "../packages/core/src";
 import { currentMember, requireMember } from "./lib/members";
+import { cancelPushes, reschedule } from "./lib/pushSchedule";
 import { checkDayKey, ownTask } from "./lib/tasks";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -28,8 +29,9 @@ async function log(ctx: MutationCtx, userId: Id<"users">, sessionId: Id<"session
 type SessionState = Doc<"sessions">["state"];
 
 /**
- * The one place a session's state is written after it starts. Every change bumps `version` (Task 13 uses it to
- * drop stale scheduled pushes) and keeps the scheduled ids, whatever the core rules returned.
+ * The one place a session's state is written after it starts. Every change bumps `version` (stale scheduled
+ * pushes check it) and keeps the scheduled ids, whatever the core rules returned. The pushes follow the write:
+ * a running session gets its current block's heads-up and end rescheduled; an ended one has them cancelled.
  */
 async function saveState(ctx: MutationCtx, s: Doc<"sessions">, state: SessionState, status?: "ended") {
   const next: SessionState = {
@@ -37,7 +39,12 @@ async function saveState(ctx: MutationCtx, s: Doc<"sessions">, state: SessionSta
     version: (s.state.version ?? 0) + 1,
     ...(s.state.scheduledIds ? { scheduledIds: s.state.scheduledIds } : {}),
   };
-  await ctx.db.patch(s._id, { state: next, ...(status ? { status } : {}) });
+  if (status) {
+    await ctx.db.patch(s._id, { status });
+    await cancelPushes(ctx, s._id, next); // writes `next`
+  } else {
+    await reschedule(ctx, s._id, next, Date.now()); // writes `next` with the new ids
+  }
 }
 
 /** Loads a running session that belongs to the caller. */
@@ -91,13 +98,16 @@ export async function startSession(
   // The card button offers the length chosen last time. Ramp lengths (19, 23) aren't on offer, so this is
   // the deal's chosen length, not a block's.
   if (taskId) await ctx.db.patch(taskId, { lastFocusMin: deal.focusMin });
-  return ctx.db.insert("sessions", {
+  const state: SessionState = { ...buildSession(deal, now), version: 1 };
+  const sessionId = await ctx.db.insert("sessions", {
     userId: user._id,
-    state: { ...buildSession(deal, now), version: 1 },
+    state,
     status: "running",
     createdAt: now,
     ...(taskId ? { taskId } : {}),
   });
+  await reschedule(ctx, sessionId, state, now);
+  return sessionId;
 }
 
 /** The running session, with the last repayment pick so the ask sheet can pre-select it (ADR 0005). */

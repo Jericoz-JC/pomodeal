@@ -96,6 +96,20 @@ Events hold no titles, bookmarks or any typed text. Kinds: big_one_named, first_
 | ms | A duration, optional | Time to first payment | Chris | Deleted at the end of the beta | End-of-beta cleanup |
 | at | When it happened | Bound queries to the beta window | Chris | Deleted at the end of the beta | End-of-beta cleanup |
 
+### pushSubscriptions
+
+One row per device that turned on taps at block ends (spec 008). An endpoint is stored once; if another signed-in member subscribes the same browser, the row moves to them.
+
+| Field | What it holds | Why | Who can see | Retention | Deleted by |
+| --- | --- | --- | --- | --- | --- |
+| userId | Owner | Scope to the student | Chris | While the subscription is valid | Unsubscribing, or removal after the push service says it is gone (404 or 410) |
+| endpoint | The browser push service address for one device | Deliver block-boundary taps | Chris | While the subscription is valid | Unsubscribing, or removal after the push service says it is gone (404 or 410) |
+| p256dh, auth | Keys the browser gave for encrypting pushes | Encrypt the payload | Chris | While the subscription is valid | Same as endpoint |
+| createdAt | When it was added | Ordering | Chris | While the subscription is valid | Same as endpoint |
+| lastSuccessAt | Last successful send, optional | Spot dead subscriptions | Chris | While the subscription is valid | Same as endpoint |
+
+Each send is logged in `events` as `push_sent` or `push_failed` (kind and time only, never the payload or endpoint). A failed send is never retried.
+
 ### Stored on the device (browser storage, never sent)
 
 These live in the browser's `localStorage` on one device. Pomodeal never uploads them; clearing the site's data deletes them.
@@ -109,16 +123,6 @@ These live in the browser's `localStorage` on one device. Pomodeal never uploads
 ## Tables planned in spec 008
 
 All fields in this section are planned (spec 008).
-
-### pushSubscriptions
-
-| Field | What it holds | Why | Who can see | Retention | Deleted by |
-| --- | --- | --- | --- | --- | --- |
-| userId | Owner | Scope to the student | Chris | While the subscription is valid | Unsubscribing, or removal after a failed send |
-| endpoint | The browser push service address for one device | Deliver block-end taps | Chris | While the subscription is valid | Unsubscribing, or removal after a failed send |
-| p256dh, auth | Keys the browser gave for encrypting pushes | Encrypt the payload | Chris | While the subscription is valid | Same as endpoint |
-| createdAt | When it was added | Ordering | Chris | While the subscription is valid | Same as endpoint |
-| lastSuccessAt | Last successful send | Spot dead subscriptions | Chris | While the subscription is valid | Same as endpoint |
 
 ### checkIns
 
@@ -161,5 +165,5 @@ It is asked once per device and shown again from Settings. The feature is off un
 | Who | What is sent | When | Notes |
 | --- | --- | --- | --- |
 | WorkOS | Sign-in details the student enters at sign-in | Signing in | Handles identity; Pomodeal stores only the resulting token identifier and the display name. |
-| The browser's push service (for example Apple, Google or Mozilla) | The device endpoint, and a payload holding the block label and time | At the heads-up and block end of a running session, only if the student turned push on | No daily reminders. The payload is encrypted with the subscription keys. |
+| The browser's push service (for example Apple, Google or Mozilla) | The device endpoint, and an encrypted payload holding the push text: the block's label and, at a break's end, the next block's label (for example "2 min to wrap up BIO 180 ch. 7."). Labels can be text the student typed (the deal's task or break activity). | At the heads-up (2 min, or 5 min on blocks of 45+) and block end of a running session, only on devices where the student turned push on | No daily reminders, nothing when no session runs. The payload is encrypted with the subscription keys, so the push service sees only the endpoint, timing and size. It is dropped if not delivered within 5 minutes. |
 | Anthropic | The title with emails and phone numbers stripped on the client, the type, the gut size, and days left | Only when the student taps "Suggest pieces" after the disclosure | Anthropic keeps request content up to 30 days. Never the bookmark, never other big ones. |

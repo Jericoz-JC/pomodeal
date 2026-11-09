@@ -115,6 +115,18 @@ export default defineSchema({
     createdAt: v.number(),
   }).index("by_userId_and_status", ["userId", "status"]),
 
+  // Web Push subscriptions (spec 008), one per device. An endpoint belongs to whoever subscribed it last.
+  pushSubscriptions: defineTable({
+    userId: v.id("users"),
+    endpoint: v.string(),
+    p256dh: v.string(),
+    auth: v.string(),
+    createdAt: v.number(),
+    lastSuccessAt: v.optional(v.number()),
+  })
+    .index("by_endpoint", ["endpoint"])
+    .index("by_userId", ["userId"]),
+
   // Beta metrics. Kinds and timings only, never titles, bookmarks or any typed text.
   events: defineTable({
     userId: v.id("users"),
