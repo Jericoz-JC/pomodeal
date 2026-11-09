@@ -280,3 +280,15 @@ General history beyond 24 hours, presets and the block builder, earned-breaks mo
 10. The deal built for a first payment of 15 is a normal Quick Deal session (15 → 19 → 23 ramp) with `taskId` set.
 11. A scheduled push with an old `version` does nothing; a session changed twice in a row schedules one heads-up and one block end, not two of each.
 12. The AI limiter refuses the 11th request for a user on one day and the 301st across users, without calling the action.
+
+## Design rounds
+
+Week 2 screens (Day 1 ticket, block-end prompts, cards, menus, list, wake lock, repay pre-selection), scored per the build loop by three independent reviewers that never saw the target. Scores are designer / stressed student / accessibility, 1–10.
+
+| Round | Hierarchy | Typography | Color & contrast | Consistency | One action | Tone | Delight | What changed after it |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| r1 | 6 / 6 / 8 | 8 / 8 / 8 | 8 / 7 / 8 | 6 / 6 / 8 | 5 / 5 / 8 | 8 / 8 / 9 | 7 / 8 / 8 | One full card plus compact rows; quick deal folds to a second door while cards show; "Break first?" moved into the card menu; Day 1 rows made inline phrases; unbuilt menu rows hidden; ticket-paper sheets; focus kept on toggled chips |
+| r2 | 7 / 7 / 8 | 8 / 8 / 8 | 8 / 7 / 8 | 7 / 6 / 7 | 7 / 6 / 8 | 9 / 8 / 9 | 7 / 8 / 8 | Quick deal drawn as a dashed ticket stub with aria-expanded; sticky Deal; minute chips vs kind chips differentiated; "Not yet" shown as the default; list rows share one stub; 320 px reflow |
+| r3 | 8 / 8 / 9 | 8 / 8 / 9 | 7 / 8 / 9 | 6 / 7 / 9 | 8 / 8 / 9 | 8 / 9 / 9 | 8 / 8 / 8 | Stopped at the three-round cap for Chris's taste pass |
+
+Open after r3 (for Chris): dashed outlines now do four jobs (stamp slot, chip, checkbox, quick-deal stub), which is the main consistency drag; reviewers disagreed across rounds on whether "Not yet" should look pre-selected; the empty stamp slot before Deal reads like an unchecked box; unselected chip borders are faint. In-browser check (demo mode, 375 px, plain tab, not installed): typing a title to a running first payment took 29 s with no planning screen.
