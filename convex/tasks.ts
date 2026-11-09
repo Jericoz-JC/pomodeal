@@ -79,8 +79,9 @@ export const create = mutation({
     firstMove: v.string(),
     deal: quickDeal,
     dayKey: v.string(),
+    namedAt: v.optional(v.number()), // client time (plus clock offset) when the student first tapped "Bigger than one block?"
   },
-  handler: async (ctx, { title, taskType, gutMin, firstMove, deal, dayKey }) => {
+  handler: async (ctx, { title, taskType, gutMin, firstMove, deal, dayKey, namedAt }) => {
     const user = await requireMember(ctx);
     checkDayKey(dayKey);
     const problem = bigOneProblem({ title, firstMove, gutMin });
@@ -103,7 +104,7 @@ export const create = mutation({
     });
     await logEvent(ctx, user._id, "big_one_named", { taskId });
     const sessionId = await startSession(ctx, user, deal, now, taskId, dayKey);
-    await logEvent(ctx, user._id, "first_payment_started", { taskId });
+    await logEvent(ctx, user._id, "first_payment_started", { taskId, ...(namedAt !== undefined ? { ms: Math.max(0, now - namedAt) } : {}) });
     return { taskId, sessionId, serverNow: now };
   },
 });

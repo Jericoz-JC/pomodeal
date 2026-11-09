@@ -5,7 +5,9 @@ import { ConvexClient } from "convex/browser";
 import { ConvexError } from "convex/values";
 import { createClient } from "@workos-inc/authkit-js";
 import { api } from "../../../convex/_generated/api";
-import type { Id } from "../../../convex/_generated/dataModel";
+import type { Doc, Id } from "../../../convex/_generated/dataModel";
+import { cardsFor, type BigOneCardRow, type TaskType } from "../../../packages/core/src";
+import { localDayKey, msToLocalMidnight } from "./days";
 import { mountGate, type GateState, type Provider } from "./gate";
 
 // Which one-tap buttons to show; each must be enabled in WorkOS → Authentication → Providers.
@@ -109,13 +111,22 @@ interface LiveApp {
   session(doc: unknown): void;
   ledger(entries: unknown[]): void;
   clock(offsetMs: number): void;
+  /** All open big ones, comeback first then newest worked; the screen shows the first CARDS_SHOWN. Optional until the cards screen exists. */
+  bigOnes?(cards: BigOneCardRow[]): void;
 }
+interface DealArgs { act: string | null; breakMin: number; task: string; focusMin: number }
 interface Backend {
-  start(deal: { act: string | null; breakMin: number; task: string; focusMin: number }): void;
+  start(deal: DealArgs): void;
   ask(pick: number | "override", intention?: string): void;
   next(fromIdx: number): void;
   bonus(): void;
   end(): void;
+  /** namedAt: client time plus clock offset when the student first tapped "Bigger than one block?" */
+  startBigOne(d: { title: string; taskType?: TaskType; gutMin?: number; firstMove: string; deal: DealArgs; namedAt?: number }): void;
+  startFromCard(taskId: string, deal: DealArgs): void;
+  blockNotes(fromIdx: number, bookmark: string | undefined, done: boolean): void;
+  taskMenu(taskId: string, action: "startFresh" | "setAside" | "reopen" | "remove"): void;
+  logEvent(kind: "comeback_shown" | "comeback_started" | "install_done" | "push_enabled", taskId?: string): void;
 }
 let live = false;
 function goLive(convex: ConvexClient) {
@@ -127,23 +138,53 @@ function goLive(convex: ConvexClient) {
   // The reply left the server about half a round trip before it arrived.
   const syncClock = (sentAt: number, serverNow: number) => app.clock(serverNow - (sentAt + (Date.now() - sentAt) / 2));
   const report = (what: string) => (e: unknown) => console.error(`[pomodeal] ${what} failed`, e);
+  const dayKey = () => localDayKey(Date.now());
+  const toDeal = (d: DealArgs) => ({ activity: d.act ?? null, breakMin: d.breakMin, task: d.task, focusMin: d.focusMin });
   const be: Backend = {
     start: (d) => {
       const sentAt = Date.now();
-      void convex.mutation(api.sessions.start, { deal: { activity: d.act ?? null, breakMin: d.breakMin, task: d.task, focusMin: d.focusMin } })
+      void convex.mutation(api.sessions.start, { deal: toDeal(d) })
         .then((r) => syncClock(sentAt, r.serverNow))
         .catch(report("start"));
     },
     ask: (pick, intention) => { if (sessionId) void convex.mutation(api.sessions.ask, { sessionId, pick, ...(intention ? { intention } : {}) }).catch(report("ask")); },
-    next: (fromIdx) => { if (sessionId) void convex.mutation(api.sessions.next, { sessionId, fromIdx }).catch(report("next")); },
+    next: (fromIdx) => { if (sessionId) void convex.mutation(api.sessions.next, { sessionId, fromIdx, dayKey: dayKey() }).catch(report("next")); },
     bonus: () => { if (sessionId) void convex.mutation(api.sessions.bonus, { sessionId }).catch(report("bonus")); },
-    end: () => { if (sessionId) void convex.mutation(api.sessions.end, { sessionId }).catch(report("end")); },
+    end: () => { if (sessionId) void convex.mutation(api.sessions.end, { sessionId, dayKey: dayKey() }).catch(report("end")); },
+    startBigOne: (d) => {
+      const sentAt = Date.now();
+      void convex.mutation(api.tasks.create, {
+        title: d.title, ...(d.taskType ? { taskType: d.taskType } : {}), ...(d.gutMin !== undefined ? { gutMin: d.gutMin } : {}),
+        firstMove: d.firstMove, deal: toDeal(d.deal), dayKey: dayKey(), ...(d.namedAt !== undefined ? { namedAt: d.namedAt } : {}),
+      }).then((r) => syncClock(sentAt, r.serverNow)).catch(report("startBigOne"));
+    },
+    startFromCard: (taskId, deal) => {
+      const sentAt = Date.now();
+      void convex.mutation(api.tasks.startFromCard, { taskId: taskId as Id<"tasks">, deal: toDeal(deal), dayKey: dayKey() })
+        .then((r) => syncClock(sentAt, r.serverNow))
+        .catch(report("startFromCard"));
+    },
+    blockNotes: (fromIdx, bookmark, done) => {
+      if (sessionId) void convex.mutation(api.tasks.blockNotes, { sessionId, fromIdx, ...(bookmark ? { bookmark } : {}), done, dayKey: dayKey() }).catch(report("blockNotes"));
+    },
+    taskMenu: (taskId, action) => { void convex.mutation(api.tasks[action], { taskId: taskId as Id<"tasks"> }).catch(report(action)); },
+    logEvent: (kind, taskId) => { void convex.mutation(api.events.logClient, { kind, ...(taskId ? { taskId: taskId as Id<"tasks"> } : {}) }).catch(report("logEvent")); },
   };
   app.attach(be);
   const sentAt = Date.now();
   convex.mutation(api.sessions.serverNow, {}).then((now) => syncClock(sentAt, now)).catch(report("serverNow"));
   convex.onUpdate(api.sessions.current, {}, (doc) => { sessionId = doc ? doc._id : null; app.session(doc); });
   convex.onUpdate(api.sessions.today, { now: Date.now() }, (entries) => app.ledger(entries));
+
+  // Big-one cards: recomputed when the tasks change and at local midnight (comeback depends on today's key).
+  let openTasks: Doc<"tasks">[] | null = null;
+  const pushCards = () => {
+    if (!openTasks) return;
+    app.bigOnes?.(cardsFor(openTasks.map(({ _id, ...t }) => ({ ...t, id: _id as string })), dayKey()));
+  };
+  convex.onUpdate(api.tasks.open, {}, (tasks) => { openTasks = tasks; pushCards(); });
+  const armMidnight = () => setTimeout(() => { pushCards(); armMidnight(); }, msToLocalMidnight(Date.now()));
+  armMidnight();
 }
 
 start().catch((e) => console.error("[pomodeal] startup failed", e));

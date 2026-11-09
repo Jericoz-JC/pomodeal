@@ -1232,6 +1232,7 @@ const SERVER_TEXT = (e) => {
   if (e.kind === "bonus") return `${e.minutes} more min of ${title(e.blockLabel).split(" ")[0].toLowerCase()}`;
   return `${e.minutes} more min of ${e.blockLabel}`;
 };
+let bigOneCards = [];
 window.pomodealApp = {
   attach(backend) {
     if (BE) return;
@@ -1244,6 +1245,8 @@ window.pomodealApp = {
   },
   /** server time minus this device's time, in ms: time on screen is Date.now() + offset */
   clock(offsetMs) { if (Number.isFinite(offsetMs)) clockOffset = offsetMs; },
+  /** all open big ones (comeback first, then newest worked); the cards screen renders them */
+  bigOnes(cards) { bigOneCards = Array.isArray(cards) ? cards : []; },
   /** the running session from the server, or null */
   session(doc) {
     if (!BE) return;

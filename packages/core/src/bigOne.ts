@@ -227,6 +227,29 @@ export function cardFor(task: BigOne, todayKey: string): BigOneCard {
   };
 }
 
+export type CardInput = BigOne & { id: string; lastWorkedAt?: number };
+export type BigOneCardRow = BigOneCard & { id: string; taskType?: TaskType; currentPiece?: string };
+
+/** Cards for every open big one: comeback first, then most recently worked. The screen shows the first CARDS_SHOWN. */
+export function cardsFor(tasks: CardInput[], todayKey: string): BigOneCardRow[] {
+  return tasks
+    .filter((t) => t.status === "open")
+    .map((t) => {
+      const current = t.pieces?.find((p) => p.stampedAt === undefined)?.title;
+      return {
+        row: {
+          ...cardFor(t, todayKey),
+          id: t.id,
+          ...(t.taskType ? { taskType: t.taskType } : {}),
+          ...(current !== undefined ? { currentPiece: current } : {}),
+        },
+        at: t.lastWorkedAt ?? 0,
+      };
+    })
+    .sort((a, b) => Number(b.row.comeback) - Number(a.row.comeback) || b.at - a.at)
+    .map((x) => x.row);
+}
+
 /** Newest first, no duplicates, only the most recent WORKED_DAYS_KEPT. */
 export function addWorkedDay(days: string[], key: string): string[] {
   return [key, ...days.filter((d) => d !== key)].slice(0, WORKED_DAYS_KEPT);

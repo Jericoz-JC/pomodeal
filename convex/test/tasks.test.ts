@@ -41,6 +41,20 @@ async function paper(t: TestConvex, name = "Ada") {
 }
 
 describe("create", () => {
+  test("namedAt logs the time to first payment, never negative; absent logs no ms", async () => {
+    const t = newT();
+    const m = await makeMember(t, "Ned");
+    const args = { title: "Paper", firstMove: "", deal: deal(), dayKey: DAY };
+    await m.as.mutation(api.tasks.create, { ...args, namedAt: Date.now() - 4000 });
+    await m.as.mutation(api.tasks.create, { ...args, namedAt: Date.now() + 60_000 });
+    await m.as.mutation(api.tasks.create, args);
+    const fp = (await allEvents(t)).filter((e) => e.kind === "first_payment_started");
+    const ms = fp.map((e) => e.ms);
+    expect(ms.filter((x) => x === undefined)).toHaveLength(1);
+    expect(ms.filter((x) => x === 0)).toHaveLength(1);
+    expect(ms.find((x) => x !== undefined && x > 0)!).toBeGreaterThanOrEqual(4000);
+  });
+
   test("starts a normal Quick Deal ramp linked to the new big one, and logs text-free events", async () => {
     const t = newT();
     const before = Date.now();

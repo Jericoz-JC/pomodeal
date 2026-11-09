@@ -1,6 +1,6 @@
 // Spec 008: big ones. Types, copy tables and validation.
 import { describe, expect, it } from "vitest";
-import { AI_GLOBAL_DAILY, AI_USER_DAILY, aiAllowed, scrubForAI, shouldAskCheckIn, weekKey, bigOneProblem, bookmarkPlaceholder, cleanLine, doneQuestion, firstMoveFor, splitSlots } from "../src";
+import { cardsFor, AI_GLOBAL_DAILY, AI_USER_DAILY, aiAllowed, scrubForAI, shouldAskCheckIn, weekKey, bigOneProblem, bookmarkPlaceholder, cleanLine, doneQuestion, firstMoveFor, splitSlots } from "../src";
 
 describe("types and validation", () => {
   it("first moves per type, default and comeback", () => {
@@ -98,5 +98,27 @@ describe("AI limits, scrubbing and check-in week", () => {
     expect(shouldAskCheckIn("2026-11-11", "2026-11-08")).toBe(false);
     expect(shouldAskCheckIn("2026-11-15", "2026-11-08")).toBe(true);
     expect(shouldAskCheckIn("2026-11-11", undefined)).toBe(true);
+  });
+});
+
+describe("cardsFor", () => {
+  const base = { workedMin: 0, openTermsMin: null, firstMove: "Start", status: "open" as const, workedDays: [] as string[] };
+  const TODAY = "2026-11-08";
+  it("sorts comeback first, then newest lastWorkedAt; passes id, taskType, currentPiece", () => {
+    const tasks = [
+      { ...base, id: "a", title: "A", workedDays: ["2026-11-08"], lastWorkedAt: 100, taskType: "exam" as const },
+      { ...base, id: "b", title: "B", workedDays: ["2026-11-08"], lastWorkedAt: 300 },
+      { ...base, id: "c", title: "C", workedDays: ["2026-11-01"], lastWorkedAt: 50, taskType: "writing" as const,
+        pieces: [{ title: "Intro", minutes: 30, stampedAt: 1 }, { title: "Body", minutes: 30 }, { title: "End", minutes: 30 }] },
+    ];
+    const cards = cardsFor(tasks, TODAY);
+    expect(cards.map((c) => c.id)).toEqual(["c", "b", "a"]);
+    expect(cards[0]).toMatchObject({ comeback: true, currentPiece: "Body", taskType: "writing", title: "C" });
+    expect(cards[1].currentPiece).toBeUndefined();
+    expect(cards[2].taskType).toBe("exam");
+  });
+  it("treats a missing lastWorkedAt as oldest", () => {
+    const cards = cardsFor([{ ...base, id: "x", title: "X" }, { ...base, id: "y", title: "Y", lastWorkedAt: 5 }], TODAY);
+    expect(cards.map((c) => c.id)).toEqual(["y", "x"]);
   });
 });
