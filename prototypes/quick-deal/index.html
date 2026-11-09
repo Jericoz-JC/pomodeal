@@ -848,6 +848,9 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   .side { min-width: 0; }
   .roomside { display: none; }
   .tapeside { grid-area: tape; position: sticky; top: 0; align-self: start; margin: 0; }
+  /* signed in, the account button sits in the top right corner: the tape hangs below it */
+  body.live .tapeside { margin-top: 56px; top: 56px; }
+  body.live .tape { max-height: calc(100dvh - 96px); }
   .tape { max-height: calc(100vh - 40px); max-height: calc(100dvh - 40px); overflow-y: auto; scrollbar-width: thin; padding: 24px 24px 34px; }
   /* the stage: one bold object, sized by the window's height so the way out of a block is never below the fold */
   .dial { width: clamp(288px, 50vh, 460px); }
@@ -1225,7 +1228,7 @@ function render() {
   /* the sample ledger is on the tape from the start, the way a real night's would be */
   if (!BE && !ledger.length && location.hash !== "#empty") seedLedger();
   v.innerHTML = tab === "room" ? roomView() : mode === "intercept" ? interceptView() : !S ? startView() : runningView();
-  const sl = $("#side-ledger"), sr = $("#side-room"), tapeOn = tab === "now" && mode !== "intercept";
+  const sl = $("#side-ledger"), sr = $("#side-room"), tapeOn = (tab === "now" || wide) && mode !== "intercept";
   sl.hidden = !tapeOn; sr.hidden = !roomOut; $(".desk").classList.toggle("noroom", wide && !roomOut);
   const tapeHtml = tapeOn ? `<div class="tape">${ledgerView()}</div>${BE ? `<p class="tapefoot">Rooms for your friend group open soon. For now, invite friends from the account button at the top.</p>` : ""}` : "";
   if (sl.dataset.sig !== tapeHtml || document.querySelector(".stubcard.fresh")) { sl.innerHTML = tapeHtml; sl.dataset.sig = tapeHtml; }
