@@ -191,9 +191,11 @@ export function proposeSpread(
   }
   const total = task.openTermsMin ?? 0;
   if (total <= 0) return [];
-  const each = Math.floor(total / days);
-  const extra = total - each * days;
-  return Array.from({ length: days }, (_, d) => ({ day: addDays(todayKey, d), minutes: each + (d === 0 ? extra : 0) }));
+  // Fewer, fuller days when open terms are small: no slice under PIECE_MIN (unless the whole is), so never a 0-minute day.
+  const used = Math.max(1, Math.min(days, Math.floor(total / PIECE_MIN)));
+  const each = Math.floor(total / used);
+  const extra = total - each * used;
+  return Array.from({ length: used }, (_, d) => ({ day: addDays(todayKey, d), minutes: each + (d === 0 ? extra : 0) }));
 }
 
 /** A signed plan never needs more rows than a year of days. */

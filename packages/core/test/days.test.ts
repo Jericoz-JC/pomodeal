@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import {
   addDays, addWorkedDay, cardFor, daysBetween, firstMoveFor, firstPaymentMinutes, isComeback, isDayKey,
-  openTerms, progressLabel, proposeSpread, SPREAD_MAX_DAYS, spreadProblem, type BigOne, type Piece,
+  openTerms, PIECE_MIN, progressLabel, proposeSpread, SPREAD_MAX_DAYS, spreadProblem, type BigOne, type Piece,
 } from "../src";
 
 const base: BigOne = { title: "Essay", workedMin: 0, openTermsMin: 60, firstMove: "Open doc", status: "open", workedDays: [] };
@@ -130,6 +130,24 @@ describe("proposeSpread", () => {
     ]);
     const r = proposeSpread({ openTermsMin: 100 }, "2026-11-08", "2026-11-10");
     expect(r.map((d) => d.minutes)).toEqual([34, 33, 33]);
+  });
+  it("never proposes a zero-minute day or a slice shorter than a piece can be", () => {
+    // open terms smaller than the days left: fewer, fuller days instead of "0 min" rows
+    expect(proposeSpread({ openTermsMin: 2 }, "2026-11-08", "2026-11-10")).toEqual([{ day: "2026-11-08", minutes: 2 }]);
+    expect(proposeSpread({ openTermsMin: 12 }, "2026-11-08", "2026-11-14")).toEqual([
+      { day: "2026-11-08", minutes: 6 }, { day: "2026-11-09", minutes: 6 },
+    ]);
+    for (const total of [1, 4, 5, 7, 9, 10, 11, 23, 59]) {
+      const s = proposeSpread({ openTermsMin: total }, "2026-11-08", "2026-11-20");
+      expect(s.every((d) => d.minutes > 0)).toBe(true);
+      expect(s.length === 1 || s.every((d) => d.minutes >= PIECE_MIN)).toBe(true);
+      expect(s.reduce((a, d) => a + d.minutes, 0)).toBe(total);
+    }
+    expect(proposeSpread({ openTermsMin: 0 }, "2026-11-08", "2026-11-10")).toEqual([]);
+  });
+  it("exam open terms still use two days when they fill two slices", () => {
+    const s = proposeSpread({ taskType: "exam", openTermsMin: 30 }, "2026-11-08", "2026-11-11");
+    expect(new Set(s.map((d) => d.day)).size).toBeGreaterThanOrEqual(2);
   });
 });
 
