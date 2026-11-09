@@ -101,7 +101,7 @@ Convex mutations call `makeOffer` / `applyTerm`; clients call `makeOffer` only t
 
 ## Open questions for Chris
 
-- [ ] **Auto vs chosen repayment.** This draft makes the user choose (borrow vs trade) from the 2nd ask. Is that one tap too many at 11 PM?
+- [x] **Auto vs chosen repayment.** Decided: chosen, with last pick pre-selected for one tap. See [ADR 0004](../decisions/0004-chosen-repayment.md).
 - [ ] **Freebie count.** One free +5 per break, or one per session?
 - [ ] **Should friends see overrides?** Probably only the weekly balance, opt-in (see spec 004).
 - [ ] **The clock's voice.** Does it have a personality ("Fine. But it's coming out of your next break 😏") or stay neutral? Feeds spec 003.
