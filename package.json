@@ -13,14 +13,23 @@
     "build": "node scripts/ci-build.mjs",
     "build:web": "npm run build -w apps/web",
     "test": "npm test -w packages/core",
-    "typecheck": "tsc -p packages/core && tsc -p apps/web && tsc -p convex",
+    "test:convex": "vitest run --config convex/vitest.config.ts",
+    "typecheck": "tsc -p packages/core && tsc -p apps/web && tsc -p apps/web/tsconfig.sw.json && tsc -p convex",
     "shoot": "node prototypes/shoot.mjs",
     "build:ci": "node scripts/ci-build.mjs"
   },
   "dependencies": {
-    "convex": "^1.49.0"
+    "@anthropic-ai/sdk": "^1.6.0",
+    "convex": "^1.49.0",
+    "web-push": "^3.6.7"
   },
   "engines": {
     "node": ">=22"
+  },
+  "devDependencies": {
+    "@edge-runtime/vm": "^5.0.0",
+    "@types/web-push": "^3.6.4",
+    "convex-test": "^0.0.67",
+    "vitest": "^5.1.0"
   }
 }

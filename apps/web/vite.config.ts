@@ -11,6 +11,10 @@ export default defineConfig(({ mode }) => {
   plugins: [
     VitePWA({
       registerType: "autoUpdate",
+      // our own service worker (src/sw.ts): the precache as before, plus the push and notificationclick handlers
+      strategies: "injectManifest",
+      srcDir: "src",
+      filename: "sw.ts",
       includeAssets: ["icon.svg", "apple-touch-icon.png", "robots.txt"],
       manifest: {
         name: "Pomodeal",
@@ -26,7 +30,7 @@ export default defineConfig(({ mode }) => {
           { src: "icon-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
         ],
       },
-      workbox: { globPatterns: ["**/*.{js,css,html,svg,png,woff2}"] },
+      injectManifest: { globPatterns: ["**/*.{js,css,html,svg,png,woff2}"] },
     }),
   ],
 };

@@ -27,6 +27,8 @@ Phase 1 of the [roadmap](docs/03-roadmap.md), in a closed beta with friends.
 | Quick Deal, timer dial, heads-up, asking for time, bonus offer, today's ledger | Rooms with live presence |
 | Synced across phone and laptop; installable as an app | Chrome extension that enforces break endings |
 
+Built on branch `feature/big-ones`, not yet live: big ones (first payment, bookmarks, day-2 and comeback cards, split and spread), block-boundary push code, optional AI piece suggestions, and a weekly check-in.
+
 ## Stack
 
 - **Web app:** Vite + vite-plugin-pwa, installable on phone and desktop ([apps/web](apps/web))

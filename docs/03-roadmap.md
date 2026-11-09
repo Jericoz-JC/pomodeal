@@ -14,10 +14,16 @@ Phase 0's interview gate was skipped on purpose: we launched a closed beta to fr
 - For members: Quick Deal, the dial with focus and break blocks, the 2-minute heads-up (in-app), asking for time (borrow / trade / override, a first step on the third ask), the bonus offer, end early, today's ledger. All server-side through Convex, so devices stay in sync
 - Installable PWA; every push to `main` deploys the site and the backend
 
+**Built on branch `feature/big-ones`, not yet live** (spec 008, waiting on Chris's device checks, see `docs/dogfood-log.md`)
+- Big ones with a first payment and first move, bookmarks, day-2 and comeback cards, split and spread, block-boundary Web Push code (heads-up and block end), optional AI piece suggestions (off unless `AI_SUGGEST_ENABLED`), weekly check-in, and the privacy inventory for all of it
+
 **Next, in order**
 1. Web Push at the heads-up and block end (VAPID keys, push subscriptions table, Convex scheduled action, service worker handler; iPhone needs the installed app)
 2. Motion and feel pass on the deal moment (stamp, block change, heads-up), on a branch
-3. `specs/006-privacy-inventory.md` for the users, invites, sessions and ledger tables (required before more friends join)
+3. ~~[`specs/006-privacy-inventory.md`](specs/006-privacy-inventory.md) for the users, invites, sessions and ledger tables, plus the big-ones tables from spec 008~~ Done.
+
+**Built on branch `feature/big-ones`, not yet live:** Web Push and the other big-one pieces (check-in, AI piece suggestions, split and spread). They go live when Chris merges.
+
 4. Presets and a block builder; history beyond 24 hours
 5. Then Phase 1.5 rooms
 

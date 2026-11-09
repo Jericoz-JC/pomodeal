@@ -12,9 +12,22 @@ const out = resolve(process.argv[2] || join(here, "shots"));
 const page = resolve(here, process.argv[3] || "quick-deal/index.html");
 const STATES = ["start", "intercept", "running", "focus", "heads-up", "boundary", "offer-free", "offer-terms", "offer-intention", "bonus", "ledger", "room",
   // spec 007: long blocks
-  "picker-focus", "picker-60", "start-60", "long-running", "long-halfway", "long-heads-up"];
-// ONLY=a,b limits a run to some states (quick review loops)
+  "picker-focus", "picker-60", "start-60", "long-running", "long-halfway", "long-heads-up",
+  // spec 008: big ones
+  "bigone-chip", "bigone-ticket", "bigone-ticket-typed", "bigone-boundary", "bigone-boundary-piece",
+  "cards", "cards-comeback", "cards-more", "cards-menu", "cards-delete", "cards-all", "cards-breakfirst", "running-wakelock", "offer-terms-repay",
+  // spec 008: push permission button, iPhone install sheet
+  "push-ask", "install-ios",
+  // spec 008: planning on the card
+  "split", "split-exam", "split-pieces", "spread", "spread-exam", "spread-due", "respread", "cards-respread",
+  // spec 008: optional AI, "Suggest pieces" in the split sheet
+  "split-ai-consent", "split-ai-filled",
+  // spec 008: weekly check-in
+  "checkin", "checkin-cards"];
+// ONLY=a,b limits a run to some states (quick review loops); WIDTH=375 checks the narrowest phone; HEIGHT=1400 sees a long screen whole
 const only = process.env.ONLY ? process.env.ONLY.split(",") : null;
+const WIDTH = Number(process.env.WIDTH) || 390;
+const HEIGHT = Number(process.env.HEIGHT) || 844;
 const EDGE = "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe";
 const PORT = 9333 + Math.floor(Math.random() * 500);
 const profile = join(tmpdir(), `nc-shoot-${Date.now()}`);
@@ -38,7 +51,7 @@ ws.addEventListener("message", e => { const m = JSON.parse(e.data); if (m.id && 
 const send = (method, params = {}) => new Promise(r => { const i = ++id; pending.set(i, r); ws.send(JSON.stringify({ id: i, method, params })); });
 
 await send("Page.enable");
-await send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+await send("Emulation.setDeviceMetricsOverride", { width: WIDTH, height: HEIGHT, deviceScaleFactor: 2, mobile: true });
 const base = pathToFileURL(page).href;
 for (const scheme of ["light", "dark"]) {
   await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: scheme }] });

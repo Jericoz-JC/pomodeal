@@ -56,3 +56,22 @@ export function dialTicks(blockMin: number): { minor: number; majorEvery: number
   const step = minor > 30 ? 15 : 5;
   return { minor, majorEvery: minor % step === 0 ? step : minor };
 }
+
+/** Whole minutes of the current block that count toward a big one: only focus blocks, capped at the block length. */
+export function focusMinutesDone(s: SessionState, now: number): number {
+  if (s.blocks[s.idx]?.type !== "focus") return 0;
+  const done = Math.min(Math.max(0, now - s.startedAt), s.durMs);
+  return Math.floor(done / 60_000);
+}
+
+export type PushKind = "headsUp" | "blockEnd";
+
+/** The pushes still to send for the current block: heads-up then block end, future times only. */
+export function pushTimes(s: SessionState, now: number): { kind: PushKind; at: number }[] {
+  const end = endsAt(s);
+  const out: { kind: PushKind; at: number }[] = [
+    { kind: "headsUp", at: end - headsUpMs(s.durMs) },
+    { kind: "blockEnd", at: end },
+  ];
+  return out.filter((p) => p.at > now);
+}

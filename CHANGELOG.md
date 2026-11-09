@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Big ones (spec 008, built on branch `feature/big-ones`, not yet live): name a 2 to 4 hour task and start with a 15 min first payment and a named first move. Leave a "Next time, start with" bookmark at the end of a block and find it on the card next time.
+- Day-2 and comeback cards bring a big one back kindly, with a smaller first move offered; nothing ever reads as overdue.
+- Split and spread: cut a big one into pieces, and optionally spread them over the days before the due day; a re-spread is offered only when a signed plan slipped.
+- Taps at block ends: Web Push at the heads-up and block end (custom service worker, scheduled with a version check so stale pushes never fire), plus an iPhone install sheet and a Keep screen on option.
+- Optional piece suggestions with Claude Haiku 5.5: off unless switched on at the server, one opt-in tap each, only title, type and size are sent, 10 a day per member.
+- A weekly one-tap check-in ("Did this week go better than usual?") and a beta metrics query for Chris.
+- Privacy inventory (spec 006) covers every new table and device key.
 - Closed beta live at https://pomodeal.app: Cloudflare Worker + Convex production + WorkOS AuthKit with one-tap GitHub / Google / Apple sign-in.
 - Invite-only beta: invite codes and links, 11 invites per member, waitlist, admin commands.
 - Landing page with a playable deal ticket (four design-council rounds), install hint, noindex for the closed beta.
