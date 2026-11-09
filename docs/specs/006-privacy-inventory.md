@@ -1,0 +1,155 @@
+# Spec 006: Privacy inventory
+
+Status: living document. Owner: Chris.
+
+This lists every piece of behavior or personal data Pomodeal stores, why, who can see it, how long it is kept, and what deletes it. Any new stored field is added here in the same commit that adds it. Fields marked "planned (spec 008)" do not exist yet; the mark comes off when the task that adds them lands.
+
+Pomodeal never records diagnoses and stores no health information. Titles, first moves and bookmarks are coursework text: only the student can read them, rooms never see them, and AI requests send only what the AI disclosure below says.
+
+Who can see, in every table: the signed-in student sees their own rows through the app. Chris, as the operator, can see all rows in the Convex dashboard. No other student can read another student's rows. There is no in-app "delete my data" yet (required before any public launch), so until then deletion on request is done by Chris.
+
+## Tables that exist today
+
+### users
+
+| Field | What it holds | Why | Who can see | Retention | Deleted by |
+| --- | --- | --- | --- | --- | --- |
+| tokenIdentifier | The WorkOS sign-in identity string | Match a sign-in to a member | The student (own row), Chris | While the account exists | Chris on request |
+| displayName | The name the student chose | Show in the app and invites | The student, Chris | While the account exists | Chris on request |
+| role | member or admin | Gate admin-only functions | The student, Chris | While the account exists | Chris on request |
+| inviteId | The invite used to join | Trace invite use | Chris | While the account exists | Chris on request |
+| invitedBy | The member who invited them | Enforce invite allowance | Chris | While the account exists | Chris on request |
+| inviteAllowance | How many invites they may still make | Limit invite growth | The student, Chris | While the account exists | Chris on request |
+| joinedAt | When they joined | Ordering and support | Chris | While the account exists | Chris on request |
+| lastRepay | borrow or trade, the last repayment pick; planned (spec 008) | Pre-select it on the next ask (ADR 0005) | The student, Chris | While the account exists | Chris on request |
+
+### invites
+
+| Field | What it holds | Why | Who can see | Retention | Deleted by |
+| --- | --- | --- | --- | --- | --- |
+| code | The invite code | Let a friend join | Whoever holds the code, Chris | Until used up or expired, then kept as a record | Chris on request |
+| createdBy | The member who made it, or null for founder invites | Enforce allowance | Chris | Same as the invite | Chris on request |
+| maxUses, uses | How many times it can and has been used | Limit use | Chris | Same as the invite | Chris on request |
+| note | Optional label written by the creator | Remember who it was for | The creator, Chris | Same as the invite | Chris on request |
+| expiresAt | Optional expiry time | Close old invites | Chris | Same as the invite | Chris on request |
+| createdAt | When it was made | Ordering | Chris | Same as the invite | Chris on request |
+
+### sessions
+
+| Field | What it holds | Why | Who can see | Retention | Deleted by |
+| --- | --- | --- | --- | --- | --- |
+| userId | Owner | Scope to the student | The student, Chris | Kept as history | Chris on request |
+| state.blocks | Block types, labels and minutes (labels can be what the student typed) | Run the session | The student, Chris | Kept as history | Chris on request |
+| state.idx, startedAt, durMs | Current block, start time, length | Compute time from stored start | The student, Chris | Kept as history | Chris on request |
+| state.askCount, debt, bonusOffered | Negotiation state | Apply the rules | The student, Chris | Kept as history | Chris on request |
+| state.version | Counter bumped on every change; scheduled pushes check it; planned (spec 008) | Stop stale pushes firing | Chris | Kept as history | Chris on request |
+| state.scheduledIds | Ids of scheduled push functions; planned (spec 008) | Cancel old schedules | Chris | Cleared when the session ends | Chris on request |
+| status | running or ended | Find the active session | The student, Chris | Kept as history | Chris on request |
+| createdAt | When it began | Ordering | The student, Chris | Kept as history | Chris on request |
+| taskId | The big one this session belongs to; planned (spec 008) | Task-scoped history | The student, Chris | Kept as history | Unlinked when the big one is deleted |
+| notedIdx | Marker that the block-end note for a block was already handled; planned (spec 008) | Make block-end notes idempotent | Chris | Kept as history | Chris on request |
+
+### ledger
+
+| Field | What it holds | Why | Who can see | Retention | Deleted by |
+| --- | --- | --- | --- | --- | --- |
+| userId, sessionId | Owner and session | Scope to the student | The student, Chris | Kept as history | Chris on request |
+| at | When the entry happened | Ordering and the 24 hour view | The student, Chris | Kept as history | Chris on request |
+| kind | What happened (block finished, ask, and so on) | Show history | The student, Chris | Kept as history | Chris on request |
+| blockLabel | The block's label | Show history | The student, Chris | Kept as history | Chris on request |
+| minutes | Minutes in the entry | Show history | The student, Chris | Kept as history | Chris on request |
+| intention | Optional line the student typed | Show history | The student, Chris | Kept as history | Chris on request |
+
+## Tables planned in spec 008
+
+All fields in this section are planned (spec 008).
+
+### tasks (a "big one")
+
+| Field | What it holds | Why | Who can see | Retention | Deleted by |
+| --- | --- | --- | --- | --- | --- |
+| userId | Owner | Scope to the student | The student, Chris | Until deleted | Deleting the big one |
+| title | The big one's name, 1 to 80 characters (coursework text) | Name it on cards | The student, Chris; AI only if the student opts in (see disclosure) | Until deleted | Deleting the big one |
+| taskType | writing, problems, exam or project | Placeholders and defaults | The student, Chris; sent to AI on opt-in | Until deleted | Deleting the big one |
+| gutMin | Gut size in minutes: 60, 120, 180 or 240 | Open terms and progress | The student, Chris; sent to AI on opt-in | Until deleted | Deleting the big one |
+| workedMin | Minutes worked on it | Progress | The student, Chris | Until deleted | Deleting the big one |
+| openTermsMin | Minutes still needed, or null with no gut size | Progress | The student, Chris | Until deleted | Deleting the big one |
+| firstMove | The first-move line, up to 140 characters (coursework text) | Start the next block | The student, Chris | Until deleted | Deleting the big one |
+| bookmark | The "Next time, start with" note, up to 140 characters (coursework text) | Resume next time | The student, Chris; never sent to AI | Until deleted | Deleting the big one |
+| pieces | Up to 12 pieces: title, minutes, plannedDay, stampedAt | Split and spread | The student, Chris | Until deleted | Deleting the big one |
+| dueDay | Local date key of the due day | Spread | The student, Chris; days left sent to AI on opt-in | Until deleted | Deleting the big one |
+| spreadSignedAt | When the student signed a spread | Comeback rule | The student, Chris | Until deleted | Deleting the big one |
+| aiSuggested | Whether saved pieces came from a suggestion | Describe AI use | The student, Chris | Until deleted | Deleting the big one |
+| status | open, done or set_aside | Which cards show | The student, Chris | Until deleted | Deleting the big one |
+| lastWorkedAt | When a block last ran on it | Ordering and comeback | The student, Chris | Until deleted | Deleting the big one |
+| lastFocusMin | Last focus length used on it | Card button length | The student, Chris | Until deleted | Deleting the big one |
+| workedDays | Local date keys with a block on it, newest 30 | Comeback rule | The student, Chris | Until deleted | Deleting the big one |
+| createdAt | When it was made | Ordering | The student, Chris | Until deleted | Deleting the big one |
+
+Deleting a big one deletes the row and unlinks its sessions (their `taskId` is cleared); the sessions and ledger entries stay as ordinary history.
+
+### pushSubscriptions
+
+| Field | What it holds | Why | Who can see | Retention | Deleted by |
+| --- | --- | --- | --- | --- | --- |
+| userId | Owner | Scope to the student | Chris | While the subscription is valid | Unsubscribing, or removal after a failed send |
+| endpoint | The browser push service address for one device | Deliver block-end taps | Chris | While the subscription is valid | Unsubscribing, or removal after a failed send |
+| p256dh, auth | Keys the browser gave for encrypting pushes | Encrypt the payload | Chris | While the subscription is valid | Same as endpoint |
+| createdAt | When it was added | Ordering | Chris | While the subscription is valid | Same as endpoint |
+| lastSuccessAt | Last successful send | Spot dead subscriptions | Chris | While the subscription is valid | Same as endpoint |
+
+### checkIns
+
+| Field | What it holds | Why | Who can see | Retention | Deleted by |
+| --- | --- | --- | --- | --- | --- |
+| userId | Owner | Scope to the student | The student, Chris | Kept through the beta | Chris on request |
+| weekKey | The week the answer is for | One answer a week | The student, Chris | Kept through the beta | Chris on request |
+| answer | better, same or worse | Tell if the product helps | The student, Chris | Kept through the beta | Chris on request |
+| at | When they answered | Ordering | The student, Chris | Kept through the beta | Chris on request |
+
+### pieceSuggestions
+
+Transient. Holds AI output only until the student acts on it.
+
+| Field | What it holds | Why | Who can see | Retention | Deleted by |
+| --- | --- | --- | --- | --- | --- |
+| userId, taskId | Owner and big one | Match the suggestion to the sheet | The student, Chris | Until accepted or dismissed, at most 24 hours | Accept, dismiss, or the daily cleanup after 24 hours |
+| status | pending, ready or failed | Drive the sheet | The student, Chris | Same | Same |
+| pieces | Suggested titles and minutes | Fill the slots | The student, Chris | Same | Same |
+| createdAt | When it was requested | The 24 hour cleanup | Chris | Same | Same |
+
+### aiUsage
+
+| Field | What it holds | Why | Who can see | Retention | Deleted by |
+| --- | --- | --- | --- | --- | --- |
+| userId | Owner | Per-user limit (10 a day) | Chris | Kept through the beta | Chris on request |
+| dayKey | Local date key (index by_dayKey for the 300 a day global cap) | Daily counting | Chris | Kept through the beta | Chris on request |
+| count | Requests that day | Enforce limits | Chris | Kept through the beta | Chris on request |
+
+### events
+
+Events hold no titles, bookmarks or any typed text. Kinds: big_one_named, first_payment_started (with ms from naming), comeback_shown, comeback_started, bookmark_written, split_saved, spread_signed, ai_requested, ai_accepted, install_done, push_enabled, push_sent, push_failed.
+
+| Field | What it holds | Why | Who can see | Retention | Deleted by |
+| --- | --- | --- | --- | --- | --- |
+| userId | Who did it | Count per person in the beta numbers | Chris | Deleted at the end of the beta | End-of-beta cleanup |
+| kind | One of the kinds above | Measure the success numbers | Chris | Deleted at the end of the beta | End-of-beta cleanup |
+| taskId | Which big one, optional | Join to timings | Chris | Deleted at the end of the beta | End-of-beta cleanup |
+| ms | A duration, optional | Time to first payment | Chris | Deleted at the end of the beta | End-of-beta cleanup |
+| at | When it happened | Bound queries to the beta window | Chris | Deleted at the end of the beta | End-of-beta cleanup |
+
+## AI disclosure
+
+This is the line shown before the first suggestion, copied from spec 008:
+
+"This sends the title, type and size of this big one to Anthropic to suggest pieces. Nothing else. They keep it up to 30 days."
+
+It is asked once per device and shown again from Settings. The feature is off unless `AI_SUGGEST_ENABLED` is set, and each request is an opt-in tap.
+
+## Sent to third parties
+
+| Who | What is sent | When | Notes |
+| --- | --- | --- | --- |
+| WorkOS | Sign-in details the student enters at sign-in | Signing in | Handles identity; Pomodeal stores only the resulting token identifier and the display name. |
+| The browser's push service (for example Apple, Google or Mozilla) | The device endpoint, and a payload holding the block label and time | At the heads-up and block end of a running session, only if the student turned push on | No daily reminders. The payload is encrypted with the subscription keys. |
+| Anthropic | The title with emails and phone numbers stripped on the client, the type, the gut size, and days left | Only when the student taps "Suggest pieces" after the disclosure | Anthropic keeps request content up to 30 days. Never the bookmark, never other big ones. |
