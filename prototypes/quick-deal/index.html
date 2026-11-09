@@ -169,9 +169,8 @@ p { margin: 0; }
 /* not yet agreed: the stamp box is printed on the ticket, empty, dashed in ink. The word DEAL only exists once you agree. */
 .stampbox, .slot { position: relative; flex: none; border: 1.5px dashed var(--wait-edge); border-radius: 5px; }
 .stamp.ghost { visibility: hidden; }
-/* agreed: the green stamp slams into the box, overshoots, and the ink settles */
-.stamped .stamp.ghost { visibility: visible; animation: slam .2s cubic-bezier(.2, 1.6, .4, 1) both; }
-@keyframes slam { from { transform: scale(1.4) rotate(-8deg); filter: blur(2px); opacity: .3; } 60% { filter: blur(.6px); opacity: 1; } to { transform: rotate(var(--tilt)); filter: blur(0); opacity: 1; } }
+/* agreed: the green stamp comes down, hits the paper (about 150 ms in), squashes, rebounds and settles (see "motion" below) */
+.stamped .stamp.ghost { visibility: visible; animation: ink .56s linear backwards; }
 
 .stampbox { width: 76px; height: 34px; }
 .stampbox .stamp { --tilt: -4deg; position: absolute; inset: -3px -4px; font-size: 1.5rem; pointer-events: none; }
@@ -208,7 +207,7 @@ button.term:focus-visible { outline-offset: 3px; }
   -webkit-mask: var(--zig); mask: var(--zig); transform: translateX(-8px) rotate(-2deg); transform-origin: 100% 100%; animation: tear .22s ease-out both; }
 .tearrow .used b { font-family: var(--font-head); font-stretch: 78%; font-weight: 800; font-size: 1.375rem; line-height: 1; }
 .tearrow .used > span { font-size: .875rem; color: var(--soft); }
-.tearrow .usedwrap .stamp { --tilt: -6deg; position: absolute; left: 12px; bottom: 16px; font-size: 1.25rem; letter-spacing: .03em; padding: 3px 7px; animation: slam .2s .18s cubic-bezier(.2, 1.6, .4, 1) both; }
+.tearrow .usedwrap .stamp { --tilt: -6deg; position: absolute; left: 12px; bottom: 16px; font-size: 1.25rem; letter-spacing: .03em; padding: 3px 7px; animation: ink .5s .2s linear backwards; }
 .tearrow .rest { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 4px; padding: 14px 24px 16px 16px; background: var(--card); box-shadow: inset 0 1px 0 var(--hi); -webkit-mask: var(--zig); mask: var(--zig); }
 .tearrow .rest b { font-family: var(--font-head); font-stretch: 80%; font-weight: 750; font-size: 1.5rem; line-height: 1.1; text-wrap: balance; }
 @keyframes tear { from { transform: none; opacity: 1; } }
@@ -411,8 +410,113 @@ nav.tabs .dot { font-family: var(--font-head); font-stretch: 85%; position: abso
 nav.tabs button[aria-current="page"] { color: var(--deal); }
 body.modal nav.tabs { display: none; }
 
+/* ---------- motion ----------
+   Six moments, each answering something you did or something the clock did. Only transform and opacity move.
+   A moment records when it began (JS `beat`); a re-render inside its window passes the elapsed time as a negative
+   --lag, so the moment carries on where it was instead of restarting. Animation never drives time. */
+
+/* a line that replaces a 44px button keeps its height, so nothing above it moves */
+.held { min-height: 44px; display: grid; place-items: center; }
+
+/* 1. the stamp. The button gives under the thumb, the stamp comes down (ease-in), hits the paper at 28%, squashes,
+   rebounds once and settles. The ticket dips on impact, and phones that can buzz, buzz at the same instant. */
+@keyframes ink {
+  0% { transform: translateY(-5px) scale(1.55) rotate(calc(var(--tilt) - 8deg)); opacity: 0; animation-timing-function: cubic-bezier(.55, 0, .8, .3); }
+  10% { opacity: .55; }
+  28% { transform: scale(.91) rotate(calc(var(--tilt) + 1deg)); opacity: 1; animation-timing-function: cubic-bezier(.2, .7, .3, 1); }
+  52% { transform: scale(1.035) rotate(calc(var(--tilt) - .4deg)); }
+  76% { transform: scale(.992) rotate(var(--tilt)); }
+  100% { transform: rotate(var(--tilt)); opacity: 1; }
+}
+@keyframes press { 35% { transform: scale(.965); } }
+@keyframes thud { 30% { transform: translateY(2px); } }
+.primary.pressed { animation: press .22s ease-out; }
+/* then the stub tears away: paper falls, it doesn't fade. The ticket's own edge clips it as it drops. */
+.ticket.torn .stub { opacity: 1; transform: translateY(70px) rotate(5deg); transition: transform .3s cubic-bezier(.4, 0, .8, .3); }
+/* the stamped ticket shrinks into the session's header chip, so you see where the deal went */
+.ticket.torn, .dealtwrap.fresh { view-transition-name: dealticket; }
+::view-transition-group(dealticket) { animation-duration: .34s; animation-timing-function: cubic-bezier(.3, .7, .2, 1); }
+.dealtwrap.fresh { animation: none; }
+/* a ring always winds on from empty with the knob riding its leading edge: a new session, a new block, minutes you
+   just bought. This one move drives the ring's own --p (a registered property that only repaints the ring's mask),
+   the single exception to transform/opacity (docs/decisions/0004). Gentle and short, so it never reads as a loading spinner. */
+.dial.sweep { animation-duration: .6s; animation-timing-function: cubic-bezier(.3, .7, .2, 1); }
+.ticket.stamped, .term.stamped { animation: thud .26s .15s ease-out; }
+
+/* 2. block change: whatever was left of the old ring lifts off; once the sheet is out of the way the new ring winds on
+   in its own material (solid green for focus, the hatch for a break). The words stay readable throughout. */
+.dial .was { z-index: 1; pointer-events: none; animation: ring-out .3s var(--lag, 0ms) cubic-bezier(.4, 0, .7, .4) forwards; }
+.dial.turn { animation: sweep .6s calc(var(--lag, 0ms) + 140ms) cubic-bezier(.3, .7, .2, 1) backwards; }
+/* after a deal, the minutes you bought wind onto the empty ring as the sheet leaves */
+.dial.wind { animation: sweep .55s calc(var(--lag, 0ms) + 160ms) cubic-bezier(.3, .7, .2, 1) backwards; }
+.dial.turn :is(.edge, .face) { z-index: 2; }
+/* the words are readable from the first frame: they only settle into place, they never fade */
+.dial.turn .face > *, .now.turn > * { animation: settle .3s var(--lag, 0ms) ease-out backwards; }
+@keyframes ring-out { to { opacity: 0; transform: scale(1.045); } }
+@keyframes settle { from { transform: translateY(6px); } }
+
+/* 3. heads-up and time-up: the number in the dial is re-inked once, like a fresh stamp: pressed in a touch large,
+   it settles. No flashing, nothing that repeats. At time-up the sheet comes up at the same moment. */
+.face.reink .big { animation: reink .44s var(--lag, 0ms) linear backwards; }
+@keyframes reink {
+  0% { transform: scale(1.16); opacity: .35; animation-timing-function: cubic-bezier(.55, 0, .8, .3); }
+  30% { transform: scale(.96); opacity: 1; animation-timing-function: cubic-bezier(.2, .7, .3, 1); }
+  100% { transform: none; opacity: 1; }
+}
+.act.fresh > * { animation: settle .3s var(--lag, 0ms) ease-out backwards; }
+
+/* sheets rise from the bottom edge and slide back down when they close. The dimming is its own layer, so fading it
+   never makes the sheet see-through. */
+.scrim { background: none; }
+.scrim::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--scrim); }
+.scrim.rise::before { animation: fade .2s var(--lag, 0ms) ease-out backwards; }
+.scrim.rise .sheet { animation: sheet-in .34s var(--lag, 0ms) cubic-bezier(.2, .8, .2, 1) backwards; }
+.scrim.rise.calm::before { animation-duration: .36s; }
+.scrim.rise.calm .sheet { animation-duration: .4s; }
+/* at time-up the used half tears and is marked once the sheet has arrived, not while it is still moving */
+.scrim.rise.calm .tearrow .used { animation-delay: calc(var(--lag, 0ms) + 260ms); }
+.scrim.rise.calm .tearrow .usedwrap .stamp { animation-delay: calc(var(--lag, 0ms) + 380ms); }
+/* "Used" is a postmark, not an approval: it lands lighter than DEAL, no squash, no rebound */
+.tearrow .usedwrap .stamp { animation-name: post; animation-duration: .34s; animation-timing-function: ease-out; }
+@keyframes post { from { transform: scale(1.08) rotate(var(--tilt)); opacity: 0; } 45% { opacity: 1; } to { transform: rotate(var(--tilt)); opacity: 1; } }
+.scrim.leaving { pointer-events: none; }
+.scrim.leaving::before { animation: fade-out .16s ease-in forwards; }
+.scrim.leaving .sheet { animation: sheet-out .24s cubic-bezier(.5, 0, .8, .4) forwards; }
+@keyframes fade { from { opacity: 0; } }
+@keyframes fade-out { to { opacity: 0; } }
+@keyframes sheet-in { from { transform: translateY(100%); } }
+@keyframes sheet-out { to { transform: translateY(100%); } }
+
+/* 4. asking for time: the terms come off the pad one by one, pivoting on their perforated edge. The one you tap is
+   stamped, lifts a little, and the others fall away before the sheet closes. */
+.terms.deal-in > .term { transform-origin: 0 50%; animation: tear-in .34s calc(var(--lag, 0ms) + 30ms) cubic-bezier(.2, .8, .2, 1) backwards; }
+.terms.deal-in > .term:nth-child(2) { animation-delay: calc(var(--lag, 0ms) + 90ms); }
+@keyframes tear-in { from { opacity: 0; transform: translateX(-12px) rotate(-3deg); } 70% { transform: rotate(.5deg); } }
+.terms.picking > .term:not(.stamped) { animation: fall .24s .22s cubic-bezier(.5, 0, .8, .4) forwards; }
+.terms.picking > .term.stamped { animation: thud .26s .15s ease-out, lift .22s .34s ease-out forwards; }
+@keyframes fall { to { opacity: 0; transform: translateY(10px) rotate(1.5deg); } }
+@keyframes lift { to { transform: translateY(-3px) scale(1.012); } }
+
+/* 5. ledger: the newest stub, already stamped, drops onto the top of the pile. The tab's count pops once. */
+.stubcard.fresh { z-index: 1; transform-origin: 0 0; animation: stub-in .38s var(--lag, 0ms) cubic-bezier(.2, .8, .2, 1) backwards; }
+/* the older stubs start where they were and are pushed down by the new one (--push is its height, set after render) */
+.stubs.pushing > .stubcard:not(.fresh) { animation: push .38s var(--lag, 0ms) cubic-bezier(.2, .8, .2, 1) backwards; }
+@keyframes push { from { transform: translateY(var(--push, 0px)); } }
+@keyframes stub-in { from { opacity: 0; transform: translateY(-16px) rotate(-2.5deg); } 70% { transform: rotate(.4deg); } }
+nav.tabs .dot.pop { animation: pop .3s cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes pop { from { transform: scale(.4); opacity: 0; } }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
+  /* reduced motion keeps the meaning as short crossfades: nothing moves, things appear and disappear */
+  .stamped .stamp.ghost, .dial.turn .fill:not(.was), .terms.deal-in > .term, .stubcard.fresh, nav.tabs .dot.pop { animation: fade .2s var(--lag, 0ms) ease-out backwards !important; }
+  /* sheets simply appear and disappear: fading one over the page would lay two screens of text on each other */
+  .dial .was { animation: fade-out .2s var(--lag, 0ms) ease-in forwards !important; }
+  /* a closing sheet just goes: fading it would lay two screens of text over each other */
+  .scrim.leaving { display: none; }
+  .scrim.leaving::before, .scrim.leaving .sheet { animation: none !important; }
+  .terms.picking > .term:not(.stamped) { animation: fade-out .16s .22s ease-in forwards !important; }
+  .stamped .stamp.ghost { transform: rotate(var(--tilt)); opacity: 1; }
 }
 </style>
 
@@ -520,9 +624,21 @@ const cap = s => s.replace(/^./, c => c.toUpperCase());
 /* the task as it sits in the deal sentence: "BIO 180 ch. 7" (the part after the comma) */
 const taskTail = () => { const i = deal.task.indexOf(","); return (i >= 0 ? deal.task.slice(i + 1) : deal.task).trim() || deal.task; };
 function bankFocus() { if (S && cur().type === "focus") studied += Math.round(Math.min(vnow - S.startedAt, S.durMs) / 60000); }
-function nextBlock() { if (BE && S) BE.next(S.idx); bankFocus(); S.idx = Math.min(S.idx + 1, S.blocks.length - 1); S.startedAt = vnow; S.durMs = cur().min * 60000; S.askCount = 0; S.bonusOffered = false; closeSheet(); say(`${cur().type === "focus" ? "Focus" : "Break"}: ${title(cur().label)}, ${cur().min} minutes.`); }
+function nextBlock() { if (BE && S) BE.next(S.idx); bankFocus(); const was = S.idx, from = { type: cur().type, p: remaining() / S.durMs }; S.idx = Math.min(S.idx + 1, S.blocks.length - 1); if (S.idx !== was) { turnFrom = from; beat("turn"); } S.startedAt = vnow; S.durMs = cur().min * 60000; S.askCount = 0; S.bonusOffered = false; closeSheet(); say(`${cur().type === "focus" ? "Focus" : "Break"}: ${title(cur().label)}, ${cur().min} minutes.`); }
 function say(t) { const el = document.getElementById("sr"); if (el) el.textContent = t; }
-function buzz() { try { if (navigator.vibrate) navigator.vibrate(18); } catch (e) {} }
+/* a short tap at the instant the stamp hits the paper (Android; iOS has no vibrate) */
+function buzz(pattern = 14, after = 0) { const v = () => { try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) {} }; if (after) setTimeout(v, after); else v(); }
+
+/* ---------- motion: when each moment began ----------
+   Renders replace markup, so a moment that is still playing is drawn with a negative --lag of the time already
+   elapsed and carries on where it was. Nothing here touches the session's times. */
+const MO = {};
+const beat = k => { MO[k] = performance.now(); };
+const since = (k, win) => { const e = MO[k] == null ? Infinity : performance.now() - MO[k]; return e < win ? e : null; };
+const lagVar = e => `--lag:${-Math.round(e)}ms`;
+let turnFrom = null;
+/* every new ledger entry is marked fresh; the ledger tears it in the first time you see it */
+function file(e) { e.fresh = true; ledger.push(e); }
 
 /* ---------- views ---------- */
 const $ = s => document.querySelector(s);
@@ -569,6 +685,7 @@ function paintTabs() {
   const b = $("#tab-ledger"), ic = b.querySelector(".ic"); let d = ic.querySelector(".dot");
   if (unseen && tab !== "ledger") {
     if (!d) { d = document.createElement("span"); d.className = "dot"; d.setAttribute("aria-hidden", "true"); ic.append(d); }
+    if (+d.textContent < unseen) { d.classList.remove("pop"); void d.offsetWidth; d.classList.add("pop"); }
     d.textContent = unseen; b.setAttribute("aria-label", `Ledger, ${unseen} new`);
   } else { if (d) d.remove(); b.removeAttribute("aria-label"); }
 }
@@ -589,6 +706,9 @@ function render() {
   renderSheet();
   paintTabs();
   bind();
+  /* a fresh ledger stub pushes the pile down by its own height */
+  const fs = document.querySelector(".stubcard.fresh");
+  if (fs) { const ul = fs.parentElement; ul.classList.add("pushing"); ul.style.setProperty("--push", `${-(fs.offsetHeight + 10)}px`); ul.style.setProperty("--lag", fs.style.getPropertyValue("--lag")); }
   if (key && !opening) { const el = document.querySelector(key); if (el && !(sheet && !el.closest(".sheet"))) el.focus({ preventScroll: true }); }
 }
 
@@ -684,7 +804,9 @@ function runningView() {
   /* on focus blocks of 45+, a reserved slot under the next step: silent, 3 minutes at the midpoint, then empty again */
   const half = isHalfway();
   const aside = b.type === "focus" && S.durMs >= LONG_MS ? `<p class="aside">${half && !quiet ? "Halfway. Stretch if you like." : ""}</p>` : "";
-  return `<div class="now">
+  /* motion windows: a block change, minutes wound on after a deal, the heads-up, time up */
+  const tn = since("turn", 900), wd = since("wind", 900), hu = since("heads", 700), up = since("up", 700), ink = hu ?? up, dl = tn ?? wd;
+  return `<div class="now${tn != null ? " turn" : ""}"${tn != null ? ` style="${lagVar(tn)}"` : ""}>
     <div class="nowhead">
       <span class="kind"><span class="swatch ${isB ? "break" : "focus"}" aria-hidden="true"></span>${isB ? "Break you chose" : "Focus"}</span>
       ${S.serial ? `<span class="dealtwrap${S.justStarted ? " fresh" : ""}"><span class="dealt"><span class="serial">No. ${S.serial}</span><span class="stamp">DEAL</span></span></span>` : ""}
@@ -692,13 +814,13 @@ function runningView() {
     <h1>${esc(title(b.label))}</h1>
   </div>
   <div class="timerwrap">
-    <div class="dial${S.justStarted ? " sweep" : ""}${r <= 0 ? " done" : ""}${heads ? " heads" : ""}" style="--p:${r <= 0 ? 0 : (r / S.durMs).toFixed(4)};${dialTicks(S.durMs / 60000)}" role="img" aria-label="${r <= 0 ? "Time is up" : m + " minutes left" + (half ? ", halfway" : "")}">
-      ${dial(isB ? "break" : "focus")}
-      <span class="face"><span class="big ${f.cls}" id="mins">${f.big}</span><span class="unit" id="unit">${quiet ? "" : esc(f.unit)}</span></span>
+    <div class="dial${S.justStarted ? " sweep" : ""}${r <= 0 ? " done" : ""}${heads ? " heads" : ""}${tn != null ? " turn" : wd != null ? " wind" : ""}" style="--p:${r <= 0 ? 0 : (r / S.durMs).toFixed(4)};${dialTicks(S.durMs / 60000)}${dl != null ? ";" + lagVar(dl) : ""}" role="img" aria-label="${r <= 0 ? "Time is up" : m + " minutes left" + (half ? ", halfway" : "")}">
+      ${dial(isB ? "break" : "focus")}${tn != null && turnFrom && turnFrom.p > .005 ? `<span class="fill was ${turnFrom.type}" style="--p:${turnFrom.p.toFixed(4)}"></span>` : ""}
+      <span class="face${ink != null ? " reink" : ""}"${ink != null ? ` style="${lagVar(ink)}"` : ""}><span class="big ${f.cls}" id="mins">${f.big}</span><span class="unit" id="unit">${quiet ? "" : esc(f.unit)}</span></span>
     </div>
     ${note}${aside}
   </div>
-  <div class="stack act">
+  <div class="stack act${hu != null ? " fresh" : ""}"${hu != null ? ` style="${lagVar(hu)}"` : ""}>
     ${isB
       ? (heads ? `<button class="primary" id="startnow">Start ${esc(nameOf(nxt))} now</button>` : `<button class="secondary" id="startnow">Start ${esc(nameOf(nxt))} early</button>`)
       : `<button class="textbtn" id="endearly">Stop for now</button>`}
@@ -713,7 +835,12 @@ function renderSheet() {
   const root = $("#sheet-root");
   const open = !!(sheet && S && tab === "now");
   document.body.classList.toggle("sheeted", open);
-  if (!open) { root.innerHTML = ""; setInert(); return; }
+  if (!open) {
+    /* the closing sheet slides back down; it is already out of the accessibility tree and takes no taps */
+    const old = root.querySelector(".scrim:not(.leaving)");
+    if (old) { old.classList.remove("rise", "calm"); old.classList.add("leaving"); old.setAttribute("inert", ""); old.setAttribute("aria-hidden", "true"); setTimeout(() => old.remove(), 300); }
+    setInert(); return;
+  }
   const b = cur(), nxt = S.blocks[S.idx + 1], over = remaining() <= 0;
   let body = "";
   /* every ticket in a sheet shares one layout: figure | perforation | what you agree to | stamp box */
@@ -786,11 +913,16 @@ function renderSheet() {
       <h2 id="sh" tabindex="-1">Want to keep going?</h2>
       <div class="terms">${tick("div", ` id="bonusticket"`, nb ? figArrow(nb.min, nb.min + 3) : "+3", `+10 min of ${esc(shortTask())}`, GHOST, nb ? `Next break ${arrow(nb.min, nb.min + 3)} min.` : "Your break is 3 min longer.")}</div>
       <button class="primary" id="bonusyes">Deal</button>
-      <button class="secondary countbtn${sheet.paused ? "" : " counting"}" id="bonusno"><span>Take my break</span>${sheet.paused ? "" : `<small id="cdtext">${N("Starts on its own in 30 seconds")}</small>`}</button>
-      ${sheet.paused ? `<p class="soft small center">Take your time. Nothing happens until you pick.</p>` : `<button class="textbtn" id="moretime">More time to decide</button>`}`;
+      <button class="secondary countbtn${sheet.paused ? "" : " counting"}" id="bonusno"><span>Take my break</span>${sheet.paused ? `<small>Waits for you</small>` : `<small id="cdtext">${N("Starts on its own in 30 seconds")}</small>`}</button>
+      ${sheet.paused ? `<p class="soft small center held">Take your time. Nothing happens until you pick.</p>` : `<button class="textbtn" id="moretime">More time to decide</button>`}`;
   }
   const desc = body.includes('id="dealcost"') ? ` aria-describedby="dealcost"` : "";
-  root.innerHTML = `<div class="scrim"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sh"${desc}>${body}</div></div>`;
+  /* a sheet rises once when it opens; the terms come off the pad once when they first appear */
+  const oe = sheet.openedAt == null ? Infinity : performance.now() - sheet.openedAt;
+  const te = sheet.termsAt == null ? Infinity : performance.now() - sheet.termsAt;
+  if (te < 800) body = body.replace('class="terms"', `class="terms deal-in" style="${lagVar(te)}"`);
+  const rise = oe < 800 ? ` rise${sheet.calm ? " calm" : ""}" style="${lagVar(oe)}` : "";
+  root.innerHTML = `<div class="scrim${rise}"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sh"${desc}>${body}</div></div>`;
   setInert();
   updateCountdown();
   if (sheet.focusMe) { const h = $("#sh"); if (h) h.focus({ preventScroll: true }); sheet.focusMe = false; }
@@ -799,7 +931,7 @@ function setInert() {
   const on = !!(sheet && S && tab === "now");
   document.querySelectorAll(".app, nav.tabs").forEach(el => { if (on) el.setAttribute("inert", ""); else el.removeAttribute("inert"); });
 }
-function openSheet(s) { opener = document.activeElement; sheet = { ...s, focusMe: true }; say(s.kind === "bonus" ? "Focus block ended. Offer to keep going." : `${title(cur().label)} time is up.`); }
+function openSheet(s) { opener = document.activeElement; const at = performance.now(); sheet = { ...s, focusMe: true, openedAt: at, termsAt: s.asking ? at : null }; say(s.kind === "bonus" ? "Focus block ended. Offer to keep going." : `${title(cur().label)} time is up.`); }
 function closeSheet() { sheet = null; }
 
 function ledgerView() {
@@ -817,7 +949,14 @@ function ledgerView() {
     ${clockSays(`This week, most of your deals happened after 10pm. Want a longer first break at night?`)}
     <div class="insight-act"><button class="trychip" id="tryit" aria-pressed="${tried}">${tried ? N("Done. Tonight's first break is 15 min") : "Try it tonight"}</button></div>
   </section>`}
-  ${ledger.length ? `<ul class="stubs" aria-label="Deals, newest first">${ledger.map((e, i) => `<li class="stubcard">${stubInner(e, i)}</li>`).reverse().join("")}</ul>` : ""}`;
+  ${ledger.length ? `<ul class="stubs" aria-label="Deals, newest first">${ledger.map((e, i) => `<li class="stubcard${freshStub(e)}">${stubInner(e, i)}</li>`).reverse().join("")}</ul>` : ""}`;
+}
+/* a new stub tears in the first time the ledger shows it, and keeps tearing in smoothly across re-renders */
+function freshStub(e) {
+  if (!e.fresh) return "";
+  const now = performance.now(); if (e.freshAt == null) e.freshAt = now;
+  const el = now - e.freshAt; if (el >= 1000) { e.fresh = false; return ""; }
+  return ` fresh" style="${lagVar(el)}`;
 }
 function roomView() {
   if (BE) return `<h1>Rooms</h1>
@@ -875,7 +1014,7 @@ function bind() {
   on("#taskdone", () => { picker = null; render(); });
   on("#skipbreak", () => { deal.act = null; picker = null; render(); const s = $("#shake"); if (s) { s.focus(); s.click(); } });
   on("#shake", () => {
-    const t = $("#ticket"); t.classList.add("stamped"); $("#shake").disabled = true; buzz();
+    const t = $("#ticket"), btn = $("#shake"); t.classList.add("stamped"); btn.classList.add("pressed"); btn.disabled = true; buzz(14, reduce ? 0 : 150);
     const serial = String(412 + ledger.length).padStart(4, "0");
     const go = () => {
       S = buildSession(deal); S.justStarted = true; S.serial = serial; mode = "start"; picker = null;
@@ -885,18 +1024,20 @@ function bind() {
       setTimeout(() => { toast = null; if (S) S.justStarted = false; lastSig = ""; }, 3500);
       say(toast); lastSig = ""; render();
     };
-    if (reduce) return go();
-    setTimeout(() => t.classList.add("torn"), 700);
+    /* reduced motion: the stamp fades in, holds a moment, then the session starts */
+    if (reduce) return void setTimeout(go, 450);
+    /* the stamp has landed and rebounded by about 400 ms; then the stub tears off */
+    setTimeout(() => t.classList.add("torn"), 420);
     /* the inked stamp moves up into the running screen's stub */
-    setTimeout(() => { if (!document.startViewTransition) return go(); const vt = document.startViewTransition(go); vt.ready.catch(() => {}); }, 1020);
+    setTimeout(() => { if (!document.startViewTransition) return go(); const vt = document.startViewTransition(go); vt.ready.catch(() => {}); }, 720);
   });
-  on("#letmein", () => { ledger.push({ t: clockStr(), kind: "override", text: "Opened Instagram without a deal", note: "" }); unseen++; mode = "start"; render(); });
+  on("#letmein", () => { file({ t: clockStr(), kind: "override", text: "Opened Instagram without a deal", note: "" }); unseen++; mode = "start"; render(); });
   on("#ask", () => { openSheet({ kind: "offer", asking: true }); render(); });
-  on("#ask2", () => { sheet.asking = true; sheet.focusMe = true; render(); });
-  on("#startnow", () => { ledger.push({ t: clockStr(), kind: "cleared", text: `Ended ${cur().label} early`, note: "" }); nextBlock(); render(); });
+  on("#ask2", () => { sheet.asking = true; sheet.focusMe = true; sheet.termsAt = performance.now(); render(); });
+  on("#startnow", () => { file({ t: clockStr(), kind: "cleared", text: `Ended ${cur().label} early`, note: "" }); nextBlock(); render(); });
   on("#go", () => { nextBlock(); render(); });
   on("#nevermind", () => dismiss());
-  on("#endearly", () => { if (BE) BE.end(); bankFocus(); ledger.push({ t: clockStr(), kind: "cleared", text: "Stopped for now", note: "" }); S = null; render(); });
+  on("#endearly", () => { if (BE) BE.end(); bankFocus(); file({ t: clockStr(), kind: "cleared", text: "Stopped for now", note: "" }); S = null; render(); });
   on("#seal", () => seal("0"));
   on("#toroom", () => { setTab("room"); render(); focusTitle(); });
   on("#toledger", () => { if (!ledger.length && !BE) seedLedger(); setTab("ledger"); render(); focusTitle(); });
@@ -923,9 +1064,9 @@ function bind() {
   });
   on("#nudge", () => { nudged = true; nextFocus = "#nudged"; render(); say("Nudge queued. Sam sees it at his next break."); });
   on("#bonusyes", () => {
-    const t = $("#bonusticket"); if (t) t.classList.add("stamped"); buzz(); sheet.sealing = true; $(".sheet").classList.add("busy");
+    const t = $("#bonusticket"); if (t) { t.classList.add("stamped"); t.parentElement.classList.add("picking"); } buzz(14, reduce ? 0 : 150); sheet.sealing = true; $(".sheet").classList.add("busy");
     document.querySelectorAll(".sheet button").forEach(x => x.disabled = true);
-    setTimeout(() => { if (sheet && sheet.kind === "bonus") takeBonus(); }, reduce ? 0 : 650);
+    setTimeout(() => { if (sheet && sheet.kind === "bonus") takeBonus(); }, reduce ? 450 : 700);
   });
   on("#bonusno", () => { S.bonusOffered = true; nextBlock(); render(); });
   on("#moretime", () => { sheet.paused = true; nextFocus = "#bonusyes"; render(); say("Timer stopped. Nothing happens until you pick."); });
@@ -941,9 +1082,10 @@ function pauseBonus() {
   if (!sheet || sheet.kind !== "bonus" || sheet.paused || sheet.sealing) return;
   sheet.paused = true;
   const cb = $("#bonusno"); if (cb) cb.classList.remove("counting");
-  const tx = $("#cdtext"); if (tx) tx.remove();
+  /* same size before and after: a press that paused the timer still lands on the button it started on */
+  const tx = $("#cdtext"); if (tx) { tx.removeAttribute("id"); tx.textContent = "Waits for you"; }
   const mt = $("#moretime");
-  if (mt && document.activeElement !== mt) { const p = document.createElement("p"); p.className = "soft small center"; p.textContent = "Take your time. Nothing happens until you pick."; mt.replaceWith(p); }
+  if (mt && document.activeElement !== mt) { const p = document.createElement("p"); p.className = "soft small center held"; p.textContent = "Take your time. Nothing happens until you pick."; mt.replaceWith(p); }
   say("Timer stopped. Nothing happens until you pick.");
 }
 document.addEventListener("focusin", e => { const t = e.target; if (t && t.closest && t.closest(".sheet") && t.id !== "sh") pauseBonus(); });
@@ -952,18 +1094,19 @@ function seal(i) {
   const offer = makeOffer(S), term = i === "x" ? offer.override : offer.terms[+i];
   if (!term) return;
   if (offer.requiresIntention) { const v = sheet.typing ? (sheet.typed || "").trim() : sheet.draft; if (v) sheet.intention = v; }
-  const t = document.querySelector(`[data-term="${i}"]`); if (t) t.classList.add("stamped");
-  buzz(); sheet.sealing = true; $(".sheet").classList.add("busy");
+  const t = document.querySelector(`[data-term="${i}"]`); if (t) { t.classList.add("stamped"); const pad = t.closest(".terms"); if (pad) pad.classList.add("picking"); }
+  buzz(14, reduce ? 0 : 150); sheet.sealing = true; $(".sheet").classList.add("busy");
   document.querySelectorAll(".sheet button").forEach(x => x.disabled = true);
-  setTimeout(() => take(term, i), reduce || !t ? 0 : 650);
+  setTimeout(() => take(term, i), !t || !t.classList.contains("term") ? 0 : reduce ? 450 : 600);
 }
-function take(term, i) { const intention = sheet && sheet.intention; if (BE) BE.ask(i === "x" ? "override" : +i, intention); ledger.push(applyTerm(S, term, intention)); if (tab !== "ledger") unseen++; closeSheet(); say(`Deal. ${title(cur().label)} for ${minsLeft()} more minutes.`); render(); restoreFocus(); }
+/* the announcement says what the deal cost, not only what it bought */
+function take(term, i) { const intention = sheet && sheet.intention; if (BE) BE.ask(i === "x" ? "override" : +i, intention); file(applyTerm(S, term, intention)); if (tab !== "ledger") unseen++; closeSheet(); beat("wind"); say(`Deal, ${lower(TERMS[term.kind])}. ${title(cur().label)} for ${minsLeft()} more minutes.${S.debt > 0 ? ` ${S.debt} borrowed minutes come out of later breaks.` : ""}`); render(); restoreFocus(); }
 function dismiss() { if (!sheet) return; if (sheet.kind === "bonus") { S.bonusOffered = true; nextBlock(); } else if (remaining() <= 0) nextBlock(); else closeSheet(); render(); restoreFocus(); }
 function restoreFocus() { const t = opener && document.body.contains(opener) ? opener : document.querySelector(".act button, #view h1"); if (t) { if (!t.matches("button")) t.tabIndex = -1; t.focus({ preventScroll: true }); } }
 function takeBonus() {
   if (BE) BE.bonus();
   cur().min += 10; S.durMs += 10 * 60000; const nb = nextOf(S, "break"); if (nb) nb.min += 3;
-  ledger.push({ t: clockStr(), kind: "bonus", text: `10 more min of ${shortTask()}`, note: "" }); if (tab !== "ledger") unseen++; S.bonusOffered = true; closeSheet(); render(); restoreFocus();
+  file({ t: clockStr(), kind: "bonus", text: `10 more min of ${shortTask()}`, note: "" }); if (tab !== "ledger") unseen++; S.bonusOffered = true; closeSheet(); beat("wind"); render(); restoreFocus();
 }
 /* Escape never commits you to anything: it backs out one step, or does nothing */
 function escape() {
@@ -1013,8 +1156,11 @@ function tick() {
   if (S && tab === "now") {
     const r = remaining(), b = cur();
     if (r <= 0 && !sheet) {
-      if (b.type === "break") openSheet({ kind: "boundary", asking: false });
-      else if (!S.bonusOffered && S.idx < S.blocks.length - 1 && b.min + 10 <= CEILING) openSheet({ kind: "bonus", at: Date.now(), paused: reduce });
+      /* time up: the 0 is re-inked and a soft double tap, as the sheet rises */
+      const offerBonus = b.type === "focus" && !S.bonusOffered && S.idx < S.blocks.length - 1 && b.min + 10 <= CEILING;
+      if (b.type === "break" || offerBonus) { beat("up"); buzz([12, 90, 12]); }
+      if (b.type === "break") openSheet({ kind: "boundary", asking: false, calm: true });
+      else if (offerBonus) openSheet({ kind: "bonus", at: Date.now(), paused: reduce, calm: true });
       else nextBlock();
     }
     if (sheet && sheet.kind === "bonus" && !sheet.sealing) {
@@ -1026,7 +1172,7 @@ function tick() {
     }
     const heads = isHeads();
     const sig = signature();
-    if (sig !== lastSig) { if (lastSig && heads && !wasHeads && !sheet) say(`${headsUpMs() / 60000} minutes to wrap up ${longName(b)}.`); wasHeads = heads; lastSig = sig; render(); }
+    if (sig !== lastSig) { if (lastSig && heads && !wasHeads && !sheet) { say(`${headsUpMs() / 60000} minutes to wrap up ${longName(b)}.`); beat("heads"); buzz(10); } wasHeads = heads; lastSig = sig; render(); }
     else {
       const m = minsLeft(), mins = $("#mins"), d = $(".dial"), f = face(r, m);
       if (mins && mins.textContent !== f.big) { mins.textContent = f.big; mins.className = "big " + f.cls; $("#unit").textContent = sheet ? "" : f.unit; if (m !== +d.dataset.m) { d.dataset.m = m; d.setAttribute("aria-label", `${m} minutes left${isHalfway() ? ", halfway" : ""}`); } if (reduce) d.style.setProperty("--p", (r / S.durMs).toFixed(4)); }
@@ -1079,6 +1225,7 @@ requestAnimationFrame(tick);
    Every action still updates the screen at once; the server's copy (same rules, packages/core)
    then replaces the local one, so a phone and a laptop show the same session. */
 const DEAL_KEY = "pomodeal.deal";
+let liveLedgerLoaded = false;
 function saveDeal() { try { localStorage.setItem(DEAL_KEY, JSON.stringify(deal)); } catch (e) {} }
 const SERVER_TEXT = (e) => {
   if (e.kind === "forgiven") return `Cleared ${e.minutes} borrowed min`;
@@ -1099,6 +1246,8 @@ window.pomodealApp = {
   session(doc) {
     if (!BE) return;
     if (!doc) { if (S && !sheet) { S = null; lastSig = ""; render(); } return; }
+    /* a block change that came from the server (the scheduled boundary, or another device) turns the dial too */
+    if (S && S.id === doc._id && doc.state.idx !== S.idx && S.blocks[S.idx]) { turnFrom = { type: S.blocks[S.idx].type, p: remaining() / S.durMs }; beat("turn"); }
     const extra = S && S.id === doc._id ? { serial: S.serial, justStarted: S.justStarted, with: S.with }
       : { serial: String(Math.floor(doc.createdAt / 1000) % 10000).padStart(4, "0") };
     S = { ...doc.state, id: doc._id, ...extra };
@@ -1107,7 +1256,10 @@ window.pomodealApp = {
   /** today's ledger from the server, newest first */
   ledger(entries) {
     if (!BE) return;
-    ledger = entries.slice().reverse().map(e => ({ t: clockStr(e.at), kind: e.kind === "forgiven" ? "cleared" : e.kind, text: SERVER_TEXT(e), note: e.intention || "" }));
+    /* entries this screen hasn't seen before tear in; the first load is just the pile */
+    const old = new Map(ledger.map(e => [e.id, e])), first = !liveLedgerLoaded; liveLedgerLoaded = true;
+    ledger = entries.slice().reverse().map(e => { const prev = old.get(e._id); return { id: e._id, t: clockStr(e.at), kind: e.kind === "forgiven" ? "cleared" : e.kind, text: SERVER_TEXT(e), note: e.intention || "",
+      fresh: prev ? prev.fresh : !first, freshAt: prev ? prev.freshAt : undefined }; });
     if (tab === "ledger") render();
   },
 };

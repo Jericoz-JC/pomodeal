@@ -5,7 +5,8 @@
 // Design plan
 //   Subject: the bargain students already make with themselves. The headline quotes it; a stamp answers it.
 //   One bold object: the dial + ticket. Everything else is quiet: paper, ink, one approval green.
-//   Motion: a 4.5 s scripted take on first load (pick, deal, stamp, the clock talks), then it's yours.
+//   Motion: a wordless first look (about 2.5 s): the dial's two arcs swing in, a sample deal is stamped and filed
+//   under a fresh ticket, and the fresh one is yours. The stamp you make lands the same way it does in the app.
 
 export type Provider = "GitHubOAuth" | "GoogleOAuth" | "AppleOAuth" | "MicrosoftOAuth";
 
@@ -69,7 +70,7 @@ export const LANDING_CSS = `
 #pd-gate .ld-peek { position: absolute; left: 0; right: 0; bottom: -36px; height: 70px; background: var(--stub); border-radius: 6px; transform: rotate(-2deg); transform-origin: 30% 0;
   box-shadow: 0 0 0 1px var(--rule); display: flex; align-items: flex-end; justify-content: space-between; padding: 0 18px 8px; font-family: var(--font-head); font-stretch: 80%; font-weight: 700; font-size: 13px; color: var(--soft); }
 #pd-gate .ld-peek b { font-family: var(--font-head); font-stretch: 70%; font-weight: 900; font-size: 18px; color: var(--deal); border: 2.5px double var(--deal); border-radius: 6px; padding: 0 7px; transform: rotate(-7deg); }
-#pd-gate .ld-ticket { position: relative; width: 100%; min-width: 0; scroll-margin-bottom: calc(130px + env(safe-area-inset-bottom, 0px)); background: var(--card); border-radius: 6px;
+#pd-gate .ld-ticket { position: relative; z-index: 2; width: 100%; min-width: 0; scroll-margin-bottom: calc(130px + env(safe-area-inset-bottom, 0px)); background: var(--card); border-radius: 6px;
   box-shadow: 0 0 0 1px var(--rule), 0 24px 44px -28px var(--lift); }
 #pd-gate .ld-body { padding: 14px 18px 12px; display: flex; flex-direction: column; gap: 10px; }
 #pd-gate .ld-meta { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-family: var(--font-head); font-stretch: 80%; font-weight: 700; font-size: 14px; color: var(--soft); min-height: 38px; }
@@ -78,10 +79,18 @@ export const LANDING_CSS = `
 #pd-gate .ld-stamped .ld-slot { border-color: transparent; color: transparent; }
 #pd-gate .ld-stamp { position: absolute; right: 18px; top: 14px; width: 92px; height: 38px; display: grid; place-items: center; font-family: var(--font-head); font-stretch: 70%; font-weight: 900; font-size: 26px; color: var(--deal);
   border: 3px double var(--deal); border-radius: 8px; transform: rotate(-6deg); opacity: 0; pointer-events: none; }
-#pd-gate .ld-stamped .ld-stamp { opacity: .95; animation: ld-stamp .32s cubic-bezier(.2,1.6,.4,1); }
-#pd-gate .ld-ticket.ld-thud { animation: ld-thud .3s ease-out; }
-@keyframes ld-stamp { from { transform: rotate(-6deg) scale(1.9); opacity: 0; } }
-@keyframes ld-thud { 40% { transform: translateY(2px); } }
+/* the app's stamp: comes down, hits the paper at 28%, squashes, rebounds once, settles */
+#pd-gate .ld-stamped .ld-stamp { opacity: .95; animation: ld-ink .56s linear backwards; }
+#pd-gate .ld-ticket.ld-thud { animation: ld-thud .26s .15s ease-out; }
+@keyframes ld-ink {
+  0% { transform: translateY(-5px) rotate(-14deg) scale(1.6); opacity: 0; animation-timing-function: cubic-bezier(.55, 0, .8, .3); }
+  10% { opacity: .5; }
+  28% { transform: rotate(-5deg) scale(.91); opacity: .95; animation-timing-function: cubic-bezier(.2, .7, .3, 1); }
+  52% { transform: rotate(-6.4deg) scale(1.035); }
+  76% { transform: rotate(-6deg) scale(.992); }
+  100% { transform: rotate(-6deg); opacity: .95; }
+}
+@keyframes ld-thud { 30% { transform: translateY(2px); } }
 #pd-gate .ld-sentence { font-family: var(--font-head); font-stretch: 80%; font-weight: 750; font-size: 28px; line-height: 1.08; margin: 0; color: var(--ink); }
 #pd-gate .ld-sentence em { font-style: normal; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 5px; text-decoration-color: var(--deal); }
 #pd-gate .ld-acts { display: flex; gap: 6px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: -18px; padding: 5px 18px; margin-block: -5px; -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent); }
@@ -106,7 +115,8 @@ export const LANDING_CSS = `
 #pd-gate .ld-deal { width: 100%; min-height: 52px; border: none; border-radius: 12px; background: var(--deal); color: var(--on-deal); font-family: var(--font-head); font-stretch: 85%; font-weight: 800; font-size: 21px; cursor: pointer; }
 #pd-gate .ld-deal[hidden] { display: none; }
 #pd-gate .ld-deal.ld-ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--edge); }
-#pd-gate .ld-deal.ld-press { transform: scale(.97); }
+#pd-gate .ld-deal.ld-press { animation: ld-press .22s ease-out; }
+@keyframes ld-press { 35% { transform: scale(.965); } }
 #pd-gate .ld-deal.ld-nudge { animation: ld-nudge 1.2s ease-in-out 2; }
 @keyframes ld-nudge { 50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--deal) 28%, transparent); } }
 
@@ -176,8 +186,28 @@ export const LANDING_CSS = `
   #pd-gate .ld-dock { display: none; }
   #pd-gate .ld-foot { padding-bottom: 40px; }
 }
+/* first look: the arcs swing into place, a sample ticket rises, is stamped, and slides under the fresh one into the pile */
+#pd-gate .ld-intro .ld-arc { transform-box: view-box; transform-origin: 50% 50%; animation: ld-arc .5s cubic-bezier(.2, .8, .2, 1) backwards; }
+#pd-gate .ld-intro .ld-arc.f { animation-delay: .22s; }
+@keyframes ld-arc { from { opacity: 0; transform: rotate(-50deg); } }
+#pd-gate .ld-sample { position: absolute; left: 0; right: 0; top: 0; z-index: 3; pointer-events: none; animation: ld-in .38s .12s cubic-bezier(.2, .8, .2, 1) backwards; }
+/* the stamped sample drops toward the pile and is gone before the fresh ticket arrives: two tickets never overlap,
+   and ink is never un-stamped */
+#pd-gate .ld-sample.ld-file { transform-origin: 30% 0; animation: ld-file .4s cubic-bezier(.5, 0, .75, .3) forwards; }
+@keyframes ld-in { from { opacity: 0; transform: translateY(18px); } }
+@keyframes ld-file { 45% { opacity: 1; } to { opacity: 0; transform: translateY(40%) rotate(-2deg) scale(.96); } }
+#pd-gate .ld-ticket.ld-under { opacity: 0; }
+/* then the fresh ticket, yours, comes up into the empty place */
+#pd-gate .ld-ticket.ld-fresh { animation: ld-fresh .3s ease-out backwards; }
+@keyframes ld-fresh { from { opacity: 0; transform: translateY(8px); } }
+#pd-gate .ld-peek.ld-bump { animation: ld-bump .32s .28s ease-out; }
+@keyframes ld-bump { 40% { transform: rotate(-2deg) translateY(4px); } }
+@keyframes ld-fade { from { opacity: 0; } }
+
 @media (prefers-reduced-motion: reduce) {
-  #pd-gate .ld-dial .brk, #pd-gate .ld-deal.ld-nudge, #pd-gate .ld-stamped .ld-stamp, #pd-gate .ld-ticket.ld-thud, #pd-gate .ld-say p.pop { animation: none; }
+  #pd-gate .ld-dial .brk, #pd-gate .ld-deal.ld-nudge, #pd-gate .ld-ticket.ld-thud, #pd-gate .ld-say p.pop, #pd-gate .ld-deal.ld-press { animation: none; }
+  /* the stamp still arrives, as a short fade, without moving */
+  #pd-gate .ld-stamped .ld-stamp { transform: rotate(-6deg); animation: ld-fade .2s ease-out backwards; }
 }
 `;
 
@@ -206,8 +236,8 @@ function dial(): string {
     <defs><pattern id="ld-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="8" height="8" fill="var(--break-base)"/><rect width="3" height="8" fill="var(--break-stripe)"/></pattern></defs>
     ${ticks}
     <circle class="track" cx="120" cy="120" r="${R}" fill="none" stroke-width="16"/>
-    <circle class="brk" id="ld-brk" cx="120" cy="120" r="${R}" fill="none" stroke="url(#ld-hatch)" stroke-width="16" transform="rotate(-90 120 120)"/>
-    <circle class="foc" id="ld-foc" cx="120" cy="120" r="${R}" fill="none" stroke-width="16"/>
+    <g class="ld-arc"><circle class="brk" id="ld-brk" cx="120" cy="120" r="${R}" fill="none" stroke="url(#ld-hatch)" stroke-width="16" transform="rotate(-90 120 120)"/></g>
+    <g class="ld-arc f"><circle class="foc" id="ld-foc" cx="120" cy="120" r="${R}" fill="none" stroke-width="16"/></g>
     <text class="cd" id="ld-cd" x="120" y="126" text-anchor="middle">10:00</text>
     <text class="cdl" id="ld-cdl" x="120" y="152" text-anchor="middle">of Reels</text>
   </svg>`;
@@ -325,7 +355,10 @@ export function bindLanding(root: HTMLElement, a: LandingActions) {
     cdl.textContent = `of ${act}`;
   }
   function paint() { sentence.innerHTML = `${breakMin} min of <em>${act}</em>, then ${focusMin} min of reading.`; ring(); }
-  function stamp(on = true) { ticket.classList.remove("ld-stamped", "ld-thud"); if (!on) return; void ticket.offsetWidth; ticket.classList.add("ld-stamped", "ld-thud"); }
+  // a short buzz where the stamp hits the paper (Android; ignored elsewhere)
+  const buzz = () => window.setTimeout(() => { try { navigator.vibrate?.(14); } catch { /* not allowed */ } }, reduce ? 0 : 150);
+  function stamp(on = true) { ticket.classList.remove("ld-stamped", "ld-thud"); if (!on) return; void ticket.offsetWidth; ticket.classList.add("ld-stamped", "ld-thud"); buzz(); }
+  const press = () => { dealBtn.classList.remove("ld-press"); void dealBtn.offsetWidth; dealBtn.classList.add("ld-press"); };
 
   function pick(b: HTMLButtonElement) {
     if (dealt) return;
@@ -377,7 +410,7 @@ export function bindLanding(root: HTMLElement, a: LandingActions) {
       target?.focus(); target?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
       return;
     }
-    if (!dealt) deal(); else ask();
+    press(); if (!dealt) deal(); else ask();
   });
 
   root.querySelectorAll<HTMLButtonElement>("[data-prov]").forEach((b) => b.addEventListener("click", () => { b.disabled = true; a.signInWith(b.dataset.prov as Provider); }));
@@ -389,14 +422,29 @@ export function bindLanding(root: HTMLElement, a: LandingActions) {
   const demo = new URLSearchParams(location.search).get("demo");
   if (demo) { deal(); if (demo === "asked" || demo === "terms") ask(); if (demo === "terms") ask(); return; }
 
-  // A short scripted take on first load: it picks what you're on and points at Deal, but the stamp is yours.
+  // First look, before anyone reads a word: a sample copy of this ticket is stamped and slides under the real one
+  // into the pile behind it. The real ticket is untouched; its stamp is yours. Any tap or key ends the take at once.
   if (reduce) return;
+  const twrap = $<HTMLElement>(".ld-twrap")!, peek = $<HTMLElement>(".ld-peek");
+  const sample = ticket.cloneNode(true) as HTMLElement;
+  sample.removeAttribute("id"); sample.removeAttribute("aria-label"); sample.querySelectorAll("[id]").forEach((e) => e.removeAttribute("id"));
+  sample.querySelectorAll("[aria-live]").forEach((e) => e.removeAttribute("aria-live"));
+  sample.setAttribute("aria-hidden", "true"); sample.inert = true; sample.classList.add("ld-sample");
+  const sampleBtn = sample.querySelector<HTMLElement>(".ld-deal"), sampleSay = sample.querySelector<HTMLElement>(".ld-say p");
+  ticket.classList.add("ld-under"); dialEl.classList.add("ld-intro"); twrap.append(sample);
   const timers: number[] = [];
-  const cancel = () => { timers.forEach(clearTimeout); root.removeEventListener("pointerdown", cancel, true); root.removeEventListener("keydown", cancel, true); };
+  const cancel = () => {
+    timers.forEach(clearTimeout); sample.remove(); ticket.classList.remove("ld-under");
+    if (!dealt) dialEl.classList.remove("ld-dealt");
+    root.removeEventListener("pointerdown", cancel, true); root.removeEventListener("keydown", cancel, true);
+  };
   root.addEventListener("pointerdown", cancel, true); root.addEventListener("keydown", cancel, true);
   const at = (ms: number, f: () => void) => timers.push(window.setTimeout(f, ms));
-  at(900, () => pick(chips[1]));
-  at(1700, () => speak("TikTok, right? Your move. Tap Deal."));
-  at(1900, () => dealBtn.classList.add("ld-nudge"));
-  at(4500, cancel);
+  at(850, () => sampleBtn?.classList.add("ld-press"));
+  at(900, () => { sample.classList.add("ld-stamped", "ld-thud"); dialEl.classList.add("ld-dealt"); if (sampleSay) sampleSay.innerHTML = `Deal. Reels until ${later(breakMin)}, then reading.`; });
+  at(1750, () => { sample.classList.add("ld-file"); peek?.classList.add("ld-bump"); dialEl.classList.remove("ld-dealt"); });
+  at(2120, () => { ticket.classList.remove("ld-under"); ticket.classList.add("ld-fresh"); });
+  at(2200, () => sample.remove());
+  at(2450, cancel);
+  // the real ticket's own words never change during the take
 }
