@@ -111,8 +111,8 @@ interface LiveApp {
   session(doc: unknown): void;
   ledger(entries: unknown[]): void;
   clock(offsetMs: number): void;
-  /** All open big ones, comeback first then newest worked; the screen shows the first CARDS_SHOWN. Optional until the cards screen exists. */
-  bigOnes?(cards: BigOneCardRow[]): void;
+  /** All open big ones, comeback first then newest worked; the screen shows the first CARDS_SHOWN. */
+  bigOnes(cards: BigOneCardRow[]): void;
 }
 interface DealArgs { act: string | null; breakMin: number; task: string; focusMin: number }
 interface Backend {
@@ -127,6 +127,8 @@ interface Backend {
   blockNotes(fromIdx: number, bookmark: string | undefined, done: boolean): void;
   taskMenu(taskId: string, action: "startFresh" | "setAside" | "reopen" | "remove"): void;
   logEvent(kind: "comeback_shown" | "comeback_started" | "install_done" | "push_enabled", taskId?: string): void;
+  /** Open and set-aside big ones for the "All big ones" list, read once when it opens (R24). */
+  allBigOnes(): Promise<{ id: string; title: string; status: "open" | "set_aside" }[]>;
 }
 let live = false;
 function goLive(convex: ConvexClient) {
@@ -169,6 +171,10 @@ function goLive(convex: ConvexClient) {
     },
     taskMenu: (taskId, action) => { void convex.mutation(api.tasks[action], { taskId: taskId as Id<"tasks"> }).catch(report(action)); },
     logEvent: (kind, taskId) => { void convex.mutation(api.events.logClient, { kind, ...(taskId ? { taskId: taskId as Id<"tasks"> } : {}) }).catch(report("logEvent")); },
+    allBigOnes: async () => {
+      const rows = await convex.query(api.tasks.all, {});
+      return rows.flatMap((t) => t.status === "open" || t.status === "set_aside" ? [{ id: t._id as string, title: t.title, status: t.status }] : []);
+    },
   };
   app.attach(be);
   const sentAt = Date.now();
@@ -180,7 +186,7 @@ function goLive(convex: ConvexClient) {
   let openTasks: Doc<"tasks">[] | null = null;
   const pushCards = () => {
     if (!openTasks) return;
-    app.bigOnes?.(cardsFor(openTasks.map(({ _id, ...t }) => ({ ...t, id: _id as string })), dayKey()));
+    app.bigOnes(cardsFor(openTasks.map(({ _id, ...t }) => ({ ...t, id: _id as string })), dayKey()));
   };
   convex.onUpdate(api.tasks.open, {}, (tasks) => { openTasks = tasks; pushCards(); });
   const armMidnight = () => setTimeout(() => { pushCards(); armMidnight(); }, msToLocalMidnight(Date.now()));
