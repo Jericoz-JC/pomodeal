@@ -612,7 +612,8 @@ const gutSpoken = m => m === 240 ? "4 hours or more" : m === 60 ? "1 hour" : `${
 /* the big-one half of the ticket: off until the student ticks "Bigger than one block?" (never pre-selected).
    move is the first move; edited stops a type change from overwriting what they wrote. namedAt is the first tick. */
 const newBig = () => ({ on: false, type: null, gut: null, move: "", edited: false, pay: 15, namedAt: null });
-const bigTitle = () => title(deal.task).trim().slice(0, 80);
+/* the big one is named exactly as typed (commas kept), cut to 80 characters counted as the core counts them */
+const bigTitle = () => [...String(deal.task).trim()].slice(0, 80).join("");
 function fresh() { nudged = false; deal = { act: "Reels", breakMin: 10, task: "Reading, BIO 180 ch. 7", focusMin: 8 }; big = newBig(); ledger = []; S = null; sheet = null; picker = null; toast = null; unseen = 0; studied = 0; }
 /* mirrors packages/core/src/session.ts: quick lengths ramp +4 up to max(25, chosen); long ones hold.
    45 and 60 get two focus blocks, the rest three; a long block's break is a quarter of it. */
