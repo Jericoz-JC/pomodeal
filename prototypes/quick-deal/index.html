@@ -673,16 +673,19 @@ function nextBlock() { if (BE && S) BE.next(S.idx); bankFocus(); const was = S.i
 /* spec 008: a focus block of a big one ends on the boundary sheet with two skippable notes (bookmark, done).
    Notes are sent once per focus block: when the next block starts, more time is asked for, or the sheet closes. */
 const needsNotes = () => !!(S && S.taskId) && cur().type === "focus" && (S.notedIdx == null || S.notedIdx < S.idx);
-const newNotes = () => ({ bookmark: "", done: false, sent: false });
+/* the notes belong to the focus block that just ended, even if another device moves the session on under the sheet */
+const newNotes = () => ({ sid: S.id, idx: S.idx, bookmark: "", done: false, sent: false });
+/* the session moved past the block these notes are about (the server, or another device, advanced it) */
+const movedOn = () => !!(sheet && sheet.notes && S.idx !== sheet.notes.idx);
 function sendNotes() {
   const n = sheet && sheet.notes; if (!n || n.sent) return;
-  n.sent = true; S.notedIdx = S.idx;
-  if (BE) BE.blockNotes(S.idx, n.bookmark.trim() || undefined, n.done);
+  n.sent = true; S.notedIdx = Math.max(S.notedIdx ?? -1, n.idx);
+  if (BE) BE.blockNotes(n.idx, n.bookmark.trim() || undefined, n.done);
 }
 /* what the notes ask about: the card for this session's big one, or no-type defaults when it isn't loaded */
 function notesCopy() {
   const c = bigOneCards.find(x => x.id === S.taskId) || {}, type = BIG_TYPES[c.taskType] ? c.taskType : null;
-  const name = c.title || title(cur().label);
+  const name = c.title || title(S.blocks[sheet.notes.idx].label);
   return {
     hint: type ? BOOKMARK_HINTS[type] : "Where you'll pick up",
     q: c.currentPiece ? `Finished ${c.currentPiece}?` : `Is ${name} done for now?`,
@@ -929,7 +932,9 @@ function renderSheet() {
     if (old) { old.classList.remove("rise", "calm"); old.classList.add("leaving"); old.setAttribute("inert", ""); old.setAttribute("aria-hidden", "true"); setTimeout(() => old.remove(), 300); }
     setInert(); return;
   }
-  const b = cur(), nxt = S.blocks[S.idx + 1], over = remaining() <= 0;
+  /* a notes sheet keeps showing its own block, so text being typed stays put if the session moves on */
+  const at = sheet.notes ? sheet.notes.idx : S.idx;
+  const b = S.blocks[at], nxt = S.blocks[at + 1], over = remaining() <= 0;
   let body = "";
   /* every ticket in a sheet shares one layout: figure | perforation | what you agree to | stamp box */
   const tick = (tag, attrs, fig, top, slot, cost) => `<${tag} class="term"${attrs}><span class="fig" aria-hidden="true"><span>${fig}</span></span><span class="top">${top}${/[.?!]$/.test(top) ? "" : `<span class="vh">.</span>`}</span>${slot}<span class="cost"${tag === "div" ? ` id="dealcost"` : ""}>${N(cost)}</span></${tag}>`;
@@ -948,7 +953,7 @@ function renderSheet() {
         </div>
       </div>` : "";
     const more = !n ? `<button class="textbtn" id="ask2">Ask for ${N(5)} more minutes</button>`
-      : canBonus() ? `<button class="textbtn" id="ask2">Ask for ${N(10)} more minutes</button>` : "";
+      : canBonus() && !movedOn() ? `<button class="textbtn" id="ask2">Ask for ${N(10)} more minutes</button>` : "";
     body = `<span class="grab" aria-hidden="true"></span>
       <h2 id="sh" tabindex="-1">${esc(title(b.label))}, done.</h2>
       <div class="tearrow">
@@ -1166,11 +1171,13 @@ function bind() {
   on("#ask", () => { openSheet({ kind: "offer", asking: true }); render(); });
   on("#ask2", () => {
     /* on a big one's focus block, more time is the 10 min offer, already waiting for a pick (no countdown) */
+    if (sheet.notes && movedOn()) { sendNotes(); closeSheet(); render(); restoreFocus(); return; }
     if (sheet.notes) { sendNotes(); Object.assign(sheet, { kind: "bonus", at: Date.now(), paused: true, focusMe: true, termsAt: performance.now() }); render(); return; }
     sheet.asking = true; sheet.focusMe = true; sheet.termsAt = performance.now(); render();
   });
   on("#startnow", () => { file({ t: clockStr(), kind: "cleared", text: `Ended ${cur().label} early`, note: "" }); nextBlock(); render(); });
-  on("#go", () => { sendNotes(); if (S.blocks[S.idx + 1]) { nextBlock(); render(); } else { stopNow(); focusTitle(); } });
+  /* if the session already moved on elsewhere, the notes still go, and the sheet just closes onto the block that is running */
+  on("#go", () => { const moved = movedOn(); sendNotes(); if (moved) { closeSheet(); render(); restoreFocus(); } else if (S.blocks[S.idx + 1]) { nextBlock(); render(); } else { stopNow(); focusTitle(); } });
   on("#nevermind", () => dismiss());
   on("#endearly", () => stopNow());
   const bm = $("#bookmark"); if (bm) {
@@ -1257,7 +1264,7 @@ function seal(i) {
 }
 /* the announcement says what the deal cost, not only what it bought */
 function take(term, i) { const intention = sheet && sheet.intention; if (BE) BE.ask(i === "x" ? "override" : +i, intention); file(applyTerm(S, term, intention)); if (tab !== "ledger") unseen++; closeSheet(); beat("wind"); say(`Deal, ${lower(TERMS[term.kind])}. ${title(cur().label)} for ${minsLeft()} more minutes.${S.debt > 0 ? ` ${S.debt} borrowed minutes come out of later breaks.` : ""}`); render(); restoreFocus(); }
-function dismiss() { if (!sheet) return; sendNotes(); if (sheet.kind === "bonus") { S.bonusOffered = true; nextBlock(); } else if (remaining() <= 0) nextBlock(); else closeSheet(); render(); restoreFocus(); }
+function dismiss() { if (!sheet) return; const moved = movedOn(); sendNotes(); if (moved) closeSheet(); else if (sheet.kind === "bonus") { S.bonusOffered = true; nextBlock(); } else if (remaining() <= 0) nextBlock(); else closeSheet(); render(); restoreFocus(); }
 function restoreFocus() { const t = opener && document.body.contains(opener) ? opener : document.querySelector(".act button, #view h1"); if (t) { if (!t.matches("button")) t.tabIndex = -1; t.focus({ preventScroll: true }); } }
 function takeBonus() {
   if (BE) BE.bonus();
@@ -1428,6 +1435,8 @@ window.pomodealApp = {
     /* the big one rides on the session doc, not its state; notes already sent here or on another device aren't asked again */
     const noted = Math.max(doc.notedIdx ?? -1, S && S.id === doc._id && S.notedIdx != null ? S.notedIdx : -1);
     S = { ...doc.state, id: doc._id, taskId: doc.taskId, ...(noted >= 0 ? { notedIdx: noted } : {}), ...extra };
+    /* a different session replaced this one (started on another device): these notes have nowhere to go, so the sheet closes */
+    if (sheet && sheet.notes && sheet.notes.sid !== S.id) { sheet = null; lastSig = ""; render(); return; }
     lastSig = ""; if (!sheet) render();
   },
   /** today's ledger from the server, newest first */
