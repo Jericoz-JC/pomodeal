@@ -1005,13 +1005,15 @@ function bigCard(c) {
 }
 function cardsView() {
   /* the card loaded into the ticket is on the ticket now, not above it */
+  if (bigOneCards === null) return "";
   const open = cards().filter(c => !fromCard || c.id !== fromCard.id);
-  if (!open.length) return "";
+  const link = `<button class="textbtn allbig" id="allbig" aria-haspopup="dialog">All big ones</button>`;
+  /* R28: the list also holds the ones set aside, so it stays reachable whenever a card is shown or one is set aside */
+  if (!open.length) return asideKnown() ? link : "";
   const shown = open.slice(0, CARDS_SHOWN);
   shown.forEach(c => { if (c.comeback) noteComeback(c.id); });
-  /* the list also holds the ones set aside, so it stays reachable whenever a card is shown */
   return `<ul class="bigones" aria-label="Your big ones">${shown.map(bigCard).join("")}</ul>
-  <button class="textbtn allbig" id="allbig" aria-haspopup="dialog">All big ones</button>`;
+  ${link}`;
 }
 function startView() {
   const last = newest(ledger) || newest(SEED);
@@ -1272,22 +1274,32 @@ function closePanel(to) {
 function openList() {
   openPanel({ kind: "list", items: null }, "#allbig");
   const load = BE && BE.allBigOnes ? BE.allBigOnes() : Promise.resolve([...cards().map(c => ({ id: c.id, title: c.title, status: "open" })), ...demoAside]);
-  load.then(items => { if (panel && panel.kind === "list") { panel.items = items; panel.error = false; renderPanel(); } })
+  load.then(items => { noteAside(items); if (panel && panel.kind === "list") { panel.items = items; panel.error = false; renderPanel(); } })
     .catch(() => { if (panel && panel.kind === "list") { panel.error = true; renderPanel(); } });
 }
 /* the demo's set-aside big ones (live mode reads them from api.tasks.all) */
 let demoAside = [];
+/* live: whether any big one is set aside. Seeded by one list read on attach, set by Set aside, and corrected
+   whenever the list is read. It keeps "All big ones" on the home screen with no open cards (R28). */
+let hasAside = false;
+const asideKnown = () => BE ? hasAside : demoAside.length > 0;
+const noteAside = items => { if (BE) hasAside = items.some(i => i.status === "set_aside"); };
+function readAside() {
+  if (!BE || !BE.allBigOnes) return;
+  BE.allBigOnes().then(items => { const was = hasAside; noteAside(items); if (was !== hasAside && tab === "now" && !S && mode === "start" && !stamping) render(); }).catch(() => {});
+}
 /* the card actions: the server's copy follows; the screen changes at once */
 function cardAction(id, action) {
   const c = cardById(id); if (!c) return;
   if (BE) BE.taskMenu(id, action);
   if (action === "remove" || action === "setAside") {
     bigOneCards = cards().filter(x => x.id !== id);
+    if (action === "setAside" && BE) hasAside = true;
     if (action === "setAside" && !BE) demoAside = [{ id, title: c.title, status: "set_aside" }, ...demoAside];
   }
   /* the demo's start fresh: no bookmark, no gut size, so the type's own first move (live mode waits for the server's card) */
   if (action === "startFresh" && !BE) Object.assign(c, { startWith: FIRST_MOVES[c.taskType] || "", progress: c.progress && c.progress.kind === "left" ? null : c.progress, comeback: false });
-  const next = cards().find(x => x.id !== id), to = cardById(id) ? `[data-menu="${id}"]` : next ? `[data-card="${next.id}"]` : null;
+  const next = cards().find(x => x.id !== id), to = cardById(id) ? `[data-menu="${id}"]` : next ? `[data-card="${next.id}"]` : "#allbig";
   panel = null; render();
   const el = to && document.querySelector(to); if (el) el.focus({ preventScroll: true }); else focusTitle();
   say(action === "remove" ? `Deleted ${c.title}.` : action === "setAside" ? `${c.title} set aside. It waits in All big ones.` : `Starting fresh on ${c.title}.`);
@@ -1309,7 +1321,7 @@ function bindPanel() {
     const it = (panel.items || []).find(x => x.id === b.dataset.reopen); if (!it) return;
     if (BE) BE.taskMenu(it.id, "reopen");
     else { demoAside = demoAside.filter(x => x.id !== it.id); bigOneCards = [{ id: it.id, title: it.title, startWith: "", progress: null, minutes: 15, comeback: false, offerRespread: false }, ...cards()]; }
-    it.status = "open"; panel.focusMe = true; panel.focusSel = `[data-lstart="${it.id}"]`; render();
+    it.status = "open"; noteAside(panel.items); panel.focusMe = true; panel.focusSel = `[data-lstart="${it.id}"]`; render();
     say(`${it.title} is back with your big ones.`);
   });
   const scrim = $("#panel-root .scrim"); if (scrim) scrim.onclick = e => { if (e.target === scrim) closePanel(); };
@@ -1536,6 +1548,8 @@ function on(sel, fn) { const el = $(sel); if (el) el.onclick = fn; }
 let stamping = false;
 /* start a big one from its card (or the list): an ordinary Quick Deal session on that big one, no new big one */
 function startCard(c, d) {
+  /* a ticket loaded from another card goes back to the plain Quick Deal, with its own length */
+  if (fromCard) { deal.focusMin = fromCard.prevFocus; fromCard = null; }
   panel = null; picker = null; mode = "start";
   S = buildSession(d); S.justStarted = true; S.serial = String(412 + ledger.length).padStart(4, "0"); S.taskId = c.id; S.firstMove = c.startWith || "";
   if (BE) { BE.startFromCard(c.id, d); if (c.comeback) BE.logEvent("comeback_started", c.id); }
@@ -1775,10 +1789,11 @@ window.pomodealApp = {
     if (BE) return;
     BE = backend; speed = 1; vnow = Date.now(); lastReal = performance.now(); DEMO_SHIFT = 0;
     document.body.classList.add("live");
-    fresh(); deal.task = "Reading"; bigOneCards = null; demoAside = [];
+    fresh(); deal.task = "Reading"; bigOneCards = null; demoAside = []; hasAside = false;
     try { const d = JSON.parse(localStorage.getItem(DEAL_KEY) || "null"); if (d && d.task) deal = { ...deal, ...d }; } catch (e) {}
     if (location.hash) history.replaceState(null, "", location.pathname + location.search);
     mode = "start"; setTab("now"); lastSig = ""; render();
+    readAside();
   },
   /** server time minus this device's time, in ms: time on screen is Date.now() + offset */
   clock(offsetMs) { if (Number.isFinite(offsetMs)) clockOffset = offsetMs; },
