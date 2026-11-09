@@ -43,7 +43,8 @@ export function pushPayload(s: SessionState, kind: PushKind): PushPayload {
 /** What the service worker hands to `registration.showNotification(title, options)`. */
 export interface PushNotice {
   title: string;
-  options: { body: string; tag: string; icon: string; data: { navigate: string } };
+  /** renotify: a block end that replaces its heads-up in the tray still alerts (the spec's default is a silent swap). */
+  options: { body: string; tag: string; renotify: true; icon: string; data: { navigate: string } };
 }
 
 /** Only a path on this site: never another origin, never a script URL. */
@@ -68,6 +69,6 @@ export function notificationFromPush(data: unknown): PushNotice | null {
   if (typeof body !== "string" || !body.trim()) return null;
   return {
     title: typeof title === "string" && title.trim() ? title : "Pomodeal",
-    options: { body, tag: typeof tag === "string" && tag ? tag : "pomodeal-block", icon: "/icon-192.png", data: { navigate: samePath(navigate) } },
+    options: { body, tag: typeof tag === "string" && tag ? tag : "pomodeal-block", renotify: true, icon: "/icon-192.png", data: { navigate: samePath(navigate) } },
   };
 }

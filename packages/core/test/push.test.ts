@@ -74,7 +74,7 @@ describe("service worker notification", () => {
     const s = at(buildSession(deal(15), T0), 1);
     expect(notificationFromPush(pushPayload(s, "headsUp"))).toEqual({
       title: "Pomodeal",
-      options: { body: "2 min to wrap up BIO 180 ch. 7.", tag: "pomodeal-block", icon: "/icon-192.png", data: { navigate: "/" } },
+      options: { body: "2 min to wrap up BIO 180 ch. 7.", tag: "pomodeal-block", renotify: true, icon: "/icon-192.png", data: { navigate: "/" } },
     });
   });
 
@@ -86,6 +86,15 @@ describe("service worker notification", () => {
   it("keeps the payload's own tag when it has one", () => {
     const n = notificationFromPush({ web_push: 8030, notification: { title: "Pomodeal", body: "x", navigate: "/", tag: "s1-headsUp" } });
     expect(n?.options.tag).toBe("s1-headsUp");
+    expect(n?.options.renotify).toBe(true);
+  });
+
+  it("alerts again when the block end replaces the heads-up under the same tag", () => {
+    const s = at(buildSession(deal(15), T0), 1);
+    const heads = notificationFromPush(pushPayload(s, "headsUp"));
+    const end = notificationFromPush(pushPayload(s, "blockEnd"));
+    expect(end?.options.tag).toBe(heads?.options.tag);
+    expect(end?.options.renotify).toBe(true);
   });
 
   it("only ever opens a path on this site", () => {

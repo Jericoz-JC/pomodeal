@@ -1652,8 +1652,10 @@ function bind() {
     if (pushAsk !== "ask") return;
     pushAsk = "asking"; const pb = $("#pushask"); if (pb) pb.setAttribute("aria-disabled", "true");
     /* the demo has no backend: it shows what turning them on looks like */
-    const ask = BE && BE.enablePush ? Promise.resolve().then(() => BE.enablePush()) : Promise.resolve("granted");
-    ask.catch(() => "unavailable").then(r => {
+    /* called straight from the tap, no hop first: Safari only shows the prompt while the tap still counts (R54) */
+    let ask;
+    try { ask = BE && BE.enablePush ? BE.enablePush() : Promise.resolve("granted"); } catch (e) { ask = Promise.resolve("unavailable"); }
+    Promise.resolve(ask).catch(() => "unavailable").then(r => {
       pushAsk = null;
       toast = r === "granted" ? "Taps are on for block ends." : r === "denied" ? "Okay, no taps." : "Taps can't be turned on here right now.";
       setTimeout(() => { toast = null; lastSig = ""; }, 3500);
