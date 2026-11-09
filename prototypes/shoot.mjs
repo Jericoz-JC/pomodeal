@@ -19,7 +19,7 @@ const STATES = ["start", "intercept", "running", "focus", "heads-up", "boundary"
   // spec 008: push permission button, iPhone install sheet
   "push-ask", "install-ios",
   // spec 008: planning on the card
-  "split", "split-exam", "spread", "spread-exam", "spread-due", "respread", "cards-respread"];
+  "split", "split-exam", "split-pieces", "spread", "spread-exam", "spread-due", "respread", "cards-respread"];
 // ONLY=a,b limits a run to some states (quick review loops); WIDTH=375 checks the narrowest phone; HEIGHT=1400 sees a long screen whole
 const only = process.env.ONLY ? process.env.ONLY.split(",") : null;
 const WIDTH = Number(process.env.WIDTH) || 390;

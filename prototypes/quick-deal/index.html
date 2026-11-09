@@ -313,71 +313,88 @@ p { margin: 0; }
 /* R38: "Set aside" is a quiet heading, not a row */
 .asideh { margin: 18px 0 0; font-family: var(--font-body); font-size: .875rem; font-weight: 400; line-height: 1.3; color: var(--soft); }
 
-/* spec 008 planning on the card: Split and Spread are the same torn sheet as the menu. Pieces are line items written on
-   the ticket's ruled lines; the spread is a signed plan, so its head carries an empty stamp box like the deal's. */
-.pieces { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; counter-reset: pc; }
-.piece { display: grid; grid-template-columns: 22px minmax(0, 1fr); column-gap: 8px; align-items: start; }
-/* pieces are done in order (the block end asks about the first open one), so the number is the order */
-.piece .pn { padding-top: 12px; font-family: var(--font-head); font-stretch: 78%; font-weight: 800; font-size: 1.125rem; line-height: 1.2; color: var(--soft); font-variant-numeric: tabular-nums; }
-.piece input.pt { display: block; width: 100%; min-height: 44px; margin: 0; padding: 10px 0 7px; border: none; border-bottom: 1.5px solid var(--edge); border-radius: 0; background: none;
-  font-size: 1.125rem; line-height: 1.35; color: var(--ink); }
+/* spec 008 planning on the card: Split and Spread are the same torn sheet as the menu. R62: the torn top edge is the
+   sheet's only perforation; inside, pieces are lines on the pad and the footer is set off by a plain rule. */
+.pieces { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+/* R57: one line a piece: its name on a ruled line, the minutes, a small remove */
+.piece { display: flex; align-items: center; gap: 4px; min-height: 56px; border-bottom: 1px solid var(--rule); }
+.piece input.pt { flex: 1; min-width: 0; min-height: 44px; margin: 0; padding: 10px 0 8px; border: none; border-bottom: 1.5px solid transparent; border-radius: 0; background: none;
+  font-size: 1.0625rem; line-height: 1.3; color: var(--ink); text-overflow: ellipsis; }
 .piece input.pt::placeholder { color: color-mix(in srgb, var(--ink) 62%, transparent); opacity: 1; }
 .piece input.pt:focus { border-bottom-color: var(--deal); }
-.piece input.pt:focus-visible { outline-offset: 4px; }
-.piece .pmeta { display: flex; align-items: center; gap: 4px 8px; flex-wrap: wrap; min-height: 48px; }
+.piece input.pt:focus-visible { outline-offset: 2px; }
 /* minutes: one number in Archivo between a minus and a plus, the same 5-minute steps as the deal's lengths */
-.mins { display: inline-flex; align-items: center; }
-.step { flex: none; width: 44px; height: 44px; border: none; background: none; color: var(--ink); display: grid; place-items: center; border-radius: 8px; }
-.step svg { width: 18px; height: 18px; padding: 0; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--edge); box-sizing: content-box; padding: 3px; }
-.step:disabled { color: var(--edge-half); cursor: default; }
-.step:disabled svg { box-shadow: inset 0 0 0 1.5px var(--edge-half); }
-.mins input { width: 3ch; min-height: 40px; padding: 0; border: none; border-bottom: 1.5px solid transparent; border-radius: 0; background: none; text-align: right;
-  font-family: var(--font-head); font-stretch: 74%; font-weight: 800; font-size: 1.5rem; line-height: 1; font-variant-numeric: tabular-nums; -moz-appearance: textfield; appearance: textfield; }
+.mins { flex: none; display: inline-flex; align-items: center; }
+.step { flex: none; width: 36px; height: 44px; padding: 0; border: none; background: none; color: var(--ink); display: grid; place-items: center; border-radius: 8px; }
+/* the ring is the button's edge: ink-soft at 1.75px (about 6:1), never the faint rule colour */
+.step svg { width: 16px; height: 16px; padding: 4px; box-sizing: content-box; border-radius: 50%; box-shadow: inset 0 0 0 1.75px var(--soft); }
+.step:disabled { color: color-mix(in srgb, var(--ink) 35%, transparent); cursor: default; }
+.step:disabled svg { box-shadow: inset 0 0 0 1.75px color-mix(in srgb, var(--ink) 30%, transparent); }
+.mins label { display: inline-flex; align-items: baseline; gap: 2px; }
+.mins input { width: 2.6ch; min-height: 40px; padding: 0; border: none; border-bottom: 1.5px solid transparent; border-radius: 0; background: none; text-align: right;
+  font-family: var(--font-head); font-stretch: 74%; font-weight: 800; font-size: 1.375rem; line-height: 1; font-variant-numeric: tabular-nums; -moz-appearance: textfield; appearance: textfield; }
 .mins input::-webkit-inner-spin-button, .mins input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 .mins input:focus { border-bottom-color: var(--deal); }
-.mins .u { margin: 0 2px 0 4px; font-size: .9375rem; color: var(--soft); }
-.piece .pstamp { --tilt: -4deg; font-size: .875rem; letter-spacing: .03em; padding: 2px 6px; }
-.piece .pstamp::before { border-width: 2.5px; border-radius: 4px; }
-.piece .prm { margin-left: auto; margin-right: -12px; }
-/* adding a piece is an empty line on the pad: dashed in ink, like anything not written yet */
-.addpiece { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 48px; padding: 8px 14px 8px 2px; margin-left: 0; border: none; border-top: 1.5px dashed var(--wait-edge); background: none; color: var(--ink); text-align: left;
+.mins .u { font-size: .875rem; color: var(--ink); }
+.prm { flex: none; width: 44px; height: 44px; margin-right: -10px; border: none; background: none; color: var(--soft); display: grid; place-items: center; border-radius: 8px; }
+.prm svg { width: 18px; height: 18px; }
+.prm:focus-visible { outline-offset: -3px; }
+/* a stamped piece keeps its mark beside its name: the inked box a picked choice gets, small enough to leave the name room */
+.pdone { flex: none; display: grid; place-items: center; width: 24px; height: 24px; margin: 0 4px; border: 3px double var(--deal); border-radius: 5px; background: var(--sel); color: var(--deal); }
+.pdone svg { width: 13px; height: 13px; }
+/* R64: removing a stamped piece asks once, in its own row */
+.pask { display: flex; flex-wrap: wrap; align-items: center; gap: 0 4px; padding: 6px 0 8px; border-bottom: 1px solid var(--rule); }
+.pask p { flex: 1 1 100%; font-size: 1rem; line-height: 1.35; }
+.pask .textbtn { margin-left: -12px; margin-right: 8px; }
+.pask .textbtn.gone { color: var(--gone); }
+.addpiece { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 48px; padding: 8px 14px 8px 0; border: none; background: none; color: var(--ink); text-align: left;
   font-family: var(--font-head); font-stretch: 85%; font-weight: 700; font-size: 1.0625rem; line-height: 1.2; letter-spacing: .01em; }
 .addpiece svg { flex: none; width: 20px; height: 20px; color: var(--soft); }
-.addpiece .lim { margin-left: auto; font-family: var(--font-body); font-stretch: normal; font-weight: 400; font-size: .875rem; letter-spacing: 0; color: var(--soft); }
-/* pieces vs the gut size: said once, plainly, no color and no verdict */
-.sum { font-size: 1rem; line-height: 1.4; color: var(--ink); }
+/* R57: "Removed Body. Undo", for a few seconds */
+.undo { display: flex; align-items: center; gap: 4px; min-height: 44px; font-size: .9375rem; }
+.undo .textbtn { color: var(--deal-ink); }
 .perr { font-size: .9375rem; color: var(--gone); }
-/* the sheet's one action stays in reach under a long list: a perforated stub at the bottom, like a big one's Deal */
+/* the sheet's one action stays in reach under a long list, set off by a plain rule */
 .sheet.paper .sfoot { position: sticky; bottom: calc(-12px - env(safe-area-inset-bottom, 0px)); z-index: 1; display: flex; flex-direction: column; gap: 2px; margin: 4px -18px calc(-12px - env(safe-area-inset-bottom, 0px));
-  padding: 14px 18px calc(8px + env(safe-area-inset-bottom, 0px)); background: radial-gradient(circle, var(--edge) 1.2px, transparent 1.7px) 0 0 / 8px 6px repeat-x, var(--card); }
+  padding: 12px 18px calc(8px + env(safe-area-inset-bottom, 0px)); background: var(--card); border-top: 1px solid var(--rule); }
 .sheet.paper .sfoot .pclose { margin-top: 0; }
+/* R58: pieces against the gut size, said once right above Save: Archivo, ink, no colour, no verdict */
+.sum { margin: 0 0 8px; font-family: var(--font-head); font-stretch: 85%; font-weight: 600; font-size: 1.125rem; line-height: 1.3; color: var(--ink); }
 /* the spread: the due day, then the days, each with what lands on it */
-.sphead { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; }
-.sphead .stampbox { margin-top: 2px; }
-.sphead .stampbox .stamp { font-size: 1.25rem; letter-spacing: .03em; }
-.due { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; min-height: 48px; }
-.due label { font-family: var(--font-head); font-stretch: 85%; font-weight: 700; font-size: 1.1875rem; line-height: 1.2; }
-.due input { min-height: 48px; padding: 8px 12px; border: 1.5px solid var(--edge); border-radius: 10px; background: var(--paper); font-family: var(--font-head); font-stretch: 85%; font-weight: 700; font-size: 1.125rem; }
+.sphead { position: relative; padding-right: 92px; }
+/* R55: no empty slot; signing stamps the sheet with the deal's own stamp motion */
+.sphead .signmark { position: absolute; right: 0; top: 2px; font-size: 1.25rem; letter-spacing: .03em; padding: 3px 8px; }
+.due { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+.due .duelab { font-family: var(--font-head); font-stretch: 85%; font-weight: 700; font-size: 1.1875rem; line-height: 1.2; }
+.due .phrase { margin-left: -2px; }
+.due input { align-self: flex-start; min-height: 48px; padding: 8px 12px; border: 1.5px solid var(--edge); border-radius: 10px; background: var(--paper); font-family: var(--font-head); font-stretch: 85%; font-weight: 700; font-size: 1.125rem; }
 .due input:focus { border-color: var(--deal); }
-.due p { font-size: 1.0625rem; }
-.due p b { font-family: var(--font-head); font-stretch: 85%; font-weight: 700; font-size: 1.1875rem; }
-.due .textbtn { margin-left: -12px; }
+.dueknown { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; min-height: 48px; }
+.dueknown p { font-size: 1.0625rem; }
+.dueknown p b { font-family: var(--font-head); font-stretch: 85%; font-weight: 700; font-size: 1.1875rem; }
+.dueknown .textbtn { margin-left: -12px; }
 .days { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
 .day { padding: 10px 0 6px; }
 .day + .day { border-top: 1px solid var(--rule); }
 .day h3 { margin: 0; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; font-family: var(--font-head); font-stretch: 80%; font-weight: 750; font-size: 1.25rem; line-height: 1.2; }
-.day h3 .dm { font-stretch: 74%; font-weight: 700; font-size: 1.125rem; color: var(--soft); font-variant-numeric: tabular-nums; }
+.day h3 .dm { font-stretch: 74%; font-weight: 700; font-size: 1.125rem; color: var(--ink); font-variant-numeric: tabular-nums; }
+/* R59: the day's load as a shape: a static bar, its length the day's minutes against the fullest day */
+.load { display: block; height: 6px; margin: 6px 0 2px; border-radius: 3px; background: var(--chip); overflow: hidden; }
+.load i { display: block; height: 100%; border-radius: 3px; background: var(--deal); }
 .day ul { list-style: none; margin: 2px 0 0; padding: 0; }
 .prow { display: flex; align-items: center; gap: 10px; min-height: 48px; }
 .prow .ptitle { flex: 1; min-width: 0; font-size: 1.0625rem; line-height: 1.3; overflow-wrap: anywhere; }
-.prow .pmin { flex: none; font-size: .9375rem; color: var(--soft); }
-/* "Move" is a word you tap; the day list under it is the phone's own picker */
-.mv { position: relative; flex: none; display: inline-flex; align-items: center; gap: 4px; min-height: 44px; padding: 0 2px 0 8px; margin-right: -2px; color: var(--deal-ink); text-decoration: underline; text-underline-offset: 3px; font-size: .9375rem; border-radius: 8px; }
-.mv select { position: absolute; inset: 0; width: 100%; opacity: 0; font-size: 1rem; cursor: pointer; }
-.mv:focus-within { outline: 3px solid var(--deal); outline-offset: 2px; }
+.prow .pmin { flex: none; font-size: .9375rem; color: var(--ink); }
+/* "Move" is a word you tap (a 44px target); the day list under it is the phone's own picker */
+.mv { position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center; min-width: 52px; min-height: 44px; padding: 0 2px 0 8px; margin-right: -2px; color: var(--deal-ink); text-decoration: underline; text-underline-offset: 3px; font-size: .9375rem; border-radius: 8px; }
+.mv select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; font-size: 1rem; cursor: pointer; }
+.mv:focus-within { outline: 3px solid var(--deal); outline-offset: 0; }
 .spwhy { font-size: .9375rem; line-height: 1.4; color: var(--soft); }
-/* a comeback card offers a fresh plan in one quiet line */
-.bigcard .respread { align-self: flex-start; margin: -6px 0 2px -12px; font-size: .9375rem; }
+/* R60: a comeback card's fresh plan is its own small outlined button, apart from "Start with" */
+.bigcard .respread { align-self: flex-start; min-height: 44px; margin: 6px 0 10px; padding: 8px 14px; border: 1.5px solid var(--edge); border-radius: 10px; background: none; color: var(--ink);
+  font-family: var(--font-head); font-stretch: 85%; font-weight: 700; font-size: 1rem; line-height: 1.2; letter-spacing: .01em; }
+/* R61: Delete sits apart from the rows that keep the big one */
+.menu .mrow.gone { border-top: 1px solid var(--rule); margin-top: 4px; }
 
 /* wake lock: the same printed box as "Bigger than one block?", a quiet row under the ring */
 .keepon { justify-self: center; display: inline-flex; align-items: center; gap: 10px; min-height: 44px; margin-top: -6px; padding: 8px 12px; border: none; background: none; color: var(--soft); font-size: .9375rem; }
@@ -1217,7 +1234,7 @@ function bigCard(c) {
       <div class="row"><h2 class="ttl">${c.comeback ? `${t}’s still here.` : t}</h2><button class="more" data-menu="${esc(c.id)}" aria-haspopup="dialog" aria-label="More for ${t}">${DOTS}</button></div>
       ${c.comeback ? `<p class="ask">Smaller first move today?</p>` : ""}
       ${c.startWith ? `<p class="startw"><span>Start with:</span> ${N(esc(moveText(c.startWith)))}</p>` : ""}
-      ${c.offerRespread ? `<button class="textbtn respread" data-respread="${esc(c.id)}" aria-haspopup="dialog">Re-spread what’s left?</button>` : ""}
+      ${c.offerRespread ? `<button class="respread" data-respread="${esc(c.id)}" aria-haspopup="dialog">Re-spread what’s left?</button>` : ""}
       ${prog ? `<p class="prog">${N(prog)}</p>` : ""}
     </div>
   </div></li>`;
@@ -1563,19 +1580,21 @@ function readAside() {
 /* mirrors packages/core/src/bigOne.ts: splitSlots, PIECE_MIN, PIECE_MAX, MAX_PIECES */
 const SPLIT_SLOTS = { writing: ["Intro", "Body", "Body", "Conclusion", "Revise"], problems: ["Problems 1–3", "Problems 4–6", "Problems 7–9"], exam: ["Topic 1", "Topic 2", "Topic 3"], project: ["Decide", "Sketch", "Build", "Check"] };
 const PIECE_MIN = 5, PIECE_MAX = 240, MAX_PIECES = 12;
-/* a new slot's minutes: a guess to change, not the gut size divided up (the sum only tells you something if it's yours) */
+/* a new piece's minutes when there is no gut size to share out */
 const SLOT_MIN = 30;
+/* how long "Removed Body. Undo" stays */
+const UNDO_MS = 6000;
 /* day keys: the same UTC arithmetic as packages/core/src/days.ts */
 const keyMs = k => { const [y, m, d] = k.split("-").map(Number); return Date.UTC(y, m - 1, d); };
 const dayAdd = (k, n) => new Date(keyMs(k) + n * 86400000).toISOString().slice(0, 10);
 const dayDiff = (a, b) => Math.round((keyMs(b) - keyMs(a)) / 86400000);
 const isKey = k => /^\d{4}-\d{2}-\d{2}$/.test(k || "") && new Date(keyMs(k)).toISOString().slice(0, 10) === k;
+const keyDate = k => { const [y, m, d] = k.split("-").map(Number); return new Date(y, m - 1, d); };
 /* "Today", "Tomorrow", then the date itself ("Wed, Nov 11"): never a count of days */
 function dayName(k) {
   const d = dayDiff(localDay(), k);
   if (d === 0) return "Today"; if (d === 1) return "Tomorrow";
-  const [y, m, dd] = k.split("-").map(Number);
-  return new Date(y, m - 1, dd).toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" });
+  return keyDate(k).toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" });
 }
 /* the demo's proposal, a mirror of core's proposeSpread (live mode calls core through the app shell) */
 function demoPropose(task, today, due) {
@@ -1600,54 +1619,93 @@ const spreadable = t => !!t && (t.pieces.some(p => p.stampedAt == null) || (t.op
 const clampMin = v => Math.min(PIECE_MAX, Math.max(PIECE_MIN, Math.round((Number.isFinite(v) ? v : SLOT_MIN) / 5) * 5));
 const MINUS = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 12h12"/></svg>`;
 const PLUS_SM = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 6v12M6 12h12"/></svg>`;
-/* Split: the existing pieces, or the type's slots. Each row keeps its piece's stampedAt and plannedDay, because a
-   save replaces the whole list (tasks.saveSplit). `then: "spread"` is Spread asking for pieces first. */
+const CROSS = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg>`;
+
+/* ----- Split ----- */
+/* the existing pieces, or the type's slots. Each row keeps its piece's stampedAt and plannedDay, because a save
+   replaces the whole list (tasks.saveSplit), and its stored title (`was`), so a stamped piece is never lost to a
+   cleared name (R64). A new split with a gut size shares it out: gut ÷ slots, to 5 min (R58). `then: "spread"` is
+   Spread asking for pieces first. */
 function openSplit(id, back, then) {
   const t = planOf(id); if (!t) { say("That big one isn't loaded yet. Try again in a moment."); return; }
-  const rows = t.pieces.length ? t.pieces.map(p => ({ ...p })) : t.slots.map(s => ({ title: s, minutes: SLOT_MIN }));
-  openPanel({ kind: "split", id, task: t, rows, then: then || null, error: null }, back);
+  const share = t.gutMin ? clampMin(t.gutMin / Math.max(1, t.slots.length)) : SLOT_MIN;
+  const rows = t.pieces.length ? t.pieces.map(p => ({ ...p, was: p.title })) : t.slots.map(s => ({ title: s, minutes: share }));
+  openPanel({ kind: "split", id, task: t, rows, then: then || null, ask: null, undo: null, error: null }, back);
 }
-/* the pieces a save sends: blank rows are left out; every kept row carries its own stamp and planned day */
-const splitPieces = p => p.rows.filter(r => r.title.trim()).map(r => ({ title: r.title.trim(), minutes: clampMin(r.minutes),
-  ...(r.plannedDay ? { plannedDay: r.plannedDay } : {}), ...(r.stampedAt != null ? { stampedAt: r.stampedAt } : {}) }));
+/* the name a row is called by: what's typed, else its stored name, else its place */
+const pieceName = (r, i) => r.title.trim() || r.was || `piece ${i + 1}`;
+/* the pieces a save sends: blank new rows are left out; a stamped row keeps its stored name; every kept row carries its stamp and planned day */
+const splitPieces = p => p.rows.map(r => ({ r, title: r.title.trim() || (r.stampedAt != null ? r.was || "" : "") })).filter(x => x.title)
+  .map(({ r, title }) => ({ title, minutes: clampMin(r.minutes), ...(r.plannedDay ? { plannedDay: r.plannedDay } : {}), ...(r.stampedAt != null ? { stampedAt: r.stampedAt } : {}) }));
 /* spec 008: said once, without comment, and only when there was a gut size */
 const splitSum = p => { const g = p.task.gutMin; if (!g) return ""; const tot = p.rows.reduce((a, r) => a + clampMin(r.minutes), 0); return `Your pieces add up to ${hm(tot)}. Your gut said ${gutText(g)}.`; };
 const saveText = p => splitPieces(p).length ? "Save pieces" : "Name a piece to save";
 function splitBody() {
   const p = panel, c = cardById(p.id); if (!c) return null;
-  const row = (r, i) => `<li class="piece"><span class="pn" aria-hidden="true">${i + 1}</span><div>
-      <label class="vh" for="pt-${i}">Piece ${i + 1}</label>
-      <input class="pt" id="pt-${i}" data-pt="${i}" value="${esc(r.title)}" maxlength="80" placeholder="Name this piece" autocomplete="off" enterkeyhint="next">
-      <div class="pmeta"><span class="mins" role="group" aria-label="Minutes for piece ${i + 1}">
-        <button class="step" data-pm="${i}:-5" aria-label="5 fewer minutes"${clampMin(r.minutes) <= PIECE_MIN ? " disabled" : ""}>${MINUS}</button>
-        <input type="number" id="pmn-${i}" data-pmn="${i}" inputmode="numeric" min="${PIECE_MIN}" max="${PIECE_MAX}" step="5" value="${clampMin(r.minutes)}" aria-label="Minutes"><span class="u" aria-hidden="true">min</span>
-        <button class="step" data-pm="${i}:5" aria-label="5 more minutes"${clampMin(r.minutes) >= PIECE_MAX ? " disabled" : ""}>${PLUS_SM}</button></span>
-        ${r.stampedAt != null ? `<span class="stamp pstamp">Stamped</span>` : ""}
-        <button class="textbtn prm" data-prm="${i}" aria-label="Remove piece ${i + 1}">Remove</button></div></div></li>`;
-  const sum = splitSum(p), full = p.rows.length >= MAX_PIECES;
+  const row = (r, i) => {
+    const nm = esc(pieceName(r, i)), m = clampMin(r.minutes);
+    const line = `<li class="piece"><label class="vh" for="pt-${i}">Piece ${i + 1}</label>
+      <input class="pt" id="pt-${i}" data-pt="${i}" value="${esc(r.title)}" maxlength="80" placeholder="${r.was ? esc(r.was) : "Name this piece"}" autocomplete="off" enterkeyhint="next">
+      ${r.stampedAt != null ? `<span class="pdone">${CHECK}<span class="vh">Stamped</span></span>` : ""}
+      <span class="mins">
+        <button class="step" data-pm="${i}:-5" aria-label="Less time for ${nm}"${m <= PIECE_MIN ? " disabled" : ""}>${MINUS}</button>
+        <label><input type="number" id="pmn-${i}" data-pmn="${i}" inputmode="numeric" min="${PIECE_MIN}" max="${PIECE_MAX}" step="5" value="${m}" aria-label="Minutes for ${nm}"><span class="u" aria-hidden="true">min</span></label>
+        <button class="step" data-pm="${i}:5" aria-label="More time for ${nm}"${m >= PIECE_MAX ? " disabled" : ""}>${PLUS_SM}</button>
+      </span>
+      <button class="prm" data-prm="${i}" aria-label="Remove ${nm}">${CROSS}</button></li>`;
+    /* R64: a stamp is never removed by one stray tap */
+    const ask = p.ask === i ? `<li class="pask" role="group" aria-label="Remove ${nm}?"><p>Remove ${nm}? Its stamp goes too.</p>
+      <button class="textbtn gone" id="s-askyes">Remove it</button><button class="textbtn" id="s-askno">Keep it</button></li>` : "";
+    return line + ask;
+  };
+  const sum = splitSum(p), full = p.rows.length >= MAX_PIECES, u = p.undo;
   return `<h2 id="ph" tabindex="-1">${esc(c.title)} in pieces</h2>
-    <span class="pperf" aria-hidden="true"></span>
     ${p.rows.length ? `<ol class="pieces" aria-label="Pieces">${p.rows.map(row).join("")}</ol>` : ""}
+    ${u ? `<p class="undo" role="status">Removed ${esc(pieceName(u.row, u.at))}. <button class="textbtn" id="s-undo">Undo</button></p>` : ""}
     ${full ? `<p class="soft small">Up to ${MAX_PIECES} pieces.</p>` : `<button class="addpiece" id="s-add">${PLUS}Add a piece</button>`}
-    ${sum ? `<p class="sum" id="s-sum">${N(sum)}</p>` : ""}
     ${p.error ? `<p class="perr" role="alert">${esc(p.error)}</p>` : ""}
-    <div class="sfoot"><button class="primary" id="s-save"${splitPieces(p).length ? "" : " disabled"}>${saveText(p)}</button><button class="textbtn pclose" id="p-close">Close</button></div>`;
+    <div class="sfoot">${sum ? `<p class="sum" id="s-sum">${N(sum)}</p>` : ""}<button class="primary" id="s-save"${splitPieces(p).length ? "" : " disabled"}>${saveText(p)}</button><button class="textbtn pclose" id="p-close">Close</button></div>`;
 }
 /* typing and stepping change the sheet in place (a redraw would drop the phone's keyboard); the drawn sheet's
    signature is kept current so a card update from the server doesn't redraw it either */
+const keepSig = () => { $("#panel-root").dataset.sig = panelBody(); };
 function syncSplit() {
   const p = panel; if (!p || p.kind !== "split") return;
   const sm = $("#s-sum"); if (sm) sm.innerHTML = N(splitSum(p));
   const sv = $("#s-save"); if (sv && !p.saving) { sv.disabled = !splitPieces(p).length; sv.textContent = saveText(p); }
-  $("#panel-root").dataset.sig = panelBody();
+  keepSig();
+}
+/* a renamed piece's controls are renamed in place, so each one still says which piece it changes */
+function nameRow(i) {
+  const r = panel.rows[i]; if (!r) return; const nm = pieceName(r, i), q = s => document.querySelector(`#panel-root ${s}`);
+  const set = (el, l) => { if (el) el.setAttribute("aria-label", l); };
+  set(q(`[data-pm="${i}:-5"]`), `Less time for ${nm}`); set(q(`[data-pm="${i}:5"]`), `More time for ${nm}`);
+  set(q(`#pmn-${i}`), `Minutes for ${nm}`); set(q(`[data-prm="${i}"]`), `Remove ${nm}`);
 }
 function stepState(i) {
   const r = panel && panel.rows[i]; if (!r) return;
   const m = clampMin(r.minutes), dn = document.querySelector(`#panel-root [data-pm="${i}:-5"]`), up = document.querySelector(`#panel-root [data-pm="${i}:5"]`);
   if (dn) dn.disabled = m <= PIECE_MIN; if (up) up.disabled = m >= PIECE_MAX;
 }
-/* Spread: the due day (asked only when missing), then the plan by day. A signed plan still ahead shows as signed;
-   a re-spread, or a plan that slipped, starts from a fresh proposal over the days left. */
+function removeRow(p, i) {
+  const r = p.rows[i]; if (!r) return;
+  if (p.undo) clearTimeout(p.undo.timer);
+  p.rows.splice(i, 1); p.ask = null;
+  p.undo = { row: r, at: i, timer: setTimeout(() => dropUndo(p), UNDO_MS) };
+  p.focusMe = true; p.focusSel = "#s-undo"; renderPanel();
+  say(`Removed ${pieceName(r, i)}. Undo is next.`);
+}
+/* the undo line goes on its own; if it had focus, focus moves to the list rather than nowhere */
+function dropUndo(p) {
+  if (!p.undo) return; p.undo = null; if (panel !== p) return;
+  const el = $("#panel-root .undo"); if (!el) return;
+  const had = el.contains(document.activeElement); el.remove(); keepSig();
+  if (had) { const f = $("#s-add") || $("#pt-0") || $("#ph"); if (f) f.focus({ preventScroll: true }); }
+}
+
+/* ----- Spread ----- */
+/* the due day (asked only when missing), then the plan by day. A signed plan still ahead shows as signed; a re-spread,
+   or a plan that slipped, starts from a fresh proposal over the days left. */
 function firstPlan(t, due, fresh) {
   const today = localDay(), open = t.pieces.map((p, i) => ({ p, i })).filter(x => x.p.stampedAt == null);
   if (!fresh && t.spreadSignedAt != null && open.length && open.every(x => x.p.plannedDay && x.p.plannedDay >= today && x.p.plannedDay <= due))
@@ -1659,20 +1717,36 @@ function openSpread(id, back, fresh, task) {
   /* nothing to spread (no pieces, no gut size): Split comes first, then this sheet */
   if (!spreadable(t)) { openSplit(id, back, "spread"); return; }
   const today = localDay(), due = isKey(t.dueDay) && t.dueDay >= today ? t.dueDay : null;
-  openPanel({ kind: "spread", id, task: t, due, editDue: !due, fresh: !!fresh, plan: due ? firstPlan(t, due, fresh) : [], error: null }, back);
+  openPanel({ kind: "spread", id, task: t, due, editDue: !due, pickDate: false, fresh: !!fresh, plan: due ? firstPlan(t, due, fresh) : [], error: null }, back);
 }
-const signState = p => !p.due ? { off: true, text: "Pick a due day first" } : { off: !p.plan.length, text: "Sign it" };
+/* R56: the next few days as chips (Tomorrow, then weekdays by name), and the phone's date picker behind "Pick a date" */
+const DUE_CHIPS = 6;
+const dueChoices = () => Array.from({ length: DUE_CHIPS }, (_, k) => dayAdd(localDay(), k + 1));
+const chipDay = k => dayDiff(localDay(), k) === 1 ? "Tomorrow" : keyDate(k).toLocaleDateString([], { weekday: "short" });
+function dueHtml() {
+  const p = panel, today = localDay();
+  if (!p.editDue && p.due) return `<div class="dueknown"><p>Due <b>${esc(dayDiff(today, p.due) < 2 ? dayName(p.due).toLowerCase() : dayName(p.due))}</b></p><button class="textbtn" id="s-chdue">Change</button></div>`;
+  const chips = dueChoices().map(k => { const on = p.due === k;
+    return `<button class="inkchip kind" role="radio" data-due="${k}" aria-checked="${on}" aria-label="${esc(dayName(k))}"><span class="ink">${on ? CHECK : ""}${esc(chipDay(k))}</span></button>`; }).join("");
+  return `<span class="duelab" id="duelab">Due when?</span>
+    <div class="phrase" role="radiogroup" aria-labelledby="duelab">${chips}</div>
+    <button class="textbtn" id="s-pick" aria-expanded="${p.pickDate}" aria-controls="s-due" style="align-self:flex-start;margin-left:-12px">Pick a date</button>
+    ${p.pickDate ? `<input type="date" id="s-due" aria-labelledby="duelab" min="${today}" value="${p.due || ""}">` : ""}`;
+}
 function planHtml() {
   const p = panel, t = p.task, today = localDay();
   if (!p.due) return "";
   if (!p.plan.length) return `<p class="soft">Nothing left to spread.</p>`;
   const days = [...new Set(p.plan.map(d => d.day))].sort();
+  const totals = new Map(days.map(day => [day, p.plan.filter(d => d.day === day).reduce((a, d) => a + d.minutes, 0)]));
+  const most = Math.max(1, ...totals.values());
   const choices = Array.from({ length: Math.min(366, Math.max(1, dayDiff(today, p.due) + 1)) }, (_, k) => dayAdd(today, k));
-  const pick = (i, d, nm) => `<label class="mv"><span aria-hidden="true">Move</span><select data-mv="${i}" aria-label="Day for ${nm}">${choices.map(k => `<option value="${k}"${k === d.day ? " selected" : ""}>${esc(dayName(k))}</option>`).join("")}</select></label>`;
+  const pick = (i, d, nm) => `<label class="mv"><span aria-hidden="true">Move</span><select data-mv="${i}" aria-label="Move ${nm}">${choices.map(k => `<option value="${k}"${k === d.day ? " selected" : ""}>${esc(dayName(k))}</option>`).join("")}</select></label>`;
   const list = days.map(day => {
-    const rows = p.plan.map((d, i) => ({ d, i })).filter(x => x.d.day === day), total = rows.reduce((a, x) => a + x.d.minutes, 0);
+    const rows = p.plan.map((d, i) => ({ d, i })).filter(x => x.d.day === day), total = totals.get(day);
     const pieces = rows.filter(x => x.d.pieceIndex != null && t.pieces[x.d.pieceIndex]);
-    return `<li class="day"><h3><span>${esc(dayName(day))}</span><span class="dm">${N(hm(total))}</span></h3>${pieces.length ? `<ul>${pieces.map(({ d, i }) => {
+    /* R59: the day's load as a static bar against the fullest day */
+    return `<li class="day"><h3><span>${esc(dayName(day))}</span><span class="dm">${N(hm(total))}</span></h3><span class="load" aria-hidden="true"><i style="width:${Math.round(total / most * 100)}%"></i></span>${pieces.length ? `<ul>${pieces.map(({ d, i }) => {
       const nm = esc(t.pieces[d.pieceIndex].title);
       /* the day's total is in its heading; a row says its own minutes only when the day holds more than one */
       return `<li class="prow"><span class="ptitle">${nm}</span>${pieces.length > 1 ? `<span class="pmin">${N(hm(d.minutes))}</span>` : ""}${pick(i, d, nm)}</li>`; }).join("")}</ul>` : ""}</li>`;
@@ -1681,61 +1755,62 @@ function planHtml() {
   const why = t.taskType === "exam" && days.length >= 2 ? `<p class="spwhy">Two shorter days usually stick better than one long night. Change it if you need to.</p>` : "";
   return `<ol class="days" aria-label="Your days">${list}</ol>${why}`;
 }
+/* R56: "Sign it" exists only once there is a due day and a plan: never a disabled primary */
+const footHtml = () => `${panel.due && panel.plan.length ? `<button class="primary" id="s-sign">Sign it</button>` : ""}<button class="textbtn pclose" id="p-close">Not now</button>`;
 function spreadBody() {
   const p = panel, c = cardById(p.id); if (!c) return null;
-  const today = localDay(), ss = signState(p);
-  const due = p.editDue
-    ? `<label for="s-due">Due when?</label><input type="date" id="s-due" min="${today}" value="${p.due || ""}">`
-    : `<p>Due <b>${esc(dayDiff(today, p.due) < 2 ? dayName(p.due).toLowerCase() : dayName(p.due))}</b></p><button class="textbtn" id="s-chdue">Change</button>`;
-  return `<div class="sphead"><h2 id="ph" tabindex="-1">${esc(c.title)} over the days left</h2><span class="stampbox" aria-hidden="true"><span class="stamp ghost">Signed</span></span></div>
-    <span class="pperf" aria-hidden="true"></span>
-    <div class="due">${due}</div>
+  /* R55: no empty slot by the title; the Signed stamp is only there once it's signed */
+  return `<div class="sphead"><h2 id="ph" tabindex="-1">${esc(c.title)} over the days left</h2><span class="stamp ghost signmark" aria-hidden="true">Signed</span></div>
+    <div class="due" id="s-duebox">${dueHtml()}</div>
     <div id="s-plan">${planHtml()}</div>
     ${p.error ? `<p class="perr" role="alert">${esc(p.error)}</p>` : ""}
-    <div class="sfoot"><button class="primary" id="s-sign"${ss.off ? " disabled" : ""}>${ss.text}</button><button class="textbtn pclose" id="p-close">Not now</button></div>`;
+    <div class="sfoot" id="s-foot">${footHtml()}</div>`;
 }
-/* a new due day or a moved piece redraws the plan only, so the date field and the picker keep their place */
-function refreshPlan() {
-  const box = $("#s-plan"); if (!box || !panel || panel.kind !== "spread") return;
+/* a new due day or a moved piece redraws only the parts that changed, so the date field keeps its place */
+function refreshSpread(focusSel, keepDue) {
+  if (!panel || panel.kind !== "spread") return;
+  const box = $("#s-plan"); if (!box) return;
+  if (!keepDue) $("#s-duebox").innerHTML = dueHtml();
   box.innerHTML = planHtml();
-  const sb = $("#s-sign"), ss = signState(panel); if (sb && !panel.signing) { sb.disabled = ss.off; sb.textContent = ss.text; }
-  $("#panel-root").dataset.sig = panelBody(); bindPlan();
+  if (!panel.signing) $("#s-foot").innerHTML = footHtml();
+  keepSig(); bindPlanning();
+  const f = focusSel && document.querySelector(`#panel-root ${focusSel}`); if (f) f.focus({ preventScroll: true });
 }
-function bindPlan() {
-  document.querySelectorAll("#panel-root [data-mv]").forEach(sel => sel.onchange = () => {
-    const p = panel, i = +sel.dataset.mv, d = p && p.plan[i]; if (!d || !isKey(sel.value)) return;
-    d.day = sel.value; refreshPlan();
-    const back = document.querySelector(`#panel-root [data-mv="${i}"]`); if (back) back.focus({ preventScroll: true });
-    say(`${p.task.pieces[d.pieceIndex] ? p.task.pieces[d.pieceIndex].title : "That piece"} moved to ${dayName(d.day)}.`);
-  });
+function setDue(p, v, focusSel, keepDue) {
+  if (!isKey(v) || v < localDay()) { if (!v) { p.due = null; p.plan = []; refreshSpread(focusSel, keepDue); } return; }
+  p.due = v; p.plan = firstPlan(p.task, v, p.fresh); refreshSpread(focusSel, keepDue);
+  say(`Due ${dayName(v)}.${p.plan.length ? " The plan is under it, then Sign it." : ""}`);
 }
+
 /* after a save or a signature: the sheet goes, the cards are drawn again, focus goes back to where the sheet came from */
 function finishPlan(p, words) {
+  if (p.undo) clearTimeout(p.undo.timer);
   panel = null; render();
   const el = (p.back && document.querySelector(p.back)) || document.querySelector(`[data-menu="${p.id}"]`);
   if (el) el.focus({ preventScroll: true }); else focusTitle();
   say(words);
 }
-/* the demo has no server: its sample big one and card follow the save or the signature */
+/* the demo has no server: its sample big one is stored the way tasks.saveSplit and tasks.signSpread store it, and its
+   card's re-spread offer follows core's rule (cardFor: a comeback whose signed plan slipped), as live cards do */
+const demoSlipped = t => t.spreadSignedAt != null && t.pieces.some(x => x.stampedAt == null && x.plannedDay && x.plannedDay < localDay());
 function demoSplit(id, pieces) {
   const t = demoPlans[id], c = cardById(id); if (t) t.pieces = pieces.map(x => ({ ...x }));
   const open = pieces.find(x => x.stampedAt == null); if (c) { if (open) c.currentPiece = open.title; else delete c.currentPiece; }
+  if (t && c) c.offerRespread = !!c.comeback && demoSlipped(t);
 }
 function demoSigned(p) {
-  const t = demoPlans[p.id], c = cardById(p.id);
-  if (t) {
-    const at = new Map(p.plan.filter(d => d.pieceIndex != null).map(d => [d.pieceIndex, d.day]));
-    t.dueDay = p.due; t.spreadSignedAt = Date.now();
-    t.pieces = t.pieces.map((x, i) => { const { plannedDay, ...rest } = x; return at.has(i) ? { ...rest, plannedDay: at.get(i) } : rest; });
-  }
-  if (c) c.offerRespread = false;
+  const t = demoPlans[p.id], c = cardById(p.id); if (!t) return;
+  const at = new Map(p.plan.filter(d => d.pieceIndex != null).map(d => [d.pieceIndex, d.day]));
+  t.dueDay = p.due; t.spreadSignedAt = Date.now();
+  t.pieces = t.pieces.map((x, i) => { const { plannedDay, ...rest } = x; return at.has(i) ? { ...rest, plannedDay: at.get(i) } : rest; });
+  if (c) c.offerRespread = !!c.comeback && demoSlipped(t);
 }
 const NOT_SAVED = "That didn't save. Try again.";
 function bindPlanning() {
   const p = panel; if (!p) return;
   if (p.kind === "split") {
     document.querySelectorAll("#panel-root [data-pt]").forEach(el => {
-      el.oninput = () => { const r = p.rows[+el.dataset.pt]; if (r) { r.title = el.value; syncSplit(); } };
+      el.oninput = () => { const i = +el.dataset.pt, r = p.rows[i]; if (r) { r.title = el.value; nameRow(i); syncSplit(); } };
       /* Enter moves down the list, then to Save */
       el.onkeydown = e => { if (e.key !== "Enter") return; e.preventDefault(); const nx = $(`#pt-${+el.dataset.pt + 1}`) || $("#s-save:not(:disabled)") || $("#s-add"); if (nx) nx.focus(); };
     });
@@ -1752,8 +1827,15 @@ function bindPlanning() {
     });
     document.querySelectorAll("#panel-root [data-prm]").forEach(b => b.onclick = () => {
       const i = +b.dataset.prm, r = p.rows[i]; if (!r) return;
-      p.rows.splice(i, 1); p.focusMe = true; p.focusSel = p.rows.length ? `#pt-${Math.min(i, p.rows.length - 1)}` : "#s-add"; renderPanel();
-      say(`Removed ${r.title.trim() || "that piece"}.`);
+      if (r.stampedAt != null) { p.ask = i; p.focusMe = true; p.focusSel = "#s-askno"; renderPanel(); say(`Remove ${pieceName(r, i)}? Its stamp goes too.`); return; }
+      removeRow(p, i);
+    });
+    on("#s-askyes", () => { if (p.ask != null) removeRow(p, p.ask); });
+    on("#s-askno", () => { const i = p.ask; p.ask = null; p.focusMe = true; p.focusSel = `[data-prm="${i}"]`; renderPanel(); });
+    on("#s-undo", () => {
+      const u = p.undo; if (!u) return; clearTimeout(u.timer); p.undo = null;
+      p.rows.splice(Math.min(u.at, p.rows.length), 0, u.row); p.focusMe = true; p.focusSel = `#pt-${Math.min(u.at, p.rows.length - 1)}`; renderPanel();
+      say(`${pieceName(u.row, u.at)} is back.`);
     });
     on("#s-add", () => {
       if (p.rows.length >= MAX_PIECES) return;
@@ -1768,6 +1850,7 @@ function bindPlanning() {
         p.saving = false;
         if (!r || !r.ok) { p.error = (r && r.message) || NOT_SAVED; p.focusMe = true; p.focusSel = "#s-save"; renderPanel(); return; }
         if (!BE) demoSplit(p.id, pieces);
+        if (p.undo) clearTimeout(p.undo.timer);
         const task = { ...p.task, pieces };
         if (p.then === "spread" && spreadable(task)) { openSpread(p.id, p.back, false, task); say("Pieces saved. Now the days."); }
         else finishPlan(p, pieces.length === 1 ? "1 piece saved." : `${pieces.length} pieces saved.`);
@@ -1775,17 +1858,25 @@ function bindPlanning() {
     });
   }
   if (p.kind === "spread") {
+    document.querySelectorAll("#panel-root [data-due]").forEach(b => b.onclick = () => { nextFocus = null; p.pickDate = false; setDue(p, b.dataset.due, `[data-due="${b.dataset.due}"]`); });
+    on("#s-pick", () => { p.pickDate = !p.pickDate; refreshSpread(p.pickDate ? "#s-due" : "#s-pick"); });
     const dueIn = $("#s-due");
+    /* the date field isn't redrawn under itself: only the chips' ticks follow it */
     if (dueIn) dueIn.onchange = () => {
-      const v = dueIn.value;
-      if (isKey(v) && v >= localDay()) { p.due = v; p.plan = firstPlan(p.task, v, p.fresh); refreshPlan(); say(`Due ${dayName(v)}.${p.plan.length ? " The plan is under it." : ""}`); }
-      else if (!v) { p.due = null; p.plan = []; refreshPlan(); }
+      setDue(p, dueIn.value, null, true);
+      document.querySelectorAll("#panel-root [data-due]").forEach(x => { const on = x.dataset.due === p.due; x.setAttribute("aria-checked", on); x.querySelector(".ink").innerHTML = (on ? CHECK : "") + esc(chipDay(x.dataset.due)); });
+      roving(); keepSig();
     };
-    on("#s-chdue", () => { p.editDue = true; p.focusMe = true; p.focusSel = "#s-due"; renderPanel(); });
-    bindPlan();
+    on("#s-chdue", () => { p.editDue = true; refreshSpread('[data-due][tabindex="0"]'); });
+    document.querySelectorAll("#panel-root [data-mv]").forEach(sel => sel.onchange = () => {
+      const i = +sel.dataset.mv, d = p.plan[i]; if (!d || !isKey(sel.value)) return;
+      d.day = sel.value; refreshSpread(`[data-mv="${i}"]`, true);
+      say(`${p.task.pieces[d.pieceIndex] ? p.task.pieces[d.pieceIndex].title : "That piece"} moved to ${dayName(d.day)}.`);
+    });
     on("#s-sign", () => {
       if (p.signing || !p.due || !p.plan.length) return;
       p.signing = true; p.error = null;
+      /* the deal's own stamp motion: the Signed stamp comes down on the sheet (a fade under reduced motion) */
       $("#panel-root .sheet").classList.add("stamped", "busy"); const sb = $("#s-sign"); if (sb) sb.disabled = true; buzz(14, reduce ? 0 : 150);
       const plan = p.plan.map(d => ({ ...d }));
       const sent = BE && BE.signSpread ? BE.signSpread(p.id, p.due, plan) : Promise.resolve({ ok: true });
@@ -1799,6 +1890,7 @@ function bindPlanning() {
       });
     });
   }
+  roving();
 }
 /* the card actions: the server's copy follows; the screen changes at once */
 function cardAction(id, action) {
@@ -2322,6 +2414,7 @@ function fromHash() {
     const exam = h.endsWith("-exam");
     bigOneCards = demoCards(h === "respread" ? [{ ...DEMO_COMEBACK, offerRespread: true }, DEMO_CARDS[0]] : exam ? [DEMO_CARDS[2], DEMO_CARDS[0]] : DEMO_CARDS);
     if (h === "spread-exam") Object.assign(demoPlans.bio, { dueDay: dayAdd(localDay(), 4), pieces: [{ title: "Cell cycle", minutes: 40 }, { title: "Mendel and crosses", minutes: 40 }, { title: "Gene expression", minutes: 45 }] });
+    /* split-pieces: a re-split of pieces already worked, two of them stamped */
     const id = h === "respread" ? "lit" : exam ? "bio" : h === "split" ? "paper" : h === "spread-due" ? "site" : "orgo";
     after = () => h.startsWith("split") ? openSplit(id, `[data-menu="${id}"]`) : openSpread(id, h === "respread" ? `[data-respread="${id}"]` : `[data-menu="${id}"]`, h === "respread");
   }
