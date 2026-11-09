@@ -316,6 +316,20 @@ p { margin: 0; }
 /* wake lock: the same printed box as "Bigger than one block?", a quiet row under the ring */
 .keepon { justify-self: center; display: inline-flex; align-items: center; gap: 10px; min-height: 44px; margin-top: -6px; padding: 8px 12px; border: none; background: none; color: var(--soft); font-size: .9375rem; }
 .keepon[aria-checked="true"] { color: var(--ink); }
+/* spec 008 push: the one-time offer of taps at block ends, under the ring. Dashed in ink like anything not agreed to yet. */
+.pushask { justify-self: center; display: inline-flex; align-items: center; gap: 10px; min-height: 48px; margin-top: 2px; padding: 10px 18px 10px 14px; border: 1.5px dashed var(--wait-edge); border-radius: 6px; background: none; color: var(--ink);
+  font-family: var(--font-head); font-stretch: 85%; font-weight: 700; font-size: 1.0625rem; line-height: 1.2; letter-spacing: .01em; }
+.pushask svg { flex: none; width: 22px; height: 22px; color: var(--deal); }
+.pushask[aria-disabled="true"] { color: var(--soft); cursor: progress; }
+/* spec 008 install sheet (iPhone Safari): three small drawings of Safari's own controls, the one to tap ringed in green */
+.howto { list-style: none; margin: 2px 0 4px; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.howto li { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.howto .shot { display: block; aspect-ratio: 4 / 3; border-radius: 8px; background: var(--paper); box-shadow: inset 0 0 0 1px var(--edge-half); color: var(--soft); overflow: hidden; }
+.howto .shot svg { display: block; width: 100%; height: 100%; }
+.howto .shot .hl { stroke: var(--deal); }
+.howto .shot .ink { stroke: var(--ink); }
+.howto .cap { font-size: .9375rem; line-height: 1.3; overflow-wrap: anywhere; }
+.howto .n { display: block; margin-bottom: 2px; font-family: var(--font-head); font-stretch: 80%; font-weight: 800; font-size: 1.25rem; line-height: 1; color: var(--deal-ink); }
 /* ADR 0005: the repayment picked last time waits pre-selected (green edge, a check in its stamp box); Deal takes it in one tap */
 .term.pre::before { background: var(--sel-card); box-shadow: inset 0 0 0 2px var(--deal); }
 .term.pre .slot { border: 2px solid var(--deal); color: var(--deal); }
@@ -817,6 +831,25 @@ function syncWake() {
   } else if (!wantWake() && wakeLock) { const l = wakeLock; wakeLock = null; l.release().catch(() => {}); }
 }
 document.addEventListener("visibilitychange", syncWake);
+/* spec 008 "Push" and "Install onboarding". ENV comes from the app shell (pomodealApp.env); the demo can't take pushes.
+   Each offer is made once per device, remembered in localStorage (in memory when storage is blocked). */
+let ENV = { pushSupported: false, installed: false, iosSafari: false };
+const PUSH_KEY = "pomodeal.pushAsked", INSTALL_KEY = "pomodeal.installSheet", offered = new Set();
+const wasOffered = k => { if (offered.has(k)) return true; try { return localStorage.getItem(k) === "1"; } catch (e) { return false; } };
+const markOffered = k => { offered.add(k); try { localStorage.setItem(k, "1"); } catch (e) {} };
+/* "Turn on taps at block ends": null, "ask" (on the running screen), or "asking" (the browser's prompt is up) */
+let pushAsk = null;
+/* the first session started on a device whose tab can take pushes, with nothing decided yet: the button, never the prompt */
+function offerPush() {
+  if (pushAsk || !ENV.pushSupported || wasOffered(PUSH_KEY)) return;
+  if (typeof Notification === "undefined" || Notification.permission !== "default") return;
+  markOffered(PUSH_KEY); pushAsk = "ask";
+}
+/* after the first finished block, on an iPhone in Safari where only installing unlocks pushes: the install sheet, once */
+function offerInstall() {
+  if (!ENV.iosSafari || ENV.installed || ENV.pushSupported || wasOffered(INSTALL_KEY) || panel) return;
+  markOffered(INSTALL_KEY); panel = { kind: "install", back: null, focusMe: true, openedAt: performance.now() };
+}
 const GUTS = [60, 120, 180, 240];
 const gutText = m => m === 240 ? "4h+" : `${m / 60}h`;
 const gutSpoken = m => m === 240 ? "4 hours or more" : m === 60 ? "1 hour" : `${m / 60} hours`;
@@ -871,7 +904,7 @@ const cap = s => s.replace(/^./, c => c.toUpperCase());
 /* the task as it sits in the deal sentence: "BIO 180 ch. 7" (the part after the comma) */
 const taskTail = () => { const i = deal.task.indexOf(","); return (i >= 0 ? deal.task.slice(i + 1) : deal.task).trim() || deal.task; };
 function bankFocus() { if (S && cur().type === "focus") studied += Math.round(Math.min(vnow - S.startedAt, S.durMs) / 60000); }
-function nextBlock() { if (BE && S) BE.next(S.idx); bankFocus(); const was = S.idx, from = { type: cur().type, p: remaining() / S.durMs }; S.idx = Math.min(S.idx + 1, S.blocks.length - 1); if (S.idx !== was) { turnFrom = from; beat("turn"); } S.startedAt = vnow; S.durMs = cur().min * 60000; S.askCount = 0; S.bonusOffered = false; closeSheet(); say(`${cur().type === "focus" ? "Focus" : "Break"}: ${title(cur().label)}, ${cur().min} minutes.`); }
+function nextBlock() { if (BE && S) BE.next(S.idx); bankFocus(); const was = S.idx, from = { type: cur().type, p: remaining() / S.durMs }; S.idx = Math.min(S.idx + 1, S.blocks.length - 1); if (S.idx !== was) { turnFrom = from; beat("turn"); offerInstall(); } S.startedAt = vnow; S.durMs = cur().min * 60000; S.askCount = 0; S.bonusOffered = false; closeSheet(); say(`${cur().type === "focus" ? "Focus" : "Break"}: ${title(cur().label)}, ${cur().min} minutes.`); }
 /* spec 008: a focus block of a big one ends on the boundary sheet with two skippable notes (bookmark, done).
    Notes are sent once per focus block: when the next block starts, more time is asked for, or the sheet closes. */
 const needsNotes = () => !!(S && S.taskId) && cur().type === "focus" && (S.notedIdx == null || S.notedIdx < S.idx);
@@ -901,7 +934,7 @@ const doneInner = (k, on) => `<span class="ink">${on ? CHECK : ""}${DONE_CHOICES
 const doneChip = (k, on) => `<button class="inkchip lg" role="radio" data-done="${k}" aria-checked="${on}">${doneInner(k, on)}</button>`;
 /* the clock's 10 min offer at the end of a focus block: once per block, never on the last one, never past the ceiling */
 const canBonus = () => cur().type === "focus" && !S.bonusOffered && S.idx < S.blocks.length - 1 && cur().min + 10 <= CEILING;
-function stopNow() { if (BE) BE.end(); bankFocus(); file({ t: clockStr(), kind: "cleared", text: "Stopped for now", note: "" }); S = null; sheet = null; render(); }
+function stopNow() { if (S && remaining() <= 0) offerInstall(); if (BE) BE.end(); bankFocus(); file({ t: clockStr(), kind: "cleared", text: "Stopped for now", note: "" }); S = null; sheet = null; render(); }
 function say(t) { const el = document.getElementById("sr"); if (el) el.textContent = t; }
 /* a short tap at the instant the stamp hits the paper (Android; iOS has no vibrate) */
 function buzz(pattern = 14, after = 0) { const v = () => { try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) {} }; if (after) setTimeout(v, after); else v(); }
@@ -930,6 +963,23 @@ function clockMark() {
 }
 const clockSays = (html, id) => `<div class="clockline tick">${clockMark()}<p class="bubble"${id ? ` id="${id}" tabindex="-1"` : ""}>${N(html)}</p></div>`;
 const CHEV = `<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 5l5 5-5 5"/></svg>`;
+/* a phone with a tap on each side: the push, drawn as what it feels like */
+const TAPS = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="3" width="8" height="18" rx="2"/><path d="M11 18h2M4.5 9v6M2 10.5v3M19.5 9v6M22 10.5v3"/></svg>`;
+/* the install sheet's three drawings (96 x 72): Safari's toolbar with Share ringed, the share sheet's Add to Home Screen
+   row ringed, then a Home Screen with Pomodeal's dial ringed */
+const HOWTO_SHARE = `<svg viewBox="0 0 96 72" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="10" y="12" width="76" height="12" rx="6" stroke-width="1.5"/><path d="M4 44h88" stroke-width="1.5"/>
+  <path d="M14 57l-4 4 4 4M26 57l4 4-4 4"/><path d="M66 58h7v8h-7zM70 58v-2.5a1.5 1.5 0 0 1 1.5-1.5H78v8h-2.5" stroke-width="1.6"/><rect x="82" y="56" width="8" height="9" rx="1.5" stroke-width="1.6"/>
+  <g class="ink"><path d="M43.5 57.5H42v9h12v-9h-1.5M48 53v9M45 56l3-3 3 3"/></g><circle class="hl" cx="48" cy="60" r="10.5" stroke-width="2.4"/></svg>`;
+const HOWTO_ADD = `<svg viewBox="0 0 96 72" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M10 12h30M10 22h22" stroke-width="5" opacity=".45"/><path d="M8 34h80M8 60h80" stroke-width="1.2" opacity=".6"/>
+  <g class="ink"><path d="M14 47h34" stroke-width="5"/><rect x="70" y="40" width="13" height="13" rx="3" stroke-width="1.8"/><path d="M76.5 43.5v6M73.5 46.5h6" stroke-width="1.8"/></g>
+  <rect class="hl" x="6" y="36" width="84" height="22" rx="6" stroke-width="2.4"/><path d="M14 67h24" stroke-width="5" opacity=".45"/></svg>`;
+const HOWTO_OPEN = `<svg viewBox="0 0 96 72" fill="none" stroke="currentColor" stroke-width="1.5">
+  <rect x="9" y="10" width="18" height="18" rx="5" opacity=".6"/><rect x="39" y="10" width="18" height="18" rx="5" opacity=".6"/><rect x="69" y="10" width="18" height="18" rx="5" opacity=".6"/>
+  <rect x="9" y="42" width="18" height="18" rx="5" opacity=".6"/><rect x="69" y="42" width="18" height="18" rx="5" opacity=".6"/>
+  <g class="ink" stroke-linecap="round"><circle cx="48" cy="51" r="8" fill="var(--card)" stroke-width="1.6"/><path d="M48 51l-2.5-2M48 51l3.5-3.5" stroke-width="1.8"/></g><circle cx="48" cy="51" r="1.6" fill="var(--deal)" stroke="none"/>
+  <circle class="hl" cx="48" cy="51" r="13.5" stroke-width="2.4"/></svg>`;
 const CHECK = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg>`;
 /* one way to say a change everywhere: "Next break 5 → 2 min". Screen readers hear "5 becomes 2", not "right arrow". */
 const arrow = (a, b) => `${a} <span aria-hidden="true">→</span><span class="vh"> becomes </span> ${b}`;
@@ -978,6 +1028,7 @@ function render() {
   const key = nextFocus || focusKey(document.activeElement); nextFocus = null;
   const opening = sheet && sheet.focusMe;
   const v = $("#view");
+  if (!S && pushAsk === "ask") pushAsk = null;
   document.body.classList.toggle("modal", tab === "now" && mode === "intercept");
   v.innerHTML = tab === "ledger" ? ledgerView() : tab === "room" ? roomView() : mode === "intercept" ? interceptView() : !S ? startView() : runningView();
   renderSheet();
@@ -1173,6 +1224,8 @@ function runningView() {
   const sw = !isB && S.taskId ? (S.firstMove ?? (cardById(S.taskId) || {}).startWith ?? "") : "";
   /* R37: the app's one printed checkbox, a quiet row under the ring */
   const keepOn = !isB && WAKE_OK ? `<button class="keepon" id="keepon" role="switch" aria-checked="${wakeOn}"><span class="cbox" aria-hidden="true">${CHECK}</span>Keep screen on</button>` : "";
+  /* spec 008: the permission step. The browser's prompt only comes after this tap. */
+  const askPush = pushAsk && !quiet ? `<button class="pushask" id="pushask"${pushAsk === "asking" ? ` aria-disabled="true"` : ""}>${TAPS}Turn on taps at block ends</button>` : "";
   return `<div class="now${tn != null ? " turn" : ""}"${tn != null ? ` style="${lagVar(tn)}"` : ""}>
     <div class="nowhead">
       <span class="kind"><span class="swatch ${isB ? "break" : "focus"}" aria-hidden="true"></span>${isB ? "Break you chose" : "Focus"}</span>
@@ -1186,7 +1239,7 @@ function runningView() {
       ${dial(isB ? "break" : "focus")}${tn != null && turnFrom && turnFrom.p > .005 ? `<span class="fill was ${turnFrom.type}" style="--p:${turnFrom.p.toFixed(4)}"></span>` : ""}
       <span class="face${ink != null ? " reink" : ""}"${ink != null ? ` style="${lagVar(ink)}"` : ""}><span class="big ${f.cls}" id="mins">${f.big}</span><span class="unit" id="unit">${quiet ? "" : esc(f.unit)}</span></span>
     </div>
-    ${note}${aside}${keepOn}
+    ${note}${aside}${keepOn}${askPush}
   </div>
   <div class="stack act${hu != null ? " fresh" : ""}"${hu != null ? ` style="${lagVar(hu)}"` : ""}>
     ${isB
@@ -1337,8 +1390,19 @@ function sheetBody() {
   return body;
 }
 /* ---------- the card's ⋯ menu, its delete check, and "All big ones": a sheet on the home screen ---------- */
-const panelOpen = () => !!(panel && !S && tab === "now" && mode === "start");
+/* the install sheet comes up over a running session (after its first finished block); the others only on the home screen */
+const panelOpen = () => !!(panel && tab === "now" && mode === "start" && (panel.kind === "install" ? !sheet : !S));
 function panelBody() {
+  /* spec 008 "Install onboarding": the words are the spec's; the picture is Safari's own Share and Add to Home Screen */
+  if (panel.kind === "install") return `<h2 id="ph" tabindex="-1">Want a tap when your break ends?</h2>
+      <span class="pperf" aria-hidden="true"></span>
+      <p id="pdesc">Add Pomodeal to your Home Screen and it can tell you.</p>
+      <ol class="howto" role="list">
+        <li><span class="shot" aria-hidden="true">${HOWTO_SHARE}</span><span class="cap"><span class="n" aria-hidden="true">1</span>Tap Share</span></li>
+        <li><span class="shot" aria-hidden="true">${HOWTO_ADD}</span><span class="cap"><span class="n" aria-hidden="true">2</span>Tap Add to Home Screen</span></li>
+        <li><span class="shot" aria-hidden="true">${HOWTO_OPEN}</span><span class="cap"><span class="n" aria-hidden="true">3</span>Open Pomodeal from there</span></li>
+      </ol>
+      <button class="secondary" id="i-later">Not now</button>`;
   if (panel.kind === "menu") {
     const c = cardById(panel.id); if (!c) return null;
     const t = esc(c.title);
@@ -1438,6 +1502,7 @@ function cardAction(id, action) {
 }
 function bindPanel() {
   on("#p-close", () => closePanel());
+  on("#i-later", () => closePanel());
   /* R31: "Break first?" moved here: the card goes onto the Quick Deal ticket so a break can be planned before it */
   on("#m-break", () => { const id = panel.id; panel = null; loadCard(id); });
   on("#m-fresh", () => cardAction(panel.id, "startFresh"));
@@ -1583,6 +1648,20 @@ function bind() {
     const k = $("#keepon"); k.setAttribute("aria-checked", wakeOn); syncWake();
     say(wakeOn ? "The screen stays on during focus." : "The screen can sleep again.");
   });
+  on("#pushask", () => {
+    if (pushAsk !== "ask") return;
+    pushAsk = "asking"; const pb = $("#pushask"); if (pb) pb.setAttribute("aria-disabled", "true");
+    /* the demo has no backend: it shows what turning them on looks like */
+    const ask = BE && BE.enablePush ? Promise.resolve().then(() => BE.enablePush()) : Promise.resolve("granted");
+    ask.catch(() => "unavailable").then(r => {
+      pushAsk = null;
+      toast = r === "granted" ? "Taps are on for block ends." : r === "denied" ? "Okay, no taps." : "Taps can't be turned on here right now.";
+      setTimeout(() => { toast = null; lastSig = ""; }, 3500);
+      /* the button is gone: focus goes to the screen's title rather than nowhere */
+      const had = document.activeElement && document.activeElement.id === "pushask";
+      say(toast); lastSig = ""; if (S) { render(); if (had) focusTitle(); }
+    });
+  });
   on("#sealpre", () => { const b = $("button.term.pre"); if (b && b.onclick) b.onclick(); });
   on("#shake", () => {
     const t = $("#ticket"), btn = $("#shake"); t.classList.add("stamped"); btn.classList.add("pressed"); btn.disabled = true; buzz(14, reduce ? 0 : 150); stamping = true;
@@ -1593,7 +1672,7 @@ function bind() {
     const d = fc ? { ...deal, task: fc.title } : bg ? { ...deal, focusMin: bg.pay } : { ...deal };
     const go = () => {
       stamping = false;
-      S = buildSession(d); S.justStarted = true; S.serial = serial; mode = "start"; picker = null;
+      S = buildSession(d); S.justStarted = true; S.serial = serial; mode = "start"; picker = null; offerPush();
       /* the Quick Deal's own length comes back once the card's deal is made */
       if (fc) { deal.focusMin = fc.prevFocus; fromCard = null; S.taskId = fc.id; S.firstMove = fc.startWith || ""; }
       if (bg) S.firstMove = bg.move.trim();
@@ -1669,7 +1748,7 @@ function bind() {
     intent.onkeydown = e => { if (e.key === "Enter" && e.target.value.trim()) { e.preventDefault(); sheet.pick = false; nextFocus = '[data-term="0"]'; render(); } };
   }
   on("#joinmaya", () => {
-    sheet = null; picker = null; S = buildSession({ ...deal, act: null, focusMin: 14 }); S.serial = String(412 + ledger.length).padStart(4, "0"); S.with = "Maya"; S.justStarted = true;
+    sheet = null; picker = null; S = buildSession({ ...deal, act: null, focusMin: 14 }); S.serial = String(412 + ledger.length).padStart(4, "0"); S.with = "Maya"; S.justStarted = true; offerPush();
     mode = "start"; setTab("now"); toast = "Deal. You and Maya, 14 min."; say(toast); lastSig = "";
     setTimeout(() => { toast = null; if (S) S.justStarted = false; lastSig = ""; }, 3500); render(); focusTitle();
   });
@@ -1693,7 +1772,7 @@ function startCard(c, d) {
   /* a ticket loaded from another card goes back to the plain Quick Deal, with its own length */
   if (fromCard) { deal.focusMin = fromCard.prevFocus; fromCard = null; }
   panel = null; picker = null; mode = "start";
-  S = buildSession(d); S.justStarted = true; S.serial = String(412 + ledger.length).padStart(4, "0"); S.taskId = c.id; S.firstMove = c.startWith || "";
+  S = buildSession(d); S.justStarted = true; S.serial = String(412 + ledger.length).padStart(4, "0"); S.taskId = c.id; S.firstMove = c.startWith || ""; offerPush();
   if (BE) { BE.startFromCard(c.id, d); if (c.comeback) BE.logEvent("comeback_started", c.id); }
   toast = "Deal. Go.";
   setTimeout(() => { toast = null; if (S) S.justStarted = false; lastSig = ""; }, 3500);
@@ -1852,7 +1931,7 @@ const DEMO_COMEBACK = { id: "lit", title: "Lit review", startWith: "Read your la
 const demoCards = list => list.map(c => ({ ...c, ...(c.progress ? { progress: { ...c.progress } } : {}) }));
 function fromHash() {
   const h = location.hash.slice(1);
-  fresh(); mode = "start"; setTab("now"); bigOneCards = []; demoAside = []; wakeOn = readWake();
+  fresh(); mode = "start"; setTab("now"); bigOneCards = []; demoAside = []; wakeOn = readWake(); pushAsk = null;
   let after = null;
   const run = (left, ask) => { S = buildSession(deal); S.serial = "0412"; S.startedAt = vnow - (S.durMs - left); S.askCount = ask || 0; };
   if (h === "intercept") mode = "intercept";
@@ -1904,6 +1983,12 @@ function fromHash() {
   }
   /* ADR 0005: the second ask, with last time's trade pre-selected */
   else if (h === "offer-terms-repay") { run(0, 1); lastRepay = "trade"; S.lastRepay = "trade"; sheet = { kind: "boundary", asking: true, focusMe: true }; }
+  /* spec 008 push: a focus block just started on a device that can take pushes; then an iPhone Safari tab after its first block */
+  else if (h === "push-ask") { deal.act = null; run(deal.focusMin * 60000 - 20000); pushAsk = "ask"; }
+  else if (h === "install-ios") {
+    run(0); S.idx = 2; S.durMs = cur().min * 60000; S.startedAt = vnow - 20000;
+    after = () => { panel = { kind: "install", back: null, focusMe: true, openedAt: performance.now() }; renderPanel(); };
+  }
   else if (h === "ledger") { seedLedger(); setTab("ledger"); }
   else if (h === "room") setTab("room");
   lastSig = S ? signature() : ""; wasHeads = !!S && isHeads();
@@ -1937,6 +2022,8 @@ window.pomodealApp = {
     mode = "start"; setTab("now"); lastSig = ""; render();
     readAside();
   },
+  /** what this device can do (spec 008): Web Push in this tab, opened from the Home Screen, an iPhone in Safari */
+  env(e) { if (e && typeof e === "object") ENV = { pushSupported: !!e.pushSupported, installed: !!e.installed, iosSafari: !!e.iosSafari }; },
   /** server time minus this device's time, in ms: time on screen is Date.now() + offset */
   clock(offsetMs) { if (Number.isFinite(offsetMs)) clockOffset = offsetMs; },
   /** all open big ones (comeback first, then newest worked); the cards screen renders them */
@@ -1959,7 +2046,7 @@ window.pomodealApp = {
     if (!BE) return;
     if (!doc) { if (S && !sheet) { S = null; lastSig = ""; render(); } return; }
     /* a block change that came from the server (the scheduled boundary, or another device) turns the dial too */
-    if (S && S.id === doc._id && doc.state.idx !== S.idx && S.blocks[S.idx]) { turnFrom = { type: S.blocks[S.idx].type, p: remaining() / S.durMs }; beat("turn"); }
+    if (S && S.id === doc._id && doc.state.idx !== S.idx && S.blocks[S.idx]) { turnFrom = { type: S.blocks[S.idx].type, p: remaining() / S.durMs }; beat("turn"); if (doc.state.idx > S.idx) offerInstall(); }
     const extra = S && S.id === doc._id ? { serial: S.serial, justStarted: S.justStarted, with: S.with, firstMove: S.firstMove }
       : { serial: String(Math.floor(doc.createdAt / 1000) % 10000).padStart(4, "0") };
     /* the big one rides on the session doc, not its state; notes already sent here or on another device aren't asked again */

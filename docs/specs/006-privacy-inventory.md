@@ -119,6 +119,9 @@ These live in the browser's `localStorage` on one device. Pomodeal never uploads
 | pomodeal.deal | The last Quick Deal (break activity and length, task, focus length) | Open on the deal you made last time | Anyone using that browser | Until replaced or cleared | Clearing site data |
 | pomodeal.wakelock | "on" or "off" for Keep screen on (spec 008) | Remember the choice per device | Anyone using that browser | Until changed or cleared | Clearing site data |
 | pomodeal.comebackShown | Today's date and the ids of big ones whose comeback card was shown today (spec 008) | Log `comeback_shown` once per card per day | Anyone using that browser | Replaced each day | Clearing site data |
+| pomodeal.pushAsked | "1" once the "Turn on taps at block ends" button has been offered (spec 008) | Offer the push permission step once per device | Anyone using that browser | Until cleared | Clearing site data |
+| pomodeal.installSheet | "1" once the iPhone install sheet has been shown (spec 008) | Show the install sheet once per device | Anyone using that browser | Until cleared | Clearing site data |
+| pomodeal.installDone | "1" once the app has opened from the Home Screen (spec 008) | Log `install_done` once per device | Anyone using that browser | Until cleared | Clearing site data |
 
 ## Tables planned in spec 008
 

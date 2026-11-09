@@ -39,3 +39,35 @@ export function pushBody(s: SessionState, kind: PushKind): string {
 export function pushPayload(s: SessionState, kind: PushKind): PushPayload {
   return { web_push: 8030, notification: { title: "Pomodeal", body: pushBody(s, kind), navigate: "/" } };
 }
+
+/** What the service worker hands to `registration.showNotification(title, options)`. */
+export interface PushNotice {
+  title: string;
+  options: { body: string; tag: string; icon: string; data: { navigate: string } };
+}
+
+/** Only a path on this site: never another origin, never a script URL. */
+function samePath(v: unknown): string {
+  return typeof v === "string" && v.startsWith("/") && !v.startsWith("//") && !v.startsWith("/\\") ? v : "/";
+}
+
+/**
+ * The notification a service worker shows for a push (browsers without Declarative Web Push read the same payload).
+ * Accepts the parsed payload or its JSON text; null when there is nothing to show. One tag for every block push,
+ * so the block end replaces its heads-up instead of stacking under it.
+ */
+export function notificationFromPush(data: unknown): PushNotice | null {
+  let p = data;
+  if (typeof p === "string") {
+    try { p = JSON.parse(p); } catch { return null; }
+  }
+  if (!p || typeof p !== "object") return null;
+  const n = (p as { notification?: unknown }).notification;
+  if (!n || typeof n !== "object") return null;
+  const { title, body, navigate, tag } = n as Record<string, unknown>;
+  if (typeof body !== "string" || !body.trim()) return null;
+  return {
+    title: typeof title === "string" && title.trim() ? title : "Pomodeal",
+    options: { body, tag: typeof tag === "string" && tag ? tag : "pomodeal-block", icon: "/icon-192.png", data: { navigate: samePath(navigate) } },
+  };
+}

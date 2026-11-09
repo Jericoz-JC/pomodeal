@@ -14,7 +14,7 @@
     "build:web": "npm run build -w apps/web",
     "test": "npm test -w packages/core",
     "test:convex": "vitest run --config convex/vitest.config.ts",
-    "typecheck": "tsc -p packages/core && tsc -p apps/web && tsc -p convex",
+    "typecheck": "tsc -p packages/core && tsc -p apps/web && tsc -p apps/web/tsconfig.sw.json && tsc -p convex",
     "shoot": "node prototypes/shoot.mjs",
     "build:ci": "node scripts/ci-build.mjs"
   },

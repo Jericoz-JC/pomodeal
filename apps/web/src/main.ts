@@ -9,6 +9,7 @@ import type { Doc, Id } from "../../../convex/_generated/dataModel";
 import { cardsFor, type BigOneCardRow, type TaskType } from "../../../packages/core/src";
 import { localDayKey, msToLocalMidnight } from "./days";
 import { mountGate, type GateState, type Provider } from "./gate";
+import { enablePush, pushConfigured, pushSupported, type PushResult } from "./push";
 
 // Which one-tap buttons to show; each must be enabled in WorkOS → Authentication → Providers.
 const providers = ((import.meta.env.VITE_AUTH_PROVIDERS as string | undefined) || "GitHubOAuth,GoogleOAuth,AppleOAuth")
@@ -24,6 +25,8 @@ let installPrompt: { prompt(): Promise<void> } | null = null;
 window.addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); installPrompt = e as unknown as { prompt(): Promise<void> }; });
 const standalone = matchMedia("(display-mode: standalone)").matches || (navigator as unknown as { standalone?: boolean }).standalone === true;
 const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !/crios|fxios/i.test(navigator.userAgent);
+/** install_done is logged once per device, the first time the app opens from the Home Screen. */
+const INSTALL_DONE_KEY = "pomodeal.installDone";
 
 /** An invite code from ?invite=CODE, remembered across the sign-in redirect. */
 function pendingInvite(): string | null {
@@ -113,6 +116,8 @@ interface LiveApp {
   clock(offsetMs: number): void;
   /** All open big ones, comeback first then newest worked; the screen shows the first CARDS_SHOWN. */
   bigOnes(cards: BigOneCardRow[]): void;
+  /** What this device can do: Web Push in this tab, opened from the Home Screen, an iPhone Safari tab. */
+  env(e: { pushSupported: boolean; installed: boolean; iosSafari: boolean }): void;
 }
 interface DealArgs { act: string | null; breakMin: number; task: string; focusMin: number }
 interface Backend {
@@ -129,6 +134,8 @@ interface Backend {
   logEvent(kind: "comeback_shown" | "comeback_started" | "install_done" | "push_enabled", taskId?: string): void;
   /** Open and set-aside big ones for the "All big ones" list, read once when it opens (R24). */
   allBigOnes(): Promise<{ id: string; title: string; status: "open" | "set_aside" }[]>;
+  /** From the "Turn on taps at block ends" tap only: the browser prompt, then this device's subscription. Never throws. */
+  enablePush(): Promise<PushResult>;
 }
 let live = false;
 function goLive(convex: ConvexClient) {
@@ -175,8 +182,20 @@ function goLive(convex: ConvexClient) {
       const rows = await convex.query(api.tasks.all, {});
       return rows.flatMap((t) => t.status === "open" || t.status === "set_aside" ? [{ id: t._id as string, title: t.title, status: t.status }] : []);
     },
+    enablePush: async () => {
+      const r = await enablePush(convex);
+      if (r === "granted") be.logEvent("push_enabled");
+      return r;
+    },
   };
+  // no VAPID key in this build: no taps to offer, so neither the permission button nor the install sheet shows
+  app.env({ pushSupported: pushConfigured() && pushSupported(), installed: standalone, iosSafari: pushConfigured() && isIOS });
   app.attach(be);
+  if (standalone) {
+    let first = false;
+    try { first = !localStorage.getItem(INSTALL_DONE_KEY); if (first) localStorage.setItem(INSTALL_DONE_KEY, "1"); } catch { /* storage blocked: not logged */ }
+    if (first) be.logEvent("install_done");
+  }
   const sentAt = Date.now();
   convex.mutation(api.sessions.serverNow, {}).then((now) => syncClock(sentAt, now)).catch(report("serverNow"));
   convex.onUpdate(api.sessions.current, {}, (doc) => { sessionId = doc ? doc._id : null; app.session(doc); });

@@ -1,6 +1,6 @@
 // Spec 008 "Push": the words on a block-boundary push and the declarative payload around them.
 import { describe, expect, it } from "vitest";
-import { advance, buildSession, pushBody, pushPayload, type SessionState } from "../src";
+import { advance, buildSession, notificationFromPush, pushBody, pushPayload, type SessionState } from "../src";
 
 const T0 = 1_700_000_000_000;
 const deal = (focusMin: number, activity: string | null = "Reels") => ({ activity, breakMin: 10, task: "BIO 180 ch. 7", focusMin });
@@ -66,5 +66,43 @@ describe("push payload", () => {
       web_push: 8030,
       notification: { title: "Pomodeal", body: "2 min to wrap up BIO 180 ch. 7.", navigate: "/" },
     });
+  });
+});
+
+describe("service worker notification", () => {
+  it("shows a declarative payload's title and body, and opens its path", () => {
+    const s = at(buildSession(deal(15), T0), 1);
+    expect(notificationFromPush(pushPayload(s, "headsUp"))).toEqual({
+      title: "Pomodeal",
+      options: { body: "2 min to wrap up BIO 180 ch. 7.", tag: "pomodeal-block", icon: "/icon-192.png", data: { navigate: "/" } },
+    });
+  });
+
+  it("reads a payload that arrives as JSON text", () => {
+    const text = JSON.stringify({ web_push: 8030, notification: { title: "Pomodeal", body: "Reels is up next.", navigate: "/" } });
+    expect(notificationFromPush(text)?.options.body).toBe("Reels is up next.");
+  });
+
+  it("keeps the payload's own tag when it has one", () => {
+    const n = notificationFromPush({ web_push: 8030, notification: { title: "Pomodeal", body: "x", navigate: "/", tag: "s1-headsUp" } });
+    expect(n?.options.tag).toBe("s1-headsUp");
+  });
+
+  it("only ever opens a path on this site", () => {
+    for (const navigate of ["https://evil.example/", "//evil.example/x", "javascript:alert(1)", 42, undefined]) {
+      expect(notificationFromPush({ web_push: 8030, notification: { title: "Pomodeal", body: "x", navigate } })?.options.data.navigate).toBe("/");
+    }
+    expect(notificationFromPush({ web_push: 8030, notification: { title: "Pomodeal", body: "x", navigate: "/?s=1" } })?.options.data.navigate).toBe("/?s=1");
+  });
+
+  it("falls back to the app's name when the title is missing", () => {
+    expect(notificationFromPush({ notification: { body: "x" } })?.title).toBe("Pomodeal");
+  });
+
+  it("shows nothing for an empty or unreadable payload", () => {
+    expect(notificationFromPush(null)).toBeNull();
+    expect(notificationFromPush("not json")).toBeNull();
+    expect(notificationFromPush({ web_push: 8030 })).toBeNull();
+    expect(notificationFromPush({ notification: { title: "Pomodeal" } })).toBeNull();
   });
 });
