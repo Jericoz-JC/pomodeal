@@ -211,3 +211,31 @@ export function cardFor(task: BigOne, todayKey: string): BigOneCard {
 export function addWorkedDay(days: string[], key: string): string[] {
   return [key, ...days.filter((d) => d !== key)].slice(0, WORKED_DAYS_KEPT);
 }
+
+// ---------- AI limits, scrubbing, weekly check-in ----------
+
+export const AI_USER_DAILY = 10;
+export const AI_GLOBAL_DAILY = 300;
+export const AI_MAX_PIECES = 12;
+
+export function aiAllowed(userToday: number, globalToday: number): boolean {
+  return userToday < AI_USER_DAILY && globalToday < AI_GLOBAL_DAILY;
+}
+
+const EMAIL_RE = /[^\s@]+@[^\s@]+\.[^\s@]+/g;
+const PHONE_RE = /(?<![\w])(?:\+?\d{1,2}[\s.-]?)?(?:\(\d{3}\)|\d{3})[\s.-]?\d{3}[\s.-]?\d{4}(?![\w])/g;
+
+/** Strip emails and phone numbers before any text leaves for the model. */
+export function scrubForAI(text: string): string {
+  return text.replace(EMAIL_RE, "").replace(PHONE_RE, "").replace(/ {2,}/g, " ").trim();
+}
+
+/** The Sunday on or before the day key. */
+export function weekKey(todayKey: string): string {
+  const [y, m, d] = todayKey.split("-").map(Number);
+  return addDays(todayKey, -new Date(Date.UTC(y, m - 1, d)).getUTCDay());
+}
+
+export function shouldAskCheckIn(todayKey: string, lastAnsweredWeekKey: string | undefined): boolean {
+  return lastAnsweredWeekKey === undefined || lastAnsweredWeekKey < weekKey(todayKey);
+}

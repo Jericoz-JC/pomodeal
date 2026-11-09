@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 import {
   FOCUS_CEILING_MIN, FOCUS_LENGTHS, FOCUS_LONG, FOCUS_QUICK, advance, applyBonus, buildSession, canOfferBonus,
-  dealProblem, dialTicks, headsUpMs, isHalfway, isHeadsUp, isLongFocus, makeOffer, type SessionState,
+  dealProblem, dialTicks, focusMinutesDone, headsUpMs, pushTimes, isHalfway, isHeadsUp, isLongFocus, makeOffer, type SessionState,
 } from "../src";
 
 const T0 = 1_700_000_000_000;
@@ -129,5 +129,19 @@ describe("10. validating a deal", () => {
     expect(dealProblem({ ...deal(30), breakMin: 0 })).not.toBeNull();
     expect(dealProblem({ ...deal(30), breakMin: 31 })).not.toBeNull();
     expect(dealProblem({ ...deal(30), breakMin: 2.5 })).not.toBeNull();
+  });
+});
+
+describe("spec 008: credited minutes and push times", () => {
+  const sess = (focusMin: number, activity: string | null = null) => ({ ...buildSession(deal(focusMin, activity), T0), startedAt: T0 });
+  it("focusMinutesDone is whole minutes of the current focus block, capped, 0 on a break", () => {
+    expect(focusMinutesDone(sess(15), T0 + 7.5 * MIN)).toBe(7);
+    expect(focusMinutesDone(sess(15), T0 + 20 * MIN)).toBe(15);
+    expect(focusMinutesDone(sess(15, "Reels"), T0 + 5 * MIN)).toBe(0);
+  });
+  it("pushTimes lists the future heads-up and block end for the current block", () => {
+    expect(pushTimes(sess(15), T0)).toEqual([{ kind: "headsUp", at: T0 + 13 * MIN }, { kind: "blockEnd", at: T0 + 15 * MIN }]);
+    expect(pushTimes(sess(60), T0)).toEqual([{ kind: "headsUp", at: T0 + 55 * MIN }, { kind: "blockEnd", at: T0 + 60 * MIN }]);
+    expect(pushTimes(sess(15), T0 + 14 * MIN)).toEqual([{ kind: "blockEnd", at: T0 + 15 * MIN }]);
   });
 });

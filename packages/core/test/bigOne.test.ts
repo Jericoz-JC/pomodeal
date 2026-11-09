@@ -1,6 +1,6 @@
 // Spec 008: big ones. Types, copy tables and validation.
 import { describe, expect, it } from "vitest";
-import { bigOneProblem, bookmarkPlaceholder, cleanLine, doneQuestion, firstMoveFor, splitSlots } from "../src";
+import { AI_GLOBAL_DAILY, AI_USER_DAILY, aiAllowed, scrubForAI, shouldAskCheckIn, weekKey, bigOneProblem, bookmarkPlaceholder, cleanLine, doneQuestion, firstMoveFor, splitSlots } from "../src";
 
 describe("types and validation", () => {
   it("first moves per type, default and comeback", () => {
@@ -65,5 +65,28 @@ describe("types and validation", () => {
     expect(bigOneProblem({ title: "x", pieces: Array.from({ length: 12 }, () => ({ title: "p", minutes: 30 })) })).toBeNull();
     expect(bigOneProblem({ title: "x", gutMin: 180, bookmark: "b".repeat(140),
       pieces: [{ title: "p", minutes: 5 }, { title: "q", minutes: 240 }] })).toBeNull();
+  });
+});
+
+describe("AI limits, scrubbing and check-in week", () => {
+  it("aiAllowed", () => {
+    expect([AI_USER_DAILY, AI_GLOBAL_DAILY]).toEqual([10, 300]);
+    expect(aiAllowed(9, 0)).toBe(true);
+    expect(aiAllowed(10, 0)).toBe(false);
+    expect(aiAllowed(0, 300)).toBe(false);
+  });
+  it("scrubForAI removes emails and phones", () => {
+    const out = scrubForAI("Paper for jo@uw.edu call 206-555-0101");
+    expect(out).not.toContain("jo@uw.edu");
+    expect(out).not.toContain("206-555-0101");
+    expect(out).toContain("Paper");
+    expect(scrubForAI("a (206) 555-0101 b +1 206 555 0101 c")).toBe("a b c");
+  });
+  it("weekKey and shouldAskCheckIn", () => {
+    expect(weekKey("2026-11-08")).toBe("2026-11-08");
+    expect(weekKey("2026-11-11")).toBe("2026-11-08");
+    expect(shouldAskCheckIn("2026-11-11", "2026-11-08")).toBe(false);
+    expect(shouldAskCheckIn("2026-11-15", "2026-11-08")).toBe(true);
+    expect(shouldAskCheckIn("2026-11-11", undefined)).toBe(true);
   });
 });
