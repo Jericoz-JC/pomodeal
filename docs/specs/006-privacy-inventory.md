@@ -39,7 +39,7 @@ Who can see, in every table: the signed-in student sees their own rows through t
 | Field | What it holds | Why | Who can see | Retention | Deleted by |
 | --- | --- | --- | --- | --- | --- |
 | userId | Owner | Scope to the student | The student, Chris | Kept as history | Chris on request |
-| state.blocks | Block types, labels and minutes (labels can be what the student typed) | Run the session | The student, Chris | Kept as history | Chris on request |
+| state.blocks | Block types, labels, minutes, and optionally `added`, the minutes a trade added to a focus block (labels can be what the student typed) | Run the session | The student, Chris | Kept as history | Chris on request |
 | state.idx, startedAt, durMs | Current block, start time, length | Compute time from stored start | The student, Chris | Kept as history | Chris on request |
 | state.askCount, debt, bonusOffered | Negotiation state | Apply the rules | The student, Chris | Kept as history | Chris on request |
 | state.version | Counter bumped on every change; scheduled pushes check it; planned (spec 008) | Stop stale pushes firing | Chris | Kept as history | Chris on request |
