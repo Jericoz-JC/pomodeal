@@ -20,7 +20,10 @@ Phase 0's interview gate was skipped on purpose: we launched a closed beta to fr
 **Next, in order**
 1. Web Push at the heads-up and block end (VAPID keys, push subscriptions table, Convex scheduled action, service worker handler; iPhone needs the installed app)
 2. Motion and feel pass on the deal moment (stamp, block change, heads-up), on a branch
-3. [`specs/006-privacy-inventory.md`](specs/006-privacy-inventory.md) for the users, invites, sessions and ledger tables, plus the big-ones tables from spec 008 (required before more friends join)
+3. ~~[`specs/006-privacy-inventory.md`](specs/006-privacy-inventory.md) for the users, invites, sessions and ledger tables, plus the big-ones tables from spec 008~~ Done.
+
+**Built on branch `feature/big-ones`, not yet live:** Web Push and the other big-one pieces (check-in, AI piece suggestions, split and spread). They go live when Chris merges.
+
 4. Presets and a block builder; history beyond 24 hours
 5. Then Phase 1.5 rooms
 
