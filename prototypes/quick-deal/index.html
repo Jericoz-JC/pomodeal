@@ -42,6 +42,8 @@
   --deal-tint: rgba(30, 106, 70, .07);
   /* deleting: a quiet dark red-brown, never an alarm red (about 6.5:1 on the sheet) */
   --gone: #84402E;
+  /* small green words on a pale green ticket use a darker green (about 7:1) */
+  --deal-ink: #17583A;
   /* a break is a solid grey-green arc with a quiet texture; the stripes never carry the shape */
   --break-base: #5E6B62;
   --break-stripe: rgba(251, 252, 249, .30);
@@ -61,13 +63,13 @@
   :root:not([data-theme="light"]) {
     --paper: #18201C; --card: #27312C; --stub: #212A25; --chip: #2B3530; --ink: #E6ECE7; --soft: #A3B0A7; --rule: #33413A; --track: #2F3A35; --edge: #74847A; --edge-half: rgba(116, 132, 122, .6);
     --sheet: #1D2521; --scrim: rgba(8, 12, 10, .5); --hi: rgba(255, 255, 255, .05); --lift: rgba(0, 0, 0, .5);
-    --deal: #6CCB97; --on-deal: #0F1A14; --deal-tint: rgba(108, 203, 151, .08); --break-base: #8E9A91; --break-stripe: rgba(24, 32, 28, .30); --wait: color-mix(in srgb, var(--ink) 60%, transparent); --wait-edge: color-mix(in srgb, var(--ink) 60%, transparent); --sel: #283C32; --sel-card: #2E4037; --gone: #E0A08C; color-scheme: dark;
+    --deal: #6CCB97; --on-deal: #0F1A14; --deal-tint: rgba(108, 203, 151, .08); --break-base: #8E9A91; --break-stripe: rgba(24, 32, 28, .30); --wait: color-mix(in srgb, var(--ink) 60%, transparent); --wait-edge: color-mix(in srgb, var(--ink) 60%, transparent); --sel: #283C32; --sel-card: #2E4037; --gone: #E0A08C; --deal-ink: #6CCB97; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --paper: #18201C; --card: #27312C; --stub: #212A25; --chip: #2B3530; --ink: #E6ECE7; --soft: #A3B0A7; --rule: #33413A; --track: #2F3A35; --edge: #74847A; --edge-half: rgba(116, 132, 122, .6);
   --sheet: #1D2521; --scrim: rgba(8, 12, 10, .5); --hi: rgba(255, 255, 255, .05); --lift: rgba(0, 0, 0, .5);
-  --deal: #6CCB97; --on-deal: #0F1A14; --deal-tint: rgba(108, 203, 151, .08); --break-base: #8E9A91; --break-stripe: rgba(24, 32, 28, .30); --wait: color-mix(in srgb, var(--ink) 60%, transparent); --wait-edge: color-mix(in srgb, var(--ink) 60%, transparent); --sel: #283C32; --sel-card: #2E4037; --gone: #E0A08C; color-scheme: dark;
+  --deal: #6CCB97; --on-deal: #0F1A14; --deal-tint: rgba(108, 203, 151, .08); --break-base: #8E9A91; --break-stripe: rgba(24, 32, 28, .30); --wait: color-mix(in srgb, var(--ink) 60%, transparent); --wait-edge: color-mix(in srgb, var(--ink) 60%, transparent); --sel: #283C32; --sel-card: #2E4037; --gone: #E0A08C; --deal-ink: #6CCB97; color-scheme: dark;
 }
 @property --p { syntax: "<number>"; inherits: true; initial-value: 1; }
 
@@ -138,6 +140,9 @@ p { margin: 0; }
 .tickethead { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 48px; }
 .serial { font-family: var(--font-head); font-stretch: 75%; font-weight: 600; font-size: .9375rem; line-height: 1.2; color: var(--soft); }
 .ticket .stub { padding: 22px 28px 16px 20px; display: flex; flex-direction: column; gap: 8px; transform-origin: 0 0; }
+/* R43: on a big one's ticket the Deal stub sticks above the tab bar, so it is always in reach however long the ticket gets */
+.ticket.big .stub { position: sticky; bottom: calc(60px + env(safe-area-inset-bottom, 0px)); z-index: 1;
+  background: radial-gradient(circle, var(--edge) 1.2px, transparent 1.7px) 0 0 / 8px 6px repeat-x, var(--card); }
 .ticket.torn .stub { transform: translateY(10px) rotate(2deg); opacity: 0; transition: transform .3s ease-in, opacity .3s ease-in; }
 /* the deal sentence: connecting words recede, the four parts you can change are ink and underlined */
 .sentence { font-family: var(--font-head); font-size: 1.55rem; line-height: 1.45; font-weight: 500; font-stretch: 86%; letter-spacing: .005em; color: var(--soft); text-wrap: balance; }
@@ -192,6 +197,17 @@ p { margin: 0; }
 .inkchip.lg { font-size: 1.125rem; }
 .inkchip.lg .ink { padding: 9px 14px; }
 .inkchip.lg:is([aria-pressed="true"], [aria-checked="true"]) .ink { padding: 7.5px 12.5px; }
+/* R43: a size is a number you read at a glance (Archivo, numeral first); a kind is a word you read (Atkinson) */
+.inkchip.size { font-stretch: 74%; font-weight: 800; font-size: 1.3125rem; }
+.inkchip.size .ink { padding: 5px 9px; }
+.inkchip.size[aria-pressed="true"] .ink { padding: 3.5px 7.5px; }
+.inkchip.kind { font-family: var(--font-body); font-stretch: normal; font-weight: 400; font-size: 1rem; letter-spacing: 0; }
+.inkchip.kind .ink { padding: 6px 9px; }
+.inkchip.kind[aria-pressed="true"] .ink { padding: 4.5px 7.5px; font-weight: 700; }
+/* R44: "Not yet" is what no answer already means, so it shows as picked, quietly: a solid ink edge and a check.
+   Only "Yes, stamp it" is inked with the green stamp. */
+.inkchip.lg[data-done="no"][aria-checked="true"] .ink { border: 1.5px solid var(--edge); padding: 9px 14px; background: none; color: var(--ink); }
+.inkchip.lg[data-done="no"][aria-checked="true"] .ink svg { color: var(--soft); }
 /* the first move is written on the ticket, on a ruled line, not in a box */
 .firstmove { display: flex; flex-direction: column; gap: 2px; padding-top: 2px; }
 .firstmove label { font-size: 1rem; color: var(--soft); }
@@ -238,40 +254,62 @@ p { margin: 0; }
 .bigcard .startw:last-child { padding-bottom: 8px; }
 .allbig { align-self: flex-start; margin: -12px 0 -6px -12px; }
 /* a row: the title, then "Start 20 min" in the deal's green. No pill: the words are the button. */
-.bitem { display: flex; align-items: center; }
-.brow { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 6px 2px; border: none; background: none; color: var(--ink); text-align: left; }
-.brow .btitle { flex: 1; min-width: 0; font-family: var(--font-head); font-stretch: 78%; font-weight: 750; font-size: 1.1875rem; line-height: 1.15; overflow-wrap: anywhere; }
-.brow .bgo { flex: none; font-family: var(--font-head); font-stretch: 85%; font-weight: 700; font-size: 1.0625rem; line-height: 1.2; color: var(--deal); text-decoration: underline solid 2px; text-underline-offset: 4px; font-variant-numeric: tabular-nums; }
-.brow:focus-visible { outline-offset: -2px; }
+.bitem { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 4px 0 4px 2px; }
+.bitem .btitle { flex: 1; min-width: 0; font-family: var(--font-head); font-stretch: 78%; font-weight: 750; font-size: 1.1875rem; line-height: 1.15; overflow-wrap: anywhere; }
+.bitem.setaside .btitle { color: var(--soft); }
+.bitem .reopen { flex: none; margin-right: -12px; }
+/* R45: every other big one starts from a small stub that echoes the card's: the minutes in Archivo, a perforated
+   edge, a torn right side. Printed on paper, not filled, so the card's green tab stays the one filled button. */
+.ministub { flex: none; display: inline-flex; align-items: baseline; justify-content: center; gap: 3px; min-width: 76px; min-height: 48px; padding: 12px 16px 8px 18px; border: none; border-radius: 5px 0 0 5px; color: var(--deal);
+  background: radial-gradient(circle, var(--edge) 1.1px, transparent 1.6px) 3px 3px / 6px 7px repeat-y, var(--card); box-shadow: inset 0 0 0 1.5px var(--edge-half);
+  -webkit-mask: var(--zig); mask: var(--zig); font-family: var(--font-head); font-variant-numeric: tabular-nums; }
+.ministub b { font-stretch: 72%; font-weight: 800; font-size: 1.625rem; line-height: 1; }
+.ministub span { font-stretch: 85%; font-weight: 700; font-size: .9375rem; line-height: 1; }
+.ministub:focus-visible { outline-offset: -7px; }
+.sheet.paper .ministub { background-color: var(--paper); }
 .bitem .more { flex: none; width: 44px; height: 44px; margin-right: -10px; border: none; background: none; color: var(--soft); display: grid; place-items: center; }
 .bitem .more svg { width: 20px; height: 20px; }
 .bitem .more:focus-visible { outline-offset: -4px; }
 /* R30: with a big one waiting, a new deal is one quiet line under the cards; it opens the full ticket */
-.quickrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 52px; margin-top: -4px; padding: 14px 2px 10px; border: none; color: var(--ink); text-align: left;
-  background: radial-gradient(circle, var(--edge) 1.2px, transparent 1.7px) 0 0 / 8px 6px repeat-x;
+.quickrow { display: flex; align-items: stretch; width: 100%; min-height: 64px; padding: 0; border: 1.5px dashed var(--wait-edge); border-radius: 6px; background: none; color: var(--ink); text-align: left;
   font-family: var(--font-head); font-stretch: 85%; font-weight: 700; font-size: 1.1875rem; line-height: 1.2; letter-spacing: .01em; }
-.quickrow svg { flex: none; width: 20px; height: 20px; color: var(--soft); transform: rotate(90deg); }
+.quickrow .plus { flex: none; width: 56px; display: grid; place-items: center; color: var(--soft); background: radial-gradient(circle, var(--edge) 1.1px, transparent 1.6px) 100% 3px / 6px 7px repeat-y; }
+.quickrow .plus svg { width: 22px; height: 22px; }
+.quickrow .qt { flex: 1; align-self: center; padding: 12px 14px 12px 16px; }
+.quickrow .chev { flex: none; align-self: center; width: 20px; height: 20px; margin-right: 16px; color: var(--soft); transform: rotate(90deg); }
+/* open, the same button stays in place as the ticket's header */
+.quickrow[aria-expanded="true"] { min-height: 48px; border-color: transparent; margin-bottom: -10px; }
+.quickrow[aria-expanded="true"] .plus { display: none; }
+.quickrow[aria-expanded="true"] .qt { padding-left: 2px; }
+.quickrow[aria-expanded="true"] .chev { transform: rotate(-90deg); margin-right: 4px; }
+
+/* R48: on a narrow screen (or zoomed in) a row's title gets its own line and the card's tab narrows */
+@media (max-width: 359px) {
+  .bitem { flex-wrap: wrap; row-gap: 2px; }
+  .bitem .btitle { flex: 1 0 100%; padding-top: 6px; }
+  .bitem .ministub { margin-right: auto; }
+  .bitem .reopen { margin: 0 auto 0 -12px; }
+  .bigcard { grid-template-columns: 58px minmax(0, 1fr); }
+  .bigcard .go b { font-size: 1.75rem; }
+  .bigcard .what { padding-right: 14px; padding-left: 12px; }
+  .quickrow .plus { width: 44px; }
+}
 
 /* R39: the card's ⋯ menu and the full list are a sheet of ticket paper torn from the pad: a torn top edge, the title
    as the stub, a perforation under it, then plain rows. No grabber, no ruled list. */
 .sheet.paper { --behind: var(--card); background: var(--card); border-top: none; border-radius: 0; padding-top: 24px; gap: 10px;
-  -webkit-mask: linear-gradient(#000 0 0) bottom / 100% calc(100% - 6px) no-repeat, conic-gradient(from 135deg at top, #000 90deg, #0000 0) left top / 12px 6px repeat-x;
-  mask: linear-gradient(#000 0 0) bottom / 100% calc(100% - 6px) no-repeat, conic-gradient(from 135deg at top, #000 90deg, #0000 0) left top / 12px 6px repeat-x; }
+  -webkit-mask: linear-gradient(#000 0 0) bottom / 100% calc(100% - 8px) no-repeat, conic-gradient(from 135deg at top, #000 90deg, #0000 0) left top / 16px 8px repeat-x;
+  mask: linear-gradient(#000 0 0) bottom / 100% calc(100% - 8px) no-repeat, conic-gradient(from 135deg at top, #000 90deg, #0000 0) left top / 16px 8px repeat-x; }
 .sheet.paper .pperf { flex: none; height: 6px; margin: 2px 0 2px; background: radial-gradient(circle, var(--edge) 1.2px, transparent 1.7px) 0 50% / 8px 6px repeat-x; }
 .sheet.paper .pclose { margin-top: 2px; }
 .menu { display: flex; flex-direction: column; }
-.mrow { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%; min-height: 52px; padding: 10px 2px; border: none; background: none; text-align: left; font-size: 1.0625rem; line-height: 1.3; color: var(--ink); }
+.mrow { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%; min-height: 56px; padding: 12px 2px; border: none; background: none; text-align: left; font-size: 1.0625rem; line-height: 1.3; color: var(--ink); }
 .mrow small { font-size: .875rem; color: var(--soft); }
 .mrow:focus-visible { outline-offset: -3px; }
 /* deleting is quiet but not the same as the others: a dark red-brown, never an alarm red */
 .mrow.gone, .gone { color: var(--gone); }
 .secondary.gone { border-color: var(--gone); }
 .biglist { list-style: none; margin: 0; padding: 0; }
-.lrow { display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 4px 2px; }
-.lrow .ltitle { flex: 1; min-width: 0; font-family: var(--font-head); font-stretch: 78%; font-weight: 750; font-size: 1.1875rem; line-height: 1.15; overflow-wrap: anywhere; }
-.lrow.setaside .ltitle { color: var(--soft); }
-.lrow > button { flex: none; }
-.lrow .chip { font-size: 1rem; padding: 8px 14px; }
 /* R38: "Set aside" is a quiet heading, not a row */
 .asideh { margin: 18px 0 0; font-family: var(--font-body); font-size: .875rem; font-weight: 400; line-height: 1.3; color: var(--soft); }
 
@@ -283,7 +321,7 @@ p { margin: 0; }
 .term.pre .slot { border: 2px solid var(--deal); color: var(--deal); }
 .term.pre .slot > svg { width: 20px; height: 20px; }
 .term.pre.stamped .slot > svg { visibility: hidden; }
-.term .lastpick { display: block; margin-top: 3px; font-family: var(--font-body); font-stretch: normal; font-weight: 400; font-size: .875rem; line-height: 1.2; color: var(--deal); }
+.term .lastpick { display: block; margin-top: 3px; font-family: var(--font-body); font-stretch: normal; font-weight: 400; font-size: 1rem; line-height: 1.25; color: var(--deal-ink); }
 
 /* ---------- one stamp: double-ruled border with the ink texture, letters solid so they stay readable ---------- */
 .stamp { --tilt: -3deg; position: relative; display: inline-grid; place-items: center; color: var(--deal); font-family: var(--font-head); font-stretch: 82%; font-weight: 800;
@@ -336,14 +374,17 @@ button.term:focus-visible { outline-offset: 3px; }
 .tearrow .rest b { font-family: var(--font-head); font-stretch: 80%; font-weight: 750; font-size: 1.5rem; line-height: 1.1; text-wrap: balance; }
 @keyframes tear { from { transform: none; opacity: 1; } }
 /* R33: on a narrow phone, a big one's block end lays the used stub on top of the rest of the deal instead of beside it */
-@media (max-width: 400px) {
-  .tearrow.stacked { flex-direction: column; margin-block: 0; }
-  .tearrow.stacked .usedwrap { width: min(100%, 272px); min-height: 0; margin-bottom: -4px; }
-  .tearrow.stacked .used { flex-direction: row; align-items: baseline; gap: 10px; padding: 12px 98px 16px 14px; min-width: 0; }
-  .tearrow.stacked .used > span { flex: 1; min-width: 0; }
-  .tearrow.stacked .usedwrap .stamp { left: auto; right: 22px; bottom: auto; top: 9px; }
-  .tearrow.stacked .rest { min-height: 76px; padding-left: 20px; }
-}
+/* R44: the bookmark and the done question are printed on the rest of the ticket, under a perforation, so the one
+   action left on the sheet is the button under it */
+.tearrow.stacked { flex-direction: column; margin-block: 0; }
+.tearrow.stacked .usedwrap { width: min(100%, 272px); min-height: 0; margin-bottom: -4px; }
+.tearrow.stacked .used { flex-direction: row; align-items: baseline; gap: 10px; padding: 12px 98px 16px 14px; min-width: 0; }
+.tearrow.stacked .used > span { flex: 1; min-width: 0; }
+.tearrow.stacked .usedwrap .stamp { left: auto; right: 22px; bottom: auto; top: 9px; }
+.tearrow.stacked .rest { justify-content: flex-start; gap: 10px; padding: 16px 26px 18px 20px; }
+.tearrow .rest > p { display: flex; flex-direction: column; gap: 4px; }
+.tearrow .rest .nperf { flex: none; height: 6px; margin: 4px -26px 0 -20px; background: radial-gradient(circle, var(--edge) 1.2px, transparent 1.7px) 4px 50% / 8px 6px repeat-x; }
+.tearrow .rest .notes { padding: 0; }
 
 /* clock persona */
 .clockline { display: flex; gap: 12px; align-items: flex-start; }
@@ -729,7 +770,7 @@ const cardById = id => cards().find(c => c.id === id);
 const CARDS_SHOWN = 3;
 /* the Quick Deal ticket loaded from a card ("Break first?"): { id, title, startWith, minutes, comeback, prevFocus } */
 let fromCard = null;
-/* R30: with a card on screen the Quick Deal ticket folds to one line; opened once, it stays open for this visit */
+/* R30, R42: with a card on screen the Quick Deal sits behind its door; opened, it stays open for this visit until closed */
 let quickOpen = false;
 /* the card's ⋯ menu, its delete check, and the list of all big ones: { kind: "menu", id, confirm? } | { kind: "list", items, error? } */
 let panel = null;
@@ -835,7 +876,7 @@ function nextBlock() { if (BE && S) BE.next(S.idx); bankFocus(); const was = S.i
    Notes are sent once per focus block: when the next block starts, more time is asked for, or the sheet closes. */
 const needsNotes = () => !!(S && S.taskId) && cur().type === "focus" && (S.notedIdx == null || S.notedIdx < S.idx);
 /* the notes belong to the focus block that just ended, even if another device moves the session on under the sheet */
-const newNotes = () => ({ sid: S.id, idx: S.idx, bookmark: "", done: null, sent: false });
+const newNotes = () => ({ sid: S.id, idx: S.idx, bookmark: "", done: false, sent: false });
 /* the session moved past the block these notes are about (the server, or another device, advanced it) */
 const movedOn = () => !!(sheet && sheet.notes && S.idx !== sheet.notes.idx);
 function sendNotes() {
@@ -854,10 +895,10 @@ function notesCopy() {
     q: c.currentPiece ? `Finished ${c.currentPiece}?` : `Is ${name} done for now?`,
   };
 }
-/* neither answer is picked for you (R33); no answer counts as not done. "Not yet" takes the first focus (spec 008). */
+/* R44: no answer means not done, so "Not yet" shows as picked (quietly) until "Yes" is; it also takes the first focus (spec 008) */
 const DONE_CHOICES = [["yes", "Yes, stamp it"], ["no", "Not yet"]];
 const doneInner = (k, on) => `<span class="ink">${on ? CHECK : ""}${DONE_CHOICES.find(c => c[0] === k)[1]}</span>`;
-const doneChip = (k, on) => `<button class="inkchip lg" role="radio" data-done="${k}" aria-checked="${on}"${k === "no" ? " data-default" : ""}>${doneInner(k, on)}</button>`;
+const doneChip = (k, on) => `<button class="inkchip lg" role="radio" data-done="${k}" aria-checked="${on}">${doneInner(k, on)}</button>`;
 /* the clock's 10 min offer at the end of a focus block: once per block, never on the last one, never past the ceiling */
 const canBonus = () => cur().type === "focus" && !S.bonusOffered && S.idx < S.blocks.length - 1 && cur().min + 10 <= CEILING;
 function stopNow() { if (BE) BE.end(); bankFocus(); file({ t: clockStr(), kind: "cleared", text: "Stopped for now", note: "" }); S = null; sheet = null; render(); }
@@ -1010,11 +1051,11 @@ function ticket(peek) {
   /* R32: the two optional rows are phrases on the ticket, "About 2h" and "Mostly writing", with printed boxes to ink.
      Each name starts with what's printed ("2h, about 2 hours"), so voice control and screen readers agree. */
   const bigRows = isBig ? `<div class="phrases">
-      <div class="phrase" role="group" aria-labelledby="gutlab"><span class="pw" id="gutlab">About</span>${GUTS.map(m => `<button class="inkchip" data-gut="${m}" aria-pressed="${big.gut === m}"><span class="ink">${big.gut === m ? CHECK : ""}${gutText(m)}</span><span class="vh">, about ${gutSpoken(m)}</span></button>`).join("")}</div>
-      <div class="phrase" role="group" aria-labelledby="typelab"><span class="pw" id="typelab">Mostly</span>${Object.keys(BIG_TYPES).map(k => `<button class="inkchip" data-type="${k}" aria-pressed="${big.type === k}"><span class="ink">${big.type === k ? CHECK : ""}${esc(TYPE_PHRASE[k])}</span></button>`).join("")}</div>
+      <div class="phrase" role="group" aria-labelledby="gutlab"><span class="pw" id="gutlab">About</span>${GUTS.map(m => `<button class="inkchip size" data-gut="${m}" aria-pressed="${big.gut === m}"><span class="ink">${big.gut === m ? CHECK : ""}${gutText(m)}</span><span class="vh">, about ${gutSpoken(m)}</span></button>`).join("")}</div>
+      <div class="phrase" role="group" aria-labelledby="typelab"><span class="pw" id="typelab">Mostly</span>${Object.keys(BIG_TYPES).map(k => `<button class="inkchip kind" data-type="${k}" aria-pressed="${big.type === k}"><span class="ink">${big.type === k ? CHECK : ""}${esc(TYPE_PHRASE[k])}</span></button>`).join("")}</div>
     </div>
       <div class="firstmove"><label for="firstmove">When I sit down, I'll first:</label><textarea id="firstmove" rows="1" maxlength="140" enterkeyhint="done" placeholder="The very first thing you'll do">${esc(big.move)}</textarea></div>` : "";
-  return `<div class="ticketwrap${peek ? " peek" : ""}"><section class="ticket" id="ticket" aria-label="${isBig ? "Your first payment" : "Your deal"}">
+  return `<div class="ticketwrap${peek ? " peek" : ""}"><section class="ticket${isBig ? " big" : ""}" id="ticket" aria-label="${isBig ? "Your first payment" : "Your deal"}">
     <div class="body">
       <div class="tickethead"><span class="serial">No. ${serial}<br>${clockStr()}</span>${STAMPBOX}</div>
       <p class="sentence">${sentence}</p>
@@ -1064,7 +1105,9 @@ function bigCard(c) {
   </div></li>`;
 }
 /* the next ones: a plain row each, the title and "Start 20 min", with the same ⋯ menu */
-const bigRow = c => `<li class="bitem"><button class="brow" data-card="${esc(c.id)}"><span class="btitle">${esc(c.title)}</span><span class="bgo">${N(`Start ${c.minutes} min`)}</span></button><button class="more" data-menu="${esc(c.id)}" aria-haspopup="dialog" aria-label="More for ${esc(c.title)}">${DOTS}</button></li>`;
+/* R45: the title, a small stub with the minutes (the start button), the menu */
+const miniStub = (attr, id, m, t) => `<button class="ministub" ${attr}="${esc(id)}" aria-label="Start ${m} min on ${esc(t)}"><b>${m}</b><span>min</span></button>`;
+const bigRow = c => `<li class="bitem"><span class="btitle">${esc(c.title)}</span>${miniStub("data-card", c.id, c.minutes, c.title)}<button class="more" data-menu="${esc(c.id)}" aria-haspopup="dialog" aria-label="More for ${esc(c.title)}">${DOTS}</button></li>`;
 /* the cards on screen: open big ones, less the one loaded onto the ticket */
 const shownCards = () => bigOneCards === null ? [] : cards().filter(c => !fromCard || c.id !== fromCard.id).slice(0, CARDS_SHOWN);
 function cardsView() {
@@ -1078,14 +1121,18 @@ function cardsView() {
   return `<ul class="bigones" aria-label="Your big ones">${bigCard(shown[0])}${shown.slice(1).map(bigRow).join("")}</ul>
   ${link}`;
 }
-/* R30: folded while a card leads, unless the ticket is in use (a card loaded with a break first) or was opened this visit */
-const quickFolded = () => !quickOpen && !fromCard && shownCards().length > 0;
-const QUICKROW = `<button class="quickrow" id="quickopen" aria-expanded="false"><span>Or make a quick deal</span>${CHEV}</button>`;
+/* R30, R42: while a card leads, the Quick Deal sits behind a second door: a dashed, empty ticket stub. It is one
+   disclosure button that stays in place (open, it heads the ticket), so it can be closed again. A card loaded with
+   a break first needs the ticket, so then there is no door. */
+const PLUS = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>`;
+const quickDoor = open => `<button class="quickrow" id="quickopen" aria-expanded="${open}" aria-controls="quickdeal"><span class="plus">${PLUS}</span><span class="qt">Or make a quick deal</span><span class="chev" aria-hidden="true">${CHEV}</span></button>`;
 function startView() {
-  const last = newest(ledger) || newest(SEED), folded = quickFolded();
-  return `<h1 class="home">Make a deal</h1>${cardsView()}${folded ? QUICKROW : ticket(true)}
+  const last = newest(ledger) || newest(SEED);
+  const door = !fromCard && shownCards().length > 0, folded = door && !quickOpen;
+  const tk = door ? `${quickDoor(!folded)}<div id="quickdeal"${folded ? " hidden" : ""}>${ticket(true)}</div>` : ticket(true);
+  return `<h1 class="home">Make a deal</h1>${cardsView()}${tk}
   ${deal.act && !folded ? `<button class="textbtn skip" id="skipbreak">Skip the break, start ${esc(fromCard ? fromCard.title : shortTask())}</button>` : ""}
-  <section class="rows anchor" aria-label="Tonight so far">
+  <section class="rows${folded ? "" : " anchor"}" aria-label="Tonight so far">
     ${presence()}
     <button class="presence lastline" id="toledger" aria-describedby="ledgerhint"><span>${N(lastLine(last))}</span>${CHEV}</button>
     <span class="vh" id="ledgerhint">Opens the ledger</span>
@@ -1169,7 +1216,8 @@ function renderSheet() {
   if (!same) {
     root.dataset.sig = body;
     body = body.replace(BOOKMARK_SLOT, () => esc(sheet.notes ? sheet.notes.bookmark : ""));
-    const desc = body.includes('id="dealcost"') ? ` aria-describedby="dealcost"` : "";
+    /* a big one's block end also describes the dialog with its done question, since focus lands on "Not yet" below it */
+    const desc = body.includes('id="dealcost"') ? ` aria-describedby="dealcost${body.includes('id="doneq"') ? " doneq" : ""}"` : "";
     /* a sheet rises once when it opens; the terms come off the pad once when they first appear */
     const oe = sheet.openedAt == null ? Infinity : performance.now() - sheet.openedAt;
     const te = sheet.termsAt == null ? Infinity : performance.now() - sheet.termsAt;
@@ -1199,7 +1247,7 @@ function sheetBody() {
     /* a big one's focus block: two notes on the sheet, under the torn ticket. More time here is the clock's
        10 min offer (the same one a plain focus block gets), and only while it's still on the table. */
     const n = sheet.notes, nc = n ? notesCopy() : null;
-    const notes = n ? `<div class="notes">
+    const notes = n ? `<span class="nperf" aria-hidden="true"></span><div class="notes">
         <div class="firstmove"><label for="bookmark">Next time, start with…</label><textarea id="bookmark" rows="1" maxlength="140" enterkeyhint="done" placeholder="${esc(nc.hint)}">${BOOKMARK_SLOT}</textarea></div>
         <div class="donerow" role="radiogroup" aria-labelledby="doneq">
           <p class="q" id="doneq">${esc(nc.q)}</p>
@@ -1212,9 +1260,9 @@ function sheetBody() {
       <h2 id="sh" tabindex="-1">${esc(title(b.label))}, done.</h2>
       <div class="tearrow${n ? " stacked" : ""}">
         <span class="usedwrap" aria-hidden="true"><span class="used"><b>${N(b.min)} min</b><span>${esc(title(b.label))}</span></span><span class="stamp plain">Used</span></span>
-        <p class="rest" id="dealcost">${S.serial ? `<span class="serial">No. ${S.serial}</span>` : ""}<b>${N(rest)}</b></p>
+        ${n ? `<div class="rest"><p id="dealcost">${S.serial ? `<span class="serial">No. ${S.serial}</span>` : ""}<b>${N(rest)}</b></p>${notes}</div>`
+          : `<p class="rest" id="dealcost">${S.serial ? `<span class="serial">No. ${S.serial}</span>` : ""}<b>${N(rest)}</b></p>`}
       </div>
-      ${notes}
       <button class="primary" id="go">${nxt ? `Start ${esc(nameOf(nxt))}` : "Stop for now"}</button>
       ${more}`;
   } else if (sheet.kind === "boundary" || sheet.kind === "offer") {
@@ -1311,10 +1359,10 @@ function panelBody() {
       <button class="textbtn pclose" id="p-close">Close</button>`;
   }
   const items = panel.items;
-  /* R38: open ones read like the rows under the card; only "Bring it back" is a button shape */
+  /* R38, R45: open ones read like the rows under the card, each with its minutes stub; "Bring it back" is a quiet link */
   const row = it => it.status === "set_aside"
-    ? `<li class="lrow setaside"><span class="ltitle">${esc(it.title)}</span><button class="chip" data-reopen="${esc(it.id)}" aria-label="Bring it back, ${esc(it.title)}">Bring it back</button></li>`
-    : (() => { const m = (cardById(it.id) || {}).minutes || 15; return `<li class="bitem"><button class="brow" data-lstart="${esc(it.id)}"><span class="btitle">${esc(it.title)}</span><span class="bgo">${N(`Start ${m} min`)}</span></button></li>`; })();
+    ? `<li class="bitem setaside"><span class="btitle">${esc(it.title)}</span><button class="textbtn reopen" data-reopen="${esc(it.id)}" aria-label="Bring it back, ${esc(it.title)}">Bring it back</button></li>`
+    : `<li class="bitem"><span class="btitle">${esc(it.title)}</span>${miniStub("data-lstart", it.id, (cardById(it.id) || {}).minutes || 15, it.title)}</li>`;
   const open = (items || []).filter(i => i.status !== "set_aside"), aside = (items || []).filter(i => i.status === "set_aside");
   const list = panel.error ? `<p>Your big ones didn't load.</p><button class="secondary" id="l-retry">Try again</button>`
     : !items ? `<p class="soft" role="status">Getting your big ones…</p>`
@@ -1527,7 +1575,7 @@ function bind() {
   document.querySelectorAll("[data-menu]").forEach(b => b.onclick = () => openPanel({ kind: "menu", id: b.dataset.menu }, `[data-menu="${b.dataset.menu}"]`));
   on("#allbig", () => openList());
   /* R30: the folded Quick Deal opens in place and stays open for this visit; focus goes to its first part */
-  on("#quickopen", () => { quickOpen = true; nextFocus = '[data-pick="act"]'; render(); say("Quick deal ticket open."); });
+  on("#quickopen", () => { quickOpen = !quickOpen; if (!quickOpen) picker = null; nextFocus = "#quickopen"; render(); });
   /* the card goes back above the ticket; focus returns to its ⋯, where "Take a break first" was */
   on("#notcard", () => { const id = fromCard.id; deal.focusMin = fromCard.prevFocus; fromCard = null; picker = null; nextFocus = `[data-menu="${id}"]`; render(); say("Back to a new deal."); });
   on("#keepon", () => {
@@ -1901,7 +1949,7 @@ window.pomodealApp = {
     if (same || tab !== "now" || S || mode !== "start" || stamping) return;
     /* R30: cards that arrive while the ticket is in use don't fold it away under the student */
     const t = $("#ticket"), a = document.activeElement;
-    if (t && (picker || big.on || (a && t.contains(a)))) quickOpen = true;
+    if (t && !t.closest("[hidden]") && (picker || big.on || (a && t.contains(a)))) quickOpen = true;
     /* R40: never redraw under someone typing (it would drop the phone's keyboard); the cards show at the next redraw */
     if (a && a.matches("#view input, #view textarea")) return;
     render();
