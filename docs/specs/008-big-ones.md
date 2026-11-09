@@ -1,6 +1,6 @@
 # Spec 008: Big ones
 
-Status: approved for planning (loop 1) · Phase 1, next 4 weeks · Owner: Chris · Decisions: [0005-chosen-repayment](../decisions/0005-chosen-repayment.md)
+Status: built (loop 1), awaiting Chris's device checks · Phase 1, next 4 weeks · Owner: Chris · Decisions: [0005-chosen-repayment](../decisions/0005-chosen-repayment.md)
 Research: [Starting and splitting big tasks](../research/reports/Starting%20and%20splitting%20big%20tasks.md) (literature, competitors, feasibility, council record)
 Builds on: spec 007 (study lengths, merged in PR #1) and the motion pass (merged in PR #2). New screens reuse the motion pass's stamp, block-change and heads-up motion rather than adding their own.
 

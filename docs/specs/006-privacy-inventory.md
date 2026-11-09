@@ -2,7 +2,7 @@
 
 Status: living document. Owner: Chris.
 
-This lists every piece of behavior or personal data Pomodeal stores, why, who can see it, how long it is kept, and what deletes it. Any new stored field is added here in the same commit that adds it. Fields marked "planned (spec 008)" do not exist yet; the mark comes off when the task that adds them lands.
+This lists every piece of behavior or personal data Pomodeal stores, why, who can see it, how long it is kept, and what deletes it. Any new stored field is added here in the same commit that adds it. Everything spec 008 adds is built and listed below.
 
 Pomodeal never records diagnoses and stores no health information. Titles, first moves and bookmarks are coursework text: only the student can read them, rooms never see them, and AI requests send only what the AI disclosure below says.
 
@@ -144,6 +144,7 @@ These live in the browser's `localStorage` on one device. Pomodeal never uploads
 | pomodeal.installSheet | "1" once the iPhone install sheet has been shown (spec 008) | Show the install sheet once per device | Anyone using that browser | Until cleared | Clearing site data |
 | pomodeal.installDone | "1" once the app has opened from the Home Screen (spec 008) | Log `install_done` once per device | Anyone using that browser | Until cleared | Clearing site data |
 | pomodeal.checkinSkipped | The week key (a Sunday's date) of the weekly question that was skipped with the x (spec 008) | Keep the question hidden until next week | Anyone using that browser | Until replaced or cleared | Clearing site data |
+| pomodeal.invite (session storage, not local) | An invite code from the link, kept across the sign-in redirect | Join with the invite after signing in | Anyone using that tab | Until the tab closes | Closing the tab |
 | pomodeal.aiConsent | "yes" or "no", the answer to the AI disclosure (spec 008); "no" hides "Suggest pieces" on this device | Ask the disclosure once per device | Anyone using that browser | Until cleared | Clearing site data |
 
 ### checkIns

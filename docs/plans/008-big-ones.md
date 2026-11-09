@@ -1,5 +1,7 @@
 # Big Ones Implementation Plan
 
+> **Build note:** The build followed this plan; controller rulings are recorded in the SDD ledger (`.superpowers/sdd/008-big-ones/progress.md`). Two plan details were superseded: the AI request no longer sends days left (spec 008, "Optional AI"), and the Task 16 device checks moved to `docs/dogfood-log.md`.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Let a student start a 2–4 hour, multi-day task with a 15 min first payment and a named first move, come back to it through a bookmark card, and plan it only if they want to, without anything ever reading as overdue.
