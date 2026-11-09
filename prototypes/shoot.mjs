@@ -14,7 +14,8 @@ const STATES = ["start", "intercept", "running", "focus", "heads-up", "boundary"
   // spec 007: long blocks
   "picker-focus", "picker-60", "start-60", "long-running", "long-halfway", "long-heads-up",
   // spec 008: big ones
-  "bigone-chip", "bigone-ticket", "bigone-ticket-typed", "bigone-boundary", "bigone-boundary-piece"];
+  "bigone-chip", "bigone-ticket", "bigone-ticket-typed", "bigone-boundary", "bigone-boundary-piece",
+  "cards", "cards-comeback", "cards-more", "cards-menu", "cards-delete", "cards-all", "cards-breakfirst", "running-wakelock", "offer-terms-repay"];
 // ONLY=a,b limits a run to some states (quick review loops); WIDTH=375 checks the narrowest phone; HEIGHT=1400 sees a long screen whole
 const only = process.env.ONLY ? process.env.ONLY.split(",") : null;
 const WIDTH = Number(process.env.WIDTH) || 390;

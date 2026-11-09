@@ -122,7 +122,7 @@ p { margin: 0; }
 .chip:is([aria-pressed="true"], [aria-checked="true"]) { background: var(--sel); color: var(--deal); box-shadow: inset 0 0 0 2px var(--deal); }
 
 /* ---------- one ticket ---------- */
-.ticketwrap, .terms, .stubs, .tearrow { filter: drop-shadow(0 1px 0 var(--rule)) drop-shadow(0 8px 12px var(--lift)); }
+.ticketwrap, .terms, .stubs, .tearrow, .bigones { filter: drop-shadow(0 1px 0 var(--rule)) drop-shadow(0 8px 12px var(--lift)); }
 /* on the home screen, tonight's earlier stubs peek out from under the new ticket: Now and Ledger are the same pile */
 .ticketwrap.peek { position: relative; isolation: isolate; margin-bottom: 14px; }
 .ticketwrap.peek::before, .ticketwrap.peek::after { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--stub); border-radius: 6px 0 0 6px; box-shadow: inset 0 0 0 1px var(--edge-half); -webkit-mask: var(--zig); mask: var(--zig); }
@@ -189,6 +189,58 @@ p { margin: 0; }
 .donerow { display: flex; flex-direction: column; gap: 10px; }
 .donerow .q { font-size: 1.0625rem; line-height: 1.35; color: var(--ink); }
 .donerow .check { display: block; font-size: .9375rem; color: var(--soft); }
+/* "Start with: …" wherever a big one is waiting or running: the label recedes, the move is ink */
+.startw { font-size: 1rem; line-height: 1.35; color: var(--ink); overflow-wrap: anywhere; text-wrap: pretty; }
+.startw > span:first-child { color: var(--soft); }
+/* a ticket loaded from a card: the big one's name is printed on it, not a blank you fill in */
+.sentence .fixed { color: var(--ink); font-size: 1.25em; font-weight: 700; line-height: 1.2; }
+.ticket .startw { margin-top: -4px; }
+.ticket .notcard { align-self: flex-start; margin: -10px 0 -8px -12px; }
+
+/* spec 008, day 2: a big one waiting on the home screen is a stub kept for later. Same torn ticket as a deal; its
+   left tab is the length you'll pay, inked green and perforated where it tears off. Tapping the tab starts it. */
+.bigones { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.bigcard { position: relative; display: grid; grid-template-columns: 70px minmax(0, 1fr); background: var(--card); border-radius: 6px 0 0 6px; box-shadow: inset 0 1px 0 var(--hi); -webkit-mask: var(--zig); mask: var(--zig); }
+.bigcard .go { border: none; margin: 0; padding: 12px 4px; border-radius: 6px 0 0 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  background: radial-gradient(circle, var(--card) 1.3px, transparent 1.8px) 100% 2px / 6px 8px repeat-y, var(--deal); color: var(--on-deal); font-family: var(--font-head); }
+.bigcard .go b { font-stretch: 72%; font-weight: 800; font-size: 2.125rem; line-height: .85; font-variant-numeric: tabular-nums; }
+.bigcard .go span { font-stretch: 85%; font-weight: 700; font-size: 1rem; line-height: 1; }
+/* the card's own edge would clip an outside ring: the ring sits inside the green tab */
+.bigcard .go:focus-visible { outline: 3px solid var(--on-deal); outline-offset: -7px; }
+.bigcard .what { min-width: 0; padding: 6px 20px 8px 14px; display: flex; flex-direction: column; gap: 3px; }
+.bigcard .row { display: flex; align-items: flex-start; gap: 2px; }
+.bigcard .ttl { flex: 1; min-width: 0; padding-top: 8px; font-stretch: 76%; font-weight: 750; font-size: 1.375rem; line-height: 1.1; overflow-wrap: anywhere; }
+.bigcard .more { flex: none; width: 44px; height: 44px; margin: 0 -12px 0 0; border: none; background: none; color: var(--soft); display: grid; place-items: center; }
+.bigcard .more svg { width: 22px; height: 22px; }
+.bigcard .more:focus-visible { outline-offset: -4px; }
+.bigcard .ask { font-size: 1rem; line-height: 1.35; color: var(--ink); }
+.bigcard .foot { display: flex; align-items: center; gap: 8px; min-height: 44px; margin: -4px -12px -6px 0; }
+.bigcard .prog { font-size: .9375rem; color: var(--soft); }
+.bigcard .brk { margin-left: auto; padding: 10px 12px; font-size: .9375rem; }
+.allbig { align-self: flex-start; margin: -12px 0 -6px -12px; }
+
+/* the card's ⋯ menu and the full list: plain rows on the sheet, the way the room lists people */
+.menu { display: flex; flex-direction: column; border-top: 1px solid var(--rule); }
+.mrow { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%; min-height: 52px; padding: 12px 2px; border: none; border-bottom: 1px solid var(--rule); background: none; text-align: left; font-size: 1.0625rem; line-height: 1.3; color: var(--ink); }
+.mrow small { font-size: .875rem; color: var(--soft); }
+.mrow:disabled { color: var(--soft); cursor: default; }
+.mrow:focus-visible { outline-offset: -3px; }
+.biglist { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+.lrow { display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 8px 2px; border-bottom: 1px solid var(--rule); }
+.lrow .ltitle { flex: 1; min-width: 0; font-family: var(--font-head); font-stretch: 78%; font-weight: 750; font-size: 1.1875rem; line-height: 1.15; overflow-wrap: anywhere; }
+.lrow.setaside .ltitle { color: var(--soft); }
+.lrow > button { flex: none; }
+.sheet .label { margin-top: 4px; }
+
+/* wake lock: the same printed box as "Bigger than one block?", quieter, under the focus controls */
+.keepon { align-self: center; display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 8px 12px; border: none; background: none; color: var(--soft); font-size: .9375rem; }
+.keepon .box { flex: none; width: 20px; height: 20px; border: 1.5px dashed var(--wait-edge); border-radius: 4px; display: grid; place-items: center; }
+.keepon .box svg { width: 13px; height: 13px; visibility: hidden; }
+.keepon[aria-checked="true"] { color: var(--ink); }
+.keepon[aria-checked="true"] .box { border: 2px solid var(--deal); background: var(--sel); color: var(--deal); }
+.keepon[aria-checked="true"] .box svg { visibility: visible; }
+/* ADR 0005: the repayment picked last time waits pre-selected; Deal takes it in one tap */
+.term.pre::before { background: var(--sel-card); box-shadow: inset 0 0 0 2px var(--deal); }
 
 /* ---------- one stamp: double-ruled border with the ink texture, letters solid so they stay readable ---------- */
 .stamp { --tilt: -3deg; position: relative; display: inline-grid; place-items: center; color: var(--deal); font-family: var(--font-head); font-stretch: 82%; font-weight: 800;
@@ -568,6 +620,7 @@ nav.tabs .dot.pop { animation: pop .3s cubic-bezier(.3, 1.6, .5, 1); }
   <button id="tab-room"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.8c1.8.7 3 2.5 3.5 5.2"/></svg></span>Room</button>
 </div></nav>
 <div id="sheet-root"></div>
+<div id="panel-root"></div>
 
 <script>
 /* ---------- negotiation rules (mirrors docs/specs/001-negotiation-rules.md) ---------- */
@@ -615,8 +668,60 @@ const FIRST_MOVES = { writing: "Open the doc and write one ugly sentence", probl
 /* block-end copy, mirrored from packages/core/src/bigOne.ts (bookmarkPlaceholder, doneQuestion). No type: "Where you'll pick up", no check. */
 const BOOKMARK_HINTS = { writing: "Claim for paragraph 2", problems: "The question I'm stuck on", exam: "Weak spot: …", project: "Next visible thing: …" };
 const DONE_CHECKS = { writing: "Messy draft exists?", problems: "Tried each one, stuck ones written down?", exam: "Recalled each item once without notes?", project: "Decided or made?" };
-/* all open big ones from the server (pomodealApp.bigOnes); the demo states fill in a sample one */
+/* all open big ones from the server (pomodealApp.bigOnes), comeback first; null until the first list arrives.
+   Not loaded and none both draw nothing, so the home screen never flashes an empty state. The demo states fill in samples. */
 let bigOneCards = [];
+const cards = () => bigOneCards || [];
+const cardById = id => cards().find(c => c.id === id);
+/* mirrors CARDS_SHOWN in packages/core/src/bigOne.ts */
+const CARDS_SHOWN = 3;
+/* the Quick Deal ticket loaded from a card ("Break first?"): { id, title, startWith, minutes, comeback, prevFocus } */
+let fromCard = null;
+/* the card's ⋯ menu, its delete check, and the list of all big ones: { kind: "menu", id, confirm? } | { kind: "list", items, error? } */
+let panel = null;
+/* ADR 0005: the repayment picked last time (users.lastRepay), pre-selected from the second ask */
+let lastRepay = null;
+/* progress words (R2): under an hour "45 min", then "2h 5" or "2h" */
+const hm = m => { m = Math.max(0, Math.round(m)); if (m < 60) return `${m} min`; const h = Math.floor(m / 60), r = m % 60; return r ? `${h}h ${r}` : `${h}h`; };
+function progressText(p) {
+  if (!p) return "";
+  if (p.kind === "stamped") return `${p.n} stamped`;
+  if (p.kind === "toGo") return `${p.n} to go`;
+  if (p.kind === "in") return `${hm(p.minutes)} in`;
+  if (p.kind === "left") return `about ${hm(p.minutes)} left`;
+  return "";
+}
+/* "Start with: claim for paragraph 2": a move reads on from the label, so a capital that only starts a sentence drops ("BIO", "I'll" stay) */
+const moveText = s => /^[A-Z][a-z]/.test(s) ? s[0].toLowerCase() + s.slice(1) : s;
+/* comeback_shown is logged once per card per local day, on this device (kept for today only) */
+const CB_KEY = "pomodeal.comebackShown";
+const cbSeen = new Set((() => { try { const v = JSON.parse(localStorage.getItem(CB_KEY) || "[]"); return Array.isArray(v) ? v : []; } catch (e) { return []; } })());
+const localDay = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
+function noteComeback(id) {
+  if (!BE) return;
+  const day = localDay(), k = `${day}|${id}`; if (cbSeen.has(k)) return;
+  cbSeen.add(k); BE.logEvent("comeback_shown", id);
+  try { localStorage.setItem(CB_KEY, JSON.stringify([...cbSeen].filter(x => x.startsWith(day + "|")))); } catch (e) {}
+}
+/* spec 008 "Wake lock": a per-device choice, off by default, only where the browser has the Screen Wake Lock API.
+   Held during focus blocks while the page is visible; released on a break, at the end, and by the browser when hidden. */
+const WAKE_KEY = "pomodeal.wakelock", WAKE_OK = "wakeLock" in navigator;
+const readWake = () => { try { return localStorage.getItem(WAKE_KEY) === "on"; } catch (e) { return false; } };
+let wakeOn = readWake();
+let wakeLock = null, wakeAsking = false;
+const wantWake = () => WAKE_OK && wakeOn && !!S && cur().type === "focus" && document.visibilityState === "visible";
+function syncWake() {
+  if (!WAKE_OK) return;
+  if (wantWake() && !wakeLock && !wakeAsking) {
+    wakeAsking = true;
+    navigator.wakeLock.request("screen").then(l => {
+      wakeAsking = false;
+      if (!wantWake()) { l.release().catch(() => {}); return; }
+      wakeLock = l; l.addEventListener("release", () => { if (wakeLock === l) wakeLock = null; });
+    }).catch(() => { wakeAsking = false; });
+  } else if (!wantWake() && wakeLock) { const l = wakeLock; wakeLock = null; l.release().catch(() => {}); }
+}
+document.addEventListener("visibilitychange", syncWake);
 const GUTS = [60, 120, 180, 240];
 const gutText = m => m === 240 ? "4h+" : `${m / 60}h`;
 const gutSpoken = m => m === 240 ? "4 hours or more" : m === 60 ? "1 hour" : `${m / 60} hours`;
@@ -625,7 +730,7 @@ const gutSpoken = m => m === 240 ? "4 hours or more" : m === 60 ? "1 hour" : `${
 const newBig = () => ({ on: false, type: null, gut: null, move: "", edited: false, pay: 15, namedAt: null });
 /* the big one is named exactly as typed (commas kept), cut to 80 characters counted as the core counts them */
 const bigTitle = () => [...String(deal.task).trim()].slice(0, 80).join("");
-function fresh() { nudged = false; deal = { act: "Reels", breakMin: 10, task: "Reading, BIO 180 ch. 7", focusMin: 8 }; big = newBig(); ledger = []; S = null; sheet = null; picker = null; toast = null; unseen = 0; studied = 0; }
+function fresh() { nudged = false; deal = { act: "Reels", breakMin: 10, task: "Reading, BIO 180 ch. 7", focusMin: 8 }; big = newBig(); ledger = []; S = null; sheet = null; picker = null; toast = null; unseen = 0; studied = 0; fromCard = null; panel = null; lastRepay = null; }
 /* mirrors packages/core/src/session.ts: quick lengths ramp +4 up to max(25, chosen); long ones hold.
    45 and 60 get two focus blocks, the rest three; a long block's break is a quarter of it. */
 const roundsFor = f => f >= 45 ? 2 : 3;
@@ -680,11 +785,13 @@ const movedOn = () => !!(sheet && sheet.notes && S.idx !== sheet.notes.idx);
 function sendNotes() {
   const n = sheet && sheet.notes; if (!n || n.sent) return;
   n.sent = true; S.notedIdx = Math.max(S.notedIdx ?? -1, n.idx);
+  /* the bookmark is the next focus block's first move */
+  if (n.bookmark.trim()) S.firstMove = n.bookmark.trim();
   if (BE) BE.blockNotes(n.idx, n.bookmark.trim() || undefined, n.done);
 }
 /* what the notes ask about: the card for this session's big one, or no-type defaults when it isn't loaded */
 function notesCopy() {
-  const c = bigOneCards.find(x => x.id === S.taskId) || {}, type = BIG_TYPES[c.taskType] ? c.taskType : null;
+  const c = cardById(S.taskId) || {}, type = BIG_TYPES[c.taskType] ? c.taskType : null;
   const name = c.title || title(S.blocks[sheet.notes.idx].label);
   return {
     hint: type ? BOOKMARK_HINTS[type] : "Where you'll pick up",
@@ -767,7 +874,7 @@ function paintTabs() {
 function focusKey(el) {
   if (!el || el === document.body) return null;
   if (el.id && el.id !== "sh") return "#" + el.id;
-  for (const a of ["data-act", "data-set", "data-sug", "data-ci", "data-pick", "data-term", "data-type", "data-gut", "data-done"]) if (el.hasAttribute(a)) return `[${a}="${el.getAttribute(a)}"]`;
+  for (const a of ["data-act", "data-set", "data-sug", "data-ci", "data-pick", "data-term", "data-type", "data-gut", "data-done", "data-card", "data-menu", "data-breakfirst", "data-lstart", "data-reopen"]) if (el.hasAttribute(a)) return `[${a}="${el.getAttribute(a)}"]`;
   return null;
 }
 let nextFocus = null;
@@ -778,12 +885,14 @@ function render() {
   document.body.classList.toggle("modal", tab === "now" && mode === "intercept");
   v.innerHTML = tab === "ledger" ? ledgerView() : tab === "room" ? roomView() : mode === "intercept" ? interceptView() : !S ? startView() : runningView();
   renderSheet();
+  renderPanel();
   paintTabs();
   bind();
+  syncWake();
   /* a fresh ledger stub pushes the pile down by its own height */
   const fs = document.querySelector(".stubcard.fresh");
   if (fs) { const ul = fs.parentElement; ul.classList.add("pushing"); ul.style.setProperty("--push", `${-(fs.offsetHeight + 10)}px`); ul.style.setProperty("--lag", fs.style.getPropertyValue("--lag")); }
-  if (key && !opening) { const el = document.querySelector(key); if (el && !(sheet && !el.closest(".sheet"))) { el.focus({ preventScroll: true });
+  if (key && !opening) { const el = document.querySelector(key); if (el && !((sheet || panel) && !el.closest(".sheet"))) { el.focus({ preventScroll: true });
     /* a field drawn again mid-typing keeps the caret at the end, not the start */
     if (el.matches("input, textarea") && el.value) { try { el.setSelectionRange(el.value.length, el.value.length); } catch (e) {} } } }
 }
@@ -808,6 +917,29 @@ function ticket(peek) {
     : p === "focus" ? focusPicker()
     : p === "task" ? `<div class="picker" id="deal-picker"><label class="vh" for="task">What you'll work on</label><input id="task" value="${esc(deal.task)}"${big.on ? ` maxlength="80"` : ""}><button class="chip" id="taskdone">Done</button></div>` : "";
   const serial = String(412 + ledger.length).padStart(4, "0");
+  /* "Break first?" on a card loads that big one here: its name printed on the ticket, its first move under it,
+     the break and length still yours to change. Deal starts it from the card, so it isn't a new big one. */
+  const fc = mode !== "intercept" ? fromCard : null;
+  if (fc) {
+    const named = `<span class="fixed">${esc(fc.title)}</span>`;
+    const s = deal.act
+      ? `<span class="nowrap">${tokB(p)} of ${tokA(p)},</span> then <span class="nowrap">${tokF(p)} of</span> ${named}.`
+      : `${tokA(p)}. Straight into <span class="nowrap">${tokF(p)} of</span> ${named}.`;
+    return `<div class="ticketwrap${peek ? " peek" : ""}"><section class="ticket" id="ticket" aria-label="Your deal on ${esc(fc.title)}">
+    <div class="body">
+      <div class="tickethead"><span class="serial">No. ${serial}<br>${clockStr()}</span>${STAMPBOX}</div>
+      <p class="sentence">${s}</p>
+      ${fc.startWith ? `<p class="startw"><span>Start with:</span> ${N(esc(moveText(fc.startWith)))}</p>` : ""}
+      ${isLong(deal.focusMin) && p !== "focus" ? `<p class="plan">${N(planLine(deal))}</p>` : ""}
+      ${pk}
+      <button class="textbtn notcard" id="notcard">Not this one</button>
+    </div>
+    <div class="stub perf">
+      <button class="primary" id="shake">Deal</button>
+      <p class="hint">Tap any underlined part to change it.</p>
+    </div>
+  </section></div>`;
+  }
   /* spec 008: the chip lives on the Quick Deal ticket only (not the intercept), always shown, never pre-selected */
   const offerBig = mode !== "intercept";
   const isBig = offerBig && big.on;
@@ -856,10 +988,35 @@ const newest = (list, act) => [...list].reverse().find(e => e.kind !== "cleared"
 /* one short line, not a stub: tickets are for deals you can act on */
 const SHORT = { freebie: "on the house", borrow: "borrowed", trade: "added to focus", bonus: "bonus", override: "no terms", cleared: "" };
 const lastLine = e => `Last deal: ${esc(e.text.replace(/ more min of /, " min of ").replace(/^(\d)/, "+$1"))} at ${e.t}${SHORT[e.kind] ? `, ${SHORT[e.kind]}` : ""}.`;
+const DOTS = `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>`;
+/* spec 008 "Day 2 and later": a card per open big one, above the ticket. A comeback card says what to do now and
+   nothing about the time between. */
+function bigCard(c) {
+  const t = esc(c.title), prog = c.comeback ? "" : progressText(c.progress);
+  return `<li class="bigcard${c.comeback ? " comeback" : ""}">
+    <button class="go" data-card="${esc(c.id)}" aria-label="${c.minutes} min, start ${t}"><b>${c.minutes}</b><span>min</span></button>
+    <div class="what">
+      <div class="row"><h2 class="ttl">${c.comeback ? `${t}’s still here.` : t}</h2><button class="more" data-menu="${esc(c.id)}" aria-haspopup="dialog" aria-label="More for ${t}">${DOTS}</button></div>
+      ${c.comeback ? `<p class="ask">Smaller first move today?</p>` : ""}
+      ${c.startWith ? `<p class="startw"><span>Start with:</span> ${N(esc(moveText(c.startWith)))}</p>` : ""}
+      <div class="foot">${prog ? `<span class="prog">${N(prog)}</span>` : ""}<button class="textbtn brk" data-breakfirst="${esc(c.id)}" aria-label="Break first, then ${t}">Break first?</button></div>
+    </div>
+  </li>`;
+}
+function cardsView() {
+  /* the card loaded into the ticket is on the ticket now, not above it */
+  const open = cards().filter(c => !fromCard || c.id !== fromCard.id);
+  if (!open.length) return "";
+  const shown = open.slice(0, CARDS_SHOWN);
+  shown.forEach(c => { if (c.comeback) noteComeback(c.id); });
+  /* the list also holds the ones set aside, so it stays reachable whenever a card is shown */
+  return `<ul class="bigones" aria-label="Your big ones">${shown.map(bigCard).join("")}</ul>
+  <button class="textbtn allbig" id="allbig" aria-haspopup="dialog">All big ones</button>`;
+}
 function startView() {
   const last = newest(ledger) || newest(SEED);
-  return `<h1 class="home">Make a deal</h1>${ticket(true)}
-  ${deal.act ? `<button class="textbtn skip" id="skipbreak">Skip the break, start ${esc(shortTask())}</button>` : ""}
+  return `<h1 class="home">Make a deal</h1>${cardsView()}${ticket(true)}
+  ${deal.act ? `<button class="textbtn skip" id="skipbreak">Skip the break, start ${esc(fromCard ? fromCard.title : shortTask())}</button>` : ""}
   <section class="rows anchor" aria-label="Tonight so far">
     ${presence()}
     <button class="presence lastline" id="toledger" aria-describedby="ledgerhint"><span>${N(lastLine(last))}</span>${CHEV}</button>
@@ -897,12 +1054,16 @@ function runningView() {
   const aside = b.type === "focus" && S.durMs >= LONG_MS ? `<p class="aside">${half && !quiet ? "Halfway. Stretch if you like." : ""}</p>` : "";
   /* motion windows: a block change, minutes wound on after a deal, the heads-up, time up */
   const tn = since("turn", 900), wd = since("wind", 900), hu = since("heads", 700), up = since("up", 700), ink = hu ?? up, dl = tn ?? wd;
+  /* a big one's focus block says its first move (the bookmark once one is left) under the title */
+  const sw = !isB && S.taskId ? (S.firstMove ?? (cardById(S.taskId) || {}).startWith ?? "") : "";
+  const keepOn = !isB && WAKE_OK ? `<button class="keepon" id="keepon" role="switch" aria-checked="${wakeOn}"><span class="box" aria-hidden="true">${CHECK}</span>Keep screen on</button>` : "";
   return `<div class="now${tn != null ? " turn" : ""}"${tn != null ? ` style="${lagVar(tn)}"` : ""}>
     <div class="nowhead">
       <span class="kind"><span class="swatch ${isB ? "break" : "focus"}" aria-hidden="true"></span>${isB ? "Break you chose" : "Focus"}</span>
       ${S.serial ? `<span class="dealtwrap${S.justStarted ? " fresh" : ""}"><span class="dealt"><span class="serial">No. ${S.serial}</span><span class="stamp">DEAL</span></span></span>` : ""}
     </div>
     <h1>${esc(title(b.label))}</h1>
+    ${sw ? `<p class="sub startw"><span>Start with:</span> ${N(esc(moveText(sw)))}</p>` : ""}
   </div>
   <div class="timerwrap">
     <div class="dial${S.justStarted ? " sweep" : ""}${r <= 0 ? " done" : ""}${heads ? " heads" : ""}${tn != null ? " turn" : wd != null ? " wind" : ""}" style="--p:${r <= 0 ? 0 : (r / S.durMs).toFixed(4)};${dialTicks(S.durMs / 60000)}${dl != null ? ";" + lagVar(dl) : ""}" role="img" aria-label="${r <= 0 ? "Time is up" : m + " minutes left" + (half ? ", halfway" : "")}">
@@ -914,7 +1075,7 @@ function runningView() {
   <div class="stack act${hu != null ? " fresh" : ""}"${hu != null ? ` style="${lagVar(hu)}"` : ""}>
     ${isB
       ? (heads ? `<button class="primary" id="startnow">Start ${esc(nameOf(nxt))} now</button>` : `<button class="secondary" id="startnow">Start ${esc(nameOf(nxt))} early</button>`)
-      : `<button class="textbtn" id="endearly">Stop for now</button>`}
+      : `<button class="textbtn" id="endearly">Stop for now</button>${keepOn}`}
   </div>
   <section class="rows" aria-label="Your room">
     ${presence(!isB)}
@@ -979,8 +1140,14 @@ function renderSheet() {
       const needs = offer.requiresIntention;
       if (needs && sheet.draft == null && !sheet.typing) sheet.draft = "Open the chapter";
       const sug = ["Open the chapter", "Read one page"];
-      /* each term is its own button: one tap stamps it and the sheet closes */
-      const termTicket = (i, fig, top, cost) => tick("button", ` data-term="${i}"`, fig, top, TAPSLOT, cost);
+      /* each term is its own button: one tap stamps it and the sheet closes. ADR 0005: the one picked last time
+         waits pre-selected, and Deal under the pad takes it, so the usual answer is one tap on the usual spot. */
+      const pre = offer.terms.findIndex(t => t.kind === lastRepay);
+      const PRESLOT = `<span class="slot" aria-hidden="true"><span class="tap">Last pick</span><span class="stamp ghost">DEAL</span></span>`;
+      const termTicket = (i, fig, top, cost) => i === pre
+        ? tick("button", ` data-term="${i}"`, fig, `${top}<span class="vh">, your pick last time</span>`, PRESLOT, cost).replace('class="term"', 'class="term pre"')
+        : tick("button", ` data-term="${i}"`, fig, top, TAPSLOT, cost);
+      const dealPre = pre >= 0 ? `<button class="primary" id="sealpre">Deal</button>` : "";
       const borrowCost = !bp.from ? "Paid back from a later break tonight."
         : bp.carry ? `Next break ${arrow(bp.from, bp.to)} min. ${bp.carry} more come out of later breaks.`
         : `Next break ${arrow(bp.from, bp.to)} min.`;
@@ -1002,6 +1169,7 @@ function renderSheet() {
           ${pick}
           ${sheet.need ? `<p class="need" id="needtxt">Type the first thing, or pick one above.</p>` : ""}
           <div class="terms" role="group" aria-label="Where the 5 minutes come from">${tickets}</div>
+          ${dealPre}
           ${back}
           ${noterms}`;
       } else {
@@ -1009,6 +1177,7 @@ function renderSheet() {
           <h2 id="sh" tabindex="-1">${ask}</h2>
           ${clockSays("Sure. Where do the 5 minutes come from?", "fromh")}
           <div class="terms" role="group" aria-labelledby="fromh">${tickets}</div>
+          ${dealPre}
           ${back}
           ${noterms}`;
       }
@@ -1033,8 +1202,120 @@ function renderSheet() {
   updateCountdown();
   if (sheet.focusMe) { const h = $("#sh"); if (h) h.focus({ preventScroll: true }); sheet.focusMe = false; }
 }
+/* ---------- the card's ⋯ menu, its delete check, and "All big ones": a sheet on the home screen ---------- */
+const panelOpen = () => !!(panel && !S && tab === "now" && mode === "start");
+function panelBody() {
+  if (panel.kind === "menu") {
+    const c = cardById(panel.id); if (!c) return null;
+    const t = esc(c.title);
+    if (panel.confirm) return `<span class="grab" aria-hidden="true"></span>
+      <h2 id="ph" tabindex="-1">Delete ${t}?</h2>
+      <p id="pdesc">This can't be undone.</p>
+      <button class="primary" id="d-keep">Keep it</button>
+      <button class="secondary" id="d-yes">Delete</button>`;
+    /* Split and Spread arrive with the planning sheets (spec 008, week 3) */
+    return `<span class="grab" aria-hidden="true"></span>
+      <h2 id="ph" tabindex="-1">${t}</h2>
+      <div class="menu" role="group" aria-labelledby="ph">
+        <button class="mrow" disabled>Split into pieces<small>Soon</small></button>
+        <button class="mrow" disabled>Spread over the days left<small>Soon</small></button>
+        <button class="mrow" id="m-fresh">Start fresh on this one<small>Clears the bookmark and your gut size. Pieces stay.</small></button>
+        <button class="mrow" id="m-aside">Set aside<small>Off this screen. It waits in All big ones.</small></button>
+        <button class="mrow" id="m-del">Delete</button>
+      </div>
+      <button class="secondary" id="p-close">Close</button>`;
+  }
+  const items = panel.items;
+  const row = it => it.status === "set_aside"
+    ? `<li class="lrow setaside"><span class="ltitle">${esc(it.title)}</span><button class="chip" data-reopen="${esc(it.id)}" aria-label="Bring it back, ${esc(it.title)}">Bring it back</button></li>`
+    : (() => { const m = (cardById(it.id) || {}).minutes || 15; return `<li class="lrow"><span class="ltitle">${esc(it.title)}</span><button class="trychip" data-lstart="${esc(it.id)}" aria-label="${m} min, start ${esc(it.title)}">${N(m)} min</button></li>`; })();
+  const open = (items || []).filter(i => i.status !== "set_aside"), aside = (items || []).filter(i => i.status === "set_aside");
+  const list = panel.error ? `<p>Your big ones didn't load.</p><button class="secondary" id="l-retry">Try again</button>`
+    : !items ? `<p class="soft" role="status">Getting your big ones…</p>`
+    : !items.length ? `<p class="soft">Nothing here yet. Tick “Bigger than one block?” on a deal to start one.</p>`
+    : `${open.length ? `<ul class="biglist" aria-label="Open">${open.map(row).join("")}</ul>` : ""}
+      ${aside.length ? `<h3 class="label" id="asideh">Set aside</h3><ul class="biglist" aria-labelledby="asideh">${aside.map(row).join("")}</ul>` : ""}`;
+  return `<span class="grab" aria-hidden="true"></span>
+    <h2 id="ph" tabindex="-1">All big ones</h2>
+    ${list}
+    <button class="secondary" id="p-close">Close</button>`;
+}
+function renderPanel() {
+  const root = $("#panel-root");
+  if (panel && !panelOpen()) panel = null;
+  const body = panel && panelBody();
+  if (!body) {
+    panel = null; delete root.dataset.sig;
+    const old = root.querySelector(".scrim:not(.leaving)");
+    if (old) { old.classList.remove("rise"); old.classList.add("leaving"); old.setAttribute("inert", ""); old.setAttribute("aria-hidden", "true"); setTimeout(() => old.remove(), 300); }
+    setInert(); return;
+  }
+  /* drawn again only when it changes, so a card update from the server never steals focus from a row */
+  if (root.dataset.sig === body && !panel.focusMe) return;
+  root.dataset.sig = body;
+  const oe = performance.now() - panel.openedAt;
+  const rise = oe < 800 ? ` rise" style="${lagVar(oe)}` : "";
+  root.innerHTML = `<div class="scrim${rise}"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="ph"${body.includes('id="pdesc"') ? ` aria-describedby="pdesc"` : ""}>${body}</div></div>`;
+  setInert();
+  bindPanel();
+  const f = panel.focusMe ? (panel.focusSel && root.querySelector(panel.focusSel)) || $("#ph") : null;
+  if (f) f.focus({ preventScroll: true });
+  panel.focusMe = false; panel.focusSel = null;
+}
+function openPanel(p, back) { panel = { ...p, back, focusMe: true, openedAt: performance.now() }; renderPanel(); }
+/* closing puts focus back on what opened it, or on the page title when that is gone */
+function closePanel(to) {
+  const back = to || (panel && panel.back); panel = null; renderPanel();
+  const el = back && document.querySelector(back);
+  if (el) el.focus({ preventScroll: true }); else focusTitle();
+}
+function openList() {
+  openPanel({ kind: "list", items: null }, "#allbig");
+  const load = BE && BE.allBigOnes ? BE.allBigOnes() : Promise.resolve([...cards().map(c => ({ id: c.id, title: c.title, status: "open" })), ...demoAside]);
+  load.then(items => { if (panel && panel.kind === "list") { panel.items = items; panel.error = false; renderPanel(); } })
+    .catch(() => { if (panel && panel.kind === "list") { panel.error = true; renderPanel(); } });
+}
+/* the demo's set-aside big ones (live mode reads them from api.tasks.all) */
+let demoAside = [];
+/* the card actions: the server's copy follows; the screen changes at once */
+function cardAction(id, action) {
+  const c = cardById(id); if (!c) return;
+  if (BE) BE.taskMenu(id, action);
+  if (action === "remove" || action === "setAside") {
+    bigOneCards = cards().filter(x => x.id !== id);
+    if (action === "setAside" && !BE) demoAside = [{ id, title: c.title, status: "set_aside" }, ...demoAside];
+  }
+  /* the demo's start fresh: no bookmark, no gut size, so the type's own first move (live mode waits for the server's card) */
+  if (action === "startFresh" && !BE) Object.assign(c, { startWith: FIRST_MOVES[c.taskType] || "", progress: c.progress && c.progress.kind === "left" ? null : c.progress, comeback: false });
+  const next = cards().find(x => x.id !== id), to = cardById(id) ? `[data-menu="${id}"]` : next ? `[data-card="${next.id}"]` : null;
+  panel = null; render();
+  const el = to && document.querySelector(to); if (el) el.focus({ preventScroll: true }); else focusTitle();
+  say(action === "remove" ? `Deleted ${c.title}.` : action === "setAside" ? `${c.title} set aside. It waits in All big ones.` : `Starting fresh on ${c.title}.`);
+}
+function bindPanel() {
+  on("#p-close", () => closePanel());
+  on("#m-fresh", () => cardAction(panel.id, "startFresh"));
+  on("#m-aside", () => cardAction(panel.id, "setAside"));
+  on("#m-del", () => { panel.confirm = true; panel.focusMe = true; renderPanel(); });
+  on("#d-keep", () => { panel.confirm = false; panel.focusMe = true; panel.focusSel = "#m-del"; renderPanel(); });
+  on("#d-yes", () => cardAction(panel.id, "remove"));
+  on("#l-retry", () => openList());
+  document.querySelectorAll("[data-lstart]").forEach(b => b.onclick = () => {
+    const it = (panel.items || []).find(x => x.id === b.dataset.lstart); if (!it) return;
+    const c = cardById(it.id) || { id: it.id, title: it.title, startWith: "", minutes: 15, comeback: false };
+    panel = null; startCard(c, { act: null, breakMin: deal.breakMin, task: c.title, focusMin: c.minutes });
+  });
+  document.querySelectorAll("[data-reopen]").forEach(b => b.onclick = () => {
+    const it = (panel.items || []).find(x => x.id === b.dataset.reopen); if (!it) return;
+    if (BE) BE.taskMenu(it.id, "reopen");
+    else { demoAside = demoAside.filter(x => x.id !== it.id); bigOneCards = [{ id: it.id, title: it.title, startWith: "", progress: null, minutes: 15, comeback: false, offerRespread: false }, ...cards()]; }
+    it.status = "open"; panel.focusMe = true; panel.focusSel = `[data-lstart="${it.id}"]`; render();
+    say(`${it.title} is back with your big ones.`);
+  });
+  const scrim = $("#panel-root .scrim"); if (scrim) scrim.onclick = e => { if (e.target === scrim) closePanel(); };
+}
 function setInert() {
-  const on = !!(sheet && S && tab === "now");
+  const on = !!(sheet && S && tab === "now") || panelOpen();
   document.querySelectorAll(".app, nav.tabs").forEach(el => { if (on) el.setAttribute("inert", ""); else el.removeAttribute("inert"); });
 }
 function openSheet(s) { opener = document.activeElement; const at = performance.now(); sheet = { ...s, focusMe: true, openedAt: at, termsAt: s.asking ? at : null }; say(s.kind === "bonus" ? "Focus block ended. Offer to keep going." : `${title(cur().label)} time is up.`); }
@@ -1139,24 +1420,42 @@ function bind() {
     /* one line: Enter is "done", and moves on to the Deal button */
     fm.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); const s = $("#shake"); if (s) s.focus(); } };
   }
+  /* spec 008 day 2, R25: a card's length button starts the big one at once, no break first */
+  document.querySelectorAll("[data-card]").forEach(b => b.onclick = () => { const c = cardById(b.dataset.card); if (c) startCard(c, { act: null, breakMin: deal.breakMin, task: c.title, focusMin: c.minutes }); });
+  document.querySelectorAll("[data-breakfirst]").forEach(b => b.onclick = () => loadCard(b.dataset.breakfirst));
+  document.querySelectorAll("[data-menu]").forEach(b => b.onclick = () => openPanel({ kind: "menu", id: b.dataset.menu }, `[data-menu="${b.dataset.menu}"]`));
+  on("#allbig", () => openList());
+  on("#notcard", () => { const id = fromCard.id; deal.focusMin = fromCard.prevFocus; fromCard = null; picker = null; nextFocus = `[data-breakfirst="${id}"]`; render(); say("Back to a new deal."); });
+  on("#keepon", () => {
+    wakeOn = !wakeOn; try { localStorage.setItem(WAKE_KEY, wakeOn ? "on" : "off"); } catch (e) {}
+    const k = $("#keepon"); k.setAttribute("aria-checked", wakeOn); syncWake();
+    say(wakeOn ? "The screen stays on during focus." : "The screen can sleep again.");
+  });
+  on("#sealpre", () => { const b = $("button.term.pre"); if (b && b.onclick) b.onclick(); });
   on("#shake", () => {
-    const t = $("#ticket"), btn = $("#shake"); t.classList.add("stamped"); btn.classList.add("pressed"); btn.disabled = true; buzz(14, reduce ? 0 : 150);
+    const t = $("#ticket"), btn = $("#shake"); t.classList.add("stamped"); btn.classList.add("pressed"); btn.disabled = true; buzz(14, reduce ? 0 : 150); stamping = true;
     const serial = String(412 + ledger.length).padStart(4, "0");
-    /* a big one runs as an ordinary Quick Deal whose first focus block is the first payment (15 or 30) */
-    const bg = mode !== "intercept" && big.on ? { ...big } : null;
-    const d = bg ? { ...deal, focusMin: bg.pay } : deal;
+    /* a ticket loaded from a card starts that big one; a big one runs as an ordinary Quick Deal whose first focus block is the first payment (15 or 30) */
+    const fc = mode !== "intercept" ? fromCard : null;
+    const bg = !fc && mode !== "intercept" && big.on ? { ...big } : null;
+    const d = fc ? { ...deal, task: fc.title } : bg ? { ...deal, focusMin: bg.pay } : { ...deal };
     const go = () => {
+      stamping = false;
       S = buildSession(d); S.justStarted = true; S.serial = serial; mode = "start"; picker = null;
+      /* the Quick Deal's own length comes back once the card's deal is made */
+      if (fc) { deal.focusMin = fc.prevFocus; fromCard = null; S.taskId = fc.id; S.firstMove = fc.startWith || ""; }
+      if (bg) S.firstMove = bg.move.trim();
       if (BE) {
         saveDeal();
-        if (bg) BE.startBigOne({ title: bigTitle(), ...(bg.type ? { taskType: bg.type } : {}), ...(bg.gut ? { gutMin: bg.gut } : {}), firstMove: bg.move.trim(), deal: d, namedAt: bg.namedAt ?? Date.now() + clockOffset });
-        else BE.start(deal);
+        if (fc) { BE.startFromCard(fc.id, d); if (fc.comeback) BE.logEvent("comeback_started", fc.id); }
+        else if (bg) BE.startBigOne({ title: bigTitle(), ...(bg.type ? { taskType: bg.type } : {}), ...(bg.gut ? { gutMin: bg.gut } : {}), firstMove: bg.move.trim(), deal: d, namedAt: bg.namedAt ?? Date.now() + clockOffset });
+        else BE.start(d);
       }
       /* the demo has no server: its big one is a sample card, so the block-end notes have something to ask about */
-      if (bg && !BE) { S.taskId = "demo"; bigOneCards = [{ id: "demo", title: bigTitle(), ...(bg.type ? { taskType: bg.type } : {}) }]; }
+      if (bg && !BE) { S.taskId = "demo"; bigOneCards = [{ id: "demo", title: bigTitle(), startWith: bg.move.trim(), progress: null, minutes: bg.pay, comeback: false, offerRespread: false, ...(bg.type ? { taskType: bg.type } : {}) }, ...cards().filter(c => c.id !== "demo")]; }
       if (bg) big = newBig();
       const first = S.blocks[0];
-      toast = first.type === "break" ? `Deal. ${cap(shortTask())} starts at ${clockStr(Date.now() + first.min * 60000)}.` : "Deal. Go.";
+      toast = first.type === "break" ? `Deal. ${fc ? fc.title : cap(shortTask())} starts at ${clockStr(Date.now() + first.min * 60000)}.` : "Deal. Go.";
       setTimeout(() => { toast = null; if (S) S.justStarted = false; lastSig = ""; }, 3500);
       say(toast); lastSig = ""; render();
     };
@@ -1233,6 +1532,30 @@ function bind() {
   roving();
 }
 function on(sel, fn) { const el = $(sel); if (el) el.onclick = fn; }
+/* while the Deal stamp is coming down, a card update from the server waits for the next render */
+let stamping = false;
+/* start a big one from its card (or the list): an ordinary Quick Deal session on that big one, no new big one */
+function startCard(c, d) {
+  panel = null; picker = null; mode = "start";
+  S = buildSession(d); S.justStarted = true; S.serial = String(412 + ledger.length).padStart(4, "0"); S.taskId = c.id; S.firstMove = c.startWith || "";
+  if (BE) { BE.startFromCard(c.id, d); if (c.comeback) BE.logEvent("comeback_started", c.id); }
+  toast = "Deal. Go.";
+  setTimeout(() => { toast = null; if (S) S.justStarted = false; lastSig = ""; }, 3500);
+  say(`Deal. ${c.title}, ${d.focusMin} minutes. Go.`); lastSig = ""; render(); focusTitle();
+}
+/* "Break first?": the card goes onto the Quick Deal ticket so the break can be planned; the Quick Deal's own length comes back after */
+function loadCard(id) {
+  const c = cardById(id); if (!c) return;
+  fromCard = { id: c.id, title: c.title, startWith: c.startWith || "", minutes: c.minutes, comeback: !!c.comeback, prevFocus: fromCard ? fromCard.prevFocus : deal.focusMin };
+  deal.focusMin = ALL_LENGTHS.includes(c.minutes) ? c.minutes : 15;
+  big = newBig();
+  /* no break picked yet: the break choices open, since a break is why you're here */
+  picker = deal.act ? null : "act";
+  nextFocus = deal.act ? '[data-pick="break"]' : '[data-pick="act"]';
+  render();
+  const t = $("#ticket"); if (t) t.scrollIntoView({ block: "start" });
+  say(`${c.title} is on the ticket. Pick your break, then Deal.`);
+}
 /* a one-line field written on a ruled line grows to fit what's written (and again once the fonts land) */
 function fitLine(el, again = true) {
   el.style.height = "auto"; el.style.height = `${el.scrollHeight + el.offsetHeight - el.clientHeight}px`;
@@ -1263,7 +1586,9 @@ function seal(i) {
   setTimeout(() => take(term, i), !t || !t.classList.contains("term") ? 0 : reduce ? 450 : 600);
 }
 /* the announcement says what the deal cost, not only what it bought */
-function take(term, i) { const intention = sheet && sheet.intention; if (BE) BE.ask(i === "x" ? "override" : +i, intention); file(applyTerm(S, term, intention)); if (tab !== "ledger") unseen++; closeSheet(); beat("wind"); say(`Deal, ${lower(TERMS[term.kind])}. ${title(cur().label)} for ${minsLeft()} more minutes.${S.debt > 0 ? ` ${S.debt} borrowed minutes come out of later breaks.` : ""}`); render(); restoreFocus(); }
+function take(term, i) { const intention = sheet && sheet.intention; if (BE) BE.ask(i === "x" ? "override" : +i, intention);
+  /* ADR 0005: remembered here at once; the server keeps the same pick on the user */
+  if (term.kind === "borrow" || term.kind === "trade") { lastRepay = term.kind; S.lastRepay = term.kind; } file(applyTerm(S, term, intention)); if (tab !== "ledger") unseen++; closeSheet(); beat("wind"); say(`Deal, ${lower(TERMS[term.kind])}. ${title(cur().label)} for ${minsLeft()} more minutes.${S.debt > 0 ? ` ${S.debt} borrowed minutes come out of later breaks.` : ""}`); render(); restoreFocus(); }
 function dismiss() { if (!sheet) return; const moved = movedOn(); sendNotes(); if (moved) closeSheet(); else if (sheet.kind === "bonus") { S.bonusOffered = true; nextBlock(); } else if (remaining() <= 0) nextBlock(); else closeSheet(); render(); restoreFocus(); }
 function restoreFocus() { const t = opener && document.body.contains(opener) ? opener : document.querySelector(".act button, #view h1"); if (t) { if (!t.matches("button")) t.tabIndex = -1; t.focus({ preventScroll: true }); } }
 function takeBonus() {
@@ -1280,12 +1605,19 @@ function escape() {
   if (sheet.kind === "offer") { closeSheet(); render(); restoreFocus(); }
 }
 document.addEventListener("keydown", e => {
-  if (!sheet) return;
-  if (e.key === "Escape") { e.preventDefault(); escape(); }
+  const inPanel = !sheet && panelOpen();
+  if (!sheet && !inPanel) return;
+  if (e.key === "Escape") {
+    e.preventDefault();
+    /* the delete check backs out to the menu; the menu and the list close */
+    if (inPanel) { if (panel.confirm) { panel.confirm = false; panel.focusMe = true; panel.focusSel = "#m-del"; renderPanel(); } else closePanel(); }
+    else escape();
+  }
   if (e.key === "Tab") {
-    const f = [...document.querySelectorAll(".sheet button:not(:disabled), .sheet input, .sheet textarea, .sheet [role=radio][tabindex='0']")].filter(x => x.tabIndex !== -1); if (!f.length) return;
+    const root = inPanel ? "#panel-root .scrim:not(.leaving) .sheet" : "#sheet-root .scrim:not(.leaving) .sheet";
+    const f = [...document.querySelectorAll(["button:not(:disabled)", "input", "textarea", "[role=radio][tabindex='0']"].map(s => `${root} ${s}`).join(", "))].filter(x => x.tabIndex !== -1); if (!f.length) return;
     const first = f[0], last = f[f.length - 1];
-    if (e.shiftKey && (document.activeElement === first || document.activeElement.id === "sh")) { e.preventDefault(); last.focus(); }
+    if (e.shiftKey && (document.activeElement === first || ["sh", "ph"].includes(document.activeElement.id))) { e.preventDefault(); last.focus(); }
     else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
   }
 });
@@ -1352,9 +1684,20 @@ function seedLedger() {
   ledger = SEED.map(e => ({ ...e }));
   studied = 64;
 }
+/* spec 008 day 2: sample big ones, in the order the server sends them (comeback first, then newest worked) */
+const DEMO_CARDS = [
+  { id: "paper", title: "History paper", startWith: "Claim for paragraph 2", progress: { kind: "in", minutes: 45 }, minutes: 30, comeback: false, offerRespread: false, taskType: "writing" },
+  { id: "orgo", title: "Orgo problem set 4", startWith: "Problem 6, the ring flip", progress: { kind: "stamped", n: 2 }, minutes: 20, comeback: false, offerRespread: false, taskType: "problems", currentPiece: "Problems 5 to 8" },
+  { id: "bio", title: "BIO 180 midterm", startWith: "Quiz yourself on topic 1 without notes", progress: null, minutes: 15, comeback: false, offerRespread: false, taskType: "exam" },
+  { id: "site", title: "Portfolio site", startWith: "Next visible thing: the about page", progress: { kind: "left", minutes: 80 }, minutes: 45, comeback: false, offerRespread: false, taskType: "project" },
+  { id: "essay", title: "Scholarship essay", startWith: "", progress: { kind: "in", minutes: 125 }, minutes: 15, comeback: false, offerRespread: false },
+];
+const DEMO_COMEBACK = { id: "lit", title: "Lit review", startWith: "Read your last paragraph and fix one sentence", progress: { kind: "in", minutes: 70 }, minutes: 15, comeback: true, offerRespread: false, taskType: "writing" };
+const demoCards = list => list.map(c => ({ ...c, ...(c.progress ? { progress: { ...c.progress } } : {}) }));
 function fromHash() {
   const h = location.hash.slice(1);
-  fresh(); mode = "start"; setTab("now"); bigOneCards = [];
+  fresh(); mode = "start"; setTab("now"); bigOneCards = []; demoAside = []; wakeOn = readWake();
+  let after = null;
   const run = (left, ask) => { S = buildSession(deal); S.serial = "0412"; S.startedAt = vnow - (S.durMs - left); S.askCount = ask || 0; };
   if (h === "intercept") mode = "intercept";
   else if (h === "running") run(6.3 * 60000);
@@ -1389,10 +1732,27 @@ function fromHash() {
       sheet = { kind: "boundary", asking: false, focusMe: true, notes: newNotes() };
     }
   }
+  /* spec 008, day 2: cards above the ticket; a comeback card first; more than three behind "All big ones" */
+  else if (h.startsWith("cards")) {
+    bigOneCards = demoCards(h === "cards-comeback" ? [DEMO_COMEBACK, DEMO_CARDS[0]] : h === "cards" ? DEMO_CARDS.slice(0, 2) : DEMO_CARDS);
+    demoAside = [{ id: "lab", title: "Chem lab report", status: "set_aside" }];
+    if (h === "cards-menu" || h === "cards-delete") after = () => { openPanel({ kind: "menu", id: "paper", confirm: h === "cards-delete" }, '[data-menu="paper"]'); };
+    else if (h === "cards-all") after = () => openList();
+    else if (h === "cards-breakfirst") after = () => loadCard("paper");
+  }
+  /* a big one's focus block started from its card, with "Keep screen on" ticked */
+  else if (h === "running-wakelock") {
+    bigOneCards = demoCards(DEMO_CARDS.slice(0, 2)); wakeOn = true;
+    S = buildSession({ act: null, breakMin: 10, task: "History paper", focusMin: 30 }); S.serial = "0412"; S.taskId = "paper"; S.firstMove = "Claim for paragraph 2";
+    S.startedAt = vnow - 8 * 60000;
+  }
+  /* ADR 0005: the second ask, with last time's trade pre-selected */
+  else if (h === "offer-terms-repay") { run(0, 1); lastRepay = "trade"; S.lastRepay = "trade"; sheet = { kind: "boundary", asking: true, focusMe: true }; }
   else if (h === "ledger") { seedLedger(); setTab("ledger"); }
   else if (h === "room") setTab("room");
   lastSig = S ? signature() : ""; wasHeads = !!S && isHeads();
   render();
+  if (after) after();
 }
 window.addEventListener("hashchange", () => { if (!BE) fromHash(); });
 fromHash();
@@ -1415,7 +1775,7 @@ window.pomodealApp = {
     if (BE) return;
     BE = backend; speed = 1; vnow = Date.now(); lastReal = performance.now(); DEMO_SHIFT = 0;
     document.body.classList.add("live");
-    fresh(); deal.task = "Reading";
+    fresh(); deal.task = "Reading"; bigOneCards = null; demoAside = [];
     try { const d = JSON.parse(localStorage.getItem(DEAL_KEY) || "null"); if (d && d.task) deal = { ...deal, ...d }; } catch (e) {}
     if (location.hash) history.replaceState(null, "", location.pathname + location.search);
     mode = "start"; setTab("now"); lastSig = ""; render();
@@ -1423,18 +1783,27 @@ window.pomodealApp = {
   /** server time minus this device's time, in ms: time on screen is Date.now() + offset */
   clock(offsetMs) { if (Number.isFinite(offsetMs)) clockOffset = offsetMs; },
   /** all open big ones (comeback first, then newest worked); the cards screen renders them */
-  bigOnes(cards) { bigOneCards = Array.isArray(cards) ? cards : []; },
+  bigOnes(list) {
+    const next = Array.isArray(list) ? list : [], same = bigOneCards && JSON.stringify(next) === JSON.stringify(bigOneCards);
+    bigOneCards = next;
+    /* a big one deleted or set aside elsewhere leaves the ticket and closes its menu */
+    if (fromCard && !cardById(fromCard.id)) { deal.focusMin = fromCard.prevFocus; fromCard = null; }
+    if (panel && panel.kind === "menu" && !cardById(panel.id)) panel = null;
+    if (!same && tab === "now" && !S && mode === "start" && !stamping) render();
+  },
   /** the running session from the server, or null */
   session(doc) {
     if (!BE) return;
     if (!doc) { if (S && !sheet) { S = null; lastSig = ""; render(); } return; }
     /* a block change that came from the server (the scheduled boundary, or another device) turns the dial too */
     if (S && S.id === doc._id && doc.state.idx !== S.idx && S.blocks[S.idx]) { turnFrom = { type: S.blocks[S.idx].type, p: remaining() / S.durMs }; beat("turn"); }
-    const extra = S && S.id === doc._id ? { serial: S.serial, justStarted: S.justStarted, with: S.with }
+    const extra = S && S.id === doc._id ? { serial: S.serial, justStarted: S.justStarted, with: S.with, firstMove: S.firstMove }
       : { serial: String(Math.floor(doc.createdAt / 1000) % 10000).padStart(4, "0") };
     /* the big one rides on the session doc, not its state; notes already sent here or on another device aren't asked again */
     const noted = Math.max(doc.notedIdx ?? -1, S && S.id === doc._id && S.notedIdx != null ? S.notedIdx : -1);
     S = { ...doc.state, id: doc._id, taskId: doc.taskId, ...(noted >= 0 ? { notedIdx: noted } : {}), ...extra };
+    /* ADR 0005: the user's last repayment pick rides on the session doc */
+    S.lastRepay = doc.lastRepay ?? null; lastRepay = S.lastRepay;
     /* a different session replaced this one (started on another device): these notes have nowhere to go, so the sheet closes */
     if (sheet && sheet.notes && sheet.notes.sid !== S.id) { sheet = null; lastSig = ""; render(); return; }
     lastSig = ""; if (!sheet) render();

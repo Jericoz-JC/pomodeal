@@ -96,6 +96,16 @@ Events hold no titles, bookmarks or any typed text. Kinds: big_one_named, first_
 | ms | A duration, optional | Time to first payment | Chris | Deleted at the end of the beta | End-of-beta cleanup |
 | at | When it happened | Bound queries to the beta window | Chris | Deleted at the end of the beta | End-of-beta cleanup |
 
+### Stored on the device (browser storage, never sent)
+
+These live in the browser's `localStorage` on one device. Pomodeal never uploads them; clearing the site's data deletes them.
+
+| Key | What it holds | Why | Who can see | Retention | Deleted by |
+| --- | --- | --- | --- | --- | --- |
+| pomodeal.deal | The last Quick Deal (break activity and length, task, focus length) | Open on the deal you made last time | Anyone using that browser | Until replaced or cleared | Clearing site data |
+| pomodeal.wakelock | "on" or "off" for Keep screen on (spec 008) | Remember the choice per device | Anyone using that browser | Until changed or cleared | Clearing site data |
+| pomodeal.comebackShown | Today's date and the ids of big ones whose comeback card was shown today (spec 008) | Log `comeback_shown` once per card per day | Anyone using that browser | Replaced each day | Clearing site data |
+
 ## Tables planned in spec 008
 
 All fields in this section are planned (spec 008).
