@@ -55,6 +55,8 @@ describe("progressLabel", () => {
   });
   it("exam with no pieces and no work shows nothing", () => {
     expect(progressLabel({ taskType: "exam", workedMin: 0 })).toBeNull();
+    expect(progressLabel({ taskType: "exam", workedMin: 45 })).toBeNull();
+    expect(progressLabel({ taskType: "exam", gutMin: 120, workedMin: 90 })).toBeNull();
   });
 });
 

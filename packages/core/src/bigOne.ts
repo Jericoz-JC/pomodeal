@@ -143,6 +143,7 @@ export function progressLabel(task: Pick<BigOne, "taskType" | "pieces" | "gutMin
     if (stamped * 2 < pieces.length) return { kind: "stamped", n: stamped };
     return { kind: "toGo", n: pieces.length - stamped };
   }
+  if (task.taskType === "exam") return null; // no progress line until it is split into pieces
   if (task.workedMin <= 0) return null;
   if (task.gutMin !== undefined && task.workedMin * 2 >= task.gutMin) {
     return { kind: "left", minutes: Math.max(0, task.gutMin - task.workedMin) };
