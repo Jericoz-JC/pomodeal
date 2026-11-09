@@ -273,7 +273,28 @@ export function aiAllowed(userToday: number, globalToday: number): boolean {
   return userToday < AI_USER_DAILY && globalToday < AI_GLOBAL_DAILY;
 }
 
-const EMAIL_RE = /[^\s@]+@[^\s@]+\.[^\s@]+/g;
+/**
+ * The model's parsed output made safe to show as slots: anything that isn't a named piece with a number of minutes
+ * is dropped, titles are trimmed to TITLE_MAX characters, minutes go to 5-minute steps within PIECE_MIN..PIECE_MAX,
+ * and only the first AI_MAX_PIECES are kept. Takes `unknown` because it is whatever the model sent.
+ */
+export function cleanSuggestion(raw: unknown): { title: string; minutes: number }[] {
+  const list = raw && typeof raw === "object" ? (raw as { pieces?: unknown }).pieces : undefined;
+  if (!Array.isArray(list)) return [];
+  const out: { title: string; minutes: number }[] = [];
+  for (const item of list) {
+    if (out.length >= AI_MAX_PIECES) break;
+    if (!item || typeof item !== "object") continue;
+    const { title, minutes } = item as { title?: unknown; minutes?: unknown };
+    if (typeof title !== "string" || typeof minutes !== "number" || !Number.isFinite(minutes)) continue;
+    const name = [...title.trim()].slice(0, TITLE_MAX).join("").trim();
+    if (!name) continue;
+    out.push({ title: name, minutes: Math.min(PIECE_MAX, Math.max(PIECE_MIN, Math.round(minutes / 5) * 5)) });
+  }
+  return out;
+}
+
+const EMAIL_RE =/[^\s@]+@[^\s@]+\.[^\s@]+/g;
 const PHONE_RE = /(?<![\w])(?:\+?\d{1,2}[\s.-]?)?(?:\(\d{3}\)|\d{3})[\s.-]?\d{3}[\s.-]?\d{4}(?![\w])/g;
 
 /** Strip emails and phone numbers before any text leaves for the model. */

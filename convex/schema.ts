@@ -127,6 +127,27 @@ export default defineSchema({
     .index("by_endpoint", ["endpoint"])
     .index("by_userId", ["userId"]),
 
+  // Spec 008 "Suggest pieces": transient AI output, one row per request, deleted on save, dismiss, a newer request,
+  // deleting the big one, or the daily sweep after 24 h. Pieces are already cleaned by core (cleanSuggestion).
+  pieceSuggestions: defineTable({
+    userId: v.id("users"),
+    taskId: v.id("tasks"),
+    status: v.union(v.literal("pending"), v.literal("ready"), v.literal("failed")),
+    pieces: v.optional(v.array(v.object({ title: v.string(), minutes: v.number() }))),
+    createdAt: v.number(),
+  })
+    .index("by_taskId", ["taskId"])
+    .index("by_createdAt", ["createdAt"]),
+
+  // Spec 008 AI limits: requests per member per local day (10), summed per day for the global cap (300).
+  aiUsage: defineTable({
+    userId: v.id("users"),
+    dayKey: v.string(),
+    count: v.number(),
+  })
+    .index("by_userId_and_dayKey", ["userId", "dayKey"])
+    .index("by_dayKey", ["dayKey"]),
+
   // Beta metrics. Kinds and timings only, never titles, bookmarks or any typed text.
   events: defineTable({
     userId: v.id("users"),

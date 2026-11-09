@@ -1,6 +1,6 @@
 // Spec 008: big ones. Types, copy tables and validation.
 import { describe, expect, it } from "vitest";
-import { cardsFor, AI_GLOBAL_DAILY, AI_USER_DAILY, aiAllowed, scrubForAI, shouldAskCheckIn, weekKey, bigOneProblem, bookmarkPlaceholder, cleanLine, doneQuestion, firstMoveFor, splitSlots } from "../src";
+import { cardsFor, AI_GLOBAL_DAILY, AI_MAX_PIECES, AI_USER_DAILY, aiAllowed, cleanSuggestion, scrubForAI, shouldAskCheckIn, weekKey, bigOneProblem, bookmarkPlaceholder, cleanLine, doneQuestion, firstMoveFor, splitSlots } from "../src";
 
 describe("types and validation", () => {
   it("first moves per type, default and comeback", () => {
@@ -91,6 +91,26 @@ describe("AI limits, scrubbing and check-in week", () => {
     expect(out).not.toContain("206-555-0101");
     expect(out).toContain("Paper");
     expect(scrubForAI("a (206) 555-0101 b +1 206 555 0101 c")).toBe("a b c");
+  });
+  it("cleanSuggestion keeps 12 pieces, minutes in 5-minute steps from 5 to 240, titles up to 80, no empties", () => {
+    const many = Array.from({ length: 15 }, (_, i) => ({ title: `Piece ${i + 1}`, minutes: 30 }));
+    const out = cleanSuggestion({ pieces: many });
+    expect(out).toHaveLength(AI_MAX_PIECES);
+    expect(out[11]).toEqual({ title: "Piece 12", minutes: 30 });
+    expect(cleanSuggestion({ pieces: [{ title: "a", minutes: 2 }, { title: "b", minutes: 999 }, { title: "c", minutes: 42 }, { title: "d", minutes: 47.6 }] }).map((p) => p.minutes))
+      .toEqual([5, 240, 40, 50]);
+    const long = "x".repeat(100);
+    expect(cleanSuggestion({ pieces: [{ title: `  ${long}  `, minutes: 30 }] })[0].title).toHaveLength(80);
+    expect(cleanSuggestion({ pieces: [{ title: "   ", minutes: 30 }, { title: "Outline", minutes: 20 }] })).toEqual([{ title: "Outline", minutes: 20 }]);
+    // empties are dropped before the 12 are counted
+    const padded = [{ title: "", minutes: 30 }, ...many];
+    expect(cleanSuggestion({ pieces: padded })[0].title).toBe("Piece 1");
+  });
+  it("cleanSuggestion drops anything that isn't a piece", () => {
+    expect(cleanSuggestion(null)).toEqual([]);
+    expect(cleanSuggestion({ pieces: "Intro" })).toEqual([]);
+    expect(cleanSuggestion({ pieces: [null, { title: 3, minutes: 30 }, { title: "Body", minutes: "30" }, { title: "Body", minutes: Number.NaN }, { title: "End", minutes: 25 }] }))
+      .toEqual([{ title: "End", minutes: 25 }]);
   });
   it("weekKey and shouldAskCheckIn", () => {
     expect(weekKey("2026-11-08")).toBe("2026-11-08");

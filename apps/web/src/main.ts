@@ -6,7 +6,7 @@ import { ConvexError } from "convex/values";
 import { createClient } from "@workos-inc/authkit-js";
 import { api } from "../../../convex/_generated/api";
 import type { Doc, Id } from "../../../convex/_generated/dataModel";
-import { cardsFor, proposeSpread, splitSlots, type BigOneCardRow, type Piece, type SpreadDay, type TaskType } from "../../../packages/core/src";
+import { cardsFor, proposeSpread, scrubForAI, splitSlots, type BigOneCardRow, type Piece, type SpreadDay, type TaskType } from "../../../packages/core/src";
 import { localDayKey, msToLocalMidnight } from "./days";
 import { mountGate, type GateState, type Provider } from "./gate";
 import { enablePush, pushConfigured, pushSupported, type PushResult } from "./push";
@@ -116,14 +116,24 @@ interface LiveApp {
   clock(offsetMs: number): void;
   /** All open big ones, comeback first then newest worked; the screen shows the first CARDS_SHOWN. */
   bigOnes(cards: BigOneCardRow[]): void;
-  /** What this device can do: Web Push in this tab, opened from the Home Screen, an iPhone Safari tab. */
-  env(e: { pushSupported: boolean; installed: boolean; iosSafari: boolean }): void;
+  /** What this device can do: Web Push in this tab, opened from the Home Screen, an iPhone Safari tab; and whether the
+   *  server offers "Suggest pieces" (api.ai.enabled, so it is sent again whenever that changes). */
+  env(e: { pushSupported: boolean; installed: boolean; iosSafari: boolean; aiSuggest: boolean }): void;
 }
 interface DealArgs { act: string | null; breakMin: number; task: string; focusMin: number }
 /** What the split and spread sheets need about one big one, read from the open-tasks subscription (no refetch). */
 interface PlanTask { taskType?: TaskType; gutMin?: number; openTermsMin: number | null; pieces: Piece[]; dueDay?: string; spreadSignedAt?: number; slots: string[] }
 /** The result of a save or a signature: the server's own words when it refused. */
 type PlanResult = { ok: true } | { ok: false; message: string };
+/** What the split sheet hears about its suggestion: the row as it changes, "failed" for a refusal over the limit or an
+ *  error, "off" when the server has the feature switched off. */
+type SuggestUpdate = { status: "pending" | "ready" | "failed" | "off"; pieces?: { title: string; minutes: number }[] };
+interface SuggestHandle {
+  /** Stop listening; the row stays until a save (which deletes it) or the daily sweep. */
+  unsubscribe(): void;
+  /** Stop listening and delete the row (Undo, Close, or a failure). */
+  dismiss(): void;
+}
 interface Backend {
   start(deal: DealArgs): void;
   ask(pick: number | "override", intention?: string): void;
@@ -144,9 +154,13 @@ interface Backend {
    *  and the proposal from core's proposeSpread, computed here with today's local key; there is no LiveApp push for it. */
   planOf(taskId: string): PlanTask | null;
   proposeSpread(task: { taskType?: TaskType; pieces: Piece[]; openTermsMin: number | null }, dueDay: string): SpreadDay[];
-  /** Replaces the whole pieces array: callers send every piece back with its stampedAt and plannedDay. */
-  saveSplit(taskId: string, pieces: Piece[]): Promise<PlanResult>;
+  /** Replaces the whole pieces array: callers send every piece back with its stampedAt and plannedDay.
+   *  fromSuggestion: the rows started as a suggestion (marks the big one aiSuggested, logs ai_accepted). */
+  saveSplit(taskId: string, pieces: Piece[], fromSuggestion?: boolean): Promise<PlanResult>;
   signSpread(taskId: string, dueDay: string, plan: SpreadDay[]): Promise<PlanResult>;
+  /** Spec 008 "Suggest pieces", after the disclosure: the title leaves this device scrubbed (core's scrubForAI); the
+   *  server adds the type and gut size. daysLeft counts today, from the due day when there is one. Never throws. */
+  suggestPieces(taskId: string, title: string, daysLeft: number | undefined, onUpdate: (u: SuggestUpdate) => void): SuggestHandle;
 }
 let live = false;
 function goLive(convex: ConvexClient) {
@@ -171,6 +185,9 @@ function goLive(convex: ConvexClient) {
     title: p.title, minutes: p.minutes,
     ...(p.plannedDay !== undefined ? { plannedDay: p.plannedDay } : {}), ...(p.stampedAt !== undefined ? { stampedAt: p.stampedAt } : {}),
   });
+  /** The server's switch for "Suggest pieces" (api.ai.enabled), sent to the screens with the device facts. */
+  let aiOn = false;
+  const sendEnv = () => app.env({ pushSupported: pushConfigured() && pushSupported(), installed: standalone, iosSafari: pushConfigured() && isIOS, aiSuggest: aiOn });
   const toDeal = (d: DealArgs) => ({ activity: d.act ?? null, breakMin: d.breakMin, task: d.task, focusMin: d.focusMin });
   const be: Backend = {
     start: (d) => {
@@ -221,18 +238,47 @@ function goLive(convex: ConvexClient) {
       };
     },
     proposeSpread: (task, dueDay) => proposeSpread(task, dayKey(), dueDay),
-    saveSplit: (taskId, pieces) =>
-      convex.mutation(api.tasks.saveSplit, { taskId: taskId as Id<"tasks">, pieces: pieces.map(cleanPiece) })
+    saveSplit: (taskId, pieces, fromSuggestion) =>
+      convex.mutation(api.tasks.saveSplit, { taskId: taskId as Id<"tasks">, pieces: pieces.map(cleanPiece), ...(fromSuggestion ? { fromSuggestion: true } : {}) })
         .then((): PlanResult => ({ ok: true }), refused("saveSplit")),
     signSpread: (taskId, dueDay, plan) =>
       convex.mutation(api.tasks.signSpread, {
         taskId: taskId as Id<"tasks">, dueDay,
         plan: plan.map((d) => ({ day: d.day, minutes: d.minutes, ...(d.pieceIndex !== undefined ? { pieceIndex: d.pieceIndex } : {}) })),
       }).then((): PlanResult => ({ ok: true }), refused("signSpread")),
+    suggestPieces: (taskId, title, daysLeft, onUpdate) => {
+      let stop: (() => void) | null = null;
+      let id: Id<"pieceSuggestions"> | null = null;
+      let dismissed = false;
+      const handle: SuggestHandle = {
+        unsubscribe: () => { stop?.(); stop = null; },
+        dismiss: () => {
+          handle.unsubscribe();
+          if (dismissed) return;
+          dismissed = true;
+          if (id) void convex.mutation(api.ai.dismissSuggestion, { suggestionId: id }).catch(report("dismissSuggestion"));
+        },
+      };
+      convex.mutation(api.ai.requestSuggestion, {
+        taskId: taskId as Id<"tasks">, title: scrubForAI(title), dayKey: dayKey(), ...(daysLeft !== undefined ? { daysLeft } : {}),
+      }).then((r) => {
+        if (typeof r !== "string") {
+          if (r.refused === "off") { aiOn = false; sendEnv(); }
+          onUpdate({ status: r.refused === "off" ? "off" : "failed" });
+          return;
+        }
+        id = r;
+        if (dismissed) { dismissed = false; handle.dismiss(); return; } // the sheet closed while asking
+        stop = convex.onUpdate(api.ai.suggestion, { suggestionId: r }, (row) => { if (row) onUpdate(row); });
+      }).catch((e: unknown) => { report("requestSuggestion")(e); onUpdate({ status: "failed" }); });
+      return handle;
+    },
   };
   // no VAPID key in this build: no taps to offer, so neither the permission button nor the install sheet shows
-  app.env({ pushSupported: pushConfigured() && pushSupported(), installed: standalone, iosSafari: pushConfigured() && isIOS });
+  sendEnv();
   app.attach(be);
+  // "Suggest pieces" shows only while the server has it on (AI_SUGGEST_ENABLED and a key); off until this says so
+  convex.onUpdate(api.ai.enabled, {}, (on) => { aiOn = on; sendEnv(); });
   if (standalone) {
     let first = false;
     try { first = !localStorage.getItem(INSTALL_DONE_KEY); if (first) localStorage.setItem(INSTALL_DONE_KEY, "1"); } catch { /* storage blocked: not logged */ }

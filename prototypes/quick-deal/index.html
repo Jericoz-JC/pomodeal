@@ -354,6 +354,15 @@ p { margin: 0; }
 .undo { display: flex; align-items: center; gap: 4px; min-height: 44px; font-size: .9375rem; }
 .undo .textbtn { color: var(--deal-ink); }
 .perr { font-size: .9375rem; color: var(--gone); }
+/* spec 008 "Suggest pieces": a second quiet row under "Add a piece". The disclosure asks once per device, in its own
+   ruled block like the stamp question; waiting and failing are a plain line, never an alarm */
+.aiask { display: flex; flex-direction: column; gap: 8px; padding: 12px 0 10px; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.aiask p { font-size: 1rem; line-height: 1.4; }
+.aiask .aibtns { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; }
+.aiask .secondary { width: auto; min-height: 48px; padding: 10px 18px; }
+.ainote { display: flex; align-items: center; min-height: 44px; font-size: .9375rem; line-height: 1.35; color: var(--soft); }
+.ainote:focus { outline: none; }
+.ainote:focus-visible { outline-offset: 2px; }
 /* the sheet's one action stays in reach under a long list, set off by a plain rule */
 .sheet.paper .sfoot { position: sticky; bottom: calc(-12px - env(safe-area-inset-bottom, 0px)); z-index: 1; display: flex; flex-direction: column; gap: 2px; margin: 4px -18px calc(-12px - env(safe-area-inset-bottom, 0px));
   padding: 12px 18px calc(8px + env(safe-area-inset-bottom, 0px)); background: var(--card); border-top: 1px solid var(--rule); }
@@ -916,7 +925,7 @@ function syncWake() {
 document.addEventListener("visibilitychange", syncWake);
 /* spec 008 "Push" and "Install onboarding". ENV comes from the app shell (pomodealApp.env); the demo can't take pushes.
    Each offer is made once per device, remembered in localStorage (in memory when storage is blocked). */
-let ENV = { pushSupported: false, installed: false, iosSafari: false };
+let ENV = { pushSupported: false, installed: false, iosSafari: false, aiSuggest: false };
 const PUSH_KEY = "pomodeal.pushAsked", INSTALL_KEY = "pomodeal.installSheet", offered = new Set();
 const wasOffered = k => { if (offered.has(k)) return true; try { return localStorage.getItem(k) === "1"; } catch (e) { return false; } };
 const markOffered = k => { offered.add(k); try { localStorage.setItem(k, "1"); } catch (e) {} };
@@ -1552,6 +1561,7 @@ function renderPanel() {
 function openPanel(p, back) { panel = { ...p, back, focusMe: true, openedAt: performance.now() }; renderPanel(); }
 /* closing puts focus back on what opened it, or on the page title when that is gone */
 function closePanel(to) {
+  if (panel && panel.kind === "split") stopAI(panel);
   const back = to || (panel && panel.back); panel = null; renderPanel();
   const el = back && document.querySelector(back);
   if (el) el.focus({ preventScroll: true }); else focusTitle();
@@ -1663,6 +1673,7 @@ function splitBody() {
     ${p.rows.length ? `<ol class="pieces" aria-label="Pieces">${p.rows.map(row).join("")}</ol>` : ""}
     ${u ? `<p class="undo" role="status">Removed ${esc(pieceName(u.row, u.at))}. <button class="textbtn" id="s-undo">Undo</button></p>` : ""}
     ${full ? `<p class="soft small">Up to ${MAX_PIECES} pieces.</p>` : `<button class="addpiece" id="s-add">${PLUS}Add a piece</button>`}
+    ${aiBlock(p)}
     ${p.error ? `<p class="perr" role="alert">${esc(p.error)}</p>` : ""}
     <div class="sfoot">${sum ? `<p class="sum" id="s-sum">${N(sum)}</p>` : ""}<button class="primary" id="s-save"${splitPieces(p).length ? "" : " disabled"}>${saveText(p)}</button><button class="textbtn pclose" id="p-close">Close</button></div>`;
 }
@@ -1701,6 +1712,73 @@ function dropUndo(p) {
   const el = $("#panel-root .undo"); if (!el) return;
   const had = el.contains(document.activeElement); el.remove(); keepSig();
   if (had) { const f = $("#s-add") || $("#pt-0") || $("#ph"); if (f) f.focus({ preventScroll: true }); }
+}
+
+/* ----- Suggest pieces (spec 008, optional AI) -----
+   Only in this sheet. The first tap on a device shows the disclosure; the answer is kept in localStorage (in memory
+   when storage is blocked), and "I'll split it myself" hides the row on this device. Live, the app shell scrubs the
+   title (core's scrubForAI), asks Convex, and reports the suggestion row as it changes; ENV.aiSuggest is the server's
+   switch (AI_SUGGEST_ENABLED). The suggestion fills the slots for editing; only what the student saves is stored, and
+   Undo, Close or a save ends the row. The demo fills from a canned list. */
+const AI_KEY = "pomodeal.aiConsent";
+let aiConsentMem = null;
+const aiConsent = () => { try { const v = localStorage.getItem(AI_KEY); if (v) return v; } catch (e) {} return aiConsentMem; };
+const setAiConsent = v => { aiConsentMem = v; try { localStorage.setItem(AI_KEY, v); } catch (e) {} };
+/* the spec's words, exactly */
+const AI_DISCLOSURE = "This sends the title, type and size of this big one to Anthropic to suggest pieces. Nothing else. They keep it up to 30 days.";
+const AI_FAILED = "Couldn't get suggestions right now. Your slots are still here.";
+const LINES = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 7h14M5 12h10M5 17h6"/></svg>`;
+/* offered on a split with nothing stamped yet (a suggestion replaces the rows), while the server has it on */
+const aiOffered = p => (BE ? !!ENV.aiSuggest : true) && aiConsent() !== "no" && !p.rows.some(r => r.stampedAt != null);
+function aiBlock(p) {
+  const a = p.ai;
+  if (a && a.state === "ask") return `<div class="aiask" role="group" aria-labelledby="ai-q"><p id="ai-q">${AI_DISCLOSURE}</p>
+      <div class="aibtns"><button class="secondary" id="ai-yes">Suggest pieces</button><button class="textbtn" id="ai-no">I'll split it myself</button></div></div>`;
+  if (a && a.state === "wait") return `<p class="ainote" id="ai-note" tabindex="-1" role="status">Getting suggestions…</p>`;
+  if (a && a.state === "filled") return `<p class="undo" id="ai-note" tabindex="-1" role="status"><span>Suggested pieces. Change any of them before you save.</span> <button class="textbtn" id="ai-undo">Undo</button></p>`;
+  if (a && a.state === "failed") return `<p class="ainote" id="ai-note" tabindex="-1" role="status">${AI_FAILED}</p>`;
+  return aiOffered(p) ? `<button class="addpiece" id="s-ai">${LINES}Suggest pieces</button>` : "";
+}
+/* the demo's suggestion, by type (live mode gets the model's, already clamped by core) */
+const DEMO_SUGGEST = {
+  writing: [["Pick a thesis", 15], ["Find three sources", 25], ["Outline the argument", 15], ["Draft the body", 35], ["Intro and conclusion", 15], ["Revise and cite", 15]],
+  problems: [["Read all the problems once", 10], ["Problems 1 to 4", 40], ["Problems 5 to 8", 40], ["Check answers", 15]],
+  exam: [["List the topics", 10], ["Quiz yourself on each topic", 45], ["Redo what you missed", 30], ["One practice exam", 45]],
+  project: [["Decide the scope", 15], ["Sketch it", 30], ["Build the first part", 60], ["Check it against the brief", 20]],
+};
+const demoSuggest = t => (DEMO_SUGGEST[t.taskType] || DEMO_SUGGEST.writing).map(([title, minutes]) => ({ title, minutes }));
+function fillFromAI(p, pieces) {
+  p.before = p.rows; p.rows = pieces.map(x => ({ title: x.title, minutes: clampMin(x.minutes) })); p.fromAI = true; p.ask = null;
+  p.ai = { state: "filled", handle: p.ai && p.ai.handle };
+}
+function askAI(p) {
+  const c = cardById(p.id), t = p.task, today = localDay();
+  const daysLeft = isKey(t.dueDay) && t.dueDay >= today ? dayDiff(today, t.dueDay) + 1 : undefined;
+  p.ai = { state: "wait" }; p.focusMe = true; p.focusSel = "#ai-note"; renderPanel(); say("Getting suggestions.");
+  if (!BE || !BE.suggestPieces) { p.ai.timer = setTimeout(() => aiResult(p, { status: "ready", pieces: demoSuggest(t) }), 900); return; }
+  p.ai.handle = BE.suggestPieces(p.id, c ? c.title : "", daysLeft, r => aiResult(p, r));
+}
+function aiResult(p, r) {
+  const a = p.ai;
+  /* the sheet closed or moved on: the row is no longer wanted */
+  if (panel !== p || !a || a.state !== "wait") { if (a && a.handle && panel !== p) a.handle.dismiss(); return; }
+  if (!r || r.status === "pending") return;
+  if (r.status === "off") { ENV.aiSuggest = false; p.ai = null; p.focusMe = true; p.focusSel = "#s-add"; renderPanel(); return; }
+  if (r.status === "ready" && r.pieces && r.pieces.length) {
+    if (a.handle) a.handle.unsubscribe();
+    fillFromAI(p, r.pieces); p.focusMe = true; p.focusSel = "#ai-note"; renderPanel();
+    say(`${p.rows.length} pieces suggested. Change any of them before you save.`);
+    return;
+  }
+  if (a.handle) a.handle.dismiss();
+  p.ai = { state: "failed" }; p.focusMe = true; p.focusSel = "#ai-note"; renderPanel(); say(AI_FAILED);
+}
+/* Close, Escape or the scrim: a suggestion not saved is dismissed */
+function stopAI(p) {
+  const a = p && p.ai; if (!a) return;
+  if (a.timer) clearTimeout(a.timer);
+  if (a.handle) a.handle.dismiss();
+  p.ai = null;
 }
 
 /* ----- Spread ----- */
@@ -1841,16 +1919,27 @@ function bindPlanning() {
       if (p.rows.length >= MAX_PIECES) return;
       p.rows.push({ title: "", minutes: SLOT_MIN }); p.focusMe = true; p.focusSel = `#pt-${p.rows.length - 1}`; renderPanel(); say(`Piece ${p.rows.length} added.`);
     });
+    on("#s-ai", () => {
+      if (aiConsent() === "yes") { askAI(p); return; }
+      p.ai = { state: "ask" }; p.focusMe = true; p.focusSel = "#ai-yes"; renderPanel(); say(AI_DISCLOSURE);
+    });
+    on("#ai-yes", () => { setAiConsent("yes"); askAI(p); });
+    on("#ai-no", () => { setAiConsent("no"); p.ai = null; p.focusMe = true; p.focusSel = "#s-add"; renderPanel(); say("Your slots are still here."); });
+    on("#ai-undo", () => {
+      if (!p.before) return; stopAI(p); p.rows = p.before; p.before = null; p.fromAI = false;
+      p.focusMe = true; p.focusSel = "#pt-0"; renderPanel(); say("Your slots are back.");
+    });
     on("#s-save", () => {
       const pieces = splitPieces(p); if (p.saving || !pieces.length) return;
       p.saving = true; p.error = null; const sb = $("#s-save"); if (sb) sb.disabled = true; $("#panel-root .sheet").classList.add("busy");
-      const sent = BE && BE.saveSplit ? BE.saveSplit(p.id, pieces) : Promise.resolve({ ok: true });
+      const sent = BE && BE.saveSplit ? BE.saveSplit(p.id, pieces, !!p.fromAI) : Promise.resolve({ ok: true });
       Promise.resolve(sent).catch(() => ({ ok: false, message: NOT_SAVED })).then(r => {
         if (panel !== p) return;
         p.saving = false;
         if (!r || !r.ok) { p.error = (r && r.message) || NOT_SAVED; p.focusMe = true; p.focusSel = "#s-save"; renderPanel(); return; }
         if (!BE) demoSplit(p.id, pieces);
         if (p.undo) clearTimeout(p.undo.timer);
+        if (p.ai && p.ai.handle) p.ai.handle.unsubscribe(); p.ai = null;
         const task = { ...p.task, pieces };
         if (p.then === "spread" && spreadable(task)) { openSpread(p.id, p.back, false, task); say("Pieces saved. Now the days."); }
         else finishPlan(p, pieces.length === 1 ? "1 piece saved." : `${pieces.length} pieces saved.`);
@@ -2410,6 +2499,15 @@ function fromHash() {
   }
   /* spec 008 planning on the card: Split (writing with a gut size; exam without one), Spread (pieces with a due day;
      exam topics; no due day yet), and the comeback's re-spread */
+  /* spec 008 "Suggest pieces": the first tap's disclosure, then the slots filled from a suggestion */
+  else if (h === "split-ai-consent" || h === "split-ai-filled") {
+    bigOneCards = demoCards(DEMO_CARDS);
+    after = () => {
+      openSplit("paper", '[data-menu="paper"]'); const p = panel; if (!p) return;
+      if (h === "split-ai-consent") p.ai = { state: "ask" }; else fillFromAI(p, demoSuggest(p.task));
+      p.focusMe = true; p.focusSel = h === "split-ai-consent" ? "#ai-yes" : "#ai-note"; renderPanel();
+    };
+  }
   else if (/^(split|spread|respread)/.test(h)) {
     const exam = h.endsWith("-exam");
     bigOneCards = demoCards(h === "respread" ? [{ ...DEMO_COMEBACK, offerRespread: true }, DEMO_CARDS[0]] : exam ? [DEMO_CARDS[2], DEMO_CARDS[0]] : DEMO_CARDS);
@@ -2466,7 +2564,13 @@ window.pomodealApp = {
     readAside();
   },
   /** what this device can do (spec 008): Web Push in this tab, opened from the Home Screen, an iPhone in Safari */
-  env(e) { if (e && typeof e === "object") ENV = { pushSupported: !!e.pushSupported, installed: !!e.installed, iosSafari: !!e.iosSafari }; },
+  env(e) {
+    if (!e || typeof e !== "object") return;
+    const ai = !!e.aiSuggest, changed = ai !== ENV.aiSuggest;
+    ENV = { pushSupported: !!e.pushSupported, installed: !!e.installed, iosSafari: !!e.iosSafari, aiSuggest: ai };
+    /* "Suggest pieces" follows the server's switch (AI_SUGGEST_ENABLED) while the split sheet is open */
+    if (changed && panel && panel.kind === "split" && !panel.ai) renderPanel();
+  },
   /** server time minus this device's time, in ms: time on screen is Date.now() + offset */
   clock(offsetMs) { if (Number.isFinite(offsetMs)) clockOffset = offsetMs; },
   /** all open big ones (comeback first, then newest worked); the cards screen renders them */

@@ -6,6 +6,7 @@ import type { Doc } from "./_generated/dataModel";
 import { bigOneProblem, cleanLine, dealProblem, isDayKey, openTerms, spreadProblem, type Piece } from "../packages/core/src";
 import { logEvent } from "./lib/events";
 import { currentMember, requireMember } from "./lib/members";
+import { clearSuggestions } from "./lib/suggestions";
 import { badBigOne, checkDayKey, ownTask } from "./lib/tasks";
 import { piece, taskType } from "./schema";
 import { quickDeal, startSession } from "./sessions";
@@ -165,17 +166,20 @@ export const blockNotes = mutation({
 
 // ---------- planning on the card ----------
 
-/** Stores the pieces. The gut size is kept, never overwritten. */
+/** Stores the pieces. The gut size is kept, never overwritten. Any suggestion for this big one is done with once the student saves (spec 008); with
+ *  `fromSuggestion` the saved pieces started as one, so the big one is marked aiSuggested and ai_accepted is logged. */
 export const saveSplit = mutation({
-  args: { taskId: v.id("tasks"), pieces: v.array(piece) },
-  handler: async (ctx, { taskId, pieces }) => {
+  args: { taskId: v.id("tasks"), pieces: v.array(piece), fromSuggestion: v.optional(v.boolean()) },
+  handler: async (ctx, { taskId, pieces, fromSuggestion }) => {
     const user = await requireMember(ctx);
     const task = await ownTask(ctx, user, taskId);
     const problem = bigOneProblem({ title: task.title, pieces });
     if (problem) badBigOne(problem);
     if (pieces.some((p) => p.plannedDay !== undefined && !isDayKey(p.plannedDay))) badBigOne("That isn't a day.");
-    await ctx.db.patch(taskId, { pieces: pieces.map((p) => ({ ...p, title: p.title.trim() })) });
+    await ctx.db.patch(taskId, { pieces: pieces.map((p) => ({ ...p, title: p.title.trim() })), ...(fromSuggestion ? { aiSuggested: true } : {}) });
+    await clearSuggestions(ctx, taskId);
     await logEvent(ctx, user._id, "split_saved", { taskId });
+    if (fromSuggestion) await logEvent(ctx, user._id, "ai_accepted", { taskId });
   },
 });
 
@@ -249,6 +253,7 @@ export const remove = mutation({
     for await (const s of ctx.db.query("sessions").withIndex("by_taskId", (q) => q.eq("taskId", taskId))) {
       await ctx.db.patch(s._id, { taskId: undefined });
     }
+    await clearSuggestions(ctx, taskId);
     await ctx.db.delete(taskId);
   },
 });

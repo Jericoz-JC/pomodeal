@@ -19,6 +19,7 @@
     "build:ci": "node scripts/ci-build.mjs"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.6.0",
     "convex": "^1.49.0",
     "web-push": "^3.6.7"
   },

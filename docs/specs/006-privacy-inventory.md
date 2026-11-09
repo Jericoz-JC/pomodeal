@@ -110,6 +110,27 @@ One row per device that turned on taps at block ends (spec 008). An endpoint is 
 
 Each send is logged in `events` as `push_sent` or `push_failed` (kind and time only, never the payload or endpoint). A failed send is never retried.
 
+### pieceSuggestions
+
+Transient. Holds AI output only until the student acts on it (spec 008, Task 17). One row per request; a newer request on the same big one replaces it.
+
+| Field | What it holds | Why | Who can see | Retention | Deleted by |
+| --- | --- | --- | --- | --- | --- |
+| userId, taskId | Owner and big one | Match the suggestion to the sheet | The student, Chris | Until saved or dismissed, at most 24 hours | Saving the split, Undo or Close in the sheet, a newer request, deleting the big one, or the daily cleanup after 24 hours |
+| status | pending, ready or failed | Drive the sheet | The student, Chris | Same | Same |
+| pieces | Up to 12 suggested titles (up to 80 characters) and minutes (5 to 240), cleaned by core before they are stored | Fill the slots | The student, Chris | Same | Same |
+| createdAt | When it was requested (indexed for the cleanup) | The 24 hour cleanup | Chris | Same | Same |
+
+Only pieces the student saves are kept, in `tasks.pieces`; `tasks.aiSuggested` records that they started as a suggestion.
+
+### aiUsage
+
+| Field | What it holds | Why | Who can see | Retention | Deleted by |
+| --- | --- | --- | --- | --- | --- |
+| userId | Owner | Per-user limit (10 a day) | Chris | About 2 days after the day it counts | The daily cleanup |
+| dayKey | Local date key (index by_dayKey for the 300 a day global cap) | Daily counting | Chris | Same | Same |
+| count | Requests that day | Enforce limits | Chris | Same | Same |
+
 ### Stored on the device (browser storage, never sent)
 
 These live in the browser's `localStorage` on one device. Pomodeal never uploads them; clearing the site's data deletes them.
@@ -122,6 +143,7 @@ These live in the browser's `localStorage` on one device. Pomodeal never uploads
 | pomodeal.pushAsked | "1" once the "Turn on taps at block ends" button has been offered (spec 008) | Offer the push permission step once per device | Anyone using that browser | Until cleared | Clearing site data |
 | pomodeal.installSheet | "1" once the iPhone install sheet has been shown (spec 008) | Show the install sheet once per device | Anyone using that browser | Until cleared | Clearing site data |
 | pomodeal.installDone | "1" once the app has opened from the Home Screen (spec 008) | Log `install_done` once per device | Anyone using that browser | Until cleared | Clearing site data |
+| pomodeal.aiConsent | "yes" or "no", the answer to the AI disclosure (spec 008); "no" hides "Suggest pieces" on this device | Ask the disclosure once per device | Anyone using that browser | Until cleared | Clearing site data |
 
 ## Tables planned in spec 008
 
@@ -136,32 +158,13 @@ All fields in this section are planned (spec 008).
 | answer | better, same or worse | Tell if the product helps | The student, Chris | Kept through the beta | Chris on request |
 | at | When they answered | Ordering | The student, Chris | Kept through the beta | Chris on request |
 
-### pieceSuggestions
-
-Transient. Holds AI output only until the student acts on it.
-
-| Field | What it holds | Why | Who can see | Retention | Deleted by |
-| --- | --- | --- | --- | --- | --- |
-| userId, taskId | Owner and big one | Match the suggestion to the sheet | The student, Chris | Until accepted or dismissed, at most 24 hours | Accept, dismiss, or the daily cleanup after 24 hours |
-| status | pending, ready or failed | Drive the sheet | The student, Chris | Same | Same |
-| pieces | Suggested titles and minutes | Fill the slots | The student, Chris | Same | Same |
-| createdAt | When it was requested | The 24 hour cleanup | Chris | Same | Same |
-
-### aiUsage
-
-| Field | What it holds | Why | Who can see | Retention | Deleted by |
-| --- | --- | --- | --- | --- | --- |
-| userId | Owner | Per-user limit (10 a day) | Chris | Kept through the beta | Chris on request |
-| dayKey | Local date key (index by_dayKey for the 300 a day global cap) | Daily counting | Chris | Kept through the beta | Chris on request |
-| count | Requests that day | Enforce limits | Chris | Kept through the beta | Chris on request |
-
 ## AI disclosure
 
 This is the line shown before the first suggestion, copied from spec 008:
 
 "This sends the title, type and size of this big one to Anthropic to suggest pieces. Nothing else. They keep it up to 30 days."
 
-It is asked once per device and shown again from Settings. The feature is off unless `AI_SUGGEST_ENABLED` is set, and each request is an opt-in tap.
+It is asked once per device and shown again from Settings (Settings does not exist yet: until it does, a device that answered "I'll split it myself" gets the question back only by clearing site data). The feature is off unless `AI_SUGGEST_ENABLED` is `"true"` and `ANTHROPIC_API_KEY` is set, and each request is an opt-in tap. Requests go to Claude Haiku 5.5; Convex logs record only the error class and status of a failed call, never the title or the model's output.
 
 ## Sent to third parties
 
