@@ -21,7 +21,7 @@ Who can see, in every table: the signed-in student sees their own rows through t
 | invitedBy | The member who invited them | Enforce invite allowance | Chris | While the account exists | Chris on request |
 | inviteAllowance | How many invites they may still make | Limit invite growth | The student, Chris | While the account exists | Chris on request |
 | joinedAt | When they joined | Ordering and support | Chris | While the account exists | Chris on request |
-| lastRepay | borrow or trade, the last repayment pick; planned (spec 008) | Pre-select it on the next ask (ADR 0005) | The student, Chris | While the account exists | Chris on request |
+| lastRepay | borrow or trade, the last repayment pick (spec 008) | Pre-select it on the next ask (ADR 0005) | The student, Chris | While the account exists | Chris on request |
 
 ### invites
 
@@ -42,12 +42,12 @@ Who can see, in every table: the signed-in student sees their own rows through t
 | state.blocks | Block types, labels, minutes, and optionally `added`, the minutes a trade added to a focus block (labels can be what the student typed) | Run the session | The student, Chris | Kept as history | Chris on request |
 | state.idx, startedAt, durMs | Current block, start time, length | Compute time from stored start | The student, Chris | Kept as history | Chris on request |
 | state.askCount, debt, bonusOffered | Negotiation state | Apply the rules | The student, Chris | Kept as history | Chris on request |
-| state.version | Counter bumped on every change; scheduled pushes check it; planned (spec 008) | Stop stale pushes firing | Chris | Kept as history | Chris on request |
-| state.scheduledIds | Ids of scheduled push functions; planned (spec 008) | Cancel old schedules | Chris | Cleared when the session ends | Chris on request |
+| state.version | Counter bumped on every change; scheduled pushes check it (spec 008; stored from Task 7, optional on older sessions) | Stop stale pushes firing | Chris | Kept as history | Chris on request |
+| state.scheduledIds | Ids of scheduled push functions (spec 008; stored from Task 13, optional on older sessions) | Cancel old schedules | Chris | Cleared when the session ends | Chris on request |
 | status | running or ended | Find the active session | The student, Chris | Kept as history | Chris on request |
 | createdAt | When it began | Ordering | The student, Chris | Kept as history | Chris on request |
-| taskId | The big one this session belongs to; planned (spec 008) | Task-scoped history | The student, Chris | Kept as history | Unlinked when the big one is deleted |
-| notedIdx | Marker that the block-end note for a block was already handled; planned (spec 008) | Make block-end notes idempotent | Chris | Kept as history | Chris on request |
+| taskId | The big one this session belongs to (spec 008) | Task-scoped history | The student, Chris | Kept as history | Unlinked when the big one is deleted |
+| notedIdx | Index of the last focus block whose block-end notes (bookmark, done) were handled (spec 008) | Make block-end notes idempotent | Chris | Kept as history | Chris on request |
 
 ### ledger
 
@@ -60,10 +60,6 @@ Who can see, in every table: the signed-in student sees their own rows through t
 | minutes | Minutes in the entry | Show history | The student, Chris | Kept as history | Chris on request |
 | intention | Optional line the student typed | Show history | The student, Chris | Kept as history | Chris on request |
 
-## Tables planned in spec 008
-
-All fields in this section are planned (spec 008).
-
 ### tasks (a "big one")
 
 | Field | What it holds | Why | Who can see | Retention | Deleted by |
@@ -71,7 +67,7 @@ All fields in this section are planned (spec 008).
 | userId | Owner | Scope to the student | The student, Chris | Until deleted | Deleting the big one |
 | title | The big one's name, 1 to 80 characters (coursework text) | Name it on cards | The student, Chris; AI only if the student opts in (see disclosure) | Until deleted | Deleting the big one |
 | taskType | writing, problems, exam or project | Placeholders and defaults | The student, Chris; sent to AI on opt-in | Until deleted | Deleting the big one |
-| gutMin | Gut size in minutes: 60, 120, 180 or 240 | Open terms and progress | The student, Chris; sent to AI on opt-in | Until deleted | Deleting the big one |
+| gutMin | Gut size in minutes: 60, 120, 180 or 240; cleared by "Start fresh" | Open terms and progress | The student, Chris; sent to AI on opt-in | Until deleted | Deleting the big one |
 | workedMin | Minutes worked on it | Progress | The student, Chris | Until deleted | Deleting the big one |
 | openTermsMin | Minutes still needed, or null with no gut size | Progress | The student, Chris | Until deleted | Deleting the big one |
 | firstMove | The first-move line, up to 140 characters (coursework text) | Start the next block | The student, Chris | Until deleted | Deleting the big one |
@@ -82,11 +78,27 @@ All fields in this section are planned (spec 008).
 | aiSuggested | Whether saved pieces came from a suggestion | Describe AI use | The student, Chris | Until deleted | Deleting the big one |
 | status | open, done or set_aside | Which cards show | The student, Chris | Until deleted | Deleting the big one |
 | lastWorkedAt | When a block last ran on it | Ordering and comeback | The student, Chris | Until deleted | Deleting the big one |
-| lastFocusMin | Last focus length used on it | Card button length | The student, Chris | Until deleted | Deleting the big one |
+| lastFocusMin | Focus length chosen for the last deal started on it | Card button length | The student, Chris | Until deleted | Deleting the big one |
 | workedDays | Local date keys with a block on it, newest 30 | Comeback rule | The student, Chris | Until deleted | Deleting the big one |
 | createdAt | When it was made | Ordering | The student, Chris | Until deleted | Deleting the big one |
 
 Deleting a big one deletes the row and unlinks its sessions (their `taskId` is cleared); the sessions and ledger entries stay as ordinary history.
+
+### events
+
+Events hold no titles, bookmarks or any typed text. Kinds: big_one_named, first_payment_started (with ms from naming), comeback_shown, comeback_started, bookmark_written, split_saved, spread_signed, ai_requested, ai_accepted, install_done, push_enabled, push_sent, push_failed.
+
+| Field | What it holds | Why | Who can see | Retention | Deleted by |
+| --- | --- | --- | --- | --- | --- |
+| userId | Who did it | Count per person in the beta numbers | Chris | Deleted at the end of the beta | End-of-beta cleanup |
+| kind | One of the kinds above | Measure the success numbers | Chris | Deleted at the end of the beta | End-of-beta cleanup |
+| taskId | Which big one, optional (an id only; it stays after the big one is deleted) | Join to timings | Chris | Deleted at the end of the beta | End-of-beta cleanup |
+| ms | A duration, optional | Time to first payment | Chris | Deleted at the end of the beta | End-of-beta cleanup |
+| at | When it happened | Bound queries to the beta window | Chris | Deleted at the end of the beta | End-of-beta cleanup |
+
+## Tables planned in spec 008
+
+All fields in this section are planned (spec 008).
 
 ### pushSubscriptions
 
@@ -125,18 +137,6 @@ Transient. Holds AI output only until the student acts on it.
 | userId | Owner | Per-user limit (10 a day) | Chris | Kept through the beta | Chris on request |
 | dayKey | Local date key (index by_dayKey for the 300 a day global cap) | Daily counting | Chris | Kept through the beta | Chris on request |
 | count | Requests that day | Enforce limits | Chris | Kept through the beta | Chris on request |
-
-### events
-
-Events hold no titles, bookmarks or any typed text. Kinds: big_one_named, first_payment_started (with ms from naming), comeback_shown, comeback_started, bookmark_written, split_saved, spread_signed, ai_requested, ai_accepted, install_done, push_enabled, push_sent, push_failed.
-
-| Field | What it holds | Why | Who can see | Retention | Deleted by |
-| --- | --- | --- | --- | --- | --- |
-| userId | Who did it | Count per person in the beta numbers | Chris | Deleted at the end of the beta | End-of-beta cleanup |
-| kind | One of the kinds above | Measure the success numbers | Chris | Deleted at the end of the beta | End-of-beta cleanup |
-| taskId | Which big one, optional | Join to timings | Chris | Deleted at the end of the beta | End-of-beta cleanup |
-| ms | A duration, optional | Time to first payment | Chris | Deleted at the end of the beta | End-of-beta cleanup |
-| at | When it happened | Bound queries to the beta window | Chris | Deleted at the end of the beta | End-of-beta cleanup |
 
 ## AI disclosure
 

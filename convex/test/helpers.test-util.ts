@@ -1,6 +1,6 @@
-// Type-only imports: Convex bundles every non-.test file under convex/ on deploy/codegen,
-// so this file must not use import.meta or runtime test deps. Each *.test.ts builds its own
-// `t` (convexTest + import.meta.glob) and passes it here.
+// Type-only imports. Multi-dot names (*.test-util.ts) are skipped by the Convex bundler,
+// so nothing here is deployed. Tests build `t` with newT() from setup.test-util.ts
+// and pass it here.
 import type { TestConvexForDataModel } from "convex-test";
 import type { DataModel, Id } from "../_generated/dataModel";
 

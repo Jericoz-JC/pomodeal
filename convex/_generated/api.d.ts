@@ -9,9 +9,12 @@
  */
 
 import type * as beta from "../beta.js";
+import type * as events from "../events.js";
+import type * as lib_events from "../lib/events.js";
 import type * as lib_members from "../lib/members.js";
+import type * as lib_tasks from "../lib/tasks.js";
 import type * as sessions from "../sessions.js";
-import type * as test_helpers from "../test/helpers.js";
+import type * as tasks from "../tasks.js";
 
 import type {
   ApiFromModules,
@@ -21,9 +24,12 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   beta: typeof beta;
+  events: typeof events;
+  "lib/events": typeof lib_events;
   "lib/members": typeof lib_members;
+  "lib/tasks": typeof lib_tasks;
   sessions: typeof sessions;
-  "test/helpers": typeof test_helpers;
+  tasks: typeof tasks;
 }>;
 
 /**

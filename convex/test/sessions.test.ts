@@ -1,15 +1,10 @@
-/// <reference types="vite/client" />
-import { convexTest } from "convex-test";
 import { expect, test } from "vitest";
 import { api } from "../_generated/api";
-import schema from "../schema";
-import { makeMember } from "./helpers";
-
-// Everything under convex/ except tests and config (so _generated/api resolves).
-const modules = import.meta.glob(["../**/*.*s", "!../test/**", "!../vitest.config.ts"]);
+import { makeMember } from "./helpers.test-util";
+import { newT } from "./setup.test-util";
 
 test("a member starts a 15 min deal and sees a running session with 3 focus blocks", async () => {
-  const t = convexTest(schema, modules);
+  const t = newT();
   const { as } = await makeMember(t, "Ada");
   await as.mutation(api.sessions.start, {
     deal: { activity: null, breakMin: 5, task: "read chapter 3", focusMin: 15 },
