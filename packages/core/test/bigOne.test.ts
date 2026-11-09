@@ -60,6 +60,9 @@ describe("types and validation", () => {
   it("bigOneProblem accepts edge input", () => {
     expect(bigOneProblem({ title: "  " + "a".repeat(80) + "  " })).toBeNull();
     expect(bigOneProblem({ title: "😀".repeat(20) })).toBeNull();
+    expect(bigOneProblem({ title: "😀".repeat(50) })).toBeNull();
+    expect(bigOneProblem({ title: "😀".repeat(81) })).not.toBeNull();
+    expect(bigOneProblem({ title: "x", pieces: Array.from({ length: 12 }, () => ({ title: "p", minutes: 30 })) })).toBeNull();
     expect(bigOneProblem({ title: "x", gutMin: 180, bookmark: "b".repeat(140),
       pieces: [{ title: "p", minutes: 5 }, { title: "q", minutes: 240 }] })).toBeNull();
   });

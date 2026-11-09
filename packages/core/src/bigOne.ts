@@ -1,5 +1,7 @@
 // Spec 008: big ones (multi-day tasks). Pure rules; no clock, no zone. Days are local "YYYY-MM-DD" keys.
 
+import { addDays, daysBetween } from "./days";
+
 // ---------- types and limits ----------
 
 export type TaskType = "writing" | "problems" | "exam" | "project";
@@ -110,4 +112,101 @@ export function bigOneProblem(input: {
     }
   }
   return null;
+}
+
+// ---------- open terms, progress, comeback, spread ----------
+
+/** Minutes left of the gut estimate, never negative; null when there was no estimate. */
+export function openTerms(gutMin: number | undefined, workedMin: number): number | null {
+  if (gutMin === undefined) return null;
+  return Math.max(0, gutMin - workedMin);
+}
+
+/** First payment is 15 min; after a gap always 15, otherwise the last focus length if it was set. */
+export function firstPaymentMinutes(task: Pick<BigOne, "lastFocusMin">, comeback: boolean): number {
+  if (comeback) return FIRST_PAYMENT_MIN;
+  return task.lastFocusMin ?? FIRST_PAYMENT_MIN;
+}
+
+export type ProgressLabel = { kind: "stamped" | "toGo"; n: number } | { kind: "in" | "left"; minutes: number };
+
+/**
+ * Structured progress (the UI words it). With pieces: "stamped" while fewer than half are stamped, then "toGo".
+ * Without pieces: "in" (minutes worked) while worked is under half the gut estimate, then "left".
+ * Nothing stamped or worked: null.
+ */
+export function progressLabel(task: Pick<BigOne, "taskType" | "pieces" | "gutMin" | "workedMin">): ProgressLabel | null {
+  const pieces = task.pieces;
+  if (pieces && pieces.length > 0) {
+    const stamped = pieces.filter((p) => p.stampedAt !== undefined).length;
+    if (stamped === 0) return null;
+    if (stamped * 2 < pieces.length) return { kind: "stamped", n: stamped };
+    return { kind: "toGo", n: pieces.length - stamped };
+  }
+  if (task.workedMin <= 0) return null;
+  if (task.gutMin !== undefined && task.workedMin * 2 >= task.gutMin) {
+    return { kind: "left", minutes: Math.max(0, task.gutMin - task.workedMin) };
+  }
+  return { kind: "in", minutes: task.workedMin };
+}
+
+/** Open, worked before, and either a signed plan slipped past or two or more days passed with terms left. */
+export function isComeback(
+  task: Pick<BigOne, "status" | "openTermsMin" | "pieces" | "spreadSignedAt" | "workedDays">,
+  todayKey: string,
+): boolean {
+  if (task.status !== "open" || task.workedDays.length === 0) return false;
+  if (task.spreadSignedAt !== undefined) {
+    const slipped = (task.pieces ?? []).some(
+      (p) => p.stampedAt === undefined && p.plannedDay !== undefined && p.plannedDay < todayKey && !task.workedDays.includes(p.plannedDay),
+    );
+    if (slipped) return true;
+  }
+  return daysBetween(task.workedDays[0], todayKey) >= 2 && task.openTermsMin !== 0;
+}
+
+export interface SpreadDay { day: string; pieceIndex?: number; minutes: number }
+
+/** A proposed plan from today to due: unstamped pieces spread evenly, or open terms split by day. */
+export function proposeSpread(
+  task: Pick<BigOne, "taskType" | "pieces" | "openTermsMin">,
+  todayKey: string,
+  dueKey: string,
+): SpreadDay[] {
+  const days = Math.max(1, daysBetween(todayKey, dueKey) + 1);
+  const open = (task.pieces ?? []).map((p, i) => ({ p, i })).filter(({ p }) => p.stampedAt === undefined);
+  if (open.length > 0) {
+    // Piece k of n lands on day floor(k * span / n); span = min(days, n), so with 2+ days and 2+ pieces
+    // (an exam included) at least two distinct days are used, and nothing lands past due.
+    const span = Math.min(days, open.length);
+    return open.map(({ p, i }, k) => ({
+      day: addDays(todayKey, Math.floor((k * span) / open.length)),
+      pieceIndex: i,
+      minutes: p.minutes,
+    }));
+  }
+  const total = task.openTermsMin ?? 0;
+  if (total <= 0) return [];
+  const each = Math.floor(total / days);
+  const extra = total - each * days;
+  return Array.from({ length: days }, (_, d) => ({ day: addDays(todayKey, d), minutes: each + (d === 0 ? extra : 0) }));
+}
+
+export interface BigOneCard { title: string; startWith: string; progress: ProgressLabel | null; minutes: number; comeback: boolean; offerRespread: boolean }
+
+export function cardFor(task: BigOne, todayKey: string): BigOneCard {
+  const comeback = isComeback(task, todayKey);
+  return {
+    title: task.title,
+    startWith: comeback ? firstMoveFor(task.taskType, true) : task.bookmark ?? task.firstMove,
+    progress: progressLabel(task),
+    minutes: firstPaymentMinutes(task, comeback),
+    comeback,
+    offerRespread: comeback && task.spreadSignedAt !== undefined,
+  };
+}
+
+/** Newest first, no duplicates, only the most recent WORKED_DAYS_KEPT. */
+export function addWorkedDay(days: string[], key: string): string[] {
+  return [key, ...days.filter((d) => d !== key)].slice(0, WORKED_DAYS_KEPT);
 }
