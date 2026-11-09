@@ -9,5 +9,8 @@
     "directory": "./apps/web/dist",
     // Every unknown path (/callback, /invite, …) serves index.html so the app can route it.
     "not_found_handling": "single-page-application"
-  }
+  },
+  // Branch and PR builds deploy with `npx wrangler preview`, which needs this block. It can stay empty:
+  // assets and compatibility settings above apply to previews too. Production (`wrangler deploy` on main) ignores it.
+  "previews": {}
 }

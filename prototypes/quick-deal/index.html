@@ -156,6 +156,11 @@ p { margin: 0; }
 .picker.row .chip { flex: none; white-space: nowrap; }
 .picker input { flex: 1 1 180px; min-width: 0; min-height: 44px; border: 1.5px solid var(--edge); border-radius: 10px; padding: 10px 12px; background: var(--paper); }
 .hint { font-size: .875rem; color: var(--soft); text-align: center; }
+/* longer lengths sit under the quick ones, past a hairline, with one line that says what changes (spec 007; council r1: always shown) */
+.longrow { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 8px; padding-top: 10px; margin-top: 2px; border-top: 1px solid var(--rule); }
+.longrow .why { flex-basis: 100%; font-size: .9375rem; color: var(--soft); }
+/* the shape of a long session, said once under the sentence so the second block isn't a surprise */
+.plan { font-size: .9375rem; color: var(--soft); margin-top: -4px; }
 
 /* ---------- one stamp: double-ruled border with the ink texture, letters solid so they stay readable ---------- */
 .stamp { --tilt: -3deg; position: relative; display: inline-grid; place-items: center; color: var(--deal); font-family: var(--font-head); font-stretch: 82%; font-weight: 800;
@@ -221,11 +226,13 @@ button.term:focus-visible { outline-offset: 3px; }
    solid green for focus, solid grey-green with a quiet hatch for a break. The dial never moves or changes weight between
    states; heads-up changes only the words in the middle and the button under it. An empty ring means time is up. */
 .timerwrap { display: grid; place-items: center; gap: 10px; }
-.dial { --in: 78.6%; --knob: 5.35%; position: relative; width: min(76vw, 288px); aspect-ratio: 1; max-width: 100%; }
+/* the tick ring follows the block (spec 007): one minor tick per block minute, a major every 5 min up to 30, every 15 above.
+   --minor and --major are set per block from dialTicks(); the defaults draw a 60-minute face. */
+.dial { --in: 78.6%; --knob: 5.35%; --minor: 6deg; --major: 30deg; position: relative; width: min(76vw, 288px); aspect-ratio: 1; max-width: 100%; }
 .dial > * { position: absolute; border-radius: 50%; }
-.dial .tk1 { inset: 0; background: repeating-conic-gradient(from -.21deg, var(--edge) 0 .42deg, transparent .42deg 6deg);
+.dial .tk1 { inset: 0; background: repeating-conic-gradient(from -.21deg, var(--edge) 0 .42deg, transparent .42deg var(--minor));
   -webkit-mask: radial-gradient(circle closest-side, transparent 90.6%, #000 90.8% 94.2%, transparent 94.4%); mask: radial-gradient(circle closest-side, transparent 90.6%, #000 90.8% 94.2%, transparent 94.4%); }
-.dial .tk5 { inset: 0; opacity: .78; background: repeating-conic-gradient(from -.31deg, var(--ink) 0 .62deg, transparent .62deg 30deg);
+.dial .tk5 { inset: 0; opacity: .78; background: repeating-conic-gradient(from -.31deg, var(--ink) 0 .62deg, transparent .62deg var(--major));
   -webkit-mask: radial-gradient(circle closest-side, transparent 90.6%, #000 90.8% 96.6%, transparent 96.8%); mask: radial-gradient(circle closest-side, transparent 90.6%, #000 90.8% 96.6%, transparent 96.8%); }
 .dial .tk0 { inset: 0; background: conic-gradient(from -.42deg, var(--ink) 0 .84deg, transparent 0);
   -webkit-mask: radial-gradient(circle closest-side, transparent 90.6%, #000 90.8% 98.8%, transparent 99%); mask: radial-gradient(circle closest-side, transparent 90.6%, #000 90.8% 98.8%, transparent 99%); }
@@ -254,6 +261,8 @@ button.term:focus-visible { outline-offset: 3px; }
 .note { font-size: 1.0625rem; color: var(--ink); text-align: center; min-height: 24px; text-wrap: balance; max-width: 32ch; }
 .note.go { color: var(--deal); font-weight: 700; }
 body.sheeted #view .act { visibility: hidden; }
+/* the halfway line on 45+ blocks: its own reserved slot, so the next step stays put and nothing jumps */
+.aside { font-size: .9375rem; color: var(--soft); text-align: center; min-height: 1.45em; margin-top: -4px; }
 .note .swatch { display: inline-block; width: 12px; height: 12px; margin-right: 8px; vertical-align: -1px; }
 /* every number is set in Archivo, the face of the dial and the ledger, so 180 and 10:46pm look the same
    in a heading and in a sentence (Atkinson's slashed zero read as code) */
@@ -429,14 +438,17 @@ body.modal nav.tabs { display: none; }
 
 <script>
 /* ---------- negotiation rules (mirrors docs/specs/001-negotiation-rules.md) ---------- */
-const FLOOR = 2, TRADE_CAP = 15;
+const FLOOR = 2, TRADE_CAP = 15, CEILING = 75;
+/* spec 007: quick lengths on first look, longer ones behind "Longer…" */
+const FOCUS_QUICK = [5, 8, 12, 15, 20], FOCUS_LONG = [30, 45, 60];
+const isLong = m => m >= FOCUS_LONG[0];
 function nextOf(s, type) { return s.blocks.slice(s.idx + 1).find(b => b.type === type); }
 function makeOffer(s) {
   const override = { kind: "override", addMin: 5 };
   if (s.askCount === 0) return { terms: [{ kind: "freebie", addMin: 5 }], requiresIntention: false, override };
   const terms = [{ kind: "borrow", addMin: 5, repay: 5 }];
   const nf = nextOf(s, "focus");
-  if (nf && (nf.added || 0) + 5 <= TRADE_CAP) terms.push({ kind: "trade", addMin: 5, addToNextFocusMin: 5 });
+  if (nf && (nf.added || 0) + 5 <= TRADE_CAP && nf.min + 5 <= CEILING) terms.push({ kind: "trade", addMin: 5, addToNextFocusMin: 5 });
   return { terms, requiresIntention: s.askCount >= 2, override };
 }
 function borrowPreview(s) {
@@ -465,16 +477,32 @@ let BE = null;
 let nudged = false, S, deal, ledger, sheet = null, checkin = null, picker = null, toast = null, tab = "now", mode = "start", opener = null, tried = false, arrowing = false, unseen = 0, studied = 0;
 
 function fresh() { nudged = false; deal = { act: "Reels", breakMin: 10, task: "Reading, BIO 180 ch. 7", focusMin: 8 }; ledger = []; S = null; sheet = null; picker = null; toast = null; unseen = 0; studied = 0; }
+/* mirrors packages/core/src/session.ts: quick lengths ramp +4 up to max(25, chosen); long ones hold.
+   45 and 60 get two focus blocks, the rest three; a long block's break is a quarter of it. */
+const roundsFor = f => f >= 45 ? 2 : 3;
+const breakBetween = (f, i) => isLong(f) ? Math.round(f / 4) : 5 + i * 2;
 function buildSession(d) {
-  const blocks = [];
+  const blocks = [], rounds = roundsFor(d.focusMin), target = Math.max(25, d.focusMin);
   if (d.act) blocks.push({ type: "break", label: d.act, min: d.breakMin });
-  blocks.push({ type: "focus", label: d.task, min: d.focusMin });
-  /* later breaks are the break you chose, so every screen can name it */
-  blocks.push({ type: "break", label: d.act || "Your pick", min: 5 });
-  blocks.push({ type: "focus", label: d.task, min: d.focusMin + 4 });
-  blocks.push({ type: "break", label: d.act || "Your pick", min: 7 });
-  blocks.push({ type: "focus", label: d.task, min: d.focusMin + 8 });
+  for (let i = 0, f = d.focusMin; i < rounds; i++, f = Math.min(target, f + 4)) {
+    blocks.push({ type: "focus", label: d.task, min: f });
+    /* later breaks are the break you chose, so every screen can name it */
+    if (i < rounds - 1) blocks.push({ type: "break", label: d.act || "Your pick", min: breakBetween(d.focusMin, i) });
+  }
   return { blocks, idx: 0, startedAt: vnow, durMs: blocks[0].min * 60000, askCount: 0, debt: 0, bonusOffered: false };
+}
+/* mirrors packages/core/src/timer.ts */
+const LONG_MS = 45 * 60000;
+const headsUpMs = () => S.durMs >= LONG_MS ? 300000 : 120000;
+const isHeads = () => { const r = remaining(); return r > 0 && r <= headsUpMs(); };
+function isHalfway() { if (cur().type !== "focus" || S.durMs < LONG_MS) return false; const since = vnow - S.startedAt - S.durMs / 2; return since >= 0 && since < 180000; }
+function dialTicks(min) { const n = Math.max(1, Math.round(min)), s5 = n > 30 ? 15 : 5, k = n % s5 ? n : s5; return `--minor:${(360 / n).toFixed(4)}deg;--major:${(360 * k / n).toFixed(4)}deg`; }
+/* "Then 15 min of Reels, and one more 60 min block if you want it." Said only for long deals: later blocks are offered,
+   not owed. The break is named the way the running screen names it ("Then Reels for 15 min."). */
+const an = n => /^(8|11|18)/.test(String(n)) ? "an" : "a";
+function planLine(d) {
+  const f = d.focusMin, b = breakBetween(f, 0), brk = d.act ? `${b} min of ${d.act}` : `${an(b)} ${b} min break`;
+  return roundsFor(f) === 2 ? `Then ${brk}, and one more ${f} min block if you want it.` : `Then ${brk}, and two more ${f} min blocks if you want them.`;
 }
 const cur = () => S.blocks[S.idx];
 const remaining = () => Math.max(0, S.startedAt + S.durMs - vnow);
@@ -524,7 +552,7 @@ const dial = type => `<span class="tk1"></span><span class="tk5"></span><span cl
 function face(r, m) {
   if (r <= 0) return { big: "0", cls: "", unit: `${title(cur().label).split(" ")[0]} is up` };
   if (r <= 30000) { const s = Math.ceil(r / 1000); return { big: String(s), cls: "", unit: s === 1 ? "second left" : "seconds left" }; }
-  if (r <= 120000) return { big: String(m), cls: "", unit: "min to wrap up" };
+  if (r <= headsUpMs()) return { big: String(m), cls: "", unit: "min to wrap up" };
   return { big: String(m), cls: "", unit: "minutes left" };
 }
 
@@ -569,19 +597,28 @@ const tokA = p => `<button class="tok" data-pick="act" aria-controls="deal-picke
 const tokB = p => `<button class="tok" data-pick="break" aria-controls="deal-picker" aria-expanded="${p === "break"}" aria-label="${deal.breakMin} minutes, break length, change">${deal.breakMin} min</button>`;
 const tokF = p => `<button class="tok" data-pick="focus" aria-controls="deal-picker" aria-expanded="${p === "focus"}" aria-label="${deal.focusMin} minutes, focus length, change">${deal.focusMin} min</button>`;
 const tokT = p => `<button class="tok" data-pick="task" aria-controls="deal-picker" aria-expanded="${p === "task"}" aria-label="${esc(taskPhrase())}, task, change">${esc(taskTail())}</button>`;
+/* the focus picker: one choice, so one radiogroup. Five quick lengths, then the longer ones past a hairline.
+   Both rows are always shown (council r1): every length is one tap, and 60 looks like a normal choice, not a hidden one. */
+/* the long row's group would make some screen readers count "1 of 3"; the position is stated so 30 min is "6 of 8" */
+const ALL_LENGTHS = [...FOCUS_QUICK, ...FOCUS_LONG];
+const lenChip = n => `<button class="chip" role="radio" data-set="focusMin:${n}" aria-checked="${deal.focusMin === n}" aria-label="${n} minutes" aria-posinset="${ALL_LENGTHS.indexOf(n) + 1}" aria-setsize="${ALL_LENGTHS.length}">${deal.focusMin === n ? CHECK : ""}${n} min</button>`;
+function focusPicker() {
+  return `<div class="picker" id="deal-picker" role="radiogroup" aria-label="Focus minutes">${FOCUS_QUICK.map(lenChip).join("")}<div class="longrow" role="group" aria-labelledby="long-why"><p class="why" id="long-why">Longer blocks come with longer breaks.</p>${FOCUS_LONG.map(lenChip).join("")}</div></div>`;
+}
 function ticket(peek) {
   const p = picker;
   const pk = p === "act" ? `<div class="picker" id="deal-picker" role="radiogroup" aria-label="What you're doing now">${ACTS.map(a => `<button class="chip" role="radio" data-act="${a}" aria-checked="${deal.act === a}">${deal.act === a ? CHECK : ""}${a}</button>`).join("")}<button class="chip" role="radio" data-act="" aria-checked="${!deal.act}">${!deal.act ? CHECK : ""}Nothing, ready to start</button></div>`
     : p === "break" ? `<div class="picker" id="deal-picker" role="group" aria-label="Minutes of ${esc(deal.act)}">${[5, 10, 15, 20].map(n => `<button class="chip" data-set="breakMin:${n}" aria-pressed="${deal.breakMin === n}">${deal.breakMin === n ? CHECK : ""}${n} min</button>`).join("")}</div>`
-    : p === "focus" ? `<div class="picker" id="deal-picker" role="group" aria-label="Focus minutes">${[5, 8, 12, 15, 20].map(n => `<button class="chip" data-set="focusMin:${n}" aria-pressed="${deal.focusMin === n}">${deal.focusMin === n ? CHECK : ""}${n} min</button>`).join("")}</div>`
+    : p === "focus" ? focusPicker()
     : p === "task" ? `<div class="picker" id="deal-picker"><label class="vh" for="task">What you'll work on</label><input id="task" value="${esc(deal.task)}"><button class="chip" id="taskdone">Done</button></div>` : "";
   const serial = String(412 + ledger.length).padStart(4, "0");
   return `<div class="ticketwrap${peek ? " peek" : ""}"><section class="ticket" id="ticket" aria-label="Your deal">
     <div class="body">
       <div class="tickethead"><span class="serial">No. ${serial}<br>${clockStr()}</span>${STAMPBOX}</div>
       <p class="sentence">${deal.act
-        ? `${tokB(p)} of ${tokA(p)}, then <span class="nowrap">${tokF(p)} of</span> <span class="nowrap">${tokT(p)}.</span>`
+        ? `<span class="nowrap">${tokB(p)} of ${tokA(p)},</span> then <span class="nowrap">${tokF(p)} of</span> <span class="nowrap">${tokT(p)}.</span>`
         : `${tokA(p)}. Straight into <span class="nowrap">${tokF(p)} of</span> <span class="nowrap">${tokT(p)}.</span>`}</p>
+      ${isLong(deal.focusMin) && p !== "focus" ? `<p class="plan">${N(planLine(deal))}</p>` : ""}
       ${pk}
     </div>
     <div class="stub perf">
@@ -637,13 +674,16 @@ function presence(still) {
 }
 function runningView() {
   const b = cur(), isB = b.type === "break", r = remaining(), m = minsLeft();
-  const nxt = S.blocks[S.idx + 1], heads = r <= 120000 && r > 0;
+  const nxt = S.blocks[S.idx + 1], heads = isHeads();
   const f = face(r, m);
   /* while a sheet is open it does the talking: the dial keeps only its number and ring */
   const quiet = !!(sheet && tab === "now");
   const then = nxt ? `<span class="swatch ${nxt.type}" aria-hidden="true"></span>Then ${esc(longName(nxt))} for ${nxt.min} min.` : "Last block tonight.";
   /* the next step always sits under the dial, in every state, so the dial never moves */
   const note = quiet ? `<p class="note"></p>` : toast ? `<p class="note go" role="status">${N(esc(toast))}</p>` : `<p class="note">${N(then)}</p>`;
+  /* on focus blocks of 45+, a reserved slot under the next step: silent, 3 minutes at the midpoint, then empty again */
+  const half = isHalfway();
+  const aside = b.type === "focus" && S.durMs >= LONG_MS ? `<p class="aside">${half && !quiet ? "Halfway. Stretch if you like." : ""}</p>` : "";
   return `<div class="now">
     <div class="nowhead">
       <span class="kind"><span class="swatch ${isB ? "break" : "focus"}" aria-hidden="true"></span>${isB ? "Break you chose" : "Focus"}</span>
@@ -652,11 +692,11 @@ function runningView() {
     <h1>${esc(title(b.label))}</h1>
   </div>
   <div class="timerwrap">
-    <div class="dial${S.justStarted ? " sweep" : ""}${r <= 0 ? " done" : ""}${heads ? " heads" : ""}" style="--p:${r <= 0 ? 0 : (r / S.durMs).toFixed(4)}" role="img" aria-label="${r <= 0 ? "Time is up" : m + " minutes left"}">
+    <div class="dial${S.justStarted ? " sweep" : ""}${r <= 0 ? " done" : ""}${heads ? " heads" : ""}" style="--p:${r <= 0 ? 0 : (r / S.durMs).toFixed(4)};${dialTicks(S.durMs / 60000)}" role="img" aria-label="${r <= 0 ? "Time is up" : m + " minutes left" + (half ? ", halfway" : "")}">
       ${dial(isB ? "break" : "focus")}
       <span class="face"><span class="big ${f.cls}" id="mins">${f.big}</span><span class="unit" id="unit">${quiet ? "" : esc(f.unit)}</span></span>
     </div>
-    ${note}
+    ${note}${aside}
   </div>
   <div class="stack act">
     ${isB
@@ -830,7 +870,7 @@ function roving() {
 function bind() {
   document.querySelectorAll("[data-act]").forEach(b => b.onclick = () => { deal.act = b.dataset.act || null; if (!arrowing) { picker = null; nextFocus = '[data-pick="act"]'; } render(); });
   document.querySelectorAll("[data-pick]").forEach(b => b.onclick = () => { picker = picker === b.dataset.pick ? null : b.dataset.pick; render(); const t = $("#task"); if (t) t.focus(); });
-  document.querySelectorAll("[data-set]").forEach(b => b.onclick = () => { const [k, n] = b.dataset.set.split(":"); deal[k] = +n; picker = null; render(); });
+  document.querySelectorAll("[data-set]").forEach(b => b.onclick = () => { const [k, n] = b.dataset.set.split(":"); deal[k] = +n; if (!arrowing) { picker = null; nextFocus = `[data-pick="${k === "focusMin" ? "focus" : "break"}"]`; } render(); });
   const task = $("#task"); if (task) { task.oninput = e => { deal.task = e.target.value || "Studying"; }; task.onkeydown = e => { if (e.key === "Enter") { picker = null; render(); } }; }
   on("#taskdone", () => { picker = null; render(); });
   on("#skipbreak", () => { deal.act = null; picker = null; render(); const s = $("#shake"); if (s) { s.focus(); s.click(); } });
@@ -954,7 +994,9 @@ $("#jump").onclick = () => { if (S) vnow = S.startedAt + S.durMs - 1000; };
 $("#reset").onclick = () => { fresh(); mode = "start"; setTab("now"); history.replaceState(null, "", location.pathname); render(); };
 
 /* ---------- clock loop: re-render only on structural change, update numbers in place ---------- */
-let lastSig = "";
+let lastSig = "", wasHeads = false;
+/* what forces a full re-render: block, heads-up, time up, sheet, toast, the halfway line */
+const signature = () => [S.idx, isHeads(), remaining() <= 0, sheet && sheet.kind, sheet && sheet.asking, !!toast, isHalfway()].join("|");
 /* the bonus sheet's timer, said in words: whole seconds, every 5 s, then every second for the last 5.
    The bar under "Take my break" drains as the time runs out. */
 function updateCountdown() {
@@ -972,7 +1014,7 @@ function tick() {
     const r = remaining(), b = cur();
     if (r <= 0 && !sheet) {
       if (b.type === "break") openSheet({ kind: "boundary", asking: false });
-      else if (!S.bonusOffered && S.idx < S.blocks.length - 1) openSheet({ kind: "bonus", at: Date.now(), paused: reduce });
+      else if (!S.bonusOffered && S.idx < S.blocks.length - 1 && b.min + 10 <= CEILING) openSheet({ kind: "bonus", at: Date.now(), paused: reduce });
       else nextBlock();
     }
     if (sheet && sheet.kind === "bonus" && !sheet.sealing) {
@@ -982,12 +1024,12 @@ function tick() {
       if (!sheet.paused && Date.now() - sheet.at > 30000) { S.bonusOffered = true; nextBlock(); }
       updateCountdown();
     }
-    const heads = r <= 120000 && r > 0;
-    const sig = [S.idx, heads, r <= 0, sheet && sheet.kind, sheet && sheet.asking, !!toast].join("|");
-    if (sig !== lastSig) { if (lastSig && heads && !sheet) say(`2 minutes left of ${title(b.label)}.`); lastSig = sig; render(); }
+    const heads = isHeads();
+    const sig = signature();
+    if (sig !== lastSig) { if (lastSig && heads && !wasHeads && !sheet) say(`${headsUpMs() / 60000} minutes to wrap up ${longName(b)}.`); wasHeads = heads; lastSig = sig; render(); }
     else {
       const m = minsLeft(), mins = $("#mins"), d = $(".dial"), f = face(r, m);
-      if (mins && mins.textContent !== f.big) { mins.textContent = f.big; mins.className = "big " + f.cls; $("#unit").textContent = sheet ? "" : f.unit; if (m !== +d.dataset.m) { d.dataset.m = m; d.setAttribute("aria-label", `${m} minutes left`); } if (reduce) d.style.setProperty("--p", (r / S.durMs).toFixed(4)); }
+      if (mins && mins.textContent !== f.big) { mins.textContent = f.big; mins.className = "big " + f.cls; $("#unit").textContent = sheet ? "" : f.unit; if (m !== +d.dataset.m) { d.dataset.m = m; d.setAttribute("aria-label", `${m} minutes left${isHalfway() ? ", halfway" : ""}`); } if (reduce) d.style.setProperty("--p", (r / S.durMs).toFixed(4)); }
       if (d && !reduce && !S.justStarted) d.style.setProperty("--p", (r / S.durMs).toFixed(4));
     }
   }
@@ -1012,9 +1054,20 @@ function fromHash() {
   else if (h === "offer-intention") { run(0, 2); sheet = { kind: "boundary", asking: true, focusMe: true }; }
   else if (h === "bonus") { run(9 * 60000); S.idx = 1; S.durMs = cur().min * 60000; S.startedAt = vnow - S.durMs; sheet = { kind: "bonus", at: Date.now(), focusMe: true, paused: reduce }; }
   else if (h === "focus") { run(9 * 60000); S.idx = 1; S.durMs = cur().min * 60000; S.startedAt = vnow - S.durMs * .4; }
+  /* spec 007: long blocks */
+  else if (h === "picker-focus") picker = "focus";
+  else if (h === "picker-60") { picker = "focus"; deal.focusMin = 60; }
+  else if (h === "start-60") deal.focusMin = 60;
+  else if (h.startsWith("long-")) {
+    /* a 60 min focus block: just started, at halfway, in its 5 min heads-up */
+    deal.focusMin = 60; run(0); S.idx = 1; S.durMs = cur().min * 60000;
+    /* the screenshot lands about 36 s later at 30×: halfway crosses 30:00 just before the shot */
+    const left = { "long-running": 47.4, "long-halfway": 30.4, "long-heads-up": 4.3 }[h] ?? 47.4;
+    S.startedAt = vnow - (S.durMs - left * 60000);
+  }
   else if (h === "ledger") { seedLedger(); setTab("ledger"); }
   else if (h === "room") setTab("room");
-  lastSig = S ? [S.idx, remaining() <= 120000 && remaining() > 0, remaining() <= 0, sheet && sheet.kind, sheet && sheet.asking, false].join("|") : "";
+  lastSig = S ? signature() : ""; wasHeads = !!S && isHeads();
   render();
 }
 window.addEventListener("hashchange", () => { if (!BE) fromHash(); });
