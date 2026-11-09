@@ -73,7 +73,7 @@ html, body { height: 100%; }
 body { background: var(--paper); color: var(--ink); font-family: var(--font-body); font-size: 1rem; line-height: 1.45; }
 .big, .num, .tally b, .stubs .t b, .serial { font-variant-numeric: tabular-nums; }
 * { box-sizing: border-box; }
-button, input { font: inherit; color: inherit; }
+button, input, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
 :focus-visible { outline: 3px solid var(--deal); outline-offset: 2px; border-radius: 8px; }
 .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
@@ -161,6 +161,29 @@ p { margin: 0; }
 .longrow .why { flex-basis: 100%; font-size: .9375rem; color: var(--soft); }
 /* the shape of a long session, said once under the sentence so the second block isn't a surprise */
 .plan { font-size: .9375rem; color: var(--soft); margin-top: -4px; }
+/* spec 008: "Bigger than one block?" is a box printed on the ticket, empty and dashed in ink like the stamp box.
+   Ticking it inks the box green and turns the deal into the first payment on a big one. */
+/* the first payment starts its own line, like a second line item under the break */
+.sentence .payline { display: block; }
+.bigchip { align-self: flex-start; display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 8px 10px 8px 0; margin-block: -6px -4px; border: none; background: none; color: var(--ink);
+  font-family: var(--font-head); font-stretch: 85%; font-weight: 700; font-size: 1.125rem; line-height: 1.15; letter-spacing: .01em; text-align: left; }
+.bigchip .box { flex: none; width: 22px; height: 22px; border: 1.5px dashed var(--wait-edge); border-radius: 4px; display: grid; place-items: center; }
+.bigchip .box svg { width: 14px; height: 14px; visibility: hidden; }
+.bigchip[aria-pressed="true"] { color: var(--deal); }
+.bigchip[aria-pressed="true"] .box { border: 2px solid var(--deal); background: var(--sel); }
+.bigchip[aria-pressed="true"] .box svg { visibility: visible; }
+/* both rows are one tap and skippable; nothing is picked until you pick it */
+.bigrow { display: flex; flex-direction: column; gap: 6px; }
+.bigrow .lab { font-size: .9375rem; color: var(--soft); }
+.bigrow .chip { font-size: 1rem; padding: 8px 14px; }
+/* the first move is written on the ticket, on a ruled line, not in a box */
+.firstmove { display: flex; flex-direction: column; gap: 2px; padding-top: 2px; }
+.firstmove label { font-size: 1rem; color: var(--soft); }
+.firstmove textarea { display: block; width: 100%; min-height: 44px; margin: 0; padding: 8px 0 7px; resize: none; overflow: hidden; border: none; border-bottom: 1.5px solid var(--edge); border-radius: 0; background: none;
+  font: inherit; font-size: 1.125rem; line-height: 1.4; color: var(--ink); field-sizing: content; }
+.firstmove textarea::placeholder { color: var(--soft); font-style: italic; opacity: 1; }
+.firstmove textarea:focus { border-bottom-color: var(--deal); }
+.firstmove textarea:focus-visible { outline-offset: 4px; }
 
 /* ---------- one stamp: double-ruled border with the ink texture, letters solid so they stay readable ---------- */
 .stamp { --tilt: -3deg; position: relative; display: inline-grid; place-items: center; color: var(--deal); font-family: var(--font-head); font-stretch: 82%; font-weight: 800;
@@ -578,9 +601,19 @@ const ACTS = ["Reels", "TikTok", "YouTube", "Texting", "Gaming"];
 let speed = 30, clockOffset = 0, vnow = Date.now(), lastReal = performance.now();
 /* BE is the live backend, attached by the app shell for signed-in members; without it this is the design demo */
 let BE = null;
-let nudged = false, S, deal, ledger, sheet = null, checkin = null, picker = null, toast = null, tab = "now", mode = "start", opener = null, tried = false, arrowing = false, unseen = 0, studied = 0;
+let nudged = false, S, deal, big, ledger, sheet = null, checkin = null, picker = null, toast = null, tab = "now", mode = "start", opener = null, tried = false, arrowing = false, unseen = 0, studied = 0;
 
-function fresh() { nudged = false; deal = { act: "Reels", breakMin: 10, task: "Reading, BIO 180 ch. 7", focusMin: 8 }; ledger = []; S = null; sheet = null; picker = null; toast = null; unseen = 0; studied = 0; }
+/* spec 008: copy only, mirrored from packages/core/src/bigOne.ts (the first-move table and the type names). The rules stay in core. */
+const BIG_TYPES = { writing: "Writing", problems: "Problems & code", exam: "Exam study", project: "Project" };
+const FIRST_MOVES = { writing: "Open the doc and write one ugly sentence", problems: "Do problem 1 until you're stuck", exam: "Quiz yourself on topic 1 without notes", project: "Decide one thing: ___" };
+const GUTS = [60, 120, 180, 240];
+const gutText = m => m === 240 ? "4h+" : `${m / 60}h`;
+const gutSpoken = m => m === 240 ? "4 hours or more" : m === 60 ? "1 hour" : `${m / 60} hours`;
+/* the big-one half of the ticket: off until the student ticks "Bigger than one block?" (never pre-selected).
+   move is the first move; edited stops a type change from overwriting what they wrote. namedAt is the first tick. */
+const newBig = () => ({ on: false, type: null, gut: null, move: "", edited: false, pay: 15, namedAt: null });
+const bigTitle = () => title(deal.task).trim().slice(0, 80);
+function fresh() { nudged = false; deal = { act: "Reels", breakMin: 10, task: "Reading, BIO 180 ch. 7", focusMin: 8 }; big = newBig(); ledger = []; S = null; sheet = null; picker = null; toast = null; unseen = 0; studied = 0; }
 /* mirrors packages/core/src/session.ts: quick lengths ramp +4 up to max(25, chosen); long ones hold.
    45 and 60 get two focus blocks, the rest three; a long block's break is a quarter of it. */
 const roundsFor = f => f >= 45 ? 2 : 3;
@@ -693,7 +726,7 @@ function paintTabs() {
 function focusKey(el) {
   if (!el || el === document.body) return null;
   if (el.id && el.id !== "sh") return "#" + el.id;
-  for (const a of ["data-act", "data-set", "data-sug", "data-ci", "data-pick", "data-term"]) if (el.hasAttribute(a)) return `[${a}="${el.getAttribute(a)}"]`;
+  for (const a of ["data-act", "data-set", "data-sug", "data-ci", "data-pick", "data-term", "data-type", "data-gut"]) if (el.hasAttribute(a)) return `[${a}="${el.getAttribute(a)}"]`;
   return null;
 }
 let nextFocus = null;
@@ -709,7 +742,9 @@ function render() {
   /* a fresh ledger stub pushes the pile down by its own height */
   const fs = document.querySelector(".stubcard.fresh");
   if (fs) { const ul = fs.parentElement; ul.classList.add("pushing"); ul.style.setProperty("--push", `${-(fs.offsetHeight + 10)}px`); ul.style.setProperty("--lag", fs.style.getPropertyValue("--lag")); }
-  if (key && !opening) { const el = document.querySelector(key); if (el && !(sheet && !el.closest(".sheet"))) el.focus({ preventScroll: true }); }
+  if (key && !opening) { const el = document.querySelector(key); if (el && !(sheet && !el.closest(".sheet"))) { el.focus({ preventScroll: true });
+    /* a field drawn again mid-typing keeps the caret at the end, not the start */
+    if (el.matches("input, textarea") && el.value) { try { el.setSelectionRange(el.value.length, el.value.length); } catch (e) {} } } }
 }
 
 /* every underlined part of the sentence is a button; its accessible name starts with the words you see */
@@ -730,16 +765,31 @@ function ticket(peek) {
   const pk = p === "act" ? `<div class="picker" id="deal-picker" role="radiogroup" aria-label="What you're doing now">${ACTS.map(a => `<button class="chip" role="radio" data-act="${a}" aria-checked="${deal.act === a}">${deal.act === a ? CHECK : ""}${a}</button>`).join("")}<button class="chip" role="radio" data-act="" aria-checked="${!deal.act}">${!deal.act ? CHECK : ""}Nothing, ready to start</button></div>`
     : p === "break" ? `<div class="picker" id="deal-picker" role="group" aria-label="Minutes of ${esc(deal.act)}">${[5, 10, 15, 20].map(n => `<button class="chip" data-set="breakMin:${n}" aria-pressed="${deal.breakMin === n}">${deal.breakMin === n ? CHECK : ""}${n} min</button>`).join("")}</div>`
     : p === "focus" ? focusPicker()
-    : p === "task" ? `<div class="picker" id="deal-picker"><label class="vh" for="task">What you'll work on</label><input id="task" value="${esc(deal.task)}"><button class="chip" id="taskdone">Done</button></div>` : "";
+    : p === "task" ? `<div class="picker" id="deal-picker"><label class="vh" for="task">What you'll work on</label><input id="task" value="${esc(deal.task)}"${big.on ? ` maxlength="80"` : ""}><button class="chip" id="taskdone">Done</button></div>` : "";
   const serial = String(412 + ledger.length).padStart(4, "0");
-  return `<div class="ticketwrap${peek ? " peek" : ""}"><section class="ticket" id="ticket" aria-label="Your deal">
+  /* spec 008: the chip lives on the Quick Deal ticket only (not the intercept), always shown, never pre-selected */
+  const offerBig = mode !== "intercept";
+  const isBig = offerBig && big.on;
+  /* a big one's ticket: the break as today, then the first payment, whose length flips 15 ↔ 30 in one tap */
+  const tokName = `<button class="tok" data-pick="task" aria-controls="deal-picker" aria-expanded="${p === "task"}" aria-label="${esc(bigTitle())}, the big one, change">${esc(bigTitle())}</button>`;
+  const tokPay = `<button class="tok" id="paytok" aria-label="${big.pay} minutes, first payment, switch to ${big.pay === 15 ? 30 : 15}">${big.pay} min</button>`;
+  const sentence = isBig
+    ? `${deal.act ? `<span class="nowrap">${tokB(p)} of ${tokA(p)}.</span>` : `${tokA(p)}.`} <span class="payline">First payment on <span class="nowrap">${tokName}:</span> <span class="nowrap">${tokPay}.</span></span>`
+    : deal.act
+      ? `<span class="nowrap">${tokB(p)} of ${tokA(p)},</span> then <span class="nowrap">${tokF(p)} of</span> <span class="nowrap">${tokT(p)}.</span>`
+      : `${tokA(p)}. Straight into <span class="nowrap">${tokF(p)} of</span> <span class="nowrap">${tokT(p)}.</span>`;
+  const bigChip = offerBig ? `<button class="bigchip" id="bigchip" aria-pressed="${big.on}"><span class="box" aria-hidden="true">${CHECK}</span>Bigger than one block?</button>` : "";
+  const bigRows = isBig ? `<div class="bigrow" role="group" aria-labelledby="typelab"><span class="lab" id="typelab">Type</span><div class="chips">${Object.entries(BIG_TYPES).map(([k, l]) => `<button class="chip" data-type="${k}" aria-pressed="${big.type === k}">${big.type === k ? CHECK : ""}${esc(l)}</button>`).join("")}</div></div>
+      <div class="bigrow" role="group" aria-labelledby="gutlab"><span class="lab" id="gutlab">Gut size</span><div class="chips">${GUTS.map(m => `<button class="chip" data-gut="${m}" aria-pressed="${big.gut === m}" aria-label="${gutSpoken(m)}">${big.gut === m ? CHECK : ""}${gutText(m)}</button>`).join("")}</div></div>
+      <div class="firstmove"><label for="firstmove">When I sit down, I'll first:</label><textarea id="firstmove" rows="1" maxlength="140" enterkeyhint="done" placeholder="The very first thing you'll do">${esc(big.move)}</textarea></div>` : "";
+  return `<div class="ticketwrap${peek ? " peek" : ""}"><section class="ticket" id="ticket" aria-label="${isBig ? "Your first payment" : "Your deal"}">
     <div class="body">
       <div class="tickethead"><span class="serial">No. ${serial}<br>${clockStr()}</span>${STAMPBOX}</div>
-      <p class="sentence">${deal.act
-        ? `<span class="nowrap">${tokB(p)} of ${tokA(p)},</span> then <span class="nowrap">${tokF(p)} of</span> <span class="nowrap">${tokT(p)}.</span>`
-        : `${tokA(p)}. Straight into <span class="nowrap">${tokF(p)} of</span> <span class="nowrap">${tokT(p)}.</span>`}</p>
-      ${isLong(deal.focusMin) && p !== "focus" ? `<p class="plan">${N(planLine(deal))}</p>` : ""}
+      <p class="sentence">${sentence}</p>
+      ${!isBig && isLong(deal.focusMin) && p !== "focus" ? `<p class="plan">${N(planLine(deal))}</p>` : ""}
       ${pk}
+      ${bigChip}
+      ${bigRows}
     </div>
     <div class="stub perf">
       <button class="primary" id="shake">Deal</button>
@@ -1013,12 +1063,41 @@ function bind() {
   const task = $("#task"); if (task) { task.oninput = e => { deal.task = e.target.value || "Studying"; }; task.onkeydown = e => { if (e.key === "Enter") { picker = null; render(); } }; }
   on("#taskdone", () => { picker = null; render(); });
   on("#skipbreak", () => { deal.act = null; picker = null; render(); const s = $("#shake"); if (s) { s.focus(); s.click(); } });
+  /* spec 008: the big one. Ticking the box keeps the time of the first tick (server clock in live mode). */
+  on("#bigchip", () => {
+    big.on = !big.on; if (big.on && big.namedAt == null) big.namedAt = Date.now() + clockOffset;
+    if (picker === "focus") picker = null;
+    render(); say(big.on ? `First payment on ${bigTitle()}: ${big.pay} minutes. Type and size are optional.` : "Back to one deal.");
+  });
+  document.querySelectorAll("[data-type]").forEach(b => b.onclick = () => {
+    const k = b.dataset.type; big.type = big.type === k ? null : k;
+    /* the first move follows the type until the student writes their own */
+    if (!big.edited) big.move = big.type ? FIRST_MOVES[big.type] : "";
+    render();
+  });
+  document.querySelectorAll("[data-gut]").forEach(b => b.onclick = () => { const m = +b.dataset.gut; big.gut = big.gut === m ? null : m; render(); });
+  on("#paytok", () => { big.pay = big.pay === 15 ? 30 : 15; render(); say(`First payment, ${big.pay} minutes.`); });
+  const fm = $("#firstmove"); if (fm) {
+    const fit = () => { fm.style.height = "auto"; fm.style.height = `${fm.scrollHeight + fm.offsetHeight - fm.clientHeight}px`; };
+    fit(); if (document.fonts) document.fonts.ready.then(() => { if (fm.isConnected) fit(); });
+    fm.oninput = e => { big.move = e.target.value; big.edited = !!e.target.value.trim(); fit(); };
+    /* one line: Enter is "done", and moves on to the Deal button */
+    fm.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); const s = $("#shake"); if (s) s.focus(); } };
+  }
   on("#shake", () => {
     const t = $("#ticket"), btn = $("#shake"); t.classList.add("stamped"); btn.classList.add("pressed"); btn.disabled = true; buzz(14, reduce ? 0 : 150);
     const serial = String(412 + ledger.length).padStart(4, "0");
+    /* a big one runs as an ordinary Quick Deal whose first focus block is the first payment (15 or 30) */
+    const bg = mode !== "intercept" && big.on ? { ...big } : null;
+    const d = bg ? { ...deal, focusMin: bg.pay } : deal;
     const go = () => {
-      S = buildSession(deal); S.justStarted = true; S.serial = serial; mode = "start"; picker = null;
-      if (BE) { saveDeal(); BE.start(deal); }
+      S = buildSession(d); S.justStarted = true; S.serial = serial; mode = "start"; picker = null;
+      if (BE) {
+        saveDeal();
+        if (bg) BE.startBigOne({ title: bigTitle(), ...(bg.type ? { taskType: bg.type } : {}), ...(bg.gut ? { gutMin: bg.gut } : {}), firstMove: bg.move.trim(), deal: d, namedAt: bg.namedAt ?? Date.now() + clockOffset });
+        else BE.start(deal);
+      }
+      if (bg) big = newBig();
       const first = S.blocks[0];
       toast = first.type === "break" ? `Deal. ${cap(shortTask())} starts at ${clockStr(Date.now() + first.min * 60000)}.` : "Deal. Go.";
       setTimeout(() => { toast = null; if (S) S.justStarted = false; lastSig = ""; }, 3500);
@@ -1210,6 +1289,12 @@ function fromHash() {
     /* the screenshot lands about 36 s later at 30×: halfway crosses 30:00 just before the shot */
     const left = { "long-running": 47.4, "long-halfway": 30.4, "long-heads-up": 4.3 }[h] ?? 47.4;
     S.startedAt = vnow - (S.durMs - left * 60000);
+  }
+  /* spec 008: big ones, day 1. The chip on a plain Quick Deal; then ticked, bare; then typed (writing, 2h) */
+  else if (h.startsWith("bigone-")) {
+    deal.task = "History paper";
+    if (h !== "bigone-chip") { big.on = true; big.namedAt = Date.now(); }
+    if (h === "bigone-ticket-typed") { big.type = "writing"; big.gut = 120; big.move = FIRST_MOVES.writing; }
   }
   else if (h === "ledger") { seedLedger(); setTab("ledger"); }
   else if (h === "room") setTab("room");
