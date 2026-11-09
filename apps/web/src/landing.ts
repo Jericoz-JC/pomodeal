@@ -191,12 +191,13 @@ export const LANDING_CSS = `
 #pd-gate .ld-intro .ld-arc.f { animation-delay: .22s; }
 @keyframes ld-arc { from { opacity: 0; transform: rotate(-50deg); } }
 #pd-gate .ld-sample { position: absolute; left: 0; right: 0; top: 0; z-index: 3; pointer-events: none; animation: ld-in .38s .12s cubic-bezier(.2, .8, .2, 1) backwards; }
-#pd-gate .ld-sample.ld-file { z-index: 1; transform-origin: 30% 0; animation: ld-file .46s cubic-bezier(.5, 0, .75, .4) forwards; }
+#pd-gate .ld-sample.ld-file { z-index: 1; transform-origin: 30% 0; animation: ld-file .42s cubic-bezier(.4, 0, .6, 1) forwards; }
 @keyframes ld-in { from { opacity: 0; transform: translateY(18px); } }
-@keyframes ld-file { to { opacity: 0; transform: translateY(46px) rotate(-2deg) scale(.96); } }
+@keyframes ld-file { 70% { opacity: 1; } to { opacity: 0; transform: translateY(40px) rotate(-2deg) scale(.97); } }
 #pd-gate .ld-ticket.ld-under { opacity: 0; }
-#pd-gate .ld-ticket.ld-fresh { animation: ld-fresh .34s .16s ease-out backwards; }
-@keyframes ld-fresh { from { opacity: 0; transform: translateY(-8px); } }
+/* the fresh ticket is simply there, like the next sheet on a pad; it settles a hair as the stamped one leaves */
+#pd-gate .ld-ticket.ld-fresh { animation: ld-fresh .3s ease-out; }
+@keyframes ld-fresh { 30% { transform: translateY(-2px); } }
 #pd-gate .ld-peek.ld-bump { animation: ld-bump .32s .28s ease-out; }
 @keyframes ld-bump { 40% { transform: rotate(-2deg) translateY(4px); } }
 @keyframes ld-fade { from { opacity: 0; } }

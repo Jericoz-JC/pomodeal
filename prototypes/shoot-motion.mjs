@@ -33,7 +33,7 @@ const MOMENTS = {
   "offer-open": { url: `${app}#boundary`, setup: "S.askCount = 1", trigger: click("#ask2"), ms: 900, crop: [0, 300, W, H] },
   "offer-pick": { url: `${app}#offer-terms`, trigger: click('[data-term="0"]'), ms: 1200, crop: [0, 300, W, H] },
   "ledger": { url: `${app}#offer-terms`, setup: `seedLedger(); document.querySelector('[data-term="1"]').click()`, settle: 1500, trigger: click("#tab-ledger"), ms: 1200, crop: [0, 40, W, 520] },
-  "landing": { landing: true, ms: 3800, crop: [0, 0, W, H] },
+  "landing": { landing: true, ms: 3800, step: 120, crop: [0, 200, W, 580] },
 };
 const VARIANTS = [
   { key: "light", scheme: "light", reduce: false },
@@ -49,9 +49,12 @@ async function landingUrl() {
   await import(pathToFileURL(resolve(here, "../scripts/sync-prototype.mjs")).href);
   const { createServer } = await import("vite");
   const root = resolve(here, "../apps/web");
+  process.chdir(root); // vite.config.ts finds the repo's .env files relative to the working directory
   const server = await createServer({ root, configFile: join(root, "vite.config.ts"), mode: "production", logLevel: "error", server: { port: 5190 + Math.floor(Math.random() * 200), strictPort: true } });
   await server.listen();
   vite = { server, url: server.resolvedUrls.local[0] };
+  /* warm up: the first load pre-bundles dependencies and may reload the page, which would eat the recording */
+  const t = await openTab(); await t.send("Page.navigate", { url: vite.url }); await wait(6000); await t.close();
   return vite.url;
 }
 
@@ -136,13 +139,14 @@ const frameAt = (frames, at) => { let best = frames[0]; for (const f of frames) 
 
 async function strip(name, m, v, rec) {
   const [cx, cy, cw, ch] = m.crop, times = [];
-  for (let t = -STEP; t <= m.ms; t += STEP) times.push(t);
+  const step = m.step || STEP;
+  for (let t = -step; t <= m.ms; t += step) times.push(t);
   const scale = cw > 300 && ch > 600 ? 0.5 : 1; // whole-screen moments shrink so the strip stays readable
   const cols = scale < 1 ? 8 : 6;
   const cells = times.map(t => { const f = frameAt(rec.frames, t); return `<figure><div style="width:${cw * scale}px;height:${ch * scale}px"><img src="data:image/jpeg;base64,${f.data}" style="width:${W * scale}px;margin:${-cy * scale}px 0 0 ${-cx * scale}px"></div><figcaption>${t < 0 ? "before" : `${t} ms`}</figcaption></figure>`; }).join("");
   const html = `<!doctype html><meta charset="utf-8"><style>body{margin:0;padding:16px;background:#9aa39c;font:600 13px system-ui}h1{font-size:15px;margin:0 0 10px}
     .g{display:grid;grid-template-columns:repeat(${cols},max-content);gap:10px}figure{margin:0}figure div{overflow:hidden;border-radius:6px;box-shadow:0 0 0 1px #0003}figcaption{padding-top:3px}</style>
-    <h1>${name}, ${v.key}: one frame every ${STEP} ms from the trigger</h1><div class="g">${cells}</div>`;
+    <h1>${name}, ${v.key}: one frame every ${step} ms from the trigger</h1><div class="g">${cells}</div>`;
   await openPage(html);
   const size = await rv.evaluate("[document.documentElement.scrollWidth, document.documentElement.scrollHeight]");
   const shot = await rv.send("Page.captureScreenshot", { format: "png", clip: { x: 0, y: 0, width: size[0], height: size[1], scale: 1 }, captureBeyondViewport: true });
@@ -187,8 +191,13 @@ try {
     /* record every variant before building any review page: screenshots of big pages stall the screencast */
     const recs = [];
     for (const v of VARIANTS) {
-      const rec = await record(m, v);
-      if (!rec.frames.length) console.warn(`${name} ${v.key}: no frames`); else recs.push({ v, rec });
+      /* a fresh tab now and then comes up without painting; one retry covers it */
+      let rec = null;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try { rec = await record(m, v); } catch (e) { console.warn(`${name} ${v.key}: ${e.message.slice(0, 120)}`); rec = null; }
+        if (rec && rec.frames.length >= (v.reduce ? 2 : 10)) break;
+      }
+      if (!rec || !rec.frames.length) console.warn(`${name} ${v.key}: no frames`); else recs.push({ v, rec });
     }
     for (const r of recs) await strip(name, m, r.v, r.rec);
     if (recs.length === 3) await clip(name, m, recs);
