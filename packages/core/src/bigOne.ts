@@ -217,6 +217,12 @@ export function spreadProblem(plan: SpreadDay[], pieceCount: number, dueKey: str
 
 export interface BigOneCard { title: string; startWith: string; progress: ProgressLabel | null; minutes: number; comeback: boolean; offerRespread: boolean }
 
+/** A signed plan slipped: an unstamped piece's planned day is before today. A re-spread moves every day to today or later. */
+function planSlipped(task: Pick<BigOne, "spreadSignedAt" | "pieces">, todayKey: string): boolean {
+  return task.spreadSignedAt !== undefined
+    && (task.pieces ?? []).some((p) => p.stampedAt === undefined && p.plannedDay !== undefined && p.plannedDay < todayKey);
+}
+
 export function cardFor(task: BigOne, todayKey: string): BigOneCard {
   const comeback = isComeback(task, todayKey);
   return {
@@ -225,7 +231,7 @@ export function cardFor(task: BigOne, todayKey: string): BigOneCard {
     progress: progressLabel(task),
     minutes: firstPaymentMinutes(task, comeback),
     comeback,
-    offerRespread: comeback && task.spreadSignedAt !== undefined,
+    offerRespread: comeback && planSlipped(task, todayKey),
   };
 }
 

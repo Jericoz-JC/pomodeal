@@ -163,6 +163,32 @@ describe("cardFor", () => {
     expect(c.startWith).toBe(firstMoveFor("writing", true));
     expect(c.minutes).toBe(15);
     expect(c.offerRespread).toBe(false);
-    expect(cardFor({ ...t, spreadSignedAt: 1 }, "2026-11-08").offerRespread).toBe(true);
+  });
+  describe("offerRespread: only when a signed plan slipped", () => {
+    const worked: BigOne = { ...base, taskType: "writing", workedDays: ["2026-11-05"] };
+    it("a planned day before today on an unstamped piece offers it", () => {
+      const t = { ...worked, spreadSignedAt: 1, pieces: [piece({ plannedDay: "2026-11-06" }), piece({ plannedDay: "2026-11-09" })] };
+      expect(cardFor(t, "2026-11-08").offerRespread).toBe(true);
+    });
+    it("a freshly signed plan (every planned day today or later) does not", () => {
+      const t = { ...worked, spreadSignedAt: 1, pieces: [piece({ plannedDay: "2026-11-08" }), piece({ plannedDay: "2026-11-09" })] };
+      expect(cardFor(t, "2026-11-08").offerRespread).toBe(false);
+    });
+    it("no signed spread does not", () => {
+      const t = { ...worked, pieces: [piece({ plannedDay: "2026-11-06" })] };
+      expect(cardFor(t, "2026-11-08").offerRespread).toBe(false);
+    });
+    it("a two-day gap without a slipped planned day does not", () => {
+      const gap = { ...worked, workedDays: ["2026-11-01"], spreadSignedAt: 1, pieces: [piece({ plannedDay: "2026-11-10" })] };
+      const c = cardFor(gap, "2026-11-08");
+      expect(c.comeback).toBe(true);
+      expect(c.offerRespread).toBe(false);
+      // a signed spread of open terms only (no pieces carry days) has nothing that can slip
+      expect(cardFor({ ...worked, workedDays: ["2026-11-01"], spreadSignedAt: 1 }, "2026-11-08").offerRespread).toBe(false);
+    });
+    it("a stamped piece whose day passed is not a slip", () => {
+      const t = { ...worked, spreadSignedAt: 1, pieces: [piece({ plannedDay: "2026-11-06", stampedAt: 9 }), piece({ plannedDay: "2026-11-09" })] };
+      expect(cardFor(t, "2026-11-08").offerRespread).toBe(false);
+    });
   });
 });
