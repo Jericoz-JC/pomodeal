@@ -40,6 +40,8 @@
   --deal: #1E6A46;
   --on-deal: #FFFFFF;
   --deal-tint: rgba(30, 106, 70, .07);
+  /* deleting: a quiet dark red-brown, never an alarm red (about 6.5:1 on the sheet) */
+  --gone: #84402E;
   /* a break is a solid grey-green arc with a quiet texture; the stripes never carry the shape */
   --break-base: #5E6B62;
   --break-stripe: rgba(251, 252, 249, .30);
@@ -59,13 +61,13 @@
   :root:not([data-theme="light"]) {
     --paper: #18201C; --card: #27312C; --stub: #212A25; --chip: #2B3530; --ink: #E6ECE7; --soft: #A3B0A7; --rule: #33413A; --track: #2F3A35; --edge: #74847A; --edge-half: rgba(116, 132, 122, .6);
     --sheet: #1D2521; --scrim: rgba(8, 12, 10, .5); --hi: rgba(255, 255, 255, .05); --lift: rgba(0, 0, 0, .5);
-    --deal: #6CCB97; --on-deal: #0F1A14; --deal-tint: rgba(108, 203, 151, .08); --break-base: #8E9A91; --break-stripe: rgba(24, 32, 28, .30); --wait: color-mix(in srgb, var(--ink) 60%, transparent); --wait-edge: color-mix(in srgb, var(--ink) 60%, transparent); --sel: #283C32; --sel-card: #2E4037; color-scheme: dark;
+    --deal: #6CCB97; --on-deal: #0F1A14; --deal-tint: rgba(108, 203, 151, .08); --break-base: #8E9A91; --break-stripe: rgba(24, 32, 28, .30); --wait: color-mix(in srgb, var(--ink) 60%, transparent); --wait-edge: color-mix(in srgb, var(--ink) 60%, transparent); --sel: #283C32; --sel-card: #2E4037; --gone: #E0A08C; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --paper: #18201C; --card: #27312C; --stub: #212A25; --chip: #2B3530; --ink: #E6ECE7; --soft: #A3B0A7; --rule: #33413A; --track: #2F3A35; --edge: #74847A; --edge-half: rgba(116, 132, 122, .6);
   --sheet: #1D2521; --scrim: rgba(8, 12, 10, .5); --hi: rgba(255, 255, 255, .05); --lift: rgba(0, 0, 0, .5);
-  --deal: #6CCB97; --on-deal: #0F1A14; --deal-tint: rgba(108, 203, 151, .08); --break-base: #8E9A91; --break-stripe: rgba(24, 32, 28, .30); --wait: color-mix(in srgb, var(--ink) 60%, transparent); --wait-edge: color-mix(in srgb, var(--ink) 60%, transparent); --sel: #283C32; --sel-card: #2E4037; color-scheme: dark;
+  --deal: #6CCB97; --on-deal: #0F1A14; --deal-tint: rgba(108, 203, 151, .08); --break-base: #8E9A91; --break-stripe: rgba(24, 32, 28, .30); --wait: color-mix(in srgb, var(--ink) 60%, transparent); --wait-edge: color-mix(in srgb, var(--ink) 60%, transparent); --sel: #283C32; --sel-card: #2E4037; --gone: #E0A08C; color-scheme: dark;
 }
 @property --p { syntax: "<number>"; inherits: true; initial-value: 1; }
 
@@ -122,7 +124,7 @@ p { margin: 0; }
 .chip:is([aria-pressed="true"], [aria-checked="true"]) { background: var(--sel); color: var(--deal); box-shadow: inset 0 0 0 2px var(--deal); }
 
 /* ---------- one ticket ---------- */
-.ticketwrap, .terms, .stubs, .tearrow, .bigones { filter: drop-shadow(0 1px 0 var(--rule)) drop-shadow(0 8px 12px var(--lift)); }
+.ticketwrap, .terms, .stubs, .tearrow { filter: drop-shadow(0 1px 0 var(--rule)) drop-shadow(0 8px 12px var(--lift)); }
 /* on the home screen, tonight's earlier stubs peek out from under the new ticket: Now and Ledger are the same pile */
 .ticketwrap.peek { position: relative; isolation: isolate; margin-bottom: 14px; }
 .ticketwrap.peek::before, .ticketwrap.peek::after { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--stub); border-radius: 6px 0 0 6px; box-shadow: inset 0 0 0 1px var(--edge-half); -webkit-mask: var(--zig); mask: var(--zig); }
@@ -167,28 +169,43 @@ p { margin: 0; }
 .sentence .payline { display: block; }
 .bigchip { align-self: flex-start; display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 8px 10px 8px 0; margin-block: -6px -4px; border: none; background: none; color: var(--ink);
   font-family: var(--font-head); font-stretch: 85%; font-weight: 700; font-size: 1.125rem; line-height: 1.15; letter-spacing: .01em; text-align: left; }
-.bigchip .box { flex: none; width: 22px; height: 22px; border: 1.5px dashed var(--wait-edge); border-radius: 4px; display: grid; place-items: center; }
-.bigchip .box svg { width: 14px; height: 14px; visibility: hidden; }
+/* one printed checkbox for the app: "Bigger than one block?" on the ticket and "Keep screen on" under the ring */
+.cbox { flex: none; width: 22px; height: 22px; border: 1.5px dashed var(--wait-edge); border-radius: 4px; display: grid; place-items: center; color: var(--deal); }
+.cbox svg { width: 14px; height: 14px; visibility: hidden; }
+:is([aria-pressed="true"], [aria-checked="true"]) > .cbox { border: 2px solid var(--deal); background: var(--sel); }
+:is([aria-pressed="true"], [aria-checked="true"]) > .cbox svg { visibility: visible; }
 .bigchip[aria-pressed="true"] { color: var(--deal); }
-.bigchip[aria-pressed="true"] .box { border: 2px solid var(--deal); background: var(--sel); }
-.bigchip[aria-pressed="true"] .box svg { visibility: visible; }
-/* both rows are one tap and skippable; nothing is picked until you pick it */
-.bigrow { display: flex; flex-direction: column; gap: 6px; }
-.bigrow .lab { font-size: .9375rem; color: var(--soft); }
-.bigrow .chip { font-size: 1rem; padding: 8px 14px; }
+/* both rows are one tap and skippable; nothing is picked until you pick it. They read as the rest of the sentence:
+   "About 2h", "Mostly writing". The connecting word recedes like the sentence's own. */
+.phrases { display: flex; flex-direction: column; gap: 2px; margin-block: -6px -2px; }
+.phrase { display: flex; flex-wrap: wrap; align-items: center; column-gap: 2px; }
+.phrase .pw { font-family: var(--font-head); font-stretch: 86%; font-weight: 500; font-size: 1.125rem; color: var(--soft); margin-right: 6px; }
+/* a choice printed on a ticket: a small empty box dashed in ink, like the stamp box. Picking it inks it with the
+   stamp's double green rule. The box is drawn small; the button around it is the 44px target. */
+.inkchip { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; padding: 0 2px; border: none; background: none; color: var(--ink);
+  font-family: var(--font-head); font-stretch: 85%; font-weight: 700; font-size: 1rem; line-height: 1.1; letter-spacing: .01em; }
+.inkchip .ink { display: inline-flex; align-items: center; gap: 4px; padding: 5px 7px; border: 1.5px dashed var(--wait-edge); border-radius: 5px; }
+.inkchip .ink svg { width: 13px; height: 13px; flex: none; }
+.inkchip:is([aria-pressed="true"], [aria-checked="true"]) .ink { border: 3px double var(--deal); padding: 3.5px 5.5px; background: var(--sel); color: var(--deal); }
+.inkchip:focus-visible { outline-offset: -1px; }
+/* the done answers are the screen's question, so their boxes are drawn larger */
+.inkchip.lg { font-size: 1.125rem; }
+.inkchip.lg .ink { padding: 9px 14px; }
+.inkchip.lg:is([aria-pressed="true"], [aria-checked="true"]) .ink { padding: 7.5px 12.5px; }
 /* the first move is written on the ticket, on a ruled line, not in a box */
 .firstmove { display: flex; flex-direction: column; gap: 2px; padding-top: 2px; }
 .firstmove label { font-size: 1rem; color: var(--soft); }
 .firstmove textarea { display: block; width: 100%; min-height: 44px; margin: 0; padding: 8px 0 7px; resize: none; overflow: hidden; border: none; border-bottom: 1.5px solid var(--edge); border-radius: 0; background: none;
   font: inherit; font-size: 1.125rem; line-height: 1.4; color: var(--ink); field-sizing: content; }
-.firstmove textarea::placeholder { color: var(--soft); font-style: italic; opacity: 1; }
+/* an example, not an answer: upright and lighter than anything typed (62% ink keeps it at 4.5:1) */
+.firstmove textarea::placeholder { color: color-mix(in srgb, var(--ink) 62%, transparent); font-style: normal; opacity: 1; }
 .firstmove textarea:focus { border-bottom-color: var(--deal); }
 .firstmove textarea:focus-visible { outline-offset: 4px; }
 /* block end of a big one: the bookmark on the same ruled line as the first move, then the done question */
 .notes { display: flex; flex-direction: column; gap: 16px; padding: 2px 2px 0; }
-.donerow { display: flex; flex-direction: column; gap: 10px; }
+.donerow { display: flex; flex-direction: column; gap: 4px; }
 .donerow .q { font-size: 1.0625rem; line-height: 1.35; color: var(--ink); }
-.donerow .check { display: block; font-size: .9375rem; color: var(--soft); }
+.donerow .chips { gap: 4px 8px; margin-left: -2px; }
 /* "Start with: …" wherever a big one is waiting or running: the label recedes, the move is ink */
 .startw { font-size: 1rem; line-height: 1.35; color: var(--ink); overflow-wrap: anywhere; text-wrap: pretty; }
 .startw > span:first-child { color: var(--soft); }
@@ -199,12 +216,15 @@ p { margin: 0; }
 
 /* spec 008, day 2: a big one waiting on the home screen is a stub kept for later. Same torn ticket as a deal; its
    left tab is the length you'll pay, inked green and perforated where it tears off. Tapping the tab starts it. */
-.bigones { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+/* R29: the big one to do now is the one stub at full size; up to two more are plain rows under it */
+.bigones { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.bigones > .cardwrap { filter: drop-shadow(0 1px 0 var(--rule)) drop-shadow(0 8px 12px var(--lift)); margin-bottom: 8px; }
 .bigcard { position: relative; display: grid; grid-template-columns: 70px minmax(0, 1fr); background: var(--card); border-radius: 6px 0 0 6px; box-shadow: inset 0 1px 0 var(--hi); -webkit-mask: var(--zig); mask: var(--zig); }
 .bigcard .go { border: none; margin: 0; padding: 12px 4px; border-radius: 6px 0 0 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
   background: radial-gradient(circle, var(--card) 1.3px, transparent 1.8px) 100% 2px / 6px 8px repeat-y, var(--deal); color: var(--on-deal); font-family: var(--font-head); }
 .bigcard .go b { font-stretch: 72%; font-weight: 800; font-size: 2.125rem; line-height: .85; font-variant-numeric: tabular-nums; }
 .bigcard .go span { font-stretch: 85%; font-weight: 700; font-size: 1rem; line-height: 1; }
+.bigcard .go span:first-child { margin-bottom: 2px; }
 /* the card's own edge would clip an outside ring: the ring sits inside the green tab */
 .bigcard .go:focus-visible { outline: 3px solid var(--on-deal); outline-offset: -7px; }
 .bigcard .what { min-width: 0; padding: 6px 20px 8px 14px; display: flex; flex-direction: column; gap: 3px; }
@@ -214,33 +234,56 @@ p { margin: 0; }
 .bigcard .more svg { width: 22px; height: 22px; }
 .bigcard .more:focus-visible { outline-offset: -4px; }
 .bigcard .ask { font-size: 1rem; line-height: 1.35; color: var(--ink); }
-.bigcard .foot { display: flex; align-items: center; gap: 8px; min-height: 44px; margin: -4px -12px -6px 0; }
-.bigcard .prog { font-size: .9375rem; color: var(--soft); }
-.bigcard .brk { margin-left: auto; padding: 10px 12px; font-size: .9375rem; }
+.bigcard .prog { font-size: .9375rem; color: var(--soft); padding-block: 2px 8px; }
+.bigcard .startw:last-child { padding-bottom: 8px; }
 .allbig { align-self: flex-start; margin: -12px 0 -6px -12px; }
+/* a row: the title, then "Start 20 min" in the deal's green. No pill: the words are the button. */
+.bitem { display: flex; align-items: center; }
+.brow { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 6px 2px; border: none; background: none; color: var(--ink); text-align: left; }
+.brow .btitle { flex: 1; min-width: 0; font-family: var(--font-head); font-stretch: 78%; font-weight: 750; font-size: 1.1875rem; line-height: 1.15; overflow-wrap: anywhere; }
+.brow .bgo { flex: none; font-family: var(--font-head); font-stretch: 85%; font-weight: 700; font-size: 1.0625rem; line-height: 1.2; color: var(--deal); text-decoration: underline solid 2px; text-underline-offset: 4px; font-variant-numeric: tabular-nums; }
+.brow:focus-visible { outline-offset: -2px; }
+.bitem .more { flex: none; width: 44px; height: 44px; margin-right: -10px; border: none; background: none; color: var(--soft); display: grid; place-items: center; }
+.bitem .more svg { width: 20px; height: 20px; }
+.bitem .more:focus-visible { outline-offset: -4px; }
+/* R30: with a big one waiting, a new deal is one quiet line under the cards; it opens the full ticket */
+.quickrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 52px; margin-top: -4px; padding: 14px 2px 10px; border: none; color: var(--ink); text-align: left;
+  background: radial-gradient(circle, var(--edge) 1.2px, transparent 1.7px) 0 0 / 8px 6px repeat-x;
+  font-family: var(--font-head); font-stretch: 85%; font-weight: 700; font-size: 1.1875rem; line-height: 1.2; letter-spacing: .01em; }
+.quickrow svg { flex: none; width: 20px; height: 20px; color: var(--soft); transform: rotate(90deg); }
 
-/* the card's ⋯ menu and the full list: plain rows on the sheet, the way the room lists people */
-.menu { display: flex; flex-direction: column; border-top: 1px solid var(--rule); }
-.mrow { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%; min-height: 52px; padding: 12px 2px; border: none; border-bottom: 1px solid var(--rule); background: none; text-align: left; font-size: 1.0625rem; line-height: 1.3; color: var(--ink); }
+/* R39: the card's ⋯ menu and the full list are a sheet of ticket paper torn from the pad: a torn top edge, the title
+   as the stub, a perforation under it, then plain rows. No grabber, no ruled list. */
+.sheet.paper { --behind: var(--card); background: var(--card); border-top: none; border-radius: 0; padding-top: 24px; gap: 10px;
+  -webkit-mask: linear-gradient(#000 0 0) bottom / 100% calc(100% - 6px) no-repeat, conic-gradient(from 135deg at top, #000 90deg, #0000 0) left top / 12px 6px repeat-x;
+  mask: linear-gradient(#000 0 0) bottom / 100% calc(100% - 6px) no-repeat, conic-gradient(from 135deg at top, #000 90deg, #0000 0) left top / 12px 6px repeat-x; }
+.sheet.paper .pperf { flex: none; height: 6px; margin: 2px 0 2px; background: radial-gradient(circle, var(--edge) 1.2px, transparent 1.7px) 0 50% / 8px 6px repeat-x; }
+.sheet.paper .pclose { margin-top: 2px; }
+.menu { display: flex; flex-direction: column; }
+.mrow { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%; min-height: 52px; padding: 10px 2px; border: none; background: none; text-align: left; font-size: 1.0625rem; line-height: 1.3; color: var(--ink); }
 .mrow small { font-size: .875rem; color: var(--soft); }
-.mrow:disabled { color: var(--soft); cursor: default; }
 .mrow:focus-visible { outline-offset: -3px; }
-.biglist { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
-.lrow { display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 8px 2px; border-bottom: 1px solid var(--rule); }
+/* deleting is quiet but not the same as the others: a dark red-brown, never an alarm red */
+.mrow.gone, .gone { color: var(--gone); }
+.secondary.gone { border-color: var(--gone); }
+.biglist { list-style: none; margin: 0; padding: 0; }
+.lrow { display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 4px 2px; }
 .lrow .ltitle { flex: 1; min-width: 0; font-family: var(--font-head); font-stretch: 78%; font-weight: 750; font-size: 1.1875rem; line-height: 1.15; overflow-wrap: anywhere; }
 .lrow.setaside .ltitle { color: var(--soft); }
 .lrow > button { flex: none; }
-.sheet .label { margin-top: 4px; }
+.lrow .chip { font-size: 1rem; padding: 8px 14px; }
+/* R38: "Set aside" is a quiet heading, not a row */
+.asideh { margin: 18px 0 0; font-family: var(--font-body); font-size: .875rem; font-weight: 400; line-height: 1.3; color: var(--soft); }
 
-/* wake lock: the same printed box as "Bigger than one block?", quieter, under the focus controls */
-.keepon { align-self: center; display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 8px 12px; border: none; background: none; color: var(--soft); font-size: .9375rem; }
-.keepon .box { flex: none; width: 20px; height: 20px; border: 1.5px dashed var(--wait-edge); border-radius: 4px; display: grid; place-items: center; }
-.keepon .box svg { width: 13px; height: 13px; visibility: hidden; }
+/* wake lock: the same printed box as "Bigger than one block?", a quiet row under the ring */
+.keepon { justify-self: center; display: inline-flex; align-items: center; gap: 10px; min-height: 44px; margin-top: -6px; padding: 8px 12px; border: none; background: none; color: var(--soft); font-size: .9375rem; }
 .keepon[aria-checked="true"] { color: var(--ink); }
-.keepon[aria-checked="true"] .box { border: 2px solid var(--deal); background: var(--sel); color: var(--deal); }
-.keepon[aria-checked="true"] .box svg { visibility: visible; }
-/* ADR 0005: the repayment picked last time waits pre-selected; Deal takes it in one tap */
+/* ADR 0005: the repayment picked last time waits pre-selected (green edge, a check in its stamp box); Deal takes it in one tap */
 .term.pre::before { background: var(--sel-card); box-shadow: inset 0 0 0 2px var(--deal); }
+.term.pre .slot { border: 2px solid var(--deal); color: var(--deal); }
+.term.pre .slot > svg { width: 20px; height: 20px; }
+.term.pre.stamped .slot > svg { visibility: hidden; }
+.term .lastpick { display: block; margin-top: 3px; font-family: var(--font-body); font-stretch: normal; font-weight: 400; font-size: .875rem; line-height: 1.2; color: var(--deal); }
 
 /* ---------- one stamp: double-ruled border with the ink texture, letters solid so they stay readable ---------- */
 .stamp { --tilt: -3deg; position: relative; display: inline-grid; place-items: center; color: var(--deal); font-family: var(--font-head); font-stretch: 82%; font-weight: 800;
@@ -259,7 +302,7 @@ p { margin: 0; }
    a dotted perforation; right, what you're agreeing to. Each one is a button: one tap stamps it and closes the sheet. */
 .terms { display: flex; flex-direction: column; gap: 10px; }
 .term { position: relative; z-index: 0; width: 100%; padding: 0 22px 0 0; border: none; background: none; color: var(--ink); text-align: left; font: inherit;
-  display: grid; grid-template-columns: 76px minmax(0, 1fr) auto; grid-template-rows: auto auto; align-items: center; min-height: 64px; padding-right: 18px; }
+  display: grid; grid-template-columns: 88px minmax(0, 1fr) auto; grid-template-rows: auto auto; align-items: center; min-height: 64px; padding-right: 18px; }
 .term::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: 6px 0 0 6px; background: var(--card); box-shadow: inset 0 1px 0 var(--hi); -webkit-mask: var(--zig); mask: var(--zig); }
 /* a button has a visible edge at rest, about 3.9:1 against the sheet */
 button.term { cursor: pointer; transition: transform .08s ease-out; }
@@ -268,7 +311,7 @@ button.term:hover::before { box-shadow: inset 0 0 0 1.5px var(--edge); }
 button.term:active { transform: translateY(1px); }
 .term.stamped::before { background: var(--sel-card); box-shadow: inset 0 0 0 2px var(--deal); }
 button.term:focus-visible { outline-offset: 3px; }
-.term .fig { grid-row: 1 / 3; align-self: stretch; display: grid; place-items: center; padding: 10px 4px; background: radial-gradient(circle, var(--edge) 1.2px, transparent 1.7px) 100% 0 / 6px 8px repeat-y;
+.term .fig { grid-row: 1 / 3; align-self: stretch; display: grid; place-items: center; padding: 10px 12px 10px 8px; background: radial-gradient(circle, var(--edge) 1.2px, transparent 1.7px) 100% 0 / 6px 8px repeat-y;
   font-family: var(--font-head); font-stretch: 78%; font-weight: 800; font-size: 1.625rem; line-height: 1; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .term .fig i { font-style: normal; font-weight: 500; font-size: .7em; margin-inline: 1px; color: var(--soft); vertical-align: .12em; }
 .term .top { grid-column: 2; padding: 11px 6px 1px 14px; font-family: var(--font-head); font-stretch: 74%; font-weight: 750; font-size: 1.25rem; line-height: 1.12; }
@@ -292,6 +335,15 @@ button.term:focus-visible { outline-offset: 3px; }
 .tearrow .rest { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 4px; padding: 14px 24px 16px 16px; background: var(--card); box-shadow: inset 0 1px 0 var(--hi); -webkit-mask: var(--zig); mask: var(--zig); }
 .tearrow .rest b { font-family: var(--font-head); font-stretch: 80%; font-weight: 750; font-size: 1.5rem; line-height: 1.1; text-wrap: balance; }
 @keyframes tear { from { transform: none; opacity: 1; } }
+/* R33: on a narrow phone, a big one's block end lays the used stub on top of the rest of the deal instead of beside it */
+@media (max-width: 400px) {
+  .tearrow.stacked { flex-direction: column; margin-block: 0; }
+  .tearrow.stacked .usedwrap { width: min(100%, 272px); min-height: 0; margin-bottom: -4px; }
+  .tearrow.stacked .used { flex-direction: row; align-items: baseline; gap: 10px; padding: 12px 98px 16px 14px; min-width: 0; }
+  .tearrow.stacked .used > span { flex: 1; min-width: 0; }
+  .tearrow.stacked .usedwrap .stamp { left: auto; right: 22px; bottom: auto; top: 9px; }
+  .tearrow.stacked .rest { min-height: 76px; padding-left: 20px; }
+}
 
 /* clock persona */
 .clockline { display: flex; gap: 12px; align-items: flex-start; }
@@ -665,9 +717,9 @@ let nudged = false, S, deal, big, ledger, sheet = null, checkin = null, picker =
 /* spec 008: copy only, mirrored from packages/core/src/bigOne.ts (the first-move table and the type names). The rules stay in core. */
 const BIG_TYPES = { writing: "Writing", problems: "Problems & code", exam: "Exam study", project: "Project" };
 const FIRST_MOVES = { writing: "Open the doc and write one ugly sentence", problems: "Do problem 1 until you're stuck", exam: "Quiz yourself on topic 1 without notes", project: "Decide one thing: ___" };
-/* block-end copy, mirrored from packages/core/src/bigOne.ts (bookmarkPlaceholder, doneQuestion). No type: "Where you'll pick up", no check. */
+/* block-end copy, mirrored from packages/core/src/bigOne.ts (bookmarkPlaceholder, doneQuestion). No type: "Where you'll pick up".
+   The type's done check is not shown (design r1, R33): the question alone is the prompt. */
 const BOOKMARK_HINTS = { writing: "Claim for paragraph 2", problems: "The question I'm stuck on", exam: "Weak spot: …", project: "Next visible thing: …" };
-const DONE_CHECKS = { writing: "Messy draft exists?", problems: "Tried each one, stuck ones written down?", exam: "Recalled each item once without notes?", project: "Decided or made?" };
 /* all open big ones from the server (pomodealApp.bigOnes), comeback first; null until the first list arrives.
    Not loaded and none both draw nothing, so the home screen never flashes an empty state. The demo states fill in samples. */
 let bigOneCards = [];
@@ -677,6 +729,8 @@ const cardById = id => cards().find(c => c.id === id);
 const CARDS_SHOWN = 3;
 /* the Quick Deal ticket loaded from a card ("Break first?"): { id, title, startWith, minutes, comeback, prevFocus } */
 let fromCard = null;
+/* R30: with a card on screen the Quick Deal ticket folds to one line; opened once, it stays open for this visit */
+let quickOpen = false;
 /* the card's ⋯ menu, its delete check, and the list of all big ones: { kind: "menu", id, confirm? } | { kind: "list", items, error? } */
 let panel = null;
 /* ADR 0005: the repayment picked last time (users.lastRepay), pre-selected from the second ask */
@@ -725,12 +779,14 @@ document.addEventListener("visibilitychange", syncWake);
 const GUTS = [60, 120, 180, 240];
 const gutText = m => m === 240 ? "4h+" : `${m / 60}h`;
 const gutSpoken = m => m === 240 ? "4 hours or more" : m === 60 ? "1 hour" : `${m / 60} hours`;
+/* R32: the type row reads on from "Mostly": "Mostly writing", "Mostly a project" */
+const TYPE_PHRASE = { writing: "writing", problems: "problems & code", exam: "exam study", project: "a project" };
 /* the big-one half of the ticket: off until the student ticks "Bigger than one block?" (never pre-selected).
    move is the first move; edited stops a type change from overwriting what they wrote. namedAt is the first tick. */
 const newBig = () => ({ on: false, type: null, gut: null, move: "", edited: false, pay: 15, namedAt: null });
 /* the big one is named exactly as typed (commas kept), cut to 80 characters counted as the core counts them */
 const bigTitle = () => [...String(deal.task).trim()].slice(0, 80).join("");
-function fresh() { nudged = false; deal = { act: "Reels", breakMin: 10, task: "Reading, BIO 180 ch. 7", focusMin: 8 }; big = newBig(); ledger = []; S = null; sheet = null; picker = null; toast = null; unseen = 0; studied = 0; fromCard = null; panel = null; lastRepay = null; }
+function fresh() { nudged = false; deal = { act: "Reels", breakMin: 10, task: "Reading, BIO 180 ch. 7", focusMin: 8 }; big = newBig(); ledger = []; S = null; sheet = null; picker = null; toast = null; unseen = 0; studied = 0; fromCard = null; panel = null; lastRepay = null; quickOpen = false; }
 /* mirrors packages/core/src/session.ts: quick lengths ramp +4 up to max(25, chosen); long ones hold.
    45 and 60 get two focus blocks, the rest three; a long block's break is a quarter of it. */
 const roundsFor = f => f >= 45 ? 2 : 3;
@@ -779,7 +835,7 @@ function nextBlock() { if (BE && S) BE.next(S.idx); bankFocus(); const was = S.i
    Notes are sent once per focus block: when the next block starts, more time is asked for, or the sheet closes. */
 const needsNotes = () => !!(S && S.taskId) && cur().type === "focus" && (S.notedIdx == null || S.notedIdx < S.idx);
 /* the notes belong to the focus block that just ended, even if another device moves the session on under the sheet */
-const newNotes = () => ({ sid: S.id, idx: S.idx, bookmark: "", done: false, sent: false });
+const newNotes = () => ({ sid: S.id, idx: S.idx, bookmark: "", done: null, sent: false });
 /* the session moved past the block these notes are about (the server, or another device, advanced it) */
 const movedOn = () => !!(sheet && sheet.notes && S.idx !== sheet.notes.idx);
 function sendNotes() {
@@ -787,7 +843,7 @@ function sendNotes() {
   n.sent = true; S.notedIdx = Math.max(S.notedIdx ?? -1, n.idx);
   /* the bookmark is the next focus block's first move */
   if (n.bookmark.trim()) S.firstMove = n.bookmark.trim();
-  if (BE) BE.blockNotes(n.idx, n.bookmark.trim() || undefined, n.done);
+  if (BE) BE.blockNotes(n.idx, n.bookmark.trim() || undefined, n.done === true);
 }
 /* what the notes ask about: the card for this session's big one, or no-type defaults when it isn't loaded */
 function notesCopy() {
@@ -796,13 +852,12 @@ function notesCopy() {
   return {
     hint: type ? BOOKMARK_HINTS[type] : "Where you'll pick up",
     q: c.currentPiece ? `Finished ${c.currentPiece}?` : `Is ${name} done for now?`,
-    /* the type's check is a piece-level question, so it only sits under a piece */
-    check: c.currentPiece && type ? DONE_CHECKS[type] : "",
   };
 }
-/* "Not yet" is the answer until the student picks "Yes" */
+/* neither answer is picked for you (R33); no answer counts as not done. "Not yet" takes the first focus (spec 008). */
 const DONE_CHOICES = [["yes", "Yes, stamp it"], ["no", "Not yet"]];
-const doneChip = (k, l, on) => `<button class="chip" role="radio" data-done="${k}" aria-checked="${on}">${on ? CHECK : ""}${l}</button>`;
+const doneInner = (k, on) => `<span class="ink">${on ? CHECK : ""}${DONE_CHOICES.find(c => c[0] === k)[1]}</span>`;
+const doneChip = (k, on) => `<button class="inkchip lg" role="radio" data-done="${k}" aria-checked="${on}"${k === "no" ? " data-default" : ""}>${doneInner(k, on)}</button>`;
 /* the clock's 10 min offer at the end of a focus block: once per block, never on the last one, never past the ceiling */
 const canBonus = () => cur().type === "focus" && !S.bonusOffered && S.idx < S.blocks.length - 1 && cur().min + 10 <= CEILING;
 function stopNow() { if (BE) BE.end(); bankFocus(); file({ t: clockStr(), kind: "cleared", text: "Stopped for now", note: "" }); S = null; sheet = null; render(); }
@@ -874,7 +929,7 @@ function paintTabs() {
 function focusKey(el) {
   if (!el || el === document.body) return null;
   if (el.id && el.id !== "sh") return "#" + el.id;
-  for (const a of ["data-act", "data-set", "data-sug", "data-ci", "data-pick", "data-term", "data-type", "data-gut", "data-done", "data-card", "data-menu", "data-breakfirst", "data-lstart", "data-reopen"]) if (el.hasAttribute(a)) return `[${a}="${el.getAttribute(a)}"]`;
+  for (const a of ["data-act", "data-set", "data-sug", "data-ci", "data-pick", "data-term", "data-type", "data-gut", "data-done", "data-card", "data-menu", "data-lstart", "data-reopen"]) if (el.hasAttribute(a)) return `[${a}="${el.getAttribute(a)}"]`;
   return null;
 }
 let nextFocus = null;
@@ -892,7 +947,7 @@ function render() {
   /* a fresh ledger stub pushes the pile down by its own height */
   const fs = document.querySelector(".stubcard.fresh");
   if (fs) { const ul = fs.parentElement; ul.classList.add("pushing"); ul.style.setProperty("--push", `${-(fs.offsetHeight + 10)}px`); ul.style.setProperty("--lag", fs.style.getPropertyValue("--lag")); }
-  if (key && !opening) { const el = document.querySelector(key); if (el && !((sheet || panel) && !el.closest(".sheet"))) { el.focus({ preventScroll: true });
+  if (key && !opening) { const el = document.querySelector(key); if (el && el !== document.activeElement && !((sheet || panel) && !el.closest(".sheet"))) { el.focus({ preventScroll: true });
     /* a field drawn again mid-typing keeps the caret at the end, not the start */
     if (el.matches("input, textarea") && el.value) { try { el.setSelectionRange(el.value.length, el.value.length); } catch (e) {} } } }
 }
@@ -951,9 +1006,13 @@ function ticket(peek) {
     : deal.act
       ? `<span class="nowrap">${tokB(p)} of ${tokA(p)},</span> then <span class="nowrap">${tokF(p)} of</span> <span class="nowrap">${tokT(p)}.</span>`
       : `${tokA(p)}. Straight into <span class="nowrap">${tokF(p)} of</span> <span class="nowrap">${tokT(p)}.</span>`;
-  const bigChip = offerBig ? `<button class="bigchip" id="bigchip" aria-pressed="${big.on}"><span class="box" aria-hidden="true">${CHECK}</span>Bigger than one block?</button>` : "";
-  const bigRows = isBig ? `<div class="bigrow" role="group" aria-labelledby="typelab"><span class="lab" id="typelab">Type</span><div class="chips">${Object.entries(BIG_TYPES).map(([k, l]) => `<button class="chip" data-type="${k}" aria-pressed="${big.type === k}">${big.type === k ? CHECK : ""}${esc(l)}</button>`).join("")}</div></div>
-      <div class="bigrow" role="group" aria-labelledby="gutlab"><span class="lab" id="gutlab">Gut size</span><div class="chips">${GUTS.map(m => `<button class="chip" data-gut="${m}" aria-pressed="${big.gut === m}" aria-label="${gutSpoken(m)}">${big.gut === m ? CHECK : ""}${gutText(m)}</button>`).join("")}</div></div>
+  const bigChip = offerBig ? `<button class="bigchip" id="bigchip" aria-pressed="${big.on}"><span class="cbox" aria-hidden="true">${CHECK}</span>Bigger than one block?</button>` : "";
+  /* R32: the two optional rows are phrases on the ticket, "About 2h" and "Mostly writing", with printed boxes to ink.
+     Each name starts with what's printed ("2h, about 2 hours"), so voice control and screen readers agree. */
+  const bigRows = isBig ? `<div class="phrases">
+      <div class="phrase" role="group" aria-labelledby="gutlab"><span class="pw" id="gutlab">About</span>${GUTS.map(m => `<button class="inkchip" data-gut="${m}" aria-pressed="${big.gut === m}"><span class="ink">${big.gut === m ? CHECK : ""}${gutText(m)}</span><span class="vh">, about ${gutSpoken(m)}</span></button>`).join("")}</div>
+      <div class="phrase" role="group" aria-labelledby="typelab"><span class="pw" id="typelab">Mostly</span>${Object.keys(BIG_TYPES).map(k => `<button class="inkchip" data-type="${k}" aria-pressed="${big.type === k}"><span class="ink">${big.type === k ? CHECK : ""}${esc(TYPE_PHRASE[k])}</span></button>`).join("")}</div>
+    </div>
       <div class="firstmove"><label for="firstmove">When I sit down, I'll first:</label><textarea id="firstmove" rows="1" maxlength="140" enterkeyhint="done" placeholder="The very first thing you'll do">${esc(big.move)}</textarea></div>` : "";
   return `<div class="ticketwrap${peek ? " peek" : ""}"><section class="ticket" id="ticket" aria-label="${isBig ? "Your first payment" : "Your deal"}">
     <div class="body">
@@ -991,34 +1050,41 @@ const lastLine = e => `Last deal: ${esc(e.text.replace(/ more min of /, " min of
 const DOTS = `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>`;
 /* spec 008 "Day 2 and later": a card per open big one, above the ticket. A comeback card says what to do now and
    nothing about the time between. */
+/* the top card: one stub, its green tab the one button ("Start 30 min"). A break first lives in the ⋯ menu (R31). */
 function bigCard(c) {
   const t = esc(c.title), prog = c.comeback ? "" : progressText(c.progress);
-  return `<li class="bigcard${c.comeback ? " comeback" : ""}">
-    <button class="go" data-card="${esc(c.id)}" aria-label="${c.minutes} min, start ${t}"><b>${c.minutes}</b><span>min</span></button>
+  return `<li class="cardwrap"><div class="bigcard${c.comeback ? " comeback" : ""}">
+    <button class="go" data-card="${esc(c.id)}" aria-label="Start ${c.minutes} min, ${t}"><span>Start</span><b>${c.minutes}</b><span>min</span></button>
     <div class="what">
       <div class="row"><h2 class="ttl">${c.comeback ? `${t}’s still here.` : t}</h2><button class="more" data-menu="${esc(c.id)}" aria-haspopup="dialog" aria-label="More for ${t}">${DOTS}</button></div>
       ${c.comeback ? `<p class="ask">Smaller first move today?</p>` : ""}
       ${c.startWith ? `<p class="startw"><span>Start with:</span> ${N(esc(moveText(c.startWith)))}</p>` : ""}
-      <div class="foot">${prog ? `<span class="prog">${N(prog)}</span>` : ""}<button class="textbtn brk" data-breakfirst="${esc(c.id)}" aria-label="Break first, then ${t}">Break first?</button></div>
+      ${prog ? `<p class="prog">${N(prog)}</p>` : ""}
     </div>
-  </li>`;
+  </div></li>`;
 }
+/* the next ones: a plain row each, the title and "Start 20 min", with the same ⋯ menu */
+const bigRow = c => `<li class="bitem"><button class="brow" data-card="${esc(c.id)}"><span class="btitle">${esc(c.title)}</span><span class="bgo">${N(`Start ${c.minutes} min`)}</span></button><button class="more" data-menu="${esc(c.id)}" aria-haspopup="dialog" aria-label="More for ${esc(c.title)}">${DOTS}</button></li>`;
+/* the cards on screen: open big ones, less the one loaded onto the ticket */
+const shownCards = () => bigOneCards === null ? [] : cards().filter(c => !fromCard || c.id !== fromCard.id).slice(0, CARDS_SHOWN);
 function cardsView() {
   /* the card loaded into the ticket is on the ticket now, not above it */
   if (bigOneCards === null) return "";
-  const open = cards().filter(c => !fromCard || c.id !== fromCard.id);
+  const shown = shownCards();
   const link = `<button class="textbtn allbig" id="allbig" aria-haspopup="dialog">All big ones</button>`;
   /* R28: the list also holds the ones set aside, so it stays reachable whenever a card is shown or one is set aside */
-  if (!open.length) return asideKnown() ? link : "";
-  const shown = open.slice(0, CARDS_SHOWN);
+  if (!shown.length) return asideKnown() ? link : "";
   shown.forEach(c => { if (c.comeback) noteComeback(c.id); });
-  return `<ul class="bigones" aria-label="Your big ones">${shown.map(bigCard).join("")}</ul>
+  return `<ul class="bigones" aria-label="Your big ones">${bigCard(shown[0])}${shown.slice(1).map(bigRow).join("")}</ul>
   ${link}`;
 }
+/* R30: folded while a card leads, unless the ticket is in use (a card loaded with a break first) or was opened this visit */
+const quickFolded = () => !quickOpen && !fromCard && shownCards().length > 0;
+const QUICKROW = `<button class="quickrow" id="quickopen" aria-expanded="false"><span>Or make a quick deal</span>${CHEV}</button>`;
 function startView() {
-  const last = newest(ledger) || newest(SEED);
-  return `<h1 class="home">Make a deal</h1>${cardsView()}${ticket(true)}
-  ${deal.act ? `<button class="textbtn skip" id="skipbreak">Skip the break, start ${esc(fromCard ? fromCard.title : shortTask())}</button>` : ""}
+  const last = newest(ledger) || newest(SEED), folded = quickFolded();
+  return `<h1 class="home">Make a deal</h1>${cardsView()}${folded ? QUICKROW : ticket(true)}
+  ${deal.act && !folded ? `<button class="textbtn skip" id="skipbreak">Skip the break, start ${esc(fromCard ? fromCard.title : shortTask())}</button>` : ""}
   <section class="rows anchor" aria-label="Tonight so far">
     ${presence()}
     <button class="presence lastline" id="toledger" aria-describedby="ledgerhint"><span>${N(lastLine(last))}</span>${CHEV}</button>
@@ -1058,7 +1124,8 @@ function runningView() {
   const tn = since("turn", 900), wd = since("wind", 900), hu = since("heads", 700), up = since("up", 700), ink = hu ?? up, dl = tn ?? wd;
   /* a big one's focus block says its first move (the bookmark once one is left) under the title */
   const sw = !isB && S.taskId ? (S.firstMove ?? (cardById(S.taskId) || {}).startWith ?? "") : "";
-  const keepOn = !isB && WAKE_OK ? `<button class="keepon" id="keepon" role="switch" aria-checked="${wakeOn}"><span class="box" aria-hidden="true">${CHECK}</span>Keep screen on</button>` : "";
+  /* R37: the app's one printed checkbox, a quiet row under the ring */
+  const keepOn = !isB && WAKE_OK ? `<button class="keepon" id="keepon" role="switch" aria-checked="${wakeOn}"><span class="cbox" aria-hidden="true">${CHECK}</span>Keep screen on</button>` : "";
   return `<div class="now${tn != null ? " turn" : ""}"${tn != null ? ` style="${lagVar(tn)}"` : ""}>
     <div class="nowhead">
       <span class="kind"><span class="swatch ${isB ? "break" : "focus"}" aria-hidden="true"></span>${isB ? "Break you chose" : "Focus"}</span>
@@ -1072,12 +1139,12 @@ function runningView() {
       ${dial(isB ? "break" : "focus")}${tn != null && turnFrom && turnFrom.p > .005 ? `<span class="fill was ${turnFrom.type}" style="--p:${turnFrom.p.toFixed(4)}"></span>` : ""}
       <span class="face${ink != null ? " reink" : ""}"${ink != null ? ` style="${lagVar(ink)}"` : ""}><span class="big ${f.cls}" id="mins">${f.big}</span><span class="unit" id="unit">${quiet ? "" : esc(f.unit)}</span></span>
     </div>
-    ${note}${aside}
+    ${note}${aside}${keepOn}
   </div>
   <div class="stack act${hu != null ? " fresh" : ""}"${hu != null ? ` style="${lagVar(hu)}"` : ""}>
     ${isB
       ? (heads ? `<button class="primary" id="startnow">Start ${esc(nameOf(nxt))} now</button>` : `<button class="secondary" id="startnow">Start ${esc(nameOf(nxt))} early</button>`)
-      : `<button class="textbtn" id="endearly">Stop for now</button>${keepOn}`}
+      : `<button class="textbtn" id="endearly">Stop for now</button>`}
   </div>
   <section class="rows" aria-label="Your room">
     ${presence(!isB)}
@@ -1093,8 +1160,32 @@ function renderSheet() {
     /* the closing sheet slides back down; it is already out of the accessibility tree and takes no taps */
     const old = root.querySelector(".scrim:not(.leaving)");
     if (old) { old.classList.remove("rise", "calm"); old.classList.add("leaving"); old.setAttribute("inert", ""); old.setAttribute("aria-hidden", "true"); setTimeout(() => old.remove(), 300); }
-    setInert(); return;
+    delete root.dataset.sig; setInert(); return;
   }
+  let body = sheetBody();
+  /* R40: the sheet is drawn again only when what it shows changed. A server update while the bookmark is being typed
+     leaves the field, its caret and the phone's keyboard alone, and the Used stamp isn't inked a second time. */
+  const same = root.dataset.sig === body && root.querySelector(".scrim:not(.leaving)");
+  if (!same) {
+    root.dataset.sig = body;
+    body = body.replace(BOOKMARK_SLOT, () => esc(sheet.notes ? sheet.notes.bookmark : ""));
+    const desc = body.includes('id="dealcost"') ? ` aria-describedby="dealcost"` : "";
+    /* a sheet rises once when it opens; the terms come off the pad once when they first appear */
+    const oe = sheet.openedAt == null ? Infinity : performance.now() - sheet.openedAt;
+    const te = sheet.termsAt == null ? Infinity : performance.now() - sheet.termsAt;
+    if (te < 800) body = body.replace('class="terms"', `class="terms deal-in" style="${lagVar(te)}"`);
+    const rise = oe < 800 ? ` rise${sheet.calm ? " calm" : ""}" style="${lagVar(oe)}` : "";
+    root.innerHTML = `<div class="scrim${rise}"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sh"${desc}>${body}</div></div>`;
+  }
+  setInert();
+  updateCountdown();
+  /* a big one's block end puts you on "Not yet" (spec 008: its default focus), with nothing picked; other sheets on their heading */
+  if (sheet.focusMe) { const h = (sheet.notes && sheet.kind === "boundary" && !sheet.asking && $('[data-done="no"]')) || $("#sh"); if (h) h.focus({ preventScroll: true }); sheet.focusMe = false; }
+}
+/* the bookmark's text goes in after the sheet is compared, so typing alone never redraws it */
+const BOOKMARK_SLOT = "{{bookmark-text}}";
+/* the sheet's markup for the current state (pure apart from the third ask's default first thing) */
+function sheetBody() {
   /* a notes sheet keeps showing its own block, so text being typed stays put if the session moves on */
   const at = sheet.notes ? sheet.notes.idx : S.idx;
   const b = S.blocks[at], nxt = S.blocks[at + 1], over = remaining() <= 0;
@@ -1109,17 +1200,17 @@ function renderSheet() {
        10 min offer (the same one a plain focus block gets), and only while it's still on the table. */
     const n = sheet.notes, nc = n ? notesCopy() : null;
     const notes = n ? `<div class="notes">
-        <div class="firstmove"><label for="bookmark">Next time, start with…</label><textarea id="bookmark" rows="1" maxlength="140" enterkeyhint="done" placeholder="${esc(nc.hint)}">${esc(n.bookmark)}</textarea></div>
-        <div class="donerow" role="radiogroup" aria-labelledby="doneq"${nc.check ? ` aria-describedby="donecheck"` : ""}>
-          <p class="q"><span id="doneq">${esc(nc.q)}</span>${nc.check ? `<span class="check" id="donecheck">${esc(nc.check)}</span>` : ""}</p>
-          <div class="chips">${DONE_CHOICES.map(([k, l]) => doneChip(k, l, n.done === (k === "yes"))).join("")}</div>
+        <div class="firstmove"><label for="bookmark">Next time, start with…</label><textarea id="bookmark" rows="1" maxlength="140" enterkeyhint="done" placeholder="${esc(nc.hint)}">${BOOKMARK_SLOT}</textarea></div>
+        <div class="donerow" role="radiogroup" aria-labelledby="doneq">
+          <p class="q" id="doneq">${esc(nc.q)}</p>
+          <div class="chips">${DONE_CHOICES.map(([k]) => doneChip(k, n.done === (k === "yes"))).join("")}</div>
         </div>
       </div>` : "";
     const more = !n ? `<button class="textbtn" id="ask2">Ask for ${N(5)} more minutes</button>`
       : canBonus() && !movedOn() ? `<button class="textbtn" id="ask2">Ask for ${N(10)} more minutes</button>` : "";
     body = `<span class="grab" aria-hidden="true"></span>
       <h2 id="sh" tabindex="-1">${esc(title(b.label))}, done.</h2>
-      <div class="tearrow">
+      <div class="tearrow${n ? " stacked" : ""}">
         <span class="usedwrap" aria-hidden="true"><span class="used"><b>${N(b.min)} min</b><span>${esc(title(b.label))}</span></span><span class="stamp plain">Used</span></span>
         <p class="rest" id="dealcost">${S.serial ? `<span class="serial">No. ${S.serial}</span>` : ""}<b>${N(rest)}</b></p>
       </div>
@@ -1145,10 +1236,12 @@ function renderSheet() {
       /* each term is its own button: one tap stamps it and the sheet closes. ADR 0005: the one picked last time
          waits pre-selected, and Deal under the pad takes it, so the usual answer is one tap on the usual spot. */
       const pre = offer.terms.findIndex(t => t.kind === lastRepay);
-      const PRESLOT = `<span class="slot" aria-hidden="true"><span class="tap">Last pick</span><span class="stamp ghost">DEAL</span></span>`;
+      /* R36: the pre-selected one has the green edge and a check in its stamp box, and says "Last pick" in plain words;
+         beside it the other is an empty stamp box, so nothing tells you to tap */
+      const PRESLOT = `<span class="slot" aria-hidden="true">${CHECK}<span class="stamp ghost">DEAL</span></span>`;
       const termTicket = (i, fig, top, cost) => i === pre
-        ? tick("button", ` data-term="${i}"`, fig, `${top}<span class="vh">, your pick last time</span>`, PRESLOT, cost).replace('class="term"', 'class="term pre"')
-        : tick("button", ` data-term="${i}"`, fig, top, TAPSLOT, cost);
+        ? tick("button", ` data-term="${i}"`, fig, `${top}<span class="vh">.</span> <span class="lastpick">Last pick</span>`, PRESLOT, cost).replace('class="term"', 'class="term pre"')
+        : tick("button", ` data-term="${i}"`, fig, top, pre >= 0 ? GHOST : TAPSLOT, cost);
       const dealPre = pre >= 0 ? `<button class="primary" id="sealpre">Deal</button>` : "";
       const borrowCost = !bp.from ? "Paid back from a later break tonight."
         : bp.carry ? `Next break ${arrow(bp.from, bp.to)} min. ${bp.carry} more come out of later breaks.`
@@ -1193,16 +1286,7 @@ function renderSheet() {
       <button class="secondary countbtn${sheet.paused ? "" : " counting"}" id="bonusno"><span>Take my break</span>${sheet.paused ? `<small>Waits for you</small>` : `<small id="cdtext">${N("Starts on its own in 30 seconds")}</small>`}</button>
       ${sheet.paused ? `<p class="soft small center held">Take your time. Nothing happens until you pick.</p>` : `<button class="textbtn" id="moretime">More time to decide</button>`}`;
   }
-  const desc = body.includes('id="dealcost"') ? ` aria-describedby="dealcost"` : "";
-  /* a sheet rises once when it opens; the terms come off the pad once when they first appear */
-  const oe = sheet.openedAt == null ? Infinity : performance.now() - sheet.openedAt;
-  const te = sheet.termsAt == null ? Infinity : performance.now() - sheet.termsAt;
-  if (te < 800) body = body.replace('class="terms"', `class="terms deal-in" style="${lagVar(te)}"`);
-  const rise = oe < 800 ? ` rise${sheet.calm ? " calm" : ""}" style="${lagVar(oe)}` : "";
-  root.innerHTML = `<div class="scrim${rise}"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sh"${desc}>${body}</div></div>`;
-  setInert();
-  updateCountdown();
-  if (sheet.focusMe) { const h = $("#sh"); if (h) h.focus({ preventScroll: true }); sheet.focusMe = false; }
+  return body;
 }
 /* ---------- the card's ⋯ menu, its delete check, and "All big ones": a sheet on the home screen ---------- */
 const panelOpen = () => !!(panel && !S && tab === "now" && mode === "start");
@@ -1210,37 +1294,37 @@ function panelBody() {
   if (panel.kind === "menu") {
     const c = cardById(panel.id); if (!c) return null;
     const t = esc(c.title);
-    if (panel.confirm) return `<span class="grab" aria-hidden="true"></span>
-      <h2 id="ph" tabindex="-1">Delete ${t}?</h2>
+    if (panel.confirm) return `<h2 id="ph" tabindex="-1">Delete ${t}?</h2>
+      <span class="pperf" aria-hidden="true"></span>
       <p id="pdesc">This can't be undone.</p>
       <button class="primary" id="d-keep">Keep it</button>
-      <button class="secondary" id="d-yes">Delete</button>`;
-    /* Split and Spread arrive with the planning sheets (spec 008, week 3) */
-    return `<span class="grab" aria-hidden="true"></span>
-      <h2 id="ph" tabindex="-1">${t}</h2>
+      <button class="secondary gone" id="d-yes">Delete</button>`;
+    /* Split and Spread arrive with the planning sheets (spec 008, week 3); until then they aren't offered (R34) */
+    return `<h2 id="ph" tabindex="-1">${t}</h2>
+      <span class="pperf" aria-hidden="true"></span>
       <div class="menu" role="group" aria-labelledby="ph">
-        <button class="mrow" disabled>Split into pieces<small>Soon</small></button>
-        <button class="mrow" disabled>Spread over the days left<small>Soon</small></button>
+        <button class="mrow" id="m-break">Take a break first<small>${N(`A break, then ${c.minutes} min on this.`)}</small></button>
         <button class="mrow" id="m-fresh">Start fresh on this one<small>Clears the bookmark and your gut size. Pieces stay.</small></button>
         <button class="mrow" id="m-aside">Set aside<small>Off this screen. It waits in All big ones.</small></button>
-        <button class="mrow" id="m-del">Delete</button>
+        <button class="mrow gone" id="m-del">Delete<small>Gone for good, bookmark and all.</small></button>
       </div>
-      <button class="secondary" id="p-close">Close</button>`;
+      <button class="textbtn pclose" id="p-close">Close</button>`;
   }
   const items = panel.items;
+  /* R38: open ones read like the rows under the card; only "Bring it back" is a button shape */
   const row = it => it.status === "set_aside"
     ? `<li class="lrow setaside"><span class="ltitle">${esc(it.title)}</span><button class="chip" data-reopen="${esc(it.id)}" aria-label="Bring it back, ${esc(it.title)}">Bring it back</button></li>`
-    : (() => { const m = (cardById(it.id) || {}).minutes || 15; return `<li class="lrow"><span class="ltitle">${esc(it.title)}</span><button class="trychip" data-lstart="${esc(it.id)}" aria-label="${m} min, start ${esc(it.title)}">${N(m)} min</button></li>`; })();
+    : (() => { const m = (cardById(it.id) || {}).minutes || 15; return `<li class="bitem"><button class="brow" data-lstart="${esc(it.id)}"><span class="btitle">${esc(it.title)}</span><span class="bgo">${N(`Start ${m} min`)}</span></button></li>`; })();
   const open = (items || []).filter(i => i.status !== "set_aside"), aside = (items || []).filter(i => i.status === "set_aside");
   const list = panel.error ? `<p>Your big ones didn't load.</p><button class="secondary" id="l-retry">Try again</button>`
     : !items ? `<p class="soft" role="status">Getting your big ones…</p>`
     : !items.length ? `<p class="soft">Nothing here yet. Tick “Bigger than one block?” on a deal to start one.</p>`
     : `${open.length ? `<ul class="biglist" aria-label="Open">${open.map(row).join("")}</ul>` : ""}
-      ${aside.length ? `<h3 class="label" id="asideh">Set aside</h3><ul class="biglist" aria-labelledby="asideh">${aside.map(row).join("")}</ul>` : ""}`;
-  return `<span class="grab" aria-hidden="true"></span>
-    <h2 id="ph" tabindex="-1">All big ones</h2>
+      ${aside.length ? `<h3 class="asideh" id="asideh">Set aside</h3><ul class="biglist" aria-labelledby="asideh">${aside.map(row).join("")}</ul>` : ""}`;
+  return `<h2 id="ph" tabindex="-1">All big ones</h2>
+    <span class="pperf" aria-hidden="true"></span>
     ${list}
-    <button class="secondary" id="p-close">Close</button>`;
+    <button class="textbtn pclose" id="p-close">Close</button>`;
 }
 function renderPanel() {
   const root = $("#panel-root");
@@ -1257,7 +1341,7 @@ function renderPanel() {
   root.dataset.sig = body;
   const oe = performance.now() - panel.openedAt;
   const rise = oe < 800 ? ` rise" style="${lagVar(oe)}` : "";
-  root.innerHTML = `<div class="scrim${rise}"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="ph"${body.includes('id="pdesc"') ? ` aria-describedby="pdesc"` : ""}>${body}</div></div>`;
+  root.innerHTML = `<div class="scrim${rise}"><div class="sheet paper" role="dialog" aria-modal="true" aria-labelledby="ph"${body.includes('id="pdesc"') ? ` aria-describedby="pdesc"` : ""}>${body}</div></div>`;
   setInert();
   bindPanel();
   const f = panel.focusMe ? (panel.focusSel && root.querySelector(panel.focusSel)) || $("#ph") : null;
@@ -1286,7 +1370,7 @@ const asideKnown = () => BE ? hasAside : demoAside.length > 0;
 const noteAside = items => { if (BE) hasAside = items.some(i => i.status === "set_aside"); };
 function readAside() {
   if (!BE || !BE.allBigOnes) return;
-  BE.allBigOnes().then(items => { const was = hasAside; noteAside(items); if (was !== hasAside && tab === "now" && !S && mode === "start" && !stamping) render(); }).catch(() => {});
+  BE.allBigOnes().then(items => { const was = hasAside; noteAside(items); if (was !== hasAside && tab === "now" && !S && mode === "start" && !stamping && !(document.activeElement && document.activeElement.matches("#view input, #view textarea"))) render(); }).catch(() => {});
 }
 /* the card actions: the server's copy follows; the screen changes at once */
 function cardAction(id, action) {
@@ -1306,6 +1390,8 @@ function cardAction(id, action) {
 }
 function bindPanel() {
   on("#p-close", () => closePanel());
+  /* R31: "Break first?" moved here: the card goes onto the Quick Deal ticket so a break can be planned before it */
+  on("#m-break", () => { const id = panel.id; panel = null; loadCard(id); });
   on("#m-fresh", () => cardAction(panel.id, "startFresh"));
   on("#m-aside", () => cardAction(panel.id, "setAside"));
   on("#m-del", () => { panel.confirm = true; panel.focusMe = true; renderPanel(); });
@@ -1394,7 +1480,7 @@ const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 function roving() {
   document.querySelectorAll('[role="radiogroup"]').forEach(g => {
     const items = [...g.querySelectorAll('[role="radio"]')]; if (!items.length) return;
-    const sel = items.find(i => i.getAttribute("aria-checked") === "true") || items[0];
+    const sel = items.find(i => i.getAttribute("aria-checked") === "true") || items.find(i => i.hasAttribute("data-default")) || items[0];
     items.forEach(i => i.tabIndex = i === sel ? 0 : -1);
     g.onkeydown = e => {
       const k = e.key; if (!["ArrowDown", "ArrowUp", "ArrowLeft", "ArrowRight", "Home", "End"].includes(k)) return;
@@ -1416,15 +1502,19 @@ function bind() {
   on("#bigchip", () => {
     big.on = !big.on; if (big.on && big.namedAt == null) big.namedAt = Date.now() + clockOffset;
     if (picker === "focus") picker = null;
-    render(); say(big.on ? `First payment on ${bigTitle()}: ${big.pay} minutes. Type and size are optional.` : "Back to one deal.");
+    /* R40: the ticket is drawn again, so focus is put back on the box you pressed (Safari doesn't focus a tapped button) */
+    nextFocus = "#bigchip"; render(); say(big.on ? `First payment on ${bigTitle()}: ${big.pay} minutes. Size and kind are optional.` : "Back to one deal.");
   });
   document.querySelectorAll("[data-type]").forEach(b => b.onclick = () => {
     const k = b.dataset.type; big.type = big.type === k ? null : k;
     /* the first move follows the type until the student writes their own */
     if (!big.edited) big.move = big.type ? FIRST_MOVES[big.type] : "";
-    render();
+    nextFocus = `[data-type="${k}"]`; render(); say(big.type ? BIG_TYPES[k] : "No kind picked");
   });
-  document.querySelectorAll("[data-gut]").forEach(b => b.onclick = () => { const m = +b.dataset.gut; big.gut = big.gut === m ? null : m; render(); });
+  document.querySelectorAll("[data-gut]").forEach(b => b.onclick = () => {
+    const m = +b.dataset.gut; big.gut = big.gut === m ? null : m;
+    nextFocus = `[data-gut="${m}"]`; render(); say(big.gut ? `About ${gutSpoken(m)}` : "No size picked");
+  });
   on("#paytok", () => { big.pay = big.pay === 15 ? 30 : 15; render(); say(`First payment, ${big.pay} minutes.`); });
   const fm = $("#firstmove"); if (fm) {
     fitLine(fm);
@@ -1434,10 +1524,12 @@ function bind() {
   }
   /* spec 008 day 2, R25: a card's length button starts the big one at once, no break first */
   document.querySelectorAll("[data-card]").forEach(b => b.onclick = () => { const c = cardById(b.dataset.card); if (c) startCard(c, { act: null, breakMin: deal.breakMin, task: c.title, focusMin: c.minutes }); });
-  document.querySelectorAll("[data-breakfirst]").forEach(b => b.onclick = () => loadCard(b.dataset.breakfirst));
   document.querySelectorAll("[data-menu]").forEach(b => b.onclick = () => openPanel({ kind: "menu", id: b.dataset.menu }, `[data-menu="${b.dataset.menu}"]`));
   on("#allbig", () => openList());
-  on("#notcard", () => { const id = fromCard.id; deal.focusMin = fromCard.prevFocus; fromCard = null; picker = null; nextFocus = `[data-breakfirst="${id}"]`; render(); say("Back to a new deal."); });
+  /* R30: the folded Quick Deal opens in place and stays open for this visit; focus goes to its first part */
+  on("#quickopen", () => { quickOpen = true; nextFocus = '[data-pick="act"]'; render(); say("Quick deal ticket open."); });
+  /* the card goes back above the ticket; focus returns to its ⋯, where "Take a break first" was */
+  on("#notcard", () => { const id = fromCard.id; deal.focusMin = fromCard.prevFocus; fromCard = null; picker = null; nextFocus = `[data-menu="${id}"]`; render(); say("Back to a new deal."); });
   on("#keepon", () => {
     wakeOn = !wakeOn; try { localStorage.setItem(WAKE_KEY, wakeOn ? "on" : "off"); } catch (e) {}
     const k = $("#keepon"); k.setAttribute("aria-checked", wakeOn); syncWake();
@@ -1495,7 +1587,7 @@ function bind() {
     fitLine(bm);
     bm.oninput = e => { if (sheet && sheet.notes) sheet.notes.bookmark = e.target.value; fitLine(bm, false); };
     /* one line: Enter is "done", and moves on to the done question */
-    bm.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); const r = $('[data-done][aria-checked="true"]'); if (r) r.focus(); } };
+    bm.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); const r = $('[data-done][aria-checked="true"]') || $('[data-done="no"]'); if (r) r.focus(); } };
   }
   /* the done answer changes in place: drawing the sheet again would re-ink the Used stamp */
   document.querySelectorAll("[data-done]").forEach(b => b.onclick = () => {
@@ -1503,8 +1595,10 @@ function bind() {
     sheet.notes.done = b.dataset.done === "yes";
     document.querySelectorAll("[data-done]").forEach(x => {
       const on = (x.dataset.done === "yes") === sheet.notes.done;
-      x.setAttribute("aria-checked", on); x.tabIndex = on ? 0 : -1; x.innerHTML = (on ? CHECK : "") + DONE_CHOICES.find(c => c[0] === x.dataset.done)[1];
+      x.setAttribute("aria-checked", on); x.tabIndex = on ? 0 : -1; x.innerHTML = doneInner(x.dataset.done, on);
     });
+    /* the drawn sheet now matches the state, so a later redraw for something else doesn't re-ink the Used stamp */
+    const root = $("#sheet-root"); if (root.dataset.sig) root.dataset.sig = sheetBody();
     nextFocus = null; b.focus({ preventScroll: true });
   });
   on("#seal", () => seal("0"));
@@ -1804,7 +1898,13 @@ window.pomodealApp = {
     /* a big one deleted or set aside elsewhere leaves the ticket and closes its menu */
     if (fromCard && !cardById(fromCard.id)) { deal.focusMin = fromCard.prevFocus; fromCard = null; }
     if (panel && panel.kind === "menu" && !cardById(panel.id)) panel = null;
-    if (!same && tab === "now" && !S && mode === "start" && !stamping) render();
+    if (same || tab !== "now" || S || mode !== "start" || stamping) return;
+    /* R30: cards that arrive while the ticket is in use don't fold it away under the student */
+    const t = $("#ticket"), a = document.activeElement;
+    if (t && (picker || big.on || (a && t.contains(a)))) quickOpen = true;
+    /* R40: never redraw under someone typing (it would drop the phone's keyboard); the cards show at the next redraw */
+    if (a && a.matches("#view input, #view textarea")) return;
+    render();
   },
   /** the running session from the server, or null */
   session(doc) {
