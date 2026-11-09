@@ -9,6 +9,9 @@
 - Phase 1: members' screens run on the real backend (start, ask, next, bonus, end, today's ledger), synced across devices.
 - Build: `npm run build` deploys Convex first when `CONVEX_DEPLOY_KEY` is set, so every push to `main` ships site and backend together.
 - Longer study blocks: 30, 45 and 60 min next to 5–20 (spec 007). Long blocks hold their length, get a quarter-length break, a 5 min heads-up and a quiet halfway line; no block grows past 75 min. Quick deals of 20 now ramp to 25, not 28.
+- Motion pass: the stamp lands with a press and one rebound (with a buzz on Android), and the stub falls away as the ticket shrinks into the session's header. A new block, or minutes you just bought, wind onto the dial. Heads-up and time-up re-ink the number with a soft buzz; ask for time and the terms come off a pad; new ledger stubs push the pile down. The landing page shows a wordless sample deal on first load. Reduced motion gets short fades or nothing.
+- Fix: "Take my break" no longer misses a press (pausing the countdown used to shift the sheet under the pointer).
+- `prototypes/shoot-motion.mjs` records each motion moment as frame strips and side-by-side clips (light, dark, reduced) for design review.
 
 - Renamed to **Pomodeal** (docs, package names, PWA manifest, device-id key). Tagline: "A study timer that makes deals with you."
 - Stack and hosting plan (`docs/07-stack-and-hosting.md`): Cloudflare Pages + Convex + WorkOS AuthKit, plus invite list, rate limits and a kill switch to stay in free tiers; Cloudflare `_headers` for the service worker.
