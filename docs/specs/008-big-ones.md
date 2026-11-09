@@ -148,6 +148,7 @@ tasks: defineTable({
   status: v.union(v.literal("open"), v.literal("done"), v.literal("set_aside")),
   lastWorkedAt: v.optional(v.number()),
   lastFocusMin: v.optional(v.number()),
+  workedDays: v.array(v.string()),        // local date keys with a block on this big one, newest 30, sent by the client
   createdAt: v.number(),
 }).index("by_userId_and_status", ["userId", "status"]),
 
@@ -174,6 +175,19 @@ events: defineTable({ userId, kind, taskId?, ms?, at }).index("by_kind_and_at", 
 
 `events.kind` values: `big_one_named`, `first_payment_started` (with `ms` from naming), `comeback_shown`, `comeback_started`, `bookmark_written`, `split_saved`, `spread_signed`, `ai_requested`, `ai_accepted`, `install_done`, `push_enabled`, `push_sent`, `push_failed`. Events never hold titles, bookmarks or any typed text.
 
+## Still a PWA in any browser
+
+Pomodeal stays a web app first. Every flow in this spec (Quick Deal, big ones, cards, split, spread, comeback, check-in, AI) works in a plain browser tab on a phone or laptop, signed in, without installing anything. Installing only adds things the platform reserves for installed apps:
+
+| Capability | Browser tab | Installed |
+| --- | --- | --- |
+| All flows, sync across devices | Yes | Yes |
+| In-app heads-up and block end (screen open) | Yes | Yes |
+| Web Push | Desktop Chrome/Edge/Firefox, Android Chrome; **not** an iPhone Safari tab | Yes (iPhone needs iOS 16.4+, declarative format 18.4+) |
+| Keep screen on | Where the browser supports Wake Lock | iPhone needs iOS 18.4+ |
+
+So the push permission button appears wherever `PushManager` exists, and the install prompt appears only where installing is what unlocks it (iPhone Safari) or as an optional extra elsewhere. No screen ever blocks on installing, and nothing in a browser tab says it's a lesser version.
+
 ## Push (week 3)
 
 - Fires **only at block boundaries of a running session**: the heads-up (2 min, or 5 min on 45+ blocks, per spec 007) and block end. No daily reminders, no "time to work on Paper", nothing when no session is running.
@@ -184,7 +198,7 @@ events: defineTable({ userId, kind, taskId?, ms?, at }).index("by_kind_and_at", 
 
 ## Install onboarding (week 3, same release as push)
 
-Shown once, after the student's first finished block, only when the app is not installed (`display-mode: standalone` false): **"Want a tap when your break ends?"** / **"Add Pomodeal to your Home Screen and it can tell you."** iPhone: a three-step Share → Add to Home Screen picture. Android: the browser's install prompt. Dismiss: **"Not now"** (never shown again unless they open Settings). After install, the first time a session starts, ask for notification permission from a button tap: **"Turn on taps at block ends"**.
+Shown once, after the student's first finished block, and only where push needs it: an iPhone in Safari, not installed (`display-mode: standalone` false and no `PushManager`): **"Want a tap when your break ends?"** / **"Add Pomodeal to your Home Screen and it can tell you."** with a three-step Share → Add to Home Screen picture. Dismiss: **"Not now"** (never shown again unless they open Settings). Where the browser tab already supports push (desktop, Android), skip the install sheet and go straight to the permission step; Android's install prompt stays available from Settings as an extra. The permission step, wherever `PushManager` exists: the first time a session starts, a button **"Turn on taps at block ends"**, and the browser prompt only after that tap.
 
 ## Wake lock
 
