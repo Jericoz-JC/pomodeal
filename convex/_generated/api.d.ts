@@ -11,6 +11,7 @@
 import type * as beta from "../beta.js";
 import type * as lib_members from "../lib/members.js";
 import type * as sessions from "../sessions.js";
+import type * as test_helpers from "../test/helpers.js";
 
 import type {
   ApiFromModules,
@@ -22,6 +23,7 @@ declare const fullApi: ApiFromModules<{
   beta: typeof beta;
   "lib/members": typeof lib_members;
   sessions: typeof sessions;
+  "test/helpers": typeof test_helpers;
 }>;
 
 /**
