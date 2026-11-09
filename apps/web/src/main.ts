@@ -108,6 +108,7 @@ interface LiveApp {
   attach(be: Backend): void;
   session(doc: unknown): void;
   ledger(entries: unknown[]): void;
+  clock(offsetMs: number): void;
 }
 interface Backend {
   start(deal: { act: string | null; breakMin: number; task: string; focusMin: number }): void;
@@ -122,15 +123,25 @@ function goLive(convex: ConvexClient) {
   if (live || !app) return;
   live = true;
   let sessionId: Id<"sessions"> | null = null;
+  // The screens render time as Date.now() + offset, so a phone and a laptop agree with the server's clock.
+  // The reply left the server about half a round trip before it arrived.
+  const syncClock = (sentAt: number, serverNow: number) => app.clock(serverNow - (sentAt + (Date.now() - sentAt) / 2));
   const report = (what: string) => (e: unknown) => console.error(`[pomodeal] ${what} failed`, e);
   const be: Backend = {
-    start: (d) => void convex.mutation(api.sessions.start, { deal: { activity: d.act ?? null, breakMin: d.breakMin, task: d.task, focusMin: d.focusMin } }).catch(report("start")),
+    start: (d) => {
+      const sentAt = Date.now();
+      void convex.mutation(api.sessions.start, { deal: { activity: d.act ?? null, breakMin: d.breakMin, task: d.task, focusMin: d.focusMin } })
+        .then((r) => syncClock(sentAt, r.serverNow))
+        .catch(report("start"));
+    },
     ask: (pick, intention) => { if (sessionId) void convex.mutation(api.sessions.ask, { sessionId, pick, ...(intention ? { intention } : {}) }).catch(report("ask")); },
     next: (fromIdx) => { if (sessionId) void convex.mutation(api.sessions.next, { sessionId, fromIdx }).catch(report("next")); },
     bonus: () => { if (sessionId) void convex.mutation(api.sessions.bonus, { sessionId }).catch(report("bonus")); },
     end: () => { if (sessionId) void convex.mutation(api.sessions.end, { sessionId }).catch(report("end")); },
   };
   app.attach(be);
+  const sentAt = Date.now();
+  convex.mutation(api.sessions.serverNow, {}).then((now) => syncClock(sentAt, now)).catch(report("serverNow"));
   convex.onUpdate(api.sessions.current, {}, (doc) => { sessionId = doc ? doc._id : null; app.session(doc); });
   convex.onUpdate(api.sessions.today, { now: Date.now() }, (entries) => app.ledger(entries));
 }

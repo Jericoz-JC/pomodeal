@@ -575,7 +575,7 @@ const TERMS = { freebie: "On the house", borrow: "Borrowed from a later break", 
 
 /* ---------- state ---------- */
 const ACTS = ["Reels", "TikTok", "YouTube", "Texting", "Gaming"];
-let speed = 30, vnow = Date.now(), lastReal = performance.now();
+let speed = 30, clockOffset = 0, vnow = Date.now(), lastReal = performance.now();
 /* BE is the live backend, attached by the app shell for signed-in members; without it this is the design demo */
 let BE = null;
 let nudged = false, S, deal, ledger, sheet = null, checkin = null, picker = null, toast = null, tab = "now", mode = "start", opener = null, tried = false, arrowing = false, unseen = 0, studied = 0;
@@ -1152,7 +1152,7 @@ function updateCountdown() {
 }
 function tick() {
   /* live mode reads the real clock: animation frames pause in background tabs, real time does not */
-  const now = performance.now(); if (BE) vnow = Date.now(); else vnow += (now - lastReal) * speed; lastReal = now;
+  const now = performance.now(); if (BE) vnow = Date.now() + clockOffset; else vnow += (now - lastReal) * speed; lastReal = now;
   if (S && tab === "now") {
     const r = remaining(), b = cur();
     if (r <= 0 && !sheet) {
@@ -1242,6 +1242,8 @@ window.pomodealApp = {
     if (location.hash) history.replaceState(null, "", location.pathname + location.search);
     mode = "start"; setTab("now"); lastSig = ""; render();
   },
+  /** server time minus this device's time, in ms: time on screen is Date.now() + offset */
+  clock(offsetMs) { if (Number.isFinite(offsetMs)) clockOffset = offsetMs; },
   /** the running session from the server, or null */
   session(doc) {
     if (!BE) return;

@@ -25,6 +25,21 @@ async function log(ctx: MutationCtx, userId: Id<"users">, sessionId: Id<"session
   await ctx.db.insert("ledger", { userId, sessionId, ...e });
 }
 
+type SessionState = Doc<"sessions">["state"];
+
+/**
+ * The one place a session's state is written after it starts. Every change bumps `version` (Task 13 uses it to
+ * drop stale scheduled pushes) and keeps the scheduled ids, whatever the core rules returned.
+ */
+async function saveState(ctx: MutationCtx, s: Doc<"sessions">, state: SessionState, status?: "ended") {
+  const next: SessionState = {
+    ...state,
+    version: (s.state.version ?? 0) + 1,
+    ...(s.state.scheduledIds ? { scheduledIds: s.state.scheduledIds } : {}),
+  };
+  await ctx.db.patch(s._id, { state: next, ...(status ? { status } : {}) });
+}
+
 /** Loads a running session that belongs to the caller. */
 async function ownSession(ctx: MutationCtx, sessionId: Id<"sessions">) {
   const user = await requireMember(ctx);
@@ -71,14 +86,14 @@ export async function startSession(
     await creditTask(ctx, prev, focusMinutesDone(prev.state, now), dayKey);
     const forgiven = endSession(prev.state, now);
     if (forgiven) await log(ctx, user._id, prev._id, forgiven);
-    await ctx.db.patch(prev._id, { status: "ended" });
+    await saveState(ctx, prev, prev.state, "ended");
   }
   // The card button offers the length chosen last time. Ramp lengths (19, 23) aren't on offer, so this is
   // the deal's chosen length, not a block's.
   if (taskId) await ctx.db.patch(taskId, { lastFocusMin: deal.focusMin });
   return ctx.db.insert("sessions", {
     userId: user._id,
-    state: buildSession(deal, now),
+    state: { ...buildSession(deal, now), version: 1 },
     status: "running",
     createdAt: now,
     ...(taskId ? { taskId } : {}),
@@ -136,7 +151,7 @@ export const ask = mutation({
     const term = pick === "override" ? offer.override : offer.terms[pick];
     if (!term) throw new Error("That deal isn't on offer");
     const { session, entry } = applyTerm(s.state, term, Date.now(), intention?.trim());
-    await ctx.db.patch(sessionId, { state: session });
+    await saveState(ctx, s, session);
     await log(ctx, user._id, sessionId, entry);
     // ADR 0005: remember borrow or trade so the next ask pre-selects it. Freebies and overrides aren't a choice.
     if ((term.kind === "borrow" || term.kind === "trade") && user.lastRepay !== term.kind) {
@@ -156,7 +171,7 @@ export const next = mutation({
     if (s.state.idx !== fromIdx) return;
     const now = Date.now();
     await creditTask(ctx, s, focusMinutesDone(s.state, now), dayKey);
-    await ctx.db.patch(sessionId, { state: advance(s.state, now) });
+    await saveState(ctx, s, advance(s.state, now));
   },
 });
 
@@ -167,7 +182,7 @@ export const bonus = mutation({
     const { user, s } = await ownSession(ctx, sessionId);
     if (s.state.blocks[s.state.idx].type !== "focus" || s.state.bonusOffered) return;
     const { session, entry } = applyBonus(s.state, Date.now());
-    await ctx.db.patch(sessionId, { state: session });
+    await saveState(ctx, s, session);
     await log(ctx, user._id, sessionId, entry);
   },
 });
@@ -182,6 +197,15 @@ export const end = mutation({
     await creditTask(ctx, s, focusMinutesDone(s.state, now), dayKey);
     const forgiven = endSession(s.state, now);
     if (forgiven) await log(ctx, user._id, sessionId, forgiven);
-    await ctx.db.patch(sessionId, { status: "ended" });
+    await saveState(ctx, s, s.state, "ended");
+  },
+});
+
+/** The server's clock, so a device that didn't start the session can still render time from it. */
+export const serverNow = mutation({
+  args: {},
+  handler: async (ctx) => {
+    await requireMember(ctx);
+    return Date.now();
   },
 });
