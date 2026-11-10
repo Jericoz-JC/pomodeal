@@ -15,7 +15,7 @@ Who can see, in every table: the signed-in student sees their own rows through t
 | Field | What it holds | Why | Who can see | Retention | Deleted by |
 | --- | --- | --- | --- | --- | --- |
 | tokenIdentifier | The WorkOS sign-in identity string | Match a sign-in to a member | The student (own row), Chris | While the account exists | Chris on request |
-| displayName | The name the student chose | Show in the app and invites | The student, Chris | While the account exists | Chris on request |
+| displayName | The name the student chose | Show in the app and invites | The student, Chris, and the member whose invite they used (first name only, with the day they joined, on that used ticket) | While the account exists | Chris on request |
 | role | member or admin | Gate admin-only functions | The student, Chris | While the account exists | Chris on request |
 | inviteId | The invite used to join | Trace invite use | Chris | While the account exists | Chris on request |
 | invitedBy | The member who invited them | Enforce invite allowance | Chris | While the account exists | Chris on request |
