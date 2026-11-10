@@ -8,10 +8,10 @@ Live as an invite-only beta at **[pomodeal.app](https://pomodeal.app)**.
 
 ## How a deal works
 
-1. **Make a deal.** What are you doing right now, and what's next? That becomes your first break and your first focus block.
-2. **Ask for more.** The first extra 5 minutes are on the house. After that, every extension has terms: borrow from your next break, or trade it for a longer focus block. "I need this" always works too.
-3. **The clock deals back.** When focus is going well, it offers you a deal: 10 more minutes of focus for a longer break.
-4. **The ledger keeps score honestly.** Time borrowed, repaid and earned, with no streaks, no labels, no shame.
+1. **Make a deal.** What are you doing right now, and what's next? "10 min of Reels, then 30 min of reading" is the whole deal: your break, then one focus block.
+2. **Ask for more.** The first extra 5 minutes are on the house. After that, every extension has terms: borrow from your next round's break, or trade it for a longer focus block. "I need this" always works too.
+3. **The deal ends when it says it does.** When the focus block is up, that was the deal. You can stamp another round in one tap (a little longer each time, with a shorter break), take 10 more minutes, or be done for now. Nothing starts on its own.
+4. **The ledger keeps score honestly.** Every deal, what you did and time borrowed, repaid and earned, with no streaks, no labels, no shame.
 
 ### Big ones: start before you plan
 
@@ -29,7 +29,7 @@ Phase 1 of the [roadmap](docs/03-roadmap.md), in a closed beta with friends.
 
 **Live in the beta**
 - Landing page with a playable deal; one-tap GitHub, Google and Apple sign-in; invite-only (members invite friends)
-- Quick Deal, the timer dial, the heads-up, asking for time (borrow, trade, "I need this"), the bonus offer, today's ledger
+- Quick Deal, the timer dial, the heads-up, asking for time (borrow, trade, "I need this"), the end of a deal (another round, 10 more minutes, done for now), today's ledger
 - Study blocks from 5 to 60 minutes; long blocks get a quarter-length break and a 5-minute heads-up
 - Big ones: first payment, bookmark, day-2 and comeback cards, split and spread
 - A weekly one-tap check-in ("Did this week go better than usual?")
@@ -124,6 +124,7 @@ Without a backend URL, the app runs as the design demo, so you can click through
 - [Concept v2](docs/01-concept-v2.md): what Pomodeal is and why
 - [Roadmap](docs/03-roadmap.md): phases, gates, and where we are
 - [Negotiation rules](docs/specs/001-negotiation-rules.md): the deal terms, plus the design review log
+- [One ticket, one sitting](docs/specs/010-one-sitting.md): how a deal ends, and the next round
 - [Research: starting and splitting big tasks](docs/research/reports/Starting%20and%20splitting%20big%20tasks.md) and the [big ones spec](docs/specs/008-big-ones.md)
 - [Privacy inventory](docs/specs/006-privacy-inventory.md): every stored field, why, and who sees it
 - [Build loop](docs/04-build-loop.md): how features and designs get built and reviewed
