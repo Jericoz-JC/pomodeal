@@ -69,7 +69,12 @@ export const myInvites = query({
     const user = await currentMember(ctx);
     if (!user) return [];
     const mine = await ctx.db.query("invites").withIndex("by_createdBy", (q) => q.eq("createdBy", user._id)).order("desc").collect();
-    return mine.map((i) => ({ code: i.code, uses: i.uses, maxUses: i.maxUses, createdAt: i.createdAt }));
+    // A used ticket says who joined on it: first name only, and the day they joined.
+    return await Promise.all(mine.map(async (i) => {
+      const joiner = i.uses > 0 ? await ctx.db.query("users").withIndex("by_inviteId", (q) => q.eq("inviteId", i._id)).first() : null;
+      return { code: i.code, uses: i.uses, maxUses: i.maxUses, createdAt: i.createdAt,
+        usedBy: joiner ? joiner.displayName.trim().split(/\s+/)[0] : null, usedAt: joiner ? joiner.joinedAt : null };
+    }));
   },
 });
 
