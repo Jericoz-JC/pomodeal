@@ -54,7 +54,8 @@
   --sel-card: #E8EFEA;
   --behind: var(--paper);
   /* the slot the tape feeds from is a dark slit in both themes */
-  --slot: #1B211D;
+  --slot: #1B211D; --slot-edge: rgba(255, 255, 255, .6);
+  --btn: var(--deal); --on-btn: var(--on-deal);
   --font-head: "Archivo", "Arial Narrow", "Segoe UI", sans-serif;
   --font-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
   --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='60'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' seed='4'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2.6 2.2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
@@ -63,13 +64,13 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --paper: #18201C; --slot: #070A08; --card: #2E3A34; --stub: #212A25; --chip: #2B3530; --ink: #E6ECE7; --soft: #A3B0A7; --rule: #33413A; --track: #2F3A35; --edge: #74847A; --edge-half: rgba(116, 132, 122, .6);
+    --paper: #18201C; --slot: #070A08; --slot-edge: rgba(230, 236, 231, .28); --btn: #2A8259; --on-btn: #F4FBF7; --card: #2E3A34; --stub: #212A25; --chip: #2B3530; --ink: #E6ECE7; --soft: #A3B0A7; --rule: #33413A; --track: #2F3A35; --edge: #74847A; --edge-half: rgba(116, 132, 122, .6);
     --sheet: #1D2521; --scrim: rgba(8, 12, 10, .5); --hi: rgba(255, 255, 255, .05); --lift: rgba(0, 0, 0, .5);
     --deal: #6CCB97; --on-deal: #0F1A14; --deal-tint: rgba(108, 203, 151, .08); --break-base: #A7B3AA; --break-stripe: rgba(24, 32, 28, .42); --wait: color-mix(in srgb, var(--ink) 60%, transparent); --wait-edge: color-mix(in srgb, var(--ink) 60%, transparent); --sel: #283C32; --sel-card: #2E4037; --gone: #E0A08C; --deal-ink: #6CCB97; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --paper: #18201C; --slot: #070A08; --card: #2E3A34; --stub: #212A25; --chip: #2B3530; --ink: #E6ECE7; --soft: #A3B0A7; --rule: #33413A; --track: #2F3A35; --edge: #74847A; --edge-half: rgba(116, 132, 122, .6);
+  --paper: #18201C; --slot: #070A08; --slot-edge: rgba(230, 236, 231, .28); --btn: #2A8259; --on-btn: #F4FBF7; --card: #2E3A34; --stub: #212A25; --chip: #2B3530; --ink: #E6ECE7; --soft: #A3B0A7; --rule: #33413A; --track: #2F3A35; --edge: #74847A; --edge-half: rgba(116, 132, 122, .6);
   --sheet: #1D2521; --scrim: rgba(8, 12, 10, .5); --hi: rgba(255, 255, 255, .05); --lift: rgba(0, 0, 0, .5);
   --deal: #6CCB97; --on-deal: #0F1A14; --deal-tint: rgba(108, 203, 151, .08); --break-base: #A7B3AA; --break-stripe: rgba(24, 32, 28, .42); --wait: color-mix(in srgb, var(--ink) 60%, transparent); --wait-edge: color-mix(in srgb, var(--ink) 60%, transparent); --sel: #283C32; --sel-card: #2E4037; --gone: #E0A08C; --deal-ink: #6CCB97; color-scheme: dark;
 }
@@ -114,7 +115,7 @@ p { margin: 0; }
 /* buttons: Archivo, the voice for things you act on */
 .primary, .secondary { width: 100%; min-height: 54px; border-radius: 12px; padding: 12px 18px; display: block; text-align: center;
   font-family: var(--font-head); font-stretch: 85%; font-weight: 700; font-size: 1.1875rem; line-height: 1.25; letter-spacing: .01em; }
-.primary { border: none; background: var(--deal); color: var(--on-deal); transition: background-color .15s, color .15s; }
+.primary { border: none; background: var(--btn); color: var(--on-btn); transition: background-color .15s, color .15s; }
 /* not ready yet: a neutral button that says what it needs, never a faded green */
 .primary:disabled { background: var(--chip); color: var(--soft); box-shadow: inset 0 0 0 1px var(--edge-half); cursor: not-allowed; }
 /* while a deal is being stamped the button stays green */
@@ -450,8 +451,9 @@ p { margin: 0; }
 /* not yet agreed: the stamp box is printed on the ticket, empty, dashed in ink. The word DEAL only exists once you agree. */
 .stampbox, .slot { position: relative; flex: none; border: 1.5px dashed var(--wait-edge); border-radius: 5px; }
 .stamp.ghost { visibility: hidden; }
-.stampbox::after { content: "stamp"; position: absolute; inset: 0; display: grid; place-items: center; font-size: .75rem; color: var(--soft); }
-.stamped .stampbox::after { content: none; }
+.stampbox { border-color: transparent; }
+.stampbox .stamp.ghost { visibility: visible; opacity: .2; filter: grayscale(1); }
+.stamped .stampbox .stamp.ghost { opacity: 1; filter: none; }
 /* agreed: the green stamp comes down, hits the paper (about 150 ms in), squashes, rebounds and settles (see "motion" below) */
 .stamped .stamp.ghost { visibility: visible; animation: ink .56s linear backwards; }
 
@@ -486,7 +488,7 @@ button.term:focus-visible { outline-offset: 3px; }
 /* the boundary: the session ticket, its break half torn off and marked used, the rest of the deal still yours */
 .tearrow { display: flex; align-items: stretch; gap: 0; margin-block: 2px 4px; }
 .tearrow .usedwrap { position: relative; flex: none; width: 108px; min-height: 104px; display: flex; }
-.tearrow .used { flex: 1; display: flex; flex-direction: column; justify-content: flex-start; gap: 2px; padding: 14px 16px 12px 14px; background: var(--stub); border-radius: 6px 0 0 6px; opacity: .45;
+.tearrow .used { flex: 1; display: flex; flex-direction: column; justify-content: flex-start; gap: 2px; padding: 14px 16px 12px 14px; background: var(--stub); border-radius: 6px 0 0 6px; opacity: .72;
   -webkit-mask: var(--zig); mask: var(--zig); transform: translateX(-8px) rotate(-2deg); transform-origin: 100% 100%; animation: tear .22s ease-out both; }
 .tearrow .used b { font-family: var(--font-head); font-stretch: 78%; font-weight: 800; font-size: 1.375rem; line-height: 1; }
 /* one line on the stub, so a long title never runs under the Used stamp */
@@ -525,26 +527,25 @@ button.term:focus-visible { outline-offset: 3px; }
    --minor and --major are set per block from dialTicks(); the defaults draw a 60-minute face. */
 .dial { position: relative; width: min(76vw, 288px); aspect-ratio: 1; max-width: 100%; container-type: inline-size; }
 .dial > * { position: absolute; inset: 0; border-radius: 50%; }
-/* the scale: a tick for every minute of this block, a longer one and a numeral every 5 (every 15 on long blocks).
-   The pointer reads against it, so the ring is a real gauge of minutes left, not just a shape. */
+/* One instrument, read from the outside in: numerals, a tick for every minute of this block, the ring, the plate.
+   Time left is solid ink on the ring; time gone is the engine-turned line work underneath it, the kind printed on tickets
+   and banknotes. One thin needle marks the leading end and points at the scale. */
 .dial .scale { border-radius: 0; overflow: visible; width: 100%; height: 100%; }
 .scale .mn { stroke: var(--edge); stroke-width: .7; }
-.scale .mj { stroke: var(--ink); stroke-width: 1.1; opacity: .85; }
-.scale .z { stroke: var(--ink); stroke-width: 2; stroke-linecap: round; }
-.scale text { font-family: var(--font-head); font-stretch: 80%; font-weight: 650; font-size: 8.6px; fill: var(--soft); text-anchor: middle; dominant-baseline: central; font-variant-numeric: tabular-nums; }
-/* the ring is a slim band between two hairlines */
-.dial .track { background: radial-gradient(circle closest-side, transparent 75.6%, var(--edge) 76% 76.5%, var(--track) 76.9% 85.1%, var(--edge) 85.5% 86%, transparent 86.4%); }
-.dial .fill { -webkit-mask: conic-gradient(#000 calc(var(--p) * 1turn), transparent 0), radial-gradient(circle closest-side, transparent 75.6%, #000 76% 86%, transparent 86.4%);
-  -webkit-mask-composite: source-in; mask: conic-gradient(#000 calc(var(--p) * 1turn), transparent 0) intersect, radial-gradient(circle closest-side, transparent 75.6%, #000 76% 86%, transparent 86.4%); }
+.scale .mj { stroke: var(--ink); stroke-width: 1.1; }
+.scale .z { stroke: var(--ink); stroke-width: 2.2; stroke-linecap: round; }
+.scale text { font-family: var(--font-head); font-stretch: 80%; font-weight: 700; font-size: 10.5px; fill: var(--soft); text-anchor: middle; dominant-baseline: central; font-variant-numeric: tabular-nums; }
+.scale text.top { fill: var(--ink); }
+.dial .track { background: radial-gradient(circle closest-side, transparent 63.6%, var(--edge) 64% 64.6%, transparent 65% 73%, var(--edge) 73.4% 74%, transparent 74.4%); }
+.dial .rosette { position: absolute; inset: 0; width: 100%; height: 100%; color: var(--edge); }
+.rosette path { fill: none; stroke: currentColor; stroke-width: .34; }
+.dial .fill { -webkit-mask: conic-gradient(#000 calc(var(--p) * 1turn), transparent 0), radial-gradient(circle closest-side, transparent 63.6%, #000 64% 74%, transparent 74.4%);
+  -webkit-mask-composite: source-in; mask: conic-gradient(#000 calc(var(--p) * 1turn), transparent 0) intersect, radial-gradient(circle closest-side, transparent 63.6%, #000 64% 74%, transparent 74.4%); }
 .fill.focus { background: var(--deal); }
-.fill.break { background: repeating-linear-gradient(135deg, var(--break-stripe) 0 2px, transparent 2px 7px), var(--break-base); }
-/* the plate: a paper face with an engine-turned band, the kind of line work printed on tickets and banknotes */
-.dial .plate { inset: 14.5%; background: var(--card); box-shadow: 0 0 0 1px var(--rule), inset 0 2px 5px -2px var(--lift); }
-.dial .rosette { inset: 0; border-radius: 0; width: 100%; height: 100%; color: var(--edge); opacity: .42; }
-.rosette path { fill: none; stroke: currentColor; stroke-width: .32; }
-/* the pointer: one ink needle from the plate out to the scale, at the leading end of the time left */
+.fill.break { background: repeating-linear-gradient(135deg, var(--break-stripe) 0 2px, transparent 2px 6px), var(--break-base); }
+.dial .plate { inset: 21%; background: var(--card); box-shadow: 0 0 0 1px var(--rule), inset 0 2px 5px -2px var(--lift); }
 .dial .edge { border-radius: 0; transform: rotate(calc(var(--p) * 1turn)); }
-.dial .edge::before { content: ""; position: absolute; left: 50%; top: 0; width: 3px; height: 14.6%; margin-left: -1.5px; border-radius: 2px; background: var(--ink); box-shadow: 0 0 0 1.5px var(--card); }
+.dial .edge::before { content: ""; position: absolute; left: 50%; top: 7.5%; width: 2.5px; height: 13.6%; margin-left: -1.25px; border-radius: 2px; background: var(--ink); }
 .dial.sweep { animation: sweep .7s ease-out; }
 @keyframes sweep { from { --p: 0; } }
 .dial .face { inset: 20%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
@@ -706,7 +707,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 .side[hidden] { display: none; }
 .tapeside { position: relative; margin: 0 -4px; padding-bottom: 28px; filter: drop-shadow(0 1px 0 var(--rule)) drop-shadow(0 10px 18px var(--lift)); }
 /* the slot the tape feeds from */
-.tapeside::before { content: ""; display: block; height: 7px; margin: 0 -7px; border-radius: 4px; background: var(--slot); box-shadow: inset 0 2px 2px rgba(0, 0, 0, .55), 0 1px 0 var(--hi); position: relative; z-index: 1; }
+.tapeside::before { content: ""; display: block; height: 7px; margin: 0 -7px; border-radius: 4px; background: var(--slot); box-shadow: inset 0 2px 2px rgba(0, 0, 0, .55), 0 1px 0 var(--slot-edge); position: relative; z-index: 1; }
 .tape { display: flex; flex-direction: column; gap: 16px; background: var(--card); padding: 18px 20px 30px;
   -webkit-mask: linear-gradient(#000 0 0) top / 100% calc(100% - 7px) no-repeat, conic-gradient(from -45deg at bottom, #000 90deg, #0000 0) bottom / 14px 7px repeat-x;
   mask: linear-gradient(#000 0 0) top / 100% calc(100% - 7px) no-repeat, conic-gradient(from -45deg at bottom, #000 90deg, #0000 0) bottom / 14px 7px repeat-x; }
@@ -840,11 +841,13 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
    Two things on a desk: the clock you are dealing with, large, and tonight's tape hanging from the top edge of the window.
    No header bar, no columns of widgets. The room stays one line under the clock, as on a phone, and opens in the stage. */
 @media (min-width: 820px) {
-  .app { max-width: 1200px; padding-inline: clamp(28px, 5vw, 72px); }
-  .deskhead { display: flex; align-items: baseline; gap: 14px; position: absolute; top: 26px; font-family: var(--font-head); font-stretch: 76%; font-weight: 800; font-size: 1.25rem; line-height: 1; color: var(--soft); }
-  body.live .deskhead, .proto ~ .deskhead { position: static; padding-top: 22px; margin-bottom: -22px; }
-  .desk { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 372px); grid-template-areas: "stage tape"; align-items: start; column-gap: clamp(36px, 6vw, 96px); }
-  main { grid-area: stage; width: 100%; max-width: 520px; justify-self: center; padding-block: clamp(40px, 9vh, 92px) 48px; gap: 24px; }
+  :root { --pad: clamp(28px, 5vw, 72px); --gap: clamp(36px, 6vw, 96px); --tapew: clamp(300px, 30vw, 372px); --stagetop: clamp(36px, 8vh, 84px); }
+  .app { max-width: 1200px; padding-inline: var(--pad); }
+  .deskhead { display: flex; align-items: baseline; gap: 14px; padding-top: 30px; font-family: var(--font-head); font-stretch: 76%; font-weight: 800; font-size: 1.25rem; line-height: 1; color: var(--soft); }
+  .deskhead .mark { color: var(--ink); }
+  .deskhead .day { font-family: var(--font-body); font-weight: 400; font-stretch: normal; font-size: .9375rem; }
+  .desk { display: grid; grid-template-columns: minmax(0, 1fr) var(--tapew); grid-template-areas: "stage tape"; align-items: start; column-gap: var(--gap); margin-top: -50px; }
+  main { grid-area: stage; width: 100%; max-width: 560px; justify-self: start; padding-block: calc(50px + var(--stagetop)) 48px; gap: 24px; }
   .side { min-width: 0; }
   .roomside { display: none; }
   .tapeside { grid-area: tape; position: sticky; top: 0; align-self: start; margin: 0; }
@@ -853,15 +856,18 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   body.live .tape { max-height: calc(100dvh - 96px); }
   .tape { max-height: calc(100vh - 40px); max-height: calc(100dvh - 40px); overflow-y: auto; scrollbar-width: thin; padding: 24px 24px 34px; }
   /* the stage: one bold object, sized by the window's height so the way out of a block is never below the fold */
-  .dial { width: clamp(288px, 50vh, 460px); }
-  .timerwrap { gap: 16px; padding-block: 4px; }
+  .dial { width: clamp(288px, 44vh, 400px); }
+  .timerwrap { gap: 14px; }
   h1 { font-size: 2.75rem; }
-  .ticket .line, .ticket .sentence { font-size: 1.12em; }
+  .sentence { font-size: 2rem; line-height: 1.4; }
+  .ticket .stub { padding: 28px 36px 20px 28px; } .ticket .body { padding: 20px 36px 32px 28px; }
   .keepon { display: none; }
   /* a decision is made at the stage: the paper lands over the clock, the tape stays readable beside it */
-  .scrim { align-items: center; justify-content: flex-start; padding: 24px clamp(28px, 5vw, 72px); -webkit-backdrop-filter: none; backdrop-filter: none; }
-  .scrim::before { background: color-mix(in srgb, var(--paper) 78%, transparent); }
-  .sheet { max-width: 500px; margin-left: max(0px, calc((min(100vw, 1200px) - 2 * clamp(28px, 5vw, 72px) - 372px - clamp(36px, 6vw, 96px) - 500px) / 2 + max(0px, (100vw - 1200px) / 2))); border: 1px solid var(--rule); border-radius: 8px; padding: 22px 24px 20px; box-shadow: 0 1px 0 var(--rule), 0 22px 44px var(--lift); max-height: 90%; -webkit-mask: none; mask: none; }
+  .tapeside { z-index: 25; }
+  .scrim { align-items: flex-start; justify-content: flex-start; padding: calc(30px + var(--stagetop)) 0 24px calc(var(--pad) + max(0px, (100vw - 1200px) / 2)); -webkit-backdrop-filter: none; backdrop-filter: none; overflow-y: auto; }
+  .scrim::before { position: fixed; background: var(--paper); }
+  .sheet { --behind: var(--paper); width: min(560px, 100vw - 2 * var(--pad) - var(--tapew) - var(--gap)); max-width: none; background: var(--paper); border: none; border-radius: 0; padding: 0 0 8px; box-shadow: none; max-height: none; overflow: visible; -webkit-mask: none; mask: none; }
+  .sheet h2 { font-size: 2.25rem; font-weight: 800; font-stretch: 78%; }
   .grab { display: none; }
   @keyframes sheet-in { from { transform: translateY(18px); opacity: 0; } }
   @keyframes sheet-out { to { transform: translateY(12px); opacity: 0; } }
@@ -1164,15 +1170,15 @@ const GHOST = `<span class="slot" aria-hidden="true"><span class="stamp ghost">D
 const TAPSLOT = `<span class="slot" aria-hidden="true"><span class="tap">Tap to stamp</span><span class="stamp ghost">DEAL</span></span>`;
 /* the dial's line work is drawn once per block as SVG: a scale sized to the block's minutes, and the plate's rosette */
 const polar = (r, deg) => { const a = (deg - 90) * Math.PI / 180; return `${(r * Math.cos(a)).toFixed(2)} ${(r * Math.sin(a)).toFixed(2)}`; };
-const ROSETTE = (() => { let d = ""; for (let j = 0; j < 6; j++) { d += `<path d="`; for (let t = 0; t <= 360; t += 2) d += `${t ? "L" : "M"}${polar(55 + 6.5 * Math.cos((t * 12 + j * 60) * Math.PI / 180), t)}`; d += `Z"/>`; } return `<svg class="rosette" viewBox="-100 -100 200 200" aria-hidden="true">${d}</svg>`; })();
+const ROSETTE = (() => { let d = ""; for (let j = 0; j < 4; j++) { d += `<path d="`; for (let t = 0; t <= 360; t += 1.5) d += `${t ? "L" : "M"}${polar(69 + 3.6 * Math.cos((t * 20 + j * 90) * Math.PI / 180), t)}`; d += `Z"/>`; } return `<svg class="rosette" viewBox="-100 -100 200 200" aria-hidden="true">${d}</svg>`; })();
 function scaleSvg(min) {
   const n = Math.max(1, Math.round(min)), step = n > 30 ? 15 : 5; let h = "";
-  for (let m = 1; m < n; m++) { const a = m / n * 360, mj = m % step === 0; h += `<line class="${mj ? "mj" : "mn"}" x1="${polar(mj ? 90 : 93.5, a).replace(" ", `" y1="`)}" x2="${polar(98, a).replace(" ", `" y2="`)}"/>`; }
-  /* numerals sit on the plate's rim; one too close to the top would crowd the block's own length there */
-  for (let m = step; m < n; m += step) if ((n - m) / n * 360 >= 24 && m / n * 360 >= 24) h += `<text x="${polar(63.5, m / n * 360).replace(" ", `" y="`)}">${m}</text>`;
-  return `<svg class="scale" viewBox="-100 -100 200 200" aria-hidden="true">${h}<line class="z" x1="0" y1="-89" x2="0" y2="-99.5"/><text x="0" y="-63.5">${n}</text></svg>`;
+  for (let m = 1; m < n; m++) { const a = m / n * 360, mj = m % step === 0; h += `<line class="${mj ? "mj" : "mn"}" x1="${polar(mj ? 78.5 : 80, a).replace(" ", `" y1="`)}" x2="${polar(mj ? 85 : 84, a).replace(" ", `" y2="`)}"/>`; }
+  /* a numeral at every major tick; one too close to the top would crowd the block's own length there */
+  for (let m = step; m < n; m += step) if ((n - m) / n * 360 >= 20 && m / n * 360 >= 20) h += `<text x="${polar(93, m / n * 360).replace(" ", `" y="`)}">${m}</text>`;
+  return `<svg class="scale" viewBox="-100 -100 200 200" aria-hidden="true">${h}<line class="z" x1="0" y1="-77.5" x2="0" y2="-86"/><text class="top" x="0" y="-94">${n}</text></svg>`;
 }
-const dial = (type, min) => `<span class="track"></span><span class="fill ${type}"></span><span class="plate">${ROSETTE}</span>${scaleSvg(min)}<span class="edge"></span>`;
+const dial = (type, min) => `<span class="track">${ROSETTE}</span><span class="fill ${type}"></span><span class="plate"></span>${scaleSvg(min)}<span class="edge"></span>`;
 /* whole minutes until the last 30 seconds; heads-up keeps minute wording so it reads calm, not alarming */
 function face(r, m) {
   if (r <= 0) return { big: "0", cls: "", unit: `${title(cur().label).split(" ")[0]} is up` };
