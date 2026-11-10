@@ -865,7 +865,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 /* a term is taken by stamping its ticket: the slot shows a faint impression until you do */
 .slot { border-color: transparent; }
 .slot .tap { display: none; }
-.slot .stamp.ghost { visibility: visible; opacity: .24; filter: grayscale(1); }
+.slot .stamp.ghost { visibility: visible; opacity: .24; filter: grayscale(1); font-size: 1.0625rem; inset: 2px; }
 .stamped .slot .stamp.ghost { opacity: 1; filter: none; }
 
 /* ---------- the room on paper ----------
@@ -930,7 +930,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   @media (max-width: 1150px) { .tape { padding-inline: 18px; } .tape .stubcard { grid-template-columns: 58px 1fr; } .tape .stubcard .title { font-size: 1.0625rem; } .tape .stubcard .t b { font-size: 1.0625rem; } }
   /* a decision is made at the stage: the paper lands over the clock, the tape stays readable beside it */
   .scrim { align-items: center; justify-content: flex-start; padding: 24px 0 24px calc(var(--pad) + max(0px, (100vw - 1200px) / 2)); -webkit-backdrop-filter: none; backdrop-filter: none; }
-  .sheet, .sheet:not(.paper) { --behind: var(--sheet); width: min(720px, 100vw - 2 * var(--pad) - var(--tapew) - var(--gap)); max-width: none; border: none; border-radius: 0; padding: 34px 32px 34px; max-height: calc(100% - 48px);
+  .sheet, .sheet:not(.paper) { --behind: var(--sheet); width: min(720px, min(100vw, 1200px) - 2 * var(--pad) - var(--tapew) - var(--gap)); max-width: none; border: none; border-radius: 0; padding: 34px 32px 34px; max-height: calc(100% - 48px);
     -webkit-mask: linear-gradient(#000 0 0) center / 100% calc(100% - 16px) no-repeat, conic-gradient(from 135deg at top, #000 90deg, #0000 0) left top / 16px 8px repeat-x, conic-gradient(from -45deg at bottom, #000 90deg, #0000 0) left bottom / 16px 8px repeat-x;
     mask: linear-gradient(#000 0 0) center / 100% calc(100% - 16px) no-repeat, conic-gradient(from 135deg at top, #000 90deg, #0000 0) left top / 16px 8px repeat-x, conic-gradient(from -45deg at bottom, #000 90deg, #0000 0) left bottom / 16px 8px repeat-x; }
   @keyframes sheet-in { from { transform: translateY(18px); opacity: 0; } }
