@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Handshake fixture</title>
+<style>body { font: 16px/1.5 system-ui, sans-serif; max-width: 34rem; margin: 2rem auto; padding: 0 16px; } button { font: inherit; padding: 8px 14px; }</style>
+</head>
+<body>
+  <h1>Connect extension</h1>
+  <p>Stand-in for the web app's Connect extension button. It sends a synthetic token, never a real one.</p>
+  <button id="go" type="button">Connect extension</button>
+  <pre id="out" role="status"></pre>
+  <script>
+    // In E1 the web app gets the ID from config (Web Store ID in production, the pinned dev key's ID locally).
+    const EXT_ID = new URLSearchParams(location.search).get("ext") || "higlkgdggjekbokkgpmojpmbjbmgenal";
+    window.pomodealConnect = async (token) => {
+      // chrome.runtime only exists here if an installed extension lists this origin in externally_connectable.
+      if (typeof chrome === "undefined" || !chrome.runtime?.sendMessage) return { ok: false, code: "extension_not_reachable" };
+      try {
+        return await chrome.runtime.sendMessage(EXT_ID, { type: "auth/v1", requestId: crypto.randomUUID().slice(0, 8), token });
+      } catch (e) {
+        return { ok: false, code: "send_failed", message: String(e.message || e) };
+      }
+    };
+    document.getElementById("go").onclick = async () => {
+      const res = await window.pomodealConnect("synthetic-token-" + crypto.randomUUID());
+      document.getElementById("out").textContent = JSON.stringify(res, null, 2);
+    };
+  </script>
+</body>
+</html>

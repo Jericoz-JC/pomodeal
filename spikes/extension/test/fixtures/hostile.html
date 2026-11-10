@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Hostile fixture</title>
+<style>
+  /* A page that tries hard to break an injected overlay. */
+  * { font-family: "Comic Sans MS", cursive !important; color: magenta !important; }
+  html body * { display: none !important; opacity: 0 !important; visibility: hidden !important; }
+  html body .content, html body .content * { display: block !important; opacity: 1 !important; visibility: visible !important; }
+  pomodeal-overlay, [style] { display: none !important; z-index: -1 !important; }
+  button { background: red !important; border: 8px dashed lime !important; }
+  :root { --deal: red; --paper: yellow; }
+  body { background: repeating-linear-gradient(90deg, #fee 0 20px, #eef 20px 40px); }
+</style>
+<script>
+  // Page script tries to grab any shadow root the extension creates. Content scripts run in an
+  // isolated world with their own prototypes, so this should never see the overlay's root.
+  window.__leaked = [];
+  const orig = Element.prototype.attachShadow;
+  Element.prototype.attachShadow = function (init) {
+    const root = orig.call(this, { ...init, mode: "open" });
+    window.__leaked.push(this.tagName);
+    return root;
+  };
+  // ?swallow=1: like many web apps, eat Escape at window capture before anyone else sees it.
+  if (new URLSearchParams(location.search).has("swallow")) {
+    window.addEventListener("keydown", (e) => { if (e.key === "Escape") { e.stopImmediatePropagation(); window.__swallowed = (window.__swallowed || 0) + 1; } }, true);
+  }
+</script>
+</head>
+<body>
+  <div class="content">
+    <h1>Some reels site</h1>
+    <p>Hostile styles and a patched attachShadow live on this page.</p>
+    <input id="search" placeholder="Focus starts here">
+  </div>
+</body>
+</html>
