@@ -1,0 +1,19 @@
+{
+  "name": "pomodeal-extension-spike",
+  "private": true,
+  "version": "0.0.1",
+  "description": "E0 spike: throwaway. Not part of the npm workspaces and never imported by apps/.",
+  "type": "module",
+  "scripts": {
+    "dev": "wxt",
+    "build": "wxt build",
+    "postinstall": "wxt prepare",
+    "fixtures": "node test/fixture-server.mjs",
+    "e2e": "node test/e2e.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.64.1",
+    "typescript": "^7.0.2",
+    "wxt": "0.21.5"
+  }
+}
