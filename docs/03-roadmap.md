@@ -16,7 +16,7 @@ Phase 0's interview gate was skipped on purpose: we launched a closed beta to fr
 
 **Merged to `main` Nov 9 (PR #4, spec 008):** big ones with a first payment and first move, bookmarks, day-2 and comeback cards, split and spread, the weekly check-in, and the privacy inventory for all of it. Still unchecked on real devices (see `docs/dogfood-log.md`): block-boundary Web Push (heads-up and block end) and optional AI piece suggestions (off unless `AI_SUGGEST_ENABLED`).
 
-**Not built:** the Chrome extension, so nothing blocks or dims sites yet.
+**Not built:** the Chrome extension, so nothing blocks or dims sites yet. Its spike (E0) is done as of Nov 9: block ends survive the extension being shut down, the break-over overlay holds up on hostile pages, and the web app can hand the extension a token. Results and the open login decision are in [06-chrome-extension-roadmap.md](06-chrome-extension-roadmap.md#e0-results-nov-9-2026). E1 waits for the screens to move into components.
 
 **Next, in order**
 1. Web Push at the heads-up and block end (VAPID keys, push subscriptions table, Convex scheduled action, service worker handler; iPhone needs the installed app)
@@ -25,8 +25,6 @@ Phase 0's interview gate was skipped on purpose: we launched a closed beta to fr
 
 4. Presets and a block builder; history beyond 24 hours
 5. Then Phase 1.5 rooms
-
-**Chrome extension:** spike E0 done Nov 9, 2026. Block ends survive the extension being shut down, the break-over overlay holds up on hostile pages, and the web app can hand the extension a token. Results and the open login decision are in [06-chrome-extension-roadmap.md](06-chrome-extension-roadmap.md#e0-results-nov-9-2026). E1 waits for the screens to move into components.
 
 **Before any public launch:** WorkOS production credentials and a custom auth domain, remove `noindex`, privacy policy, age gate, delete-my-data.
 
@@ -87,7 +85,7 @@ S1 Convex scheduler → Web Push on installed iOS PWA · S2 Auth library + exten
 
 ## Phase 2: Chrome extension enforcer (3 weeks)
 
-Detailed plan, permissions and milestones E0–E5: [06-chrome-extension-roadmap.md](06-chrome-extension-roadmap.md). E0 (spike) can run now.
+Detailed plan, permissions and milestones E0–E5: [06-chrome-extension-roadmap.md](06-chrome-extension-roadmap.md). E0 (spike) is done; E1 starts after Phase 1 moves the screens into components.
 
 
 - Side panel timer, popup Quick Deal
