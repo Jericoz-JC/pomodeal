@@ -121,6 +121,14 @@ Judged from real-speed recordings (`prototypes/shoot-motion.mjs`, which now reco
 
 Known and left: when the new title has more lines than the old one, the wheel steps down by a line at the start of the turn. Not verified: Safari (desktop and iPhone), a real phone's frame rate, and a 60 Hz desktop by eye; the clips are headless Edge.
 
+### 3. Finishing the metaphor
+
+- **One action language.** Every remaining filled green button is now a stamp: the same double-ruled rubber face as DEAL, carrying its words ("Start reading", "Start reading now", "Save pieces", "Sign it", "Keep it", "Start 14 min with Maya"), tilted a little, rising under the pointer on a desk. Pressing one slams and inks it, and the button does its job once the stamp has landed (280 ms; at once with reduced motion). A stamp that is not ready yet ("Name a piece to save") is an empty dashed impression. The big one card's green start tab is a stamp face on the card's paper too. The "keep going" offer is now a ticket you stamp, like the terms; its separate Deal button is gone.
+- **A large DEAL stamp stays on the running ticket.** About three times the old tag, inked, at the head of the ticket on a phone, and in the empty lower corner past the perforation on a desk. The stamp you pressed flies into it (item 2).
+- **The split planner is one ticket torn into pieces.** No plus and minus steppers and no number fields. Each piece is a length of one ticket, as long as its minutes (a fixed base plus 1 px a minute), ending at a tear line: a row of punched holes with a notch at the edge and the piece's minutes sitting on it like a tab. Pull a tear line and the piece above it gets longer or shorter in 5 minute notches, with everything after it moving down; phones that can vibrate tick at each notch. For the keyboard and screen readers each tear line is a vertical slider ("Length of Problems 5 to 8", "45 minutes"): arrows move 5 minutes, Page Up and Down 15, Home and End the limits. "Add a piece" sits at the ticket's open end. A stamped piece carries a small "Done" stamp. The rules (5 to 240 minutes in 5 minute steps, up to 12 pieces) are unchanged.
+
+Not done in this item: the "..." menus and the "Or make a quick deal" row (also named as stock controls in round 6), and the room as one roster sheet. Not verified: dragging a tear line on a real phone (it was driven with synthetic pointer events and the keyboard), Safari, VoiceOver.
+
 ## Invites
 
 Chris reported that he invited a friend and could see nothing. An investigation (Opus 5.5, read-only) found this is mostly as built: an invite only lets someone into the beta, and friends, rooms and presence do not exist in the backend yet. The live Room says "open soon". Fixed on this branch:

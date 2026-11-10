@@ -115,11 +115,26 @@ p { margin: 0; }
 /* buttons: Archivo, the voice for things you act on */
 .primary, .secondary { width: 100%; min-height: 54px; border-radius: 8px; padding: 12px 18px; display: block; text-align: center;
   font-family: var(--font-head); font-stretch: 85%; font-weight: 700; font-size: 1.1875rem; line-height: 1.25; letter-spacing: .01em; }
-.primary { border: none; background: var(--btn); color: var(--on-btn); box-shadow: inset 0 0 0 3px var(--btn), inset 0 0 0 4.5px color-mix(in srgb, var(--on-btn) 70%, transparent); transition: background-color .15s, color .15s; }
-/* not ready yet: a neutral button that says what it needs, never a faded green */
-.primary:disabled { background: var(--chip); color: var(--soft); box-shadow: inset 0 0 0 1px var(--edge-half); cursor: not-allowed; }
-/* while a deal is being stamped the button stays green */
-:is(.stamped, .busy) .primary:disabled { background: var(--deal); color: var(--on-deal); box-shadow: none; cursor: default; }
+/* one action language: anything that commits you is a stamp. Clean double-ruled rubber while it waits, slammed and
+   inked when you press it (the action happens once it has landed, see "stamp buttons" in the script). DEAL is the
+   largest of them; the others carry their words in the same face. */
+.primary { --tilt: -1.5deg; position: relative; width: auto; min-width: min(100%, 230px); max-width: 100%; margin: 6px auto 2px; padding: 12px 26px 10px; border: none; border-radius: 9px;
+  background: none; color: var(--deal); box-shadow: none; font-size: 1.5rem; font-weight: 800; font-stretch: 78%; letter-spacing: .02em; line-height: 1.1;
+  transform: rotate(var(--tilt)); transition: transform .14s ease-out, filter .14s ease-out; }
+.primary::before { content: ""; position: absolute; inset: 0; border: 4.5px double currentColor; border-radius: 9px; pointer-events: none; }
+.primary::after { content: ""; position: absolute; inset: 0; border-radius: 9px; background: currentColor; opacity: 0; pointer-events: none;
+  -webkit-mask: var(--noise) 0 0 / 120px 60px; mask: var(--noise) 0 0 / 120px 60px; }
+@media (hover: hover) { .primary:not(#shake):hover:not(:disabled) { transform: translateY(-2px) rotate(calc(var(--tilt) - 1.5deg)) scale(1.02); filter: drop-shadow(0 4px 3px var(--lift)); } }
+.primary:not(#shake):active:not(:disabled) { transform: rotate(var(--tilt)) scale(.97); }
+.primary.pressed { animation: slam .62s linear both; }
+.primary.pressed::before { -webkit-mask: var(--noise) 0 0 / 120px 60px; mask: var(--noise) 0 0 / 120px 60px; }
+.primary.pressed::after { opacity: .14; animation: inked .3s .2s ease-out backwards; }
+/* not ready yet: an empty impression that says what it needs, never a faded green */
+.primary:disabled:not(.pressed) { color: var(--soft); cursor: not-allowed; }
+.primary:disabled:not(.pressed)::before { border: 1.5px dashed var(--wait-edge); }
+/* while something is being stamped the stamp keeps its ink */
+:is(.stamped, .busy) .primary:disabled { color: var(--deal); cursor: default; }
+:is(.stamped, .busy) .primary:disabled::before { border: 4.5px double currentColor; }
 .secondary { border: 1.5px solid var(--edge); background: transparent; color: var(--ink); }
 .textbtn { background: none; border: none; color: var(--soft); text-decoration: underline; text-underline-offset: 3px; padding: 10px 12px; min-height: 44px; align-self: center; font-size: .9375rem; }
 .stack { display: flex; flex-direction: column; gap: 10px; }
@@ -248,8 +263,14 @@ p { margin: 0; }
 .bigcard .go b { font-stretch: 72%; font-weight: 800; font-size: 2.125rem; line-height: .85; font-variant-numeric: tabular-nums; }
 .bigcard .go span { font-stretch: 85%; font-weight: 700; font-size: 1rem; line-height: 1; }
 .bigcard .go span:first-child { margin-bottom: 2px; }
-/* the card's own edge would clip an outside ring: the ring sits inside the green tab */
-.bigcard .go:focus-visible { outline: 3px solid var(--on-deal); outline-offset: -7px; }
+/* the card's own edge would clip an outside ring: the ring sits inside the tab */
+.bigcard .go:focus-visible { outline: 3px solid var(--deal); outline-offset: -5px; }
+/* one action language: the card's start tab is a stamp too, the minutes inside its double rule on the card's paper */
+.bigcard .go { --tilt: -4deg; position: relative; background: radial-gradient(circle, var(--edge) 1.2px, transparent 1.7px) 100% 2px / 6px 8px repeat-y; color: var(--deal); }
+.bigcard .go::before { content: ""; position: absolute; left: 7px; right: 10px; top: 50%; height: 104px; margin-top: -52px; border: 4px double currentColor; border-radius: 7px; transform: rotate(var(--tilt)); pointer-events: none; }
+.bigcard .go > * { transform: rotate(var(--tilt)); }
+@media (hover: hover) { .bigcard .go:hover::before { transform: translateY(-2px) rotate(calc(var(--tilt) - 2deg)) scale(1.04); } }
+.bigcard .go.pressed::before { animation: slam .62s linear both; -webkit-mask: var(--noise) 0 0 / 120px 60px; mask: var(--noise) 0 0 / 120px 60px; background: color-mix(in srgb, var(--deal) 12%, transparent); }
 .bigcard .what { min-width: 0; padding: 6px 20px 8px 14px; display: flex; flex-direction: column; gap: 3px; }
 .bigcard .row { display: flex; align-items: flex-start; gap: 2px; }
 .bigcard .ttl { flex: 1; min-width: 0; padding-top: 8px; font-stretch: 76%; font-weight: 750; font-size: 1.375rem; line-height: 1.1; overflow-wrap: anywhere; }
@@ -339,24 +360,37 @@ p { margin: 0; }
 .piece input.pt:focus { border-bottom-color: var(--deal); }
 .piece input.pt:focus-visible { outline-offset: 2px; }
 /* minutes: one number in Archivo between a minus and a plus, the same 5-minute steps as the deal's lengths */
-.mins { flex: none; display: inline-flex; align-items: center; }
-.step { flex: none; width: 36px; height: 44px; padding: 0; border: none; background: none; color: var(--ink); display: grid; place-items: center; border-radius: 8px; }
-/* the ring is the button's edge: ink-soft at 1.75px (about 6:1), never the faint rule colour */
-.step svg { width: 16px; height: 16px; padding: 4px; box-sizing: content-box; border-radius: 50%; box-shadow: inset 0 0 0 1.75px var(--soft); }
-.step:disabled { color: color-mix(in srgb, var(--ink) 35%, transparent); cursor: default; }
-.step:disabled svg { box-shadow: inset 0 0 0 1.75px color-mix(in srgb, var(--ink) 30%, transparent); }
-.mins label { display: inline-flex; align-items: baseline; gap: 2px; }
-.mins input { width: 2.6ch; min-height: 40px; padding: 0; border: none; border-bottom: 1.5px solid transparent; border-radius: 0; background: none; text-align: right;
-  font-family: var(--font-head); font-stretch: 74%; font-weight: 800; font-size: 1.375rem; line-height: 1; font-variant-numeric: tabular-nums; -moz-appearance: textfield; appearance: textfield; }
-.mins input::-webkit-inner-spin-button, .mins input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-.mins input:focus { border-bottom-color: var(--deal); }
-.mins .u { font-size: .875rem; color: var(--ink); }
 .prm { flex: none; width: 44px; height: 44px; margin-right: -10px; border: none; background: none; color: var(--soft); display: grid; place-items: center; border-radius: 8px; }
 .prm svg { width: 18px; height: 18px; }
 .prm:focus-visible { outline-offset: -3px; }
 /* a stamped piece keeps its mark beside its name: the inked box a picked choice gets, small enough to leave the name room */
-.pdone { flex: none; display: grid; place-items: center; width: 24px; height: 24px; margin: 0 4px; border: 3px double var(--deal); border-radius: 5px; background: var(--sel); color: var(--deal); }
-.pdone svg { width: 13px; height: 13px; }
+/* ---------- the split: one ticket, torn into pieces ----------
+   The big one is one ticket. Each piece is a length of it, as long as its minutes (1 px a minute over a fixed base), and
+   ends at a perforation: the tear line. Pull a tear line down and the piece above it gets longer; everything after it
+   moves down with it. The open end of the ticket is where another piece is added. */
+.splithint { margin: -2px 0 2px; }
+.torn { --px: 1px; --tk: color-mix(in srgb, var(--paper) 50%, var(--card)); list-style: none; margin: 2px 0 0; padding: 0; display: block;
+  background: var(--tk); border-radius: 6px 0 0 6px; box-shadow: inset 0 0 0 1.5px var(--edge-half); -webkit-mask: var(--zig); mask: var(--zig); }
+.torn .piece { position: relative; display: flex; flex-direction: column; align-items: stretch; height: calc(70px + var(--m) * var(--px)); min-height: 0; padding: 0 24px 0 14px; border: none; gap: 0; }
+.torn .pbody { flex: 1; min-height: 0; display: flex; align-items: flex-start; gap: 4px; padding-top: 4px; }
+.torn .pstamp { flex: none; margin-top: 12px; font-size: .875rem; --tilt: -5deg; }
+/* the tear line: a row of punched holes with a notch at the ticket's edge; the piece's length sits on it like a tab */
+.torn .tear { position: relative; flex: none; height: 30px; margin: 0 -24px 0 -14px; padding: 0 24px 0 14px; display: flex; align-items: center; justify-content: flex-end;
+  cursor: ns-resize; touch-action: none; -webkit-user-select: none; user-select: none; border-radius: 0;
+  background: radial-gradient(circle, var(--edge) 1.3px, transparent 1.8px) 0 50% / 8px 6px repeat-x; }
+.torn .tear::before { content: ""; position: absolute; left: 0; right: 0; top: -8px; bottom: -8px; }
+.torn .tear::after { content: ""; position: absolute; left: -8px; top: 50%; width: 16px; height: 16px; margin-top: -8px; border-radius: 50%; background: var(--card); box-shadow: inset -1.5px 0 0 var(--edge-half); }
+.torn .len { position: relative; display: inline-flex; align-items: baseline; gap: 3px; padding: 3px 10px 3px 10px; background: var(--tk); color: var(--ink);
+  font-family: var(--font-head); font-stretch: 80%; font-weight: 700; font-size: .9375rem; line-height: 1; transition: color .12s; }
+.torn .len b { font-size: 1.625rem; font-weight: 800; font-stretch: 74%; font-variant-numeric: tabular-nums; }
+/* a grip printed beside the number: two short rules, the way a pull tab is marked */
+.torn .len::before { content: ""; align-self: center; width: 12px; height: 7px; margin-right: 6px; border-block: 2px solid currentColor; opacity: .5; }
+.torn .tear:is(:hover, .pulling, :focus-visible) { background-image: linear-gradient(var(--deal), var(--deal)); background-size: 100% 2px; background-position: 0 50%; background-repeat: no-repeat; outline: none; }
+.torn .tear:is(:hover, .pulling, :focus-visible) .len { color: var(--deal); }
+.torn .tear:focus-visible .len { box-shadow: 0 0 0 3px var(--deal); border-radius: 4px; }
+.torn .openend { padding: 4px 24px 6px 14px; }
+.torn .openend .addpiece { padding-left: 0; }
+.torn .pask { padding: 6px 24px 8px 14px; border-bottom: none; }
 /* R64: removing a stamped piece asks once, in its own row */
 .pask { display: flex; flex-wrap: wrap; align-items: center; gap: 0 4px; padding: 6px 0 8px; border-bottom: 1px solid var(--rule); }
 .pask p { flex: 1 1 100%; font-size: 1rem; line-height: 1.35; }
@@ -573,7 +607,13 @@ button.term:focus-visible { outline-offset: 3px; }
 .runwrap { filter: drop-shadow(0 1px 0 var(--rule)) drop-shadow(0 8px 12px var(--lift)); margin-right: -4px; }
 .runticket { --behind: var(--card); --track: color-mix(in srgb, var(--ink) 24%, var(--card)); display: flex; flex-direction: column; gap: 6px; padding: 14px 26px 0 20px; background: var(--card); border-radius: 6px 0 0 6px; box-shadow: inset 0 1px 0 var(--hi); -webkit-mask: var(--zig); mask: var(--zig); }
 .runticket .dealtwrap { filter: none; }
-.runticket .dealt { background: none; -webkit-mask: none; mask: none; padding: 0; }
+.runticket .dealt { background: none; -webkit-mask: none; mask: none; padding: 0; gap: 12px; }
+/* the stamp you pressed stays on the running ticket at size, inked, not shrunk to a tag */
+.runticket .nowhead { min-height: 56px; align-items: flex-start; }
+.runticket .dealt .stamp { --tilt: -7deg; font-size: 1.875rem; letter-spacing: .07em; padding: 7px 11px 5px 12px; margin: 2px 2px 0 0; }
+.runticket .dealt .stamp::before { border-width: 4.5px; border-radius: 7px; }
+.runticket .dealt .stamp::after { content: ""; position: absolute; inset: 0; border-radius: 7px; background: var(--deal); opacity: .14; -webkit-mask: var(--noise) 0 0 / 120px 60px; mask: var(--noise) 0 0 / 120px 60px; }
+.runticket .dealt .serial { padding-top: 4px; }
 .runticket .timerwrap { padding-top: 6px; }
 .runticket .note { justify-self: stretch; max-width: none; margin: 8px -26px 0 -20px; padding: 14px 26px 16px 20px; border-top: 2px dotted var(--edge); }
 .runticket .note:empty { border-top-color: transparent; }
@@ -790,7 +830,6 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 }
 @keyframes press { 35% { transform: scale(.965); } }
 @keyframes thud { 30% { transform: translateY(2px); } }
-.primary.pressed { animation: press .22s ease-out; }
 /* then the stub tears away: paper falls, it doesn't fade. The ticket's own edge clips it as it drops. */
 .ticket.torn .stub { opacity: 1; transform: translateY(80px) rotate(5deg); transition: transform .24s cubic-bezier(.5, 0, .9, .4); }
 /* the inked stamp leaves the stub before it tears, and is carried up to the head of the running ticket (flyStamp) */
@@ -799,7 +838,9 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 .primary#shake.pressed.freed::after { animation: none; }
 /* the stamped ticket shrinks into the session's header chip, so you see where the deal went */
 /* the new running ticket: its words settle into place under the arriving stamp; the ring winds once the stamp is on its way */
-.now.dealin > * { animation: settle .32s var(--lag, 0ms) ease-out backwards; }
+/* the head row itself never moves: at a desk the DEAL stamp is placed against the whole ticket, and a transform here
+   would make the head its frame for as long as the move lasted */
+.now.dealin > :not(.nowhead), .now.dealin .kind { animation: settle .32s var(--lag, 0ms) ease-out backwards; }
 /* a ring always winds on from empty with the knob riding its leading edge: a new session, a new block, minutes you
    just bought. This one move drives the ring's own --p (a registered property that only repaints the ring's mask),
    the single exception to transform/opacity (docs/decisions/0004). Gentle and short, so it never reads as a loading spinner. */
@@ -814,7 +855,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 .dial.wind { animation: sweep .55s calc(var(--lag, 0ms) + 160ms) cubic-bezier(.3, .7, .2, 1) backwards; }
 .dial.turn :is(.edge, .face) { z-index: 2; }
 /* the words are readable from the first frame: they only settle into place, they never fade */
-.dial.turn .face > *, .now.turn > :not(h1) { animation: settle .3s var(--lag, 0ms) ease-out backwards; }
+.dial.turn .face > *, .now.turn > :not(h1, .nowhead), .now.turn .kind { animation: settle .3s var(--lag, 0ms) ease-out backwards; }
 /* the title is fed like a ticket: the old one leaves up through the top edge of its line, the new one rises in from
    under the bottom edge. Each is clipped to the line it is crossing, so nothing fades and nothing overlaps. */
 .now.turn h1 { position: relative; }
@@ -971,6 +1012,10 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   .runticket .aside { grid-column: 2; grid-row: 3; align-self: start; text-align: left; padding: 0 38px 20px 30px; margin: 0; }
   .runticket .note:last-child, .runticket .aside:empty { padding-bottom: 28px; }
   .runticket h1 { font-size: 2.25rem; }
+  /* at a desk the stamp sits in the ticket's empty lower corner, past the perforation, where it reads from across the room */
+  .runticket .dealtwrap { position: absolute; right: 44px; bottom: 34px; z-index: 1; }
+  .runticket .dealt { flex-direction: column; align-items: flex-end; gap: 6px; }
+  .runticket .dealt .stamp { font-size: 2.75rem; --tilt: -8deg; }
   .runticket .note { max-width: none; }
   .runticket .dial { margin: 28px 26px 28px 30px; }
   .timerwrap { gap: 14px; }
@@ -1748,8 +1793,7 @@ function sheetBody() {
     const nb = nextOf(S, "break");
     body = `<span class="grab" aria-hidden="true"></span>
       <h2 id="sh" tabindex="-1">Want to keep going?</h2>
-      <div class="terms">${termTicket("div", ` id="bonusticket"`, `10 more minutes of ${esc(shortTask())}.`, nb ? `Your next break goes from ${nb.min} minutes to ${nb.min + 3}.` : "Your break gets 3 minutes longer.")}</div>
-      <button class="primary" id="bonusyes">Deal</button>
+      <div class="terms">${termTicket("button", ` id="bonusyes"`, `10 more minutes of ${esc(shortTask())}.`, nb ? `Your next break goes from ${nb.min} minutes to ${nb.min + 3}.` : "Your break gets 3 minutes longer.")}</div>
       <button class="secondary countbtn${sheet.paused ? "" : " counting"}" id="bonusno"><span>Take my break</span>${sheet.paused ? `<small>Waits for you</small>` : `<small id="cdtext">${N("Starts on its own in 30 seconds")}</small>`}</button>
       ${sheet.paused ? `<p class="soft small center held">Take your time. Nothing happens until you pick.</p>` : `<button class="textbtn" id="moretime">More time to decide</button>`}`;
   }
@@ -1900,8 +1944,6 @@ const propose = (t, due) => BE && BE.proposeSpread
 /* something to spread: a piece not stamped yet, or open terms left from the gut size */
 const spreadable = t => !!t && (t.pieces.some(p => p.stampedAt == null) || (t.openTermsMin || 0) > 0);
 const clampMin = v => Math.min(PIECE_MAX, Math.max(PIECE_MIN, Math.round((Number.isFinite(v) ? v : SLOT_MIN) / 5) * 5));
-const MINUS = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 12h12"/></svg>`;
-const PLUS_SM = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 6v12M6 12h12"/></svg>`;
 const CROSS = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg>`;
 
 /* ----- Split ----- */
@@ -1925,17 +1967,18 @@ const splitSum = p => { const g = p.task.gutMin; if (!g) return ""; const tot = 
 const saveText = p => splitPieces(p).length ? "Save pieces" : "Name a piece to save";
 function splitBody() {
   const p = panel, c = cardById(p.id); if (!c) return null;
+  /* one ticket, torn into pieces: each piece is as long as its minutes, and its tear line is what you drag to change
+     them (a slider for the keyboard and screen readers: arrows move 5 minutes, Page keys 15) */
   const row = (r, i) => {
     const nm = esc(pieceName(r, i)), m = clampMin(r.minutes);
-    const line = `<li class="piece"><label class="vh" for="pt-${i}">Piece ${i + 1}</label>
-      <input class="pt" id="pt-${i}" data-pt="${i}" value="${esc(r.title)}" maxlength="80" placeholder="${r.was ? esc(r.was) : "Name this piece"}" autocomplete="off" enterkeyhint="next">
-      ${r.stampedAt != null ? `<span class="pdone">${CHECK}<span class="vh">Stamped</span></span>` : ""}
-      <span class="mins">
-        <button class="step" data-pm="${i}:-5" aria-label="Less time for ${nm}"${m <= PIECE_MIN ? " disabled" : ""}>${MINUS}</button>
-        <label><input type="number" id="pmn-${i}" data-pmn="${i}" inputmode="numeric" min="${PIECE_MIN}" max="${PIECE_MAX}" step="5" value="${m}" aria-label="Minutes for ${nm}"><span class="u" aria-hidden="true">min</span></label>
-        <button class="step" data-pm="${i}:5" aria-label="More time for ${nm}"${m >= PIECE_MAX ? " disabled" : ""}>${PLUS_SM}</button>
-      </span>
-      <button class="prm" data-prm="${i}" aria-label="Remove ${nm}">${CROSS}</button></li>`;
+    const line = `<li class="piece" style="--m:${m}">
+      <div class="pbody">
+        <label class="vh" for="pt-${i}">Piece ${i + 1}</label>
+        <input class="pt" id="pt-${i}" data-pt="${i}" value="${esc(r.title)}" maxlength="80" placeholder="${r.was ? esc(r.was) : "Name this piece"}" autocomplete="off" enterkeyhint="next">
+        ${r.stampedAt != null ? `<span class="stamp pstamp">Done<span class="vh">, stamped</span></span>` : ""}
+        <button class="prm" data-prm="${i}" aria-label="Remove ${nm}">${CROSS}</button>
+      </div>
+      <div class="tear" data-tear="${i}" role="slider" tabindex="0" aria-orientation="vertical" aria-label="Length of ${nm}" aria-valuemin="${PIECE_MIN}" aria-valuemax="${PIECE_MAX}" aria-valuenow="${m}" aria-valuetext="${m} minutes"><span class="len" aria-hidden="true"><b>${m}</b> min</span></div></li>`;
     /* R64: a stamp is never removed by one stray tap */
     const ask = p.ask === i ? `<li class="pask" role="group" aria-label="Remove ${nm}?"><p>Remove ${nm}? Its stamp goes too.</p>
       <button class="textbtn gone" id="s-askyes">Remove it</button><button class="textbtn" id="s-askno">Keep it</button></li>` : "";
@@ -1943,9 +1986,10 @@ function splitBody() {
   };
   const sum = splitSum(p), full = p.rows.length >= MAX_PIECES, u = p.undo;
   return `<h2 id="ph" tabindex="-1">${esc(c.title)} in pieces</h2>
-    ${p.rows.length ? `<ol class="pieces" aria-label="Pieces">${p.rows.map(row).join("")}</ol>` : ""}
+    ${p.rows.length ? `<p class="soft small splithint">${WIDE.matches ? "Drag" : "Slide"} a tear line to make a piece longer or shorter.</p>` : ""}
+    <ol class="pieces torn" aria-label="Pieces">${p.rows.map(row).join("")}
+      <li class="openend">${full ? `<p class="soft small">Up to ${MAX_PIECES} pieces.</p>` : `<button class="addpiece" id="s-add">${PLUS}Add a piece</button>`}</li></ol>
     ${u ? `<p class="undo" role="status">Removed ${esc(pieceName(u.row, u.at))}. <button class="textbtn" id="s-undo">Undo</button></p>` : ""}
-    ${full ? `<p class="soft small">Up to ${MAX_PIECES} pieces.</p>` : `<button class="addpiece" id="s-add">${PLUS}Add a piece</button>`}
     ${aiBlock(p)}
     ${p.error ? `<p class="perr" role="alert">${esc(p.error)}</p>` : ""}
     <div class="sfoot">${sum ? `<p class="sum" id="s-sum">${N(sum)}</p>` : ""}<button class="primary" id="s-save"${splitPieces(p).length ? "" : " disabled"}>${saveText(p)}</button><button class="textbtn pclose" id="p-close">Close</button></div>`;
@@ -1963,14 +2007,17 @@ function syncSplit() {
 function nameRow(i) {
   const r = panel.rows[i]; if (!r) return; const nm = pieceName(r, i), q = s => document.querySelector(`#panel-root ${s}`);
   const set = (el, l) => { if (el) el.setAttribute("aria-label", l); };
-  set(q(`[data-pm="${i}:-5"]`), `Less time for ${nm}`); set(q(`[data-pm="${i}:5"]`), `More time for ${nm}`);
-  set(q(`#pmn-${i}`), `Minutes for ${nm}`); set(q(`[data-prm="${i}"]`), `Remove ${nm}`);
+  set(q(`[data-tear="${i}"]`), `Length of ${nm}`); set(q(`[data-prm="${i}"]`), `Remove ${nm}`);
 }
-function stepState(i) {
+/* a piece's new length, drawn in place: its height, its number and the slider's value */
+function setLen(i, m) {
   const r = panel && panel.rows[i]; if (!r) return;
-  const m = clampMin(r.minutes), dn = document.querySelector(`#panel-root [data-pm="${i}:-5"]`), up = document.querySelector(`#panel-root [data-pm="${i}:5"]`);
-  if (dn) dn.disabled = m <= PIECE_MIN; if (up) up.disabled = m >= PIECE_MAX;
+  r.minutes = m; const t = document.querySelector(`#panel-root [data-tear="${i}"]`); if (!t) return;
+  t.closest(".piece").style.setProperty("--m", m); t.querySelector(".len b").textContent = m;
+  t.setAttribute("aria-valuenow", m); t.setAttribute("aria-valuetext", `${m} minutes`); syncSplit();
 }
+/* how many pixels of ticket one minute is (matches --px in the stylesheet) */
+const PX_PER_MIN = 1;
 function removeRow(p, i) {
   const r = p.rows[i]; if (!r) return;
   if (p.undo) clearTimeout(p.undo.timer);
@@ -2165,16 +2212,22 @@ function bindPlanning() {
       /* Enter moves down the list, then to Save */
       el.onkeydown = e => { if (e.key !== "Enter") return; e.preventDefault(); const nx = $(`#pt-${+el.dataset.pt + 1}`) || $("#s-save:not(:disabled)") || $("#s-add"); if (nx) nx.focus(); };
     });
-    document.querySelectorAll("#panel-root [data-pmn]").forEach(el => {
-      el.oninput = () => { const r = p.rows[+el.dataset.pmn]; if (r && el.value !== "") { r.minutes = clampMin(+el.value); syncSplit(); } };
-      el.onchange = () => { const i = +el.dataset.pmn, r = p.rows[i]; if (!r) return; r.minutes = clampMin(+el.value); el.value = r.minutes; stepState(i); syncSplit(); };
-    });
-    document.querySelectorAll("#panel-root [data-pm]").forEach(b => b.onclick = () => {
-      const [i, dlt] = b.dataset.pm.split(":").map(Number), r = p.rows[i]; if (!r) return;
-      r.minutes = clampMin(clampMin(r.minutes) + dlt); const f = $(`#pmn-${i}`); if (f) f.value = r.minutes;
-      stepState(i); syncSplit(); say(`${r.minutes} minutes`);
-      /* a step that reached the end of the range hands focus to the other step rather than leaving it on a disabled button */
-      if (b.disabled) { const o = document.querySelector(`#panel-root [data-pm="${i}:${-dlt}"]`); if (o) o.focus(); }
+    document.querySelectorAll("#panel-root [data-tear]").forEach(el => {
+      const i = +el.dataset.tear;
+      el.onkeydown = e => {
+        const r = p.rows[i]; if (!r) return; const m = clampMin(r.minutes);
+        const k = { ArrowUp: 5, ArrowRight: 5, ArrowDown: -5, ArrowLeft: -5, PageUp: 15, PageDown: -15 }[e.key];
+        const v = k != null ? m + k : e.key === "Home" ? PIECE_MIN : e.key === "End" ? PIECE_MAX : null;
+        if (v == null) return; e.preventDefault(); setLen(i, clampMin(v));
+      };
+      /* the line follows your finger: a piece grows by exactly as much ticket as you pull, in 5 minute notches */
+      el.onpointerdown = e => {
+        const r = p.rows[i]; if (!r || e.button) return;
+        e.preventDefault(); el.focus({ preventScroll: true }); try { el.setPointerCapture(e.pointerId); } catch (x) {} el.classList.add("pulling");
+        const y0 = e.clientY, m0 = clampMin(r.minutes);
+        el.onpointermove = ev => { const v = clampMin(m0 + (ev.clientY - y0) / PX_PER_MIN); if (v !== clampMin(p.rows[i].minutes)) { setLen(i, v); buzz(4); } };
+        el.onpointerup = el.onpointercancel = () => { el.classList.remove("pulling"); el.onpointermove = el.onpointerup = el.onpointercancel = null; };
+      };
     });
     document.querySelectorAll("#panel-root [data-prm]").forEach(b => b.onclick = () => {
       const i = +b.dataset.prm, r = p.rows[i]; if (!r) return;
@@ -2535,9 +2588,9 @@ function bind() {
   });
   on("#nudge", () => { nudged = true; nextFocus = "#nudged"; render(); say("Nudge queued. Sam sees it at his next break."); });
   on("#bonusyes", () => {
-    const t = $("#bonusticket"); if (t) { t.classList.add("stamped"); t.parentElement.classList.add("picking"); } buzz(14, reduce ? 0 : 150); sheet.sealing = true; $(".sheet").classList.add("busy");
+    const t = $("#bonusyes"); if (t) { t.classList.add("stamped"); t.parentElement.classList.add("picking"); } buzz(14, reduce ? 0 : 200); sheet.sealing = true; $(".sheet").classList.add("busy", "knock");
     document.querySelectorAll(".sheet button").forEach(x => x.disabled = true);
-    setTimeout(() => { if (sheet && sheet.kind === "bonus") takeBonus(); }, reduce ? 450 : 700);
+    setTimeout(() => { if (sheet && sheet.kind === "bonus") takeBonus(); }, reduce ? 450 : 760);
   });
   on("#bonusno", () => { S.bonusOffered = true; nextBlock(); render(); });
   on("#moretime", () => { sheet.paused = true; nextFocus = "#bonusyes"; render(); say("Timer stopped. Nothing happens until you pick."); });
@@ -2546,6 +2599,15 @@ function bind() {
   roving();
 }
 function on(sel, fn) { const el = $(sel); if (el) el.onclick = fn; }
+/* stamp buttons: a press slams the stamp first and the button does its job once it has landed (about 280 ms), so you
+   see what you agreed to. DEAL runs its own longer sequence. With reduced motion the stamp is just inked, at once. */
+document.addEventListener("click", e => {
+  const b = e.target.closest && e.target.closest("button.primary:not(#shake), .bigcard button.go");
+  if (!b || b.disabled || b.dataset.inked) return;
+  e.stopImmediatePropagation(); e.preventDefault();
+  b.classList.add("pressed"); buzz(14, reduce ? 0 : 200);
+  setTimeout(() => { b.dataset.inked = "1"; b.click(); }, reduce ? 0 : 280);
+}, true);
 /* while the Deal stamp is coming down, a card update from the server waits for the next render */
 let stamping = false;
 /* start a big one from its card (or the list): an ordinary Quick Deal session on that big one, no new big one */
