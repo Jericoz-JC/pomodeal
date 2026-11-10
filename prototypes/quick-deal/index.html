@@ -535,9 +535,10 @@ button.term:focus-visible { outline-offset: 3px; }
 .scale .mj { stroke: var(--ink); stroke-width: 1.3; stroke-linecap: round; }
 .scale .z { stroke: var(--ink); stroke-width: 2.2; stroke-linecap: round; }
 .track circle { fill: none; }
-.track .bed { stroke: var(--track); stroke-width: 13; }
+.track .bed { stroke: var(--track); stroke-width: 12.4; }
 .track .rim { stroke: var(--edge); stroke-width: .6; opacity: .8; }
-.fill .arc { fill: none; stroke-width: 13; stroke-linecap: round; stroke-dasharray: calc(var(--p) * 1px) 2px; }
+/* the arc's length is written as plain numbers by syncArcs(): Safari is unreliable with calc() and var() in stroke properties */
+.fill .arc { fill: none; stroke-width: 13; stroke-dasharray: 0 600; }
 .fill.focus .arc { stroke: var(--deal); }
 .fill.break .arc { stroke: url(#brk-hatch); }
 #brk-hatch rect { fill: var(--break-base); } #brk-hatch path { stroke: var(--break-stripe); stroke-width: 1.3; }
@@ -1186,7 +1187,12 @@ function scaleSvg(min) {
   for (let m = 1; m < n; m++) { const a = m / n * 360, mj = m % step === 0; h += `<line class="${mj ? "mj" : "mn"}" x1="${polar(92, a).replace(" ", `" y1="`)}" x2="${polar(mj ? 97.5 : 95.5, a).replace(" ", `" y2="`)}"/>`; }
   return `<svg class="scale" viewBox="-100 -100 200 200" aria-hidden="true">${h}<line class="z" x1="0" y1="-91.5" x2="0" y2="-99.5"/></svg>`;
 }
-const ARC = `<svg viewBox="-100 -100 200 200" aria-hidden="true"><circle class="arc" r="81.5" pathLength="1" transform="rotate(-90)"/></svg>`;
+const ARC = `<svg viewBox="-100 -100 200 200" aria-hidden="true"><circle class="arc" r="81.5" transform="rotate(-90)"/></svg>`;
+/* each ring's arc follows its --p, including while a CSS animation is moving --p (block start, block change, a deal) */
+const ARC_C = 2 * Math.PI * 81.5;
+function syncArcs() {
+  document.querySelectorAll(".dial .fill").forEach(f => { const c = f.querySelector(".arc"); if (!c) return; const v = Math.max(0, Math.min(1, parseFloat(getComputedStyle(f).getPropertyValue("--p")) || 0)), d = `${(v * ARC_C).toFixed(2)} ${ARC_C.toFixed(2)}`; if (c.style.strokeDasharray !== d) c.style.strokeDasharray = d; });
+}
 const dial = (type, min) => `${scaleSvg(min)}<span class="track"><svg viewBox="-100 -100 200 200" aria-hidden="true"><circle class="bed" r="81.5"/><circle class="rim" r="88"/><circle class="rim" r="75"/></svg></span><span class="fill ${type}">${ARC}</span><span class="edge"></span>`;
 /* whole minutes until the last 30 seconds; heads-up keeps minute wording so it reads calm, not alarming */
 function face(r, m) {
@@ -1253,7 +1259,7 @@ function render() {
   paintTitle();
   renderSheet();
   renderPanel();
-  paintTape(); tapeSeen();
+  paintTape(); tapeSeen(); syncArcs();
   bind();
   syncWake();
   /* a fresh ledger stub pushes the pile down by its own height */
@@ -2557,6 +2563,7 @@ function tick() {
       if (d && !reduce && !S.justStarted) d.style.setProperty("--p", (r / S.durMs).toFixed(4));
     }
   }
+  syncArcs();
   requestAnimationFrame(tick);
 }
 
