@@ -1,6 +1,25 @@
 # Changelog
 
-## Unreleased
+## v0.3.0 (2026-11-09)
+
+Everything since v0.2.0: the closed beta going live, big ones, and the desk-and-feel design round (spec 009).
+
+### The desk and the feel (spec 009)
+
+- One action language: everything that commits you is a stamp. It lifts, slams down with the ink, and the ticket takes the knock; the action happens once it lands. The DEAL you press flies to the head of the running ticket and stays there, large and inked.
+- Asking for more time: your ask is quoted small and the clock answers, said by a small copy of the wheel that shows the 5 minutes on offer. Each term is one plain sentence ("Take them from my next break. It goes from 5 minutes to 2.") that you take by stamping it. No "5 → 2" figures.
+- The split planner is one ticket torn into pieces: drag a tear line to make a piece longer or shorter (a slider for the keyboard). No more plus and minus steppers.
+- Desktop: the running ticket fills the stage with a wheel you can read from across a desk; tonight's deals print on a receipt tape beside it. Keyboard shortcuts: D deals, 1 and 2 take a term, M asks for more, S stops. In Chrome and Edge the wheel can float in an always-on-top window.
+- No navigation bar on any screen size. The room opens from the line of friends' faces.
+- The wheel is redrawn as smooth SVG strokes (break = hatched, focus = solid green).
+- Motion, judged in real-speed clips: the tape feeds out each new deal and inks its stamp; at a block change the old title leaves and the new one rises in; the heads-up re-stamps the number. Reduced motion keeps the meaning without the travel.
+- Theme: Device, Light or Dark from the account menu, kept on that device.
+- The landing page is rebuilt from the app's own ticket, wheel, stamp and ask.
+- Invites: a used ticket says who joined; the invite code survives sign-in in a new tab and a dropped connection; a failed "Make an invite ticket" says so.
+- Chrome extension spike E0 (in `spikes/extension`, not shipped).
+- `shoot.mjs` and `shoot-motion.mjs` capture desktop widths; `shoot-motion.mjs` has tape and landing moments.
+
+### Earlier in this release
 
 - README: what's live, what's still being checked, what isn't built (no blocking yet), and the research behind big ones.
 
