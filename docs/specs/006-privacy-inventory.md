@@ -55,10 +55,11 @@ Who can see, in every table: the signed-in student sees their own rows through t
 | --- | --- | --- | --- | --- | --- |
 | userId, sessionId | Owner and session | Scope to the student | The student, Chris | Kept as history | Chris on request |
 | at | When the entry happened | Ordering and the 24 hour view | The student, Chris | Kept as history | Chris on request |
-| kind | What happened (block finished, ask, and so on) | Show history | The student, Chris | Kept as history | Chris on request |
-| blockLabel | The block's label | Show history | The student, Chris | Kept as history | Chris on request |
-| minutes | Minutes in the entry | Show history | The student, Chris | Kept as history | Chris on request |
+| kind | What happened: `deal` (a session started), `freebie`, `borrow`, `trade`, `override` (asks), `bonus`, `end_early` (stopped), `skip` (a block ended early), `forgiven` (borrowed minutes cleared at the end) | Show history | The student, Chris | Kept as history | Chris on request |
+| blockLabel | The block's label (the task or break activity the student typed); on a big one's `deal` and `end_early`, the big one's title (coursework text) | Show history | The student, Chris | Kept as history | Chris on request |
+| minutes | Minutes in the entry: the focus length for `deal`, focus minutes done for `end_early`, minutes the block ran for `skip` | Show history | The student, Chris | Kept as history | Chris on request |
 | intention | Optional line the student typed | Show history | The student, Chris | Kept as history | Chris on request |
+| taskId | The big one the session worked on, if any (ADR 0006) | Say an entry was on a big one | The student, Chris | Until the big one is deleted | Deleting the big one clears it |
 
 ### tasks (a "big one")
 
@@ -82,7 +83,7 @@ Who can see, in every table: the signed-in student sees their own rows through t
 | workedDays | Local date keys with a block on it, newest 30 | Comeback rule | The student, Chris | Until deleted | Deleting the big one |
 | createdAt | When it was made | Ordering | The student, Chris | Until deleted | Deleting the big one |
 
-Deleting a big one deletes the row and unlinks its sessions (their `taskId` is cleared); the sessions and ledger entries stay as ordinary history.
+Deleting a big one deletes the row and unlinks its sessions and ledger entries (their `taskId` is cleared); the sessions and ledger entries stay as ordinary history, including a ledger entry's `blockLabel`, which may hold the big one's title.
 
 ### events
 

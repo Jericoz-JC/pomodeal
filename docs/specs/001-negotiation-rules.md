@@ -50,6 +50,12 @@ When a focus block reaches its end and the user hasn't paused or left the app (o
 - Skip break → `skip`. Banked minutes (earned-break mode) or nothing; no praise copy ("no shame" works both ways, so no bragging either).
 - End session early → `end_early`, with an optional one-tap reason (done / stuck / life). Not counted against anything.
 
+Built (ADR 0006): `skip` records the block ended early and the minutes it ran; `end_early` records the focus minutes done in the running block and, on a big one, its title. The reason chips aren't built yet.
+
+## The deal itself
+
+- Starting a session → `deal`, with the task (or the big one's title) and the focus length chosen. A deal that replaces a running session files that session's `end_early` first.
+
 ## Earned-break mode (optional preset)
 
 - Earn rate: 1 min of break per 3 min of completed focus (configurable 1:2 to 1:5).

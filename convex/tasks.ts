@@ -244,7 +244,7 @@ export const reopen = mutation({
   },
 });
 
-/** Deletes the big one and unlinks its sessions; they (and a running one) stay as ordinary history. */
+/** Deletes the big one and unlinks its sessions and ledger rows; they (and a running session) stay as ordinary history. */
 export const remove = mutation({
   args: { taskId: v.id("tasks") },
   handler: async (ctx, { taskId }) => {
@@ -252,6 +252,9 @@ export const remove = mutation({
     await ownTask(ctx, user, taskId);
     for await (const s of ctx.db.query("sessions").withIndex("by_taskId", (q) => q.eq("taskId", taskId))) {
       await ctx.db.patch(s._id, { taskId: undefined });
+    }
+    for await (const row of ctx.db.query("ledger").withIndex("by_taskId", (q) => q.eq("taskId", taskId))) {
+      await ctx.db.patch(row._id, { taskId: undefined });
     }
     await clearSuggestions(ctx, taskId);
     await ctx.db.delete(taskId);

@@ -2,6 +2,8 @@
 // Source of truth: docs/specs/001-negotiation-rules.md. Pure functions only: no I/O, no clocks.
 // Both clients and Convex call these so a deal is identical everywhere.
 
+import { focusMinutesDone, remainingMs } from "./timer";
+
 export const ASK_MIN = 5;
 export const BREAK_FLOOR_MIN = 2;
 export const TRADE_CAP_MIN = 15;
@@ -43,7 +45,8 @@ export interface Offer {
   override: Term;
 }
 
-export type LedgerKind = Term["kind"] | "bonus" | "skip" | "end_early" | "forgiven";
+/** `deal` is the deal itself, filed when a session starts; `skip` and `end_early` are spec 001's "Ask: skip a break / end early". */
+export type LedgerKind = Term["kind"] | "bonus" | "deal" | "skip" | "end_early" | "forgiven";
 
 export interface LedgerEntry {
   at: number;
@@ -138,6 +141,26 @@ export function advance(s: SessionState, now: number): SessionState {
 export function endSession(s: SessionState, now: number): LedgerEntry | null {
   if (s.debt <= 0) return null;
   return { at: now, kind: "forgiven", blockLabel: s.blocks[s.idx].label, minutes: s.debt };
+}
+
+/** The session's first focus block: its label is the task, its length the one chosen. */
+const firstFocus = (s: SessionState): Block => s.blocks.find((b) => b.type === "focus") ?? s.blocks[0];
+
+/** The deal itself, filed when a session starts: the task (or the big one's title, `label`) and the focus length chosen. */
+export function dealEntry(s: SessionState, now: number, label?: string): LedgerEntry {
+  const focus = firstFocus(s);
+  return { at: now, kind: "deal", blockLabel: label ?? focus.label, minutes: focus.min };
+}
+
+/** Stopping a session: what was being worked on and the focus minutes done in the running block (0 in a break). */
+export function endEarlyEntry(s: SessionState, now: number, label?: string): LedgerEntry {
+  return { at: now, kind: "end_early", blockLabel: label ?? firstFocus(s).label, minutes: focusMinutesDone(s, now) };
+}
+
+/** Ending a block before its time is up: the block and the whole minutes it ran. Null once its time is up. */
+export function skipEntry(s: SessionState, now: number): LedgerEntry | null {
+  if (remainingMs(s, now) <= 0) return null;
+  return { at: now, kind: "skip", blockLabel: s.blocks[s.idx].label, minutes: Math.floor(Math.max(0, now - s.startedAt) / 60_000) };
 }
 
 /** Ramp-up: next focus grows by 4 after a block kept without an override; never shrinks as a penalty. */
