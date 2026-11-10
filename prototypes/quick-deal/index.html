@@ -527,26 +527,34 @@ button.term:focus-visible { outline-offset: 3px; }
    --minor and --major are set per block from dialTicks(); the defaults draw a 60-minute face. */
 .dial { position: relative; width: min(76vw, 288px); aspect-ratio: 1; max-width: 100%; container-type: inline-size; }
 .dial > * { position: absolute; inset: 0; border-radius: 50%; }
-/* One instrument, read from the outside in: numerals, a tick for every minute of this block, the ring, the plate.
-   Time left is solid ink on the ring; time gone is the engine-turned line work underneath it, the kind printed on tickets
-   and banknotes. One thin needle marks the leading end and points at the scale. */
-.dial .scale { border-radius: 0; overflow: visible; width: 100%; height: 100%; }
-.scale .mn { stroke: var(--edge); stroke-width: .7; }
-.scale .mj { stroke: var(--ink); stroke-width: 1.1; }
+/* The wheel is drawn as vector strokes, not gradient masks, so every edge is anti-aliased and it moves without shimmer:
+   a ring that drains clockwise (solid green for focus, hatched grey-green for a break), a knob at its leading end,
+   and outside it one tick for every minute of this block, longer every 5 (every 15 on long blocks). */
+.dial svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; border-radius: 0; }
+.scale .mn { stroke: var(--edge); stroke-width: .8; stroke-linecap: round; }
+.scale .mj { stroke: var(--ink); stroke-width: 1.3; stroke-linecap: round; }
 .scale .z { stroke: var(--ink); stroke-width: 2.2; stroke-linecap: round; }
-.scale text { font-family: var(--font-head); font-stretch: 80%; font-weight: 700; font-size: 10.5px; fill: var(--soft); text-anchor: middle; dominant-baseline: central; font-variant-numeric: tabular-nums; }
-.scale text.top { fill: var(--ink); }
-.dial .track { background: radial-gradient(circle closest-side, transparent 63.6%, var(--edge) 64% 64.6%, transparent 65% 73%, var(--edge) 73.4% 74%, transparent 74.4%); }
-.dial .rosette { position: absolute; inset: 0; width: 100%; height: 100%; color: var(--edge); }
-.rosette path { fill: none; stroke: currentColor; stroke-width: .34; }
-.dial .fill { -webkit-mask: conic-gradient(#000 calc(var(--p) * 1turn), transparent 0), radial-gradient(circle closest-side, transparent 63.6%, #000 64% 74%, transparent 74.4%);
-  -webkit-mask-composite: source-in; mask: conic-gradient(#000 calc(var(--p) * 1turn), transparent 0) intersect, radial-gradient(circle closest-side, transparent 63.6%, #000 64% 74%, transparent 74.4%); }
-.fill.focus { background: var(--deal); }
-.fill.break { background: repeating-linear-gradient(135deg, var(--break-stripe) 0 2px, transparent 2px 6px), var(--break-base); }
-.dial .plate { inset: 21%; background: var(--card); box-shadow: 0 0 0 1px var(--rule), inset 0 2px 5px -2px var(--lift); }
+.track circle { fill: none; }
+.track .bed { stroke: var(--track); stroke-width: 13; }
+.track .rim { stroke: var(--edge); stroke-width: .6; opacity: .8; }
+.fill .arc { fill: none; stroke-width: 13; stroke-linecap: round; stroke-dasharray: calc(var(--p) * 1px) 2px; }
+.fill.focus .arc { stroke: var(--deal); }
+.fill.break .arc { stroke: url(#brk-hatch); }
+#brk-hatch rect { fill: var(--break-base); } #brk-hatch path { stroke: var(--break-stripe); stroke-width: 1.3; }
 .dial .edge { border-radius: 0; transform: rotate(calc(var(--p) * 1turn)); }
-.dial .edge::before { content: ""; position: absolute; left: 50%; top: 7.5%; width: 2.5px; height: 13.6%; margin-left: -1.25px; border-radius: 2px; background: var(--ink); }
+.dial .edge::before { content: ""; position: absolute; left: 50%; top: 9.25%; width: 5.4cqw; height: 5.4cqw; min-width: 14px; min-height: 14px; transform: translate(-50%, -50%); border-radius: 50%; background: var(--ink); box-shadow: 0 0 0 .9cqw var(--behind), 0 1px 3px 1cqw var(--lift); }
 .dial.sweep { animation: sweep .7s ease-out; }
+/* the running block is the ticket you stamped: its serial and stamp at the head, the clock printed on it as its seal,
+   and what comes next on the stub under the perforation */
+.runwrap { filter: drop-shadow(0 1px 0 var(--rule)) drop-shadow(0 8px 12px var(--lift)); margin-right: -4px; }
+.runticket { --behind: var(--card); --track: color-mix(in srgb, var(--ink) 14%, var(--card)); display: flex; flex-direction: column; gap: 6px; padding: 14px 26px 0 20px; background: var(--card); border-radius: 6px 0 0 6px; box-shadow: inset 0 1px 0 var(--hi); -webkit-mask: var(--zig); mask: var(--zig); }
+.runticket .dealtwrap { filter: none; }
+.runticket .dealt { background: none; -webkit-mask: none; mask: none; padding: 0; }
+.runticket .timerwrap { padding-top: 6px; }
+.runticket .note { justify-self: stretch; max-width: none; margin: 8px -26px 0 -20px; padding: 14px 26px 16px 20px; border-top: 2px dotted var(--edge); }
+.runticket .note:empty { border-top-color: transparent; }
+.runticket .aside:not(:empty), .runticket .keepon, .runticket .pushask { margin-bottom: 12px; }
+.runticket .aside:empty { display: none; }
 @keyframes sweep { from { --p: 0; } }
 .dial .face { inset: 20%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
 .face .big { font-family: var(--font-head); font-size: 80px; font-size: 27.8cqw; font-weight: 800; font-stretch: 70%; line-height: .9; }
@@ -856,18 +864,20 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   body.live .tape { max-height: calc(100dvh - 96px); }
   .tape { max-height: calc(100vh - 40px); max-height: calc(100dvh - 40px); overflow-y: auto; scrollbar-width: thin; padding: 24px 24px 34px; }
   /* the stage: one bold object, sized by the window's height so the way out of a block is never below the fold */
-  .dial { width: clamp(288px, 44vh, 400px); }
+  .dial { width: clamp(288px, 42vh, 400px); }
+  #view .act > :is(.primary, .secondary) { max-width: 340px; }
+  .runticket { padding: 20px 36px 0 28px; } .runticket .note { margin: 8px -36px 0 -28px; padding: 16px 36px 18px 28px; }
   .timerwrap { gap: 14px; }
   h1 { font-size: 2.75rem; }
   .sentence { font-size: 2rem; line-height: 1.4; }
   .ticket .stub { padding: 28px 36px 20px 28px; } .ticket .body { padding: 20px 36px 32px 28px; }
   .keepon { display: none; }
+  @media (max-width: 1150px) { .tape { padding-inline: 18px; } .tape .stubcard { grid-template-columns: 58px 1fr; } .tape .stubcard .title { font-size: 1.0625rem; } .tape .stubcard .t b { font-size: 1.0625rem; } }
   /* a decision is made at the stage: the paper lands over the clock, the tape stays readable beside it */
   .tapeside { z-index: 25; }
-  .scrim { align-items: flex-start; justify-content: flex-start; padding: calc(30px + var(--stagetop)) 0 24px calc(var(--pad) + max(0px, (100vw - 1200px) / 2)); -webkit-backdrop-filter: none; backdrop-filter: none; overflow-y: auto; }
-  .scrim::before { position: fixed; background: var(--paper); }
-  .sheet { --behind: var(--paper); width: min(560px, 100vw - 2 * var(--pad) - var(--tapew) - var(--gap)); max-width: none; background: var(--paper); border: none; border-radius: 0; padding: 0 0 8px; box-shadow: none; max-height: none; overflow: visible; -webkit-mask: none; mask: none; }
-  .sheet h2 { font-size: 2.25rem; font-weight: 800; font-stretch: 78%; }
+  .scrim { align-items: flex-end; justify-content: flex-start; padding: 0 0 0 calc(var(--pad) + max(0px, (100vw - 1200px) / 2) - 28px); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .scrim::before { background: color-mix(in srgb, var(--paper) 62%, transparent); }
+  .sheet { --behind: var(--sheet); width: min(616px, 100vw - 2 * var(--pad) - var(--tapew) - var(--gap) + 56px); max-width: none; border: 1px solid var(--rule); border-bottom: none; border-radius: 14px 14px 0 0; padding: 24px 28px 28px; box-shadow: 0 -14px 40px var(--lift); max-height: 78%; }
   .grab { display: none; }
   @keyframes sheet-in { from { transform: translateY(18px); opacity: 0; } }
   @keyframes sheet-out { to { transform: translateY(12px); opacity: 0; } }
@@ -904,6 +914,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   </div>
   <p id="sr" class="vh" aria-live="polite"></p>
 </div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><pattern id="brk-hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6"/><path d="M0 0V6"/></pattern></defs></svg>
 <div id="sheet-root"></div>
 <div id="panel-root"></div>
 
@@ -1170,15 +1181,13 @@ const GHOST = `<span class="slot" aria-hidden="true"><span class="stamp ghost">D
 const TAPSLOT = `<span class="slot" aria-hidden="true"><span class="tap">Tap to stamp</span><span class="stamp ghost">DEAL</span></span>`;
 /* the dial's line work is drawn once per block as SVG: a scale sized to the block's minutes, and the plate's rosette */
 const polar = (r, deg) => { const a = (deg - 90) * Math.PI / 180; return `${(r * Math.cos(a)).toFixed(2)} ${(r * Math.sin(a)).toFixed(2)}`; };
-const ROSETTE = (() => { let d = ""; for (let j = 0; j < 4; j++) { d += `<path d="`; for (let t = 0; t <= 360; t += 1.5) d += `${t ? "L" : "M"}${polar(69 + 3.6 * Math.cos((t * 20 + j * 90) * Math.PI / 180), t)}`; d += `Z"/>`; } return `<svg class="rosette" viewBox="-100 -100 200 200" aria-hidden="true">${d}</svg>`; })();
 function scaleSvg(min) {
   const n = Math.max(1, Math.round(min)), step = n > 30 ? 15 : 5; let h = "";
-  for (let m = 1; m < n; m++) { const a = m / n * 360, mj = m % step === 0; h += `<line class="${mj ? "mj" : "mn"}" x1="${polar(mj ? 78.5 : 80, a).replace(" ", `" y1="`)}" x2="${polar(mj ? 85 : 84, a).replace(" ", `" y2="`)}"/>`; }
-  /* a numeral at every major tick; one too close to the top would crowd the block's own length there */
-  for (let m = step; m < n; m += step) if ((n - m) / n * 360 >= 20 && m / n * 360 >= 20) h += `<text x="${polar(93, m / n * 360).replace(" ", `" y="`)}">${m}</text>`;
-  return `<svg class="scale" viewBox="-100 -100 200 200" aria-hidden="true">${h}<line class="z" x1="0" y1="-77.5" x2="0" y2="-86"/><text class="top" x="0" y="-94">${n}</text></svg>`;
+  for (let m = 1; m < n; m++) { const a = m / n * 360, mj = m % step === 0; h += `<line class="${mj ? "mj" : "mn"}" x1="${polar(92, a).replace(" ", `" y1="`)}" x2="${polar(mj ? 97.5 : 95.5, a).replace(" ", `" y2="`)}"/>`; }
+  return `<svg class="scale" viewBox="-100 -100 200 200" aria-hidden="true">${h}<line class="z" x1="0" y1="-91.5" x2="0" y2="-99.5"/></svg>`;
 }
-const dial = (type, min) => `<span class="track">${ROSETTE}</span><span class="fill ${type}"></span><span class="plate"></span>${scaleSvg(min)}<span class="edge"></span>`;
+const ARC = `<svg viewBox="-100 -100 200 200" aria-hidden="true"><circle class="arc" r="81.5" pathLength="1" transform="rotate(-90)"/></svg>`;
+const dial = (type, min) => `${scaleSvg(min)}<span class="track"><svg viewBox="-100 -100 200 200" aria-hidden="true"><circle class="bed" r="81.5"/><circle class="rim" r="88"/><circle class="rim" r="75"/></svg></span><span class="fill ${type}">${ARC}</span><span class="edge"></span>`;
 /* whole minutes until the last 30 seconds; heads-up keeps minute wording so it reads calm, not alarming */
 function face(r, m) {
   if (r <= 0) return { big: "0", cls: "", unit: `${title(cur().label).split(" ")[0]} is up` };
@@ -1448,7 +1457,7 @@ function runningView() {
   const keepOn = !isB && WAKE_OK ? `<button class="keepon" id="keepon" role="switch" aria-checked="${wakeOn}"><span class="cbox" aria-hidden="true">${CHECK}</span>Keep screen on</button>` : "";
   /* spec 008: the permission step. The browser's prompt only comes after this tap. */
   const askPush = pushAsk && !quiet ? `<button class="pushask" id="pushask"${pushAsk === "asking" ? ` aria-disabled="true"` : ""}>${TAPS}Turn on taps at block ends</button>` : "";
-  return `<div class="now${tn != null ? " turn" : ""}"${tn != null ? ` style="${lagVar(tn)}"` : ""}>
+  return `<div class="runwrap"><section class="runticket" aria-label="Your deal, running"><div class="now${tn != null ? " turn" : ""}"${tn != null ? ` style="${lagVar(tn)}"` : ""}>
     <div class="nowhead">
       <span class="kind"><span class="swatch ${isB ? "break" : "focus"}" aria-hidden="true"></span>${isB ? "Break you chose" : "Focus"}</span>
       ${S.serial ? `<span class="dealtwrap${S.justStarted ? " fresh" : ""}"><span class="dealt"><span class="serial">No. ${S.serial}</span><span class="stamp">DEAL</span></span></span>` : ""}
@@ -1458,11 +1467,11 @@ function runningView() {
   </div>
   <div class="timerwrap">
     <div class="dial${S.justStarted ? " sweep" : ""}${r <= 0 ? " done" : ""}${heads ? " heads" : ""}${tn != null ? " turn" : wd != null ? " wind" : ""}" style="--p:${r <= 0 ? 0 : (r / S.durMs).toFixed(4)};${dialTicks(S.durMs / 60000)}${dl != null ? ";" + lagVar(dl) : ""}" role="img" aria-label="${r <= 0 ? "Time is up" : m + " minutes left" + (half ? ", halfway" : "")}">
-      ${dial(isB ? "break" : "focus", S.durMs / 60000)}${tn != null && turnFrom && turnFrom.p > .005 ? `<span class="fill was ${turnFrom.type}" style="--p:${turnFrom.p.toFixed(4)}"></span>` : ""}
+      ${dial(isB ? "break" : "focus", S.durMs / 60000)}${tn != null && turnFrom && turnFrom.p > .005 ? `<span class="fill was ${turnFrom.type}" style="--p:${turnFrom.p.toFixed(4)}">${ARC}</span>` : ""}
       <span class="face${ink != null ? " reink" : ""}"${ink != null ? ` style="${lagVar(ink)}"` : ""}><span class="big ${f.cls}" id="mins">${f.big}</span><span class="unit" id="unit">${quiet ? "" : esc(f.unit)}</span></span>
     </div>
     ${note}${aside}${keepOn}${askPush}
-  </div>
+  </div></section></div>
   <div class="stack act${hu != null ? " fresh" : ""}"${hu != null ? ` style="${lagVar(hu)}"` : ""}>
     ${isB
       ? (heads ? `<button class="primary" id="startnow">Start ${esc(nameOf(nxt))} now</button>` : `<button class="secondary" id="startnow">Start ${esc(nameOf(nxt))} early</button>`)
