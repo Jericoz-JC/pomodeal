@@ -41,8 +41,7 @@ The studying happens on a laptop and the app was one 440 px phone column at ever
 ## Not in this change
 
 - The landing page (`apps/web/src/landing.ts`) still has the old dial.
-- Keyboard shortcuts for Deal, ask for more and stop.
-- An always-on-top mini dial (Chrome's Document Picture-in-Picture).
+- Keyboard shortcuts and the always-on-top wheel: added in round 7, item 4 below.
 - The Chrome extension. Its plan is `docs/06-chrome-extension-roadmap.md`; milestone E0 is the next step.
 - A native app. An installed desktop PWA already gives a window, and only the extension can act on tabs.
 
@@ -128,6 +127,15 @@ Known and left: when the new title has more lines than the old one, the wheel st
 - **The split planner is one ticket torn into pieces.** No plus and minus steppers and no number fields. Each piece is a length of one ticket, as long as its minutes (a fixed base plus 1 px a minute), ending at a tear line: a row of punched holes with a notch at the edge and the piece's minutes sitting on it like a tab. Pull a tear line and the piece above it gets longer or shorter in 5 minute notches, with everything after it moving down; phones that can vibrate tick at each notch. For the keyboard and screen readers each tear line is a vertical slider ("Length of Problems 5 to 8", "45 minutes"): arrows move 5 minutes, Page Up and Down 15, Home and End the limits. "Add a piece" sits at the ticket's open end. A stamped piece carries a small "Done" stamp. The rules (5 to 240 minutes in 5 minute steps, up to 12 pieces) are unchanged.
 
 Not done in this item: the "..." menus and the "Or make a quick deal" row (also named as stock controls in round 6), and the room as one roster sheet. Not verified: dragging a tear line on a real phone (it was driven with synthetic pointer events and the keyboard), Safari, VoiceOver.
+
+### 4. The desk stage
+
+- **The running ticket fills the stage.** At a desk it is no longer a short wide strip with the wheel at one end. It is laid out like the phone's: the head carries what the block is and the large DEAL stamp, the wheel fills the middle, and what comes next is on the stub. It is as tall as the window allows. The wheel is sized by whichever runs out first, the window's height or the stage's width: about 430 px at 1440 by 900, about 470 px at 1920 by 1080, never under 240 px. The number scales with it, from about 65 px to about 125 px tall. The way out ("Stop for now", "Start reading now") and the room line share one row under the ticket, so nothing falls below the fold.
+- **Keyboard shortcuts.** D deals: the DEAL stamp, the free 5 minutes, the repayment you picked last time, or the offer to keep going. 1 and 2 take the first or second term. M asks for more time where the clock offers it. S stops where a Stop is on screen. A key presses the same control a click would, so it stamps, announces and moves focus the same way. Nothing fires while you type, with Ctrl, Alt or Cmd held, or on a key repeat. The key is printed small on the control it presses (desk only, a fine pointer that can hover), and each control carries `aria-keyshortcuts`.
+- **The wheel on top.** In Chrome and Edge on a desk, "Keep the wheel on top" (beside the date, while a block runs) floats a small always-on-top window with the block, the wheel and the number, drawn from the same stored time as the tab. It only shows; deals are made in the tab, and at time up it says "Back in the tab to choose." Where the browser has no Document Picture-in-Picture the control is not offered; where it has the API but refuses the window (embedded views), it says so once and stops offering it.
+- Fixed on the way: the stage was pulled up over the date line, so a control there could not be clicked.
+
+Not verified: the floating window itself. Headless Edge and the app's own browser pane both refuse to open one, so only the refusal path was exercised; the window's contents were checked by drawing them into a frame of the same size. It needs a look in desktop Chrome or Edge. Safari and Firefox do not offer it. Shortcuts were driven with synthetic key events, not a person at a keyboard with a screen reader running.
 
 ## Invites
 

@@ -364,6 +364,23 @@ p { margin: 0; }
 .prm svg { width: 18px; height: 18px; }
 .prm:focus-visible { outline-offset: -3px; }
 /* a stamped piece keeps its mark beside its name: the inked box a picked choice gets, small enough to leave the name room */
+/* the floating wheel (Document Picture-in-Picture): the wheel and its number fill a small window */
+body.pip { margin: 0; min-height: 100vh; display: grid; place-items: center; background: var(--paper); }
+.pipticket { --behind: var(--card); --track: color-mix(in srgb, var(--ink) 24%, var(--card)); display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100vw; min-height: 100vh; padding: 12px 14px; background: var(--card); }
+.pipticket .dial { width: min(100vw - 40px, 100vh - 92px); }
+.pipkind { display: flex; align-items: center; gap: 8px; max-width: 100%; font: 750 1.125rem/1.1 var(--font-head); font-stretch: 78%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pipnote { min-height: 1.2em; font-size: .875rem; color: var(--soft); text-align: center; }
+.deskhead .pipbtn { min-height: 0; padding: 0; margin-left: 10px; font-family: var(--font-body); font-weight: 400; font-stretch: normal; font-size: .9375rem; color: var(--deal-ink); }
+
+/* a keyboard key printed on the control it presses (desks only, see markKeys) */
+.key { position: absolute; right: -9px; top: -9px; z-index: 1; display: grid; place-items: center; min-width: 22px; height: 22px; padding: 0 5px; border-radius: 5px;
+  background: var(--card); color: var(--soft); box-shadow: inset 0 0 0 1.5px var(--edge-half), 0 1.5px 0 var(--edge-half);
+  font: 700 .75rem/1 var(--font-head); font-stretch: 85%; letter-spacing: 0; text-transform: none; transform: rotate(calc(-1 * var(--tilt, 0deg))); pointer-events: none; }
+.textbtn:has(> .key), .secondary:has(> .key) { position: relative; }
+.textbtn > .key { position: static; display: inline-grid; margin-left: 8px; vertical-align: 1px; transform: none; }
+.term .pad .key { right: 6px; top: 6px; }
+.pressed .key, .stamped .key { visibility: hidden; }
+
 /* ---------- the split: one ticket, torn into pieces ----------
    The big one is one ticket. Each piece is a length of it, as long as its minutes (1 px a minute over a fixed base), and
    ends at a perforation: the tear line. Pull a tear line down and the piece above it gets longer; everything after it
@@ -989,7 +1006,8 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 @media (min-width: 820px) {
   :root { --pad: clamp(28px, 5vw, 72px); --gap: clamp(28px, 4vw, 56px); --tapew: clamp(300px, 30vw, 372px); --stagetop: clamp(14px, 3vh, 30px); }
   .app { max-width: 1200px; padding-inline: var(--pad); }
-  .deskhead { display: flex; align-items: baseline; gap: 14px; padding-top: 30px; font-family: var(--font-head); font-stretch: 76%; font-weight: 800; font-size: 1.25rem; line-height: 1; color: var(--soft); }
+  /* above the stage, which is pulled up under it: the floating-wheel control up here has to take clicks */
+  .deskhead { position: relative; z-index: 2; display: flex; align-items: baseline; gap: 14px; padding-top: 30px; font-family: var(--font-head); font-stretch: 76%; font-weight: 800; font-size: 1.25rem; line-height: 1; color: var(--soft); }
   .deskhead .mark { color: var(--ink); }
   .deskhead .day { font-family: var(--font-body); font-weight: 400; font-stretch: normal; font-size: .9375rem; }
   .desk { display: grid; grid-template-columns: minmax(0, 1fr) var(--tapew); grid-template-areas: "stage tape"; align-items: start; column-gap: var(--gap); margin-top: -50px; }
@@ -1002,22 +1020,31 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   body.live .tape { max-height: calc(100dvh - 96px); }
   .tape { max-height: calc(100vh - 40px); max-height: calc(100dvh - 40px); overflow-y: auto; scrollbar-width: thin; padding: 24px 24px 34px; }
   /* the stage: one bold object, sized by the window's height so the way out of a block is never below the fold */
-  /* the running ticket is laid out for width: the wheel is its stub end, the words are beside it past a perforation */
-  .runticket { display: grid; grid-template-columns: auto minmax(0, 1fr); align-content: center; gap: 0; padding: 0; position: relative; }
-  .runticket .timerwrap { display: contents; }
-  .runticket .dial { grid-column: 1; grid-row: 1 / span 3; width: clamp(220px, 34vh, 300px); margin: 30px 30px 30px 32px; }
-  .runticket::after { content: ""; grid-column: 2; grid-row: 1 / span 3; justify-self: start; align-self: stretch; border-left: 2px dotted var(--edge); pointer-events: none; }
-  .runticket .now { grid-column: 2; grid-row: 1; align-self: end; padding: 28px 38px 0 30px; gap: 8px; }
-  .runticket .note { grid-column: 2; grid-row: 2; align-self: start; justify-self: start; margin: 0; padding: 14px 38px 6px 30px; border-top: none; text-align: left; }
-  .runticket .aside { grid-column: 2; grid-row: 3; align-self: start; text-align: left; padding: 0 38px 20px 30px; margin: 0; }
-  .runticket .note:last-child, .runticket .aside:empty { padding-bottom: 28px; }
-  .runticket h1 { font-size: 2.25rem; }
-  /* at a desk the stamp sits in the ticket's empty lower corner, past the perforation, where it reads from across the room */
-  .runticket .dealtwrap { position: absolute; right: 44px; bottom: 34px; z-index: 1; }
-  .runticket .dealt { flex-direction: column; align-items: flex-end; gap: 6px; }
-  .runticket .dealt .stamp { font-size: 2.75rem; --tilt: -8deg; }
-  .runticket .note { max-width: none; }
-  .runticket .dial { margin: 28px 26px 28px 30px; }
+  /* while a block runs the stage holds one thing: the ticket you stamped, as tall as the window allows. Its head carries
+     the title and the DEAL stamp, the wheel fills the middle large enough to read from across a desk, and what comes next
+     is on the stub. The way out and the room share one row under it, so nothing falls below the fold.
+     The stage (main) is a size container: the wheel is sized by whichever runs out first, the window's height or the stage's width. */
+  main { container-type: inline-size; }
+  main:has(> .runwrap) { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; column-gap: 28px; row-gap: 18px; padding-bottom: 28px; }
+  main:has(> .runwrap) > :is(.runwrap, p) { grid-column: 1 / -1; }
+  main:has(> .runwrap) > .act { flex-direction: row; align-items: center; gap: 14px; }
+  main:has(> .runwrap) > .act .primary { margin: 0; }
+  main:has(> .runwrap) > .act .secondary { width: auto; padding-inline: 26px; }
+  main:has(> .runwrap) > .rows { justify-self: end; min-width: 0; }
+  .runticket { position: relative; min-height: calc(100vh - 262px); min-height: calc(100dvh - 262px); padding: 24px 40px 0 34px; gap: 0; }
+  body.live .runticket { min-height: calc(100dvh - 300px); }
+  .runticket .now { gap: 6px; padding-right: 230px; }
+  .runticket .nowhead { min-height: 0; }
+  .runticket h1 { font-size: 2.625rem; line-height: 1.05; }
+  .runticket .dealtwrap { position: absolute; top: 22px; right: 36px; z-index: 1; }
+  .runticket .dealt { flex-direction: column; align-items: flex-end; gap: 4px; }
+  .runticket .dealt .serial { padding-top: 0; }
+  .runticket .dealt .stamp { font-size: 2.75rem; --tilt: -7deg; }
+  .runticket .timerwrap { flex: 1; display: flex; flex-direction: column; align-items: stretch; padding-top: 0; }
+  .runticket .dial { width: clamp(240px, min(100dvh - 470px, 100cqw - 140px), 600px); margin: auto; padding: 0; }
+  .runticket .face .unit { font-size: max(.9375rem, 4.4cqw); }
+  .runticket .note { margin: 18px -40px 0 -34px; padding: 16px 40px 20px 34px; border-top: 2px dotted var(--edge); text-align: left; font-size: 1.125rem; max-width: none; }
+  .runticket .aside { margin: -6px 0 12px; text-align: left; }
   .timerwrap { gap: 14px; }
   h1 { font-size: 2.75rem; }
   .sentence { font-size: 2rem; line-height: 1.4; }
@@ -1411,7 +1438,9 @@ const BASE_TITLE = document.title;
 function paintTitle() { const t = S ? `${remaining() <= 0 ? "Time's up" : `${minsLeft()} min left`}, ${title(cur().label)} | Pomodeal` : BASE_TITLE; if (document.title !== t) document.title = t; }
 function deskHead() {
   const d = new Date(Date.now() + (BE ? 0 : DEMO_SHIFT));
-  return `<span class="mark">Pomodeal</span><span class="day">${N(`${d.toLocaleDateString([], { weekday: "long" })}, ${clockStr()}`)}</span>`;
+  /* while a block runs, the desk's own control sits up here: floating the wheel over your other windows */
+  const pip = PIP_OK && S && tab === "now" ? `<button class="textbtn pipbtn" id="pipbtn" aria-pressed="${!!pipWin}">${pipWin ? "Wheel is on top" : "Keep the wheel on top"}</button>` : "";
+  return `<span class="mark">Pomodeal</span><span class="day">${N(`${d.toLocaleDateString([], { weekday: "long" })}, ${clockStr()}`)}</span>${pip}`;
 }
 
 function focusKey(el) {
@@ -1443,7 +1472,7 @@ function render() {
   renderSheet();
   renderPanel();
   paintTape(); tapeSeen(); syncArcs();
-  bind();
+  bind(); markKeys();
   syncWake();
   /* a fresh line on the tape feeds out by its own height */
   document.querySelectorAll(".stubcard.fresh").forEach(fs => fs.style.setProperty("--h", `${fs.scrollHeight}px`));
@@ -2545,6 +2574,7 @@ function bind() {
   on("#go", () => { const moved = movedOn(); sendNotes(); if (moved) { closeSheet(); render(); restoreFocus(); } else if (S.blocks[S.idx + 1]) { nextBlock(); render(); } else { stopNow(); focusTitle(); } });
   on("#nevermind", () => dismiss());
   on("#endearly", () => stopNow());
+  on("#pipbtn", () => { openPip(); });
   const bm = $("#bookmark"); if (bm) {
     fitLine(bm);
     bm.oninput = e => { if (sheet && sheet.notes) sheet.notes.bookmark = e.target.value; fitLine(bm, false); };
@@ -2711,6 +2741,78 @@ function escape() {
   if (sheet.kind === "boundary" && sheet.asking) { sheet.asking = false; sheet.need = false; sheet.focusMe = true; render(); return; }
   if (sheet.kind === "offer") { closeSheet(); render(); restoreFocus(); }
 }
+/* ---------- the wheel on top ----------
+   Chrome and Edge on a desk can float a small always-on-top window (Document Picture-in-Picture). It holds the wheel,
+   the number and what the block is, drawn from the same time as the tab, so the clock stays in view over your notes.
+   It only shows; deals are made in the tab. Elsewhere the button is not offered. */
+let PIP_OK = "documentPictureInPicture" in window && !matchMedia("(pointer: coarse)").matches;
+let pipWin = null, pipSig = "";
+async function openPip() {
+  if (pipWin) { pipWin.close(); return; }
+  let w = null;
+  /* some browsers have the API but refuse the window (embedded views, policy): say so once and stop offering it */
+  try { w = await documentPictureInPicture.requestWindow({ width: 236, height: 300 }); } catch (e) { PIP_OK = false; say("The wheel can't float in this browser."); lastSig = ""; render(); return; }
+  fillPip(w);
+  w.addEventListener("pagehide", () => { pipWin = null; pipSig = ""; lastSig = ""; render(); });
+  lastSig = ""; render();
+}
+/* the floating window gets this page's styles and the break hatch, then paintPip() draws into it every frame */
+function fillPip(w) {
+  pipWin = w; const d = w.document;
+  document.querySelectorAll('style, link[rel="stylesheet"]').forEach(n => d.head.append(n.cloneNode(true)));
+  d.documentElement.dataset.theme = document.documentElement.dataset.theme || "";
+  d.title = "Pomodeal";
+  d.body.className = "pip";
+  d.body.innerHTML = `<svg width="0" height="0" style="position:absolute" aria-hidden="true">${$("#brk-hatch").parentElement.outerHTML}</svg><div id="pipview"></div>`;
+  pipSig = ""; paintPip();
+}
+function paintPip() {
+  if (!pipWin) return;
+  const v = pipWin.document.getElementById("pipview"); if (!v) return;
+  if (!S) { if (pipSig !== "none") { pipSig = "none"; v.innerHTML = `<p class="pipnote">No block running.</p>`; } return; }
+  const b = cur(), r = remaining(), f = face(r, minsLeft()), isB = b.type === "break", sig = `${S.idx}|${r <= 0}|${b.min}|${title(b.label)}`;
+  if (sig !== pipSig) {
+    pipSig = sig;
+    v.innerHTML = `<div class="pipticket"><p class="pipkind"><span class="swatch ${isB ? "break" : "focus"}" aria-hidden="true"></span>${esc(title(b.label))}</p>
+      <div class="dial" style="--p:${(r / S.durMs).toFixed(4)}">${dial(isB ? "break" : "focus", S.durMs / 60000)}<span class="face"><span class="big" id="pipmins"></span><span class="unit" id="pipunit"></span></span></div>
+      <p class="pipnote" id="pipnote"></p></div>`;
+  }
+  const dd = v.querySelector(".dial"); dd.style.setProperty("--p", (r <= 0 ? 0 : r / S.durMs).toFixed(4));
+  const c = dd.querySelector(".arc"), pv = Math.max(0, Math.min(1, r / S.durMs)), da = `${(pv * ARC_C).toFixed(2)} ${ARC_C.toFixed(2)}`; if (c && c.style.strokeDasharray !== da) c.style.strokeDasharray = da;
+  const m = v.querySelector("#pipmins"); if (m.textContent !== f.big) m.textContent = f.big;
+  const u = v.querySelector("#pipunit"); if (u.textContent !== f.unit) u.textContent = f.unit;
+  const n = v.querySelector("#pipnote"), nt = r <= 0 ? "Back in the tab to choose." : sheet ? "Waiting for you in the tab." : ""; if (n.textContent !== nt) n.textContent = nt;
+}
+
+/* ---------- keyboard shortcuts on a desk ----------
+   D deals: the DEAL stamp, the free 5 minutes, the repayment you picked last time, or the offer to keep going.
+   1 and 2 take the first or second term. M asks for more time where the clock offers it. S stops (only where a Stop is
+   on screen). Nothing fires while you type, with a modifier held, or from inside a dialog's text field. Every key
+   presses the same control a click would, so each one stamps, announces and moves focus exactly as it does by hand. */
+const SHORTCUTS = {
+  d: () => $("#shake:not(:disabled)") || $("#sheet-root .scrim:not(.leaving) [data-term='0']:only-child") || $("#sheet-root .scrim:not(.leaving) button.term.pre") || $("#sheet-root .scrim:not(.leaving) #bonusyes"),
+  1: () => $("#sheet-root .scrim:not(.leaving) button.term[data-term='0']"),
+  2: () => $("#sheet-root .scrim:not(.leaving) button.term[data-term='1']"),
+  m: () => $("#sheet-root .scrim:not(.leaving) #ask2"),
+  s: () => $("#endearly") || [...document.querySelectorAll("#sheet-root .scrim:not(.leaving) #go")].find(b => /^Stop/.test(b.textContent)),
+};
+document.addEventListener("keydown", e => {
+  if (e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
+  const t = e.target; if (t && t.closest && t.closest("input, textarea, select, [contenteditable]")) return;
+  if (!sheet && panelOpen()) return;
+  const find = SHORTCUTS[e.key.toLowerCase()]; if (!find) return;
+  const b = find(); if (!b || b.disabled) return;
+  e.preventDefault(); b.click();
+});
+/* the keys are printed on the controls they press, on a desk only (a fine pointer that can hover) */
+const KEYCAP = { shake: "D", ask2: "M", endearly: "S", bonusyes: "D" };
+function markKeys() {
+  if (!FINE.matches) return;
+  for (const [id, k] of Object.entries(KEYCAP)) { const b = document.getElementById(id); if (b && !b.querySelector(".key")) { b.setAttribute("aria-keyshortcuts", k); b.insertAdjacentHTML("beforeend", `<kbd class="key" aria-hidden="true">${k}</kbd>`); } }
+  document.querySelectorAll("#sheet-root button.term[data-term]").forEach(b => { if (b.querySelector(".key")) return; const k = b.classList.contains("pre") || (b.dataset.term === "0" && !b.nextElementSibling) ? "D" : String(+b.dataset.term + 1); b.setAttribute("aria-keyshortcuts", k === "D" ? "D " + (+b.dataset.term + 1) : k); b.querySelector(".pad").insertAdjacentHTML("beforeend", `<kbd class="key">${k}</kbd>`); });
+  const go = $("#go"); if (go && /^Stop/.test(go.textContent) && !go.querySelector(".key")) { go.setAttribute("aria-keyshortcuts", "S"); go.insertAdjacentHTML("beforeend", `<kbd class="key" aria-hidden="true">S</kbd>`); }
+}
+const FINE = matchMedia("(hover: hover) and (pointer: fine) and (min-width: 820px)");
 document.addEventListener("keydown", e => {
   const inPanel = !sheet && panelOpen();
   if (!sheet && !inPanel) return;
@@ -2784,7 +2886,7 @@ function tick() {
       if (d && !reduce && !S.justStarted) d.style.setProperty("--p", (r / S.durMs).toFixed(4));
     }
   }
-  syncArcs(); syncVoice();
+  syncArcs(); syncVoice(); paintPip();
   requestAnimationFrame(tick);
 }
 
