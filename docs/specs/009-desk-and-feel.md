@@ -14,17 +14,19 @@ The studying happens on a laptop and the app was one 440 px phone column at ever
 - **Phone:** the tape follows the clock on the same page, so you scroll down into it. The count at its head reads "2 new" until the tape has been on screen.
 - **Desktop (820 px and up):** two things on a desk. The clock or ticket is a stage on the left, aligned to the wordmark. The tape hangs at the right and stays in view.
 - **The room** opens from the line of friends' faces ("Maya, 14 min left", "See room") and has "Back to the clock". On desktop the tape stays beside it. During a focus block the line is company, not a link, as before.
-- **Decisions on desktop** (block end, asking for time, planning) are laid on the stage in place of the clock. There is no dialog box, blur or dim; the tape stays readable.
+- **Decisions on desktop** (block end, asking for time, planning) rise from the bottom of the stage over the dimmed clock, as they do on a phone. Nothing is blurred and the tape stays readable beside them.
 
-**The dial is one instrument**, read from the outside in:
+**The wheel keeps its original look and is redrawn so it is smooth.** Rounds 2 and 3 tried a slimmer gauge with a needle, numerals and line work; Chris preferred the wheel as it worked before, but said it looked janky.
 
-- a numeral at every 5 minutes (every 15 on long blocks) and the block's length at the top;
-- one tick per minute of this block;
-- the ring: time left is solid ink (hatched for a break), time gone is engine-turned line work, like the printing on tickets and banknotes;
-- a paper plate with the number;
-- one thin needle at the leading end, pointing at the scale.
+- The ring, the track and the ticks are now SVG strokes. The old version cut the ring out of a conic gradient with radial masks, and browsers do not anti-alias hard gradient stops, so every edge was rough.
+- The ring is a little slimmer (13 units of a 100-unit radius, was 19), with a hairline rim on each side.
+- One tick per minute of this block, longer every 5 (every 15 on long blocks), with round ends.
+- The arc has flat ends, so it never shows more time than is left. The knob sits on its leading end.
+- The arc's length is written as plain numbers each frame by `syncArcs()`, which reads the ring's `--p`. The CSS animations on `--p` (block start, block change, a deal) still drive it. Safari is unreliable with `calc()` and `var()` in stroke properties, so nothing depends on them.
+- A break's hatching is an SVG pattern at a fixed 45 degrees.
+- The number in the middle scales with the wheel.
 
-Numerals scale with the dial. The room's small rings are unchanged.
+**While a block runs, the clock is printed on the ticket you stamped.** Its head carries the serial and the DEAL stamp, the wheel is its seal, and what comes next sits on the stub under the perforation. All four reviewers' most repeated note in rounds 1 to 3 was that the ticket vanished once a block started.
 
 **Smaller things**
 
@@ -61,3 +63,15 @@ Scored per the build loop by four independent reviewers who never saw each other
 | r1 desktop | 6 / 5 / 5 / 5 | 7 / 7 / 7 / 7 | 7 / 7 / 6 / 7 | 6 / 6 / 6 / 6 | 5 / 4 / 5 / 5 | 8 / 7 / 7 / 8 | 6 / 5 / 6 / 5 | 6 / 6 / 7 / 6 | 5 / 4 / 4 / 5 | 6 / 5 / 5 / 6 | Three columns cut to a stage and the tape; room column and its second green button removed; header rule removed; slot made a dark slit; new dial |
 | r2 phone | 7 / 8 / 7 / 8 | 7 / 8 / 7 / 8 | 7 / 7 / 6 / 7 | 6 / 7 / 7 / 6 | 7 / 8 / 8 / 8 | 8 / 8 / 8 / 8 | 6 / 7 / 7 / 6 | 7 / 8 / 7 / 7 | | 7 / 7 / 7 / 7 | Dial rebuilt as one instrument (rosette moved into the track, numerals out to the scale, thin needle); stamp box ghost; used stub darker |
 | r2 desktop | 6 / 6 / 6 / 6 | 7 / 7 / 7 / 7 | 7 / 7 / 6 / 7 | 6 / 6 / 6 / 6 | 6 / 7 / 7 / 7 | 8 / 8 / 8 / 8 | 5 / 6 / 6 / 5 | 6 / 7 / 6 / 6 | 4 / 5 / 5 / 5 | 5 / 6 / 6 / 6 | Stage aligned to the wordmark; dial sized so the friends line fits; decisions laid on the stage instead of a dialog; tape kept beside the room; larger deal sentence; dark button and paper |
+| r3 phone | 7 / 8 / 8 / 8 | 7 / 8 / 8 / 8 | 7 / 7 / 7 / 7 | 6 / 7 / 7 / 6 | 7 / 8 / 7 / 8 | 8 / 8 / 9 / 8 | 7 / 7 / 7 / 6 | 7 / 8 / 8 / 7 | | 7 / 7 / 7 / 7 | Running block moved onto the stamped ticket; wheel returned to its original look as SVG strokes (Chris's call, with a research pass on methods); no numeral repeats the centre number |
+| r3 desktop | 6 / 7 / 6 / 6 | 7 / 8 / 7 / 7 | 7 / 7 / 7 / 7 | 5 / 6 / 5 / 6 | 6 / 7 / 7 / 7 | 8 / 8 / 9 / 8 | 6 / 6 / 6 / 5 | 6 / 7 / 7 / 6 | 4 / 5 / 5 / 5 | 5 / 6 / 6 / 6 | Decisions rise over the dimmed clock again instead of replacing it (round 3's bare stage scored worse); sheet padding restored; action buttons capped at 340 px; tape type tightened at 1024 px |
+
+## Research: a smooth wheel
+
+A dedicated research pass (Fable 5.2, web sources) on how to draw a draining ring well:
+
+- Hard stops in `conic-gradient()` and in `radial-gradient()` masks are not anti-aliased, which is why the old wheel's rims stair-stepped, most visibly on a 1x desktop monitor ([CSSWG thread](https://lists.w3.org/Archives/Public/public-css-archive/2023Jul/0188.html)).
+- The standard method is an SVG circle with `stroke-dasharray`, as in [progressbar.js](https://github.com/kimmobrunfeldt/progressbar.js), [react-countdown-circle-timer](https://github.com/vydimitrov/react-countdown-circle-timer) and [circular-progress-bar](https://github.com/tomickigrzegorz/circular-progress-bar) (all MIT). Nothing was copied from them; the technique is generic.
+- Use flat caps with a separate knob, write plain numbers from script, avoid `pathLength` and negative offsets (Safari bugs), and do not stack a same-width track under the arc.
+- No CC0 or MIT dial artwork was worth using; generated ticks look better than a stock dial.
+- Not checked here: Safari and a 1x desktop monitor. Both need a look on real hardware.
