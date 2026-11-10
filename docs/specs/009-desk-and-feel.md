@@ -40,7 +40,7 @@ The studying happens on a laptop and the app was one 440 px phone column at ever
 
 ## Not in this change
 
-- The landing page (`apps/web/src/landing.ts`) still has the old dial.
+- The landing page: brought in line in round 7, item 5 below.
 - Keyboard shortcuts and the always-on-top wheel: added in round 7, item 4 below.
 - The Chrome extension. Its plan is `docs/06-chrome-extension-roadmap.md`; milestone E0 is the next step.
 - A native app. An installed desktop PWA already gives a window, and only the extension can act on tabs.
@@ -136,6 +136,20 @@ Not done in this item: the "..." menus and the "Or make a quick deal" row (also 
 - Fixed on the way: the stage was pulled up over the date line, so a control there could not be clicked.
 
 Not verified: the floating window itself. Headless Edge and the app's own browser pane both refuse to open one, so only the refusal path was exercised; the window's contents were checked by drawing them into a frame of the same size. It needs a look in desktop Chrome or Edge. Safari and Firefox do not offer it. Shortcuts were driven with synthetic key events, not a person at a keyboard with a screen reader running.
+
+### 5. The landing page
+
+`apps/web/src/landing.ts` is rebuilt from the app's own parts instead of look-alikes. The page shares the app's stylesheet, so the parts render exactly as they do in the app, in light and dark.
+
+- **The ticket you can try is the app's start ticket.** The deal sentence in the heading face, the app's chips for what you're on, the SVG wheel (a tick per minute of the break, the hatched break arc, the knob) printed on the ticket, and the DEAL stamp face on its stub. The old dial, with its spinning hands and two-arc layout, is gone.
+- **Pressing DEAL is the app's press.** The stamp slams and inks, the ticket takes the knock, and the stamp flies to the head of the ticket and stays there large. The wheel then counts the break down for real.
+- **Asking for more is the app's ask.** Your line is quoted small and the clock answers with the small wheel. The first ask is free; the second shows the two terms as plain sentences with stamp stubs ("Take them from my next break. It goes from 7 minutes to 2."), and you stamp one. No "5 → 2" figures anywhere on the page.
+- **"How a deal works" shows real parts.** A running ticket, the ask with a stamped term, three lines of tonight's tape, and the room as ticket stubs with focus and break rings.
+- On a phone the headline, the whole ticket and the DEAL stamp fit on the first screen at 375 by 812.
+- The gate's other screens (claiming an invite, the invite list, "you're on the list") keep their own styles, now scoped so they no longer leak onto the landing page, and their main button is the app's stamp.
+- `shoot-motion.mjs` has a `landing-deal` moment.
+
+Not verified: sign-in itself (the buttons are unchanged, but the page was only checked in the local production-mode preview, not against a real sign-in), Safari, and the iPhone install hint.
 
 ## Invites
 

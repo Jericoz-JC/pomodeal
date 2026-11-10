@@ -3,7 +3,7 @@
 //   <moment>-<variant>.png   a frame strip: one frame every STEP ms from just before the trigger, labelled with the time
 //   <moment>.webm            a real-time clip with light | dark | reduced side by side (if the browser can encode it)
 // Usage: node prototypes/shoot-motion.mjs <out-dir> [moment ...]
-//   Moments: stamp, turn-break, turn-focus, heads-up, time-up, offer-open, offer-pick, tape, landing
+//   Moments: stamp, turn-break, turn-focus, heads-up, time-up, offer-open, offer-pick, tape, landing, landing-deal
 //   WIDTH=1440 HEIGHT=900 records a desk instead of a phone (each moment's dcrop, or the whole window)
 // No new dependencies: Edge over CDP (like shoot.mjs), Page.startScreencast for frames, the browser's own
 // MediaRecorder for the clip. "landing" starts Vite in-process (apps/web, production env) to render the signed-out page.
@@ -39,6 +39,8 @@ const MOMENTS = {
   "tape": DESK ? { url: `${app}#offer-terms`, trigger: click('[data-term="1"]'), ms: 2000, dcrop: [860, 60, 420, 560] }
     : { url: `${app}#offer-terms`, setup: `document.querySelector('[data-term="1"]').click()`, settle: 1600, trigger: "(() => { document.querySelector('#side-ledger').scrollIntoView({ block: 'start' }); return Date.now(); })()", ms: 1400, crop: [0, 0, W, 560] },
   "landing": { landing: true, ms: 3800, step: 120, crop: [0, 200, W, 580] },
+  /* pressing DEAL on the landing page once its first look is over */
+  "landing-deal": { landing: true, settle: 3200, trigger: click("#ld-deal"), ms: 1300, crop: [0, 260, W, 552], dcrop: [780, 80, 460, 720] },
 };
 const VARIANTS = [
   { key: "light", scheme: "light", reduce: false },
@@ -109,13 +111,14 @@ async function record(m, v) {
   });
   const cast = () => send("Page.startScreencast", { format: "jpeg", quality: 82, maxWidth: W * DPR, maxHeight: H * DPR });
   let t0;
-  if (m.landing) {
+  if (m.landing && m.trigger) m.url = await landingUrl();
+  if (m.landing && !m.trigger) {
     const url = await landingUrl();
     await cast(); t0 = Date.now(); await send("Page.navigate", { url });
   } else {
     await send("Page.navigate", { url: m.url }); await wait(600);
     await evaluate("document.fonts.ready.then(() => true)"); await wait(400); // never record a font swap
-    if (m.setup) { await evaluate(m.setup); await wait(m.settle || 200); }
+    if (m.setup) { await evaluate(m.setup); await wait(m.settle || 200); } else if (m.settle) await wait(m.settle);
     await cast(); await wait(250);
     if (m.trigger.tap) {
       const [x, y] = await evaluate(`(() => { const r = document.querySelector(${JSON.stringify(m.trigger.tap)}).getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2]; })()`);
