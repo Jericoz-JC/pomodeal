@@ -25,28 +25,29 @@ describe("1. lengths on offer", () => {
   });
 });
 
-describe("2–4. building a session", () => {
+// Spec 010 makes a deal one sitting (sitting.test.ts); these rules still shape the older multi-block sessions that
+// were running when it shipped, and the next-round ticket reuses the break rule.
+describe("2–4. building an older multi-block session", () => {
   it("ramps quick lengths up to max(25, chosen)", () => {
-    expect(focusMins(buildSession(deal(8), T0))).toEqual([8, 12, 16]);
-    expect(focusMins(buildSession(deal(20), T0))).toEqual([20, 24, 25]);
+    expect(focusMins(buildSession(deal(8), T0, 3))).toEqual([8, 12, 16]);
+    expect(focusMins(buildSession(deal(20), T0, 3))).toEqual([20, 24, 25]);
   });
   it("starts long lengths at full length and holds", () => {
-    expect(focusMins(buildSession(deal(30), T0))).toEqual([30, 30, 30]);
-    expect(focusMins(buildSession(deal(45), T0))).toEqual([45, 45]);
-    expect(focusMins(buildSession(deal(60), T0))).toEqual([60, 60]);
+    expect(focusMins(buildSession(deal(30), T0, 3))).toEqual([30, 30, 30]);
+    expect(focusMins(buildSession(deal(60), T0, 2))).toEqual([60, 60]);
   });
   it("keeps 5 and 7 min breaks for quick sessions", () => {
-    expect(laterBreaks(buildSession(deal(8), T0))).toEqual([5, 7]);
+    expect(laterBreaks(buildSession(deal(8), T0, 3))).toEqual([5, 7]);
   });
   it("makes a long block's break a quarter of it", () => {
-    expect(laterBreaks(buildSession(deal(30), T0))).toEqual([8, 8]);
-    expect(laterBreaks(buildSession(deal(45), T0))).toEqual([11]);
-    expect(laterBreaks(buildSession(deal(60), T0))).toEqual([15]);
+    expect(laterBreaks(buildSession(deal(30), T0, 3))).toEqual([8, 8]);
+    expect(laterBreaks(buildSession(deal(45), T0, 2))).toEqual([11]);
+    expect(laterBreaks(buildSession(deal(60), T0, 2))).toEqual([15]);
   });
   it("keeps the chosen first break and works with no break", () => {
     const s = buildSession(deal(60), T0);
     expect(s.blocks[0]).toMatchObject({ type: "break", label: "Reels", min: 10 });
-    const n = buildSession(deal(60, null), T0);
+    const n = buildSession(deal(60, null), T0, 2);
     expect(n.blocks.map((b) => b.type)).toEqual(["focus", "break", "focus"]);
     expect(n.durMs).toBe(60 * MIN);
   });

@@ -85,25 +85,22 @@ test("a big one started from a card schedules its pushes too", async () => {
 test("next reschedules for the new block", async () => {
   const t = newT();
   const { as } = await makeMember(t, "Ada");
-  const { sessionId } = await as.mutation(api.sessions.start, { deal });
+  const { sessionId } = await as.mutation(api.sessions.start, { deal: { ...deal, activity: "Reels" } });
   await as.mutation(api.sessions.next, { sessionId, fromIdx: 0 });
   const fires = await jobs(t, "push:fire");
   expect(fires).toHaveLength(2);
   expect(fires.every((j) => j.args[0].version === 2)).toBe(true);
 });
 
-test("next on the last block leaves no pending fire", async () => {
+test("next on the last block changes nothing: its own heads-up and end stay, and nothing restarts (spec 010)", async () => {
   const t = newT();
   const { as } = await makeMember(t, "Ada");
   const { sessionId } = await as.mutation(api.sessions.start, { deal });
-  const s0 = await t.run((ctx) => ctx.db.get(sessionId));
-  const last = s0!.state.blocks.length - 1;
-  for (let i = 0; i < last; i++) await as.mutation(api.sessions.next, { sessionId, fromIdx: i });
-  expect(await jobs(t, "push:fire")).toHaveLength(2); // the last block's own heads-up and end
-  await as.mutation(api.sessions.next, { sessionId, fromIdx: last });
-  expect(await jobs(t, "push:fire")).toHaveLength(0);
+  const before = await t.run((ctx) => ctx.db.get(sessionId));
+  await as.mutation(api.sessions.next, { sessionId, fromIdx: 0 });
+  expect(await jobs(t, "push:fire")).toHaveLength(2);
   const s = await t.run((ctx) => ctx.db.get(sessionId));
-  expect(s!.state.scheduledIds).toEqual([]);
+  expect(s!.state).toEqual(before!.state);
 });
 
 test("a fire with an old version schedules no send (spec test 11)", async () => {

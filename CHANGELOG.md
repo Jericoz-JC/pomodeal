@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- One ticket, one sitting (spec 010, ADR 0007). A deal is now exactly what you stamped: your break, then one study block, then a done sheet that says "That was the deal." From there you can stamp another round (quick lengths step up 5 → 8 → 12 → 15 → 20, long ones repeat), say Done for now, or take 10 more minutes. Before, a deal quietly ran 2 or 3 blocks, the next break started on its own after 30 seconds, and the last block restarted instead of ending.
+- Borrowed minutes come off your next round's break, and are cleared if you're done for now.
+- The tape gets a green Done stub for a deal that ran its full time, dated when it finished even if you tap later.
+- On a big one, the done question ("Is History paper finished?") no longer starts with "Not yet" picked.
+- Screen readers: announcements made while a sheet is open are now spoken (the live region was inside the part of the page that goes inert), and every sheet opens on its heading.
 - Fix: deals now reach the ledger. Before, the server saved only asks, the bonus and cleared minutes, so a deal made on your phone was gone from the tape a few hours later (ADR 0006). The tape now keeps the deal you made, where you stopped (on a big one: which one and how many minutes you'd done) and a block you ended early, on every device and after a reload. Rows from before the fix stay as they were.
 - Desktop: the tape beside the clock fits the window and scrolls on its own, so a long night no longer pushes its head off the top or its last line below the fold.
 - The tape moves on to the last 24 hours when the app comes back to the front or every hour, so a phone left open overnight doesn't keep yesterday's deals on it.

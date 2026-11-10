@@ -56,6 +56,8 @@ Sources: [Biwer 2023](https://cris.maastrichtuniversity.nl/en/publications/under
 
 ### Rounds
 
+> Superseded by [spec 010](010-one-sitting.md) and ADR 0007: a deal is now one focus block, and the next round is a fresh ticket.
+
 A session with 45 or 60 min blocks has **2 focus blocks**; everything else keeps 3. That keeps one session to about 90–120 min of focus (30×3 = 90, 45×2 = 90, 60×2 = 120). After that you make a new deal, which is one tap.
 
 ### How breaks scale

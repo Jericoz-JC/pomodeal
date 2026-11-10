@@ -55,7 +55,7 @@ describe("create", () => {
     expect(ms.find((x) => x !== undefined && x > 0)!).toBeGreaterThanOrEqual(4000);
   });
 
-  test("starts a normal Quick Deal ramp linked to the new big one, and logs text-free events", async () => {
+  test("starts an ordinary one-sitting deal linked to the new big one, and logs text-free events", async () => {
     const t = newT();
     const before = Date.now();
     const { as, taskId, sessionId, serverNow } = await paper(t);
@@ -65,7 +65,7 @@ describe("create", () => {
     expect(s?._id).toBe(sessionId);
     expect(s?.status).toBe("running");
     expect(s?.taskId).toBe(taskId);
-    expect(s!.state.blocks.filter((b) => b.type === "focus").map((b) => b.min)).toEqual([15, 19, 23]);
+    expect(s!.state.blocks.filter((b) => b.type === "focus").map((b) => b.min)).toEqual([15]);
 
     const task = await getTask(t, taskId);
     expect(task).toMatchObject({ title: "Paper", taskType: "writing", gutMin: 120, openTermsMin: 120, workedMin: 0, status: "open", workedDays: [] });
@@ -98,27 +98,29 @@ describe("create", () => {
 });
 
 describe("credited minutes", () => {
-  test("ending a 15 min focus block via next credits 15 and the day", async () => {
+  test("a finished 15 min sitting credits 15 and the day when it stops, once", async () => {
     const t = newT();
     const { as, taskId, sessionId } = await paper(t);
     await elapse(t, sessionId, 15);
+    // spec 010: the last block has no next, so nothing is credited until the deal stops
     await as.mutation(api.sessions.next, { sessionId, fromIdx: 0, dayKey: DAY });
+    expect((await getTask(t, taskId))?.workedMin).toBe(0);
+    await as.mutation(api.sessions.end, { sessionId, dayKey: DAY });
     const task = await getTask(t, taskId);
     expect(task).toMatchObject({ workedMin: 15, openTermsMin: 105, workedDays: [DAY], lastFocusMin: 15 });
     expect(task?.lastWorkedAt).toBeTypeOf("number");
-    // a second device calling next from the same block does not credit twice
-    await as.mutation(api.sessions.next, { sessionId, fromIdx: 0, dayKey: DAY });
+    // a second device stopping the same deal does not credit twice
+    await expect(as.mutation(api.sessions.end, { sessionId, dayKey: DAY })).rejects.toThrow();
     expect((await getTask(t, taskId))?.workedMin).toBe(15);
   });
 
   test("leaving a break credits nothing", async () => {
     const t = newT();
-    const { as, taskId, sessionId } = await paper(t);
-    await elapse(t, sessionId, 15);
-    await as.mutation(api.sessions.next, { sessionId, fromIdx: 0, dayKey: DAY });
+    const { as } = await makeMember(t, "Ada");
+    const { taskId, sessionId } = await as.mutation(api.tasks.create, { title: "Paper", firstMove: "", deal: { ...deal(), activity: "Reels" }, dayKey: DAY });
     await elapse(t, sessionId, 5);
-    await as.mutation(api.sessions.next, { sessionId, fromIdx: 1, dayKey: DAY });
-    expect((await getTask(t, taskId))?.workedMin).toBe(15);
+    await as.mutation(api.sessions.next, { sessionId, fromIdx: 0, dayKey: DAY });
+    expect((await getTask(t, taskId))?.workedMin).toBe(0);
   });
 
   test("end 6 min into a focus block credits 6", async () => {
@@ -147,7 +149,7 @@ describe("credited minutes", () => {
     const t = newT();
     const { as, taskId, sessionId } = await paper(t);
     await elapse(t, sessionId, 15);
-    await as.mutation(api.sessions.next, { sessionId, fromIdx: 0 });
+    await as.mutation(api.sessions.end, { sessionId });
     expect(await getTask(t, taskId)).toMatchObject({ workedMin: 15, workedDays: [] });
   });
 });
@@ -157,10 +159,11 @@ describe("blockNotes", () => {
     const t = newT();
     const { as, taskId, sessionId } = await paper(t);
     await elapse(t, sessionId, 15);
-    await as.mutation(api.sessions.next, { sessionId, fromIdx: 0, dayKey: DAY });
+    // the done sheet sends the notes while the finished deal is still running
     await as.mutation(api.tasks.blockNotes, { sessionId, fromIdx: 0, bookmark: "  claim ", done: false, dayKey: DAY });
     await as.mutation(api.tasks.blockNotes, { sessionId, fromIdx: 0, done: false, dayKey: DAY });
     await as.mutation(api.tasks.blockNotes, { sessionId, fromIdx: 0, bookmark: "other", done: true, dayKey: DAY });
+    await as.mutation(api.sessions.end, { sessionId, dayKey: DAY });
     expect(await getTask(t, taskId)).toMatchObject({ bookmark: "claim", workedMin: 15, status: "open" });
     expect((await allEvents(t)).filter((e) => e.kind === "bookmark_written")).toHaveLength(1);
   });
@@ -169,7 +172,9 @@ describe("blockNotes", () => {
     const t = newT();
     const { as, taskId, sessionId } = await paper(t);
     await as.mutation(api.tasks.blockNotes, { sessionId, fromIdx: 0, bookmark: "claim", done: false, dayKey: DAY });
-    await as.mutation(api.tasks.blockNotes, { sessionId, fromIdx: 2, bookmark: "   ", done: false, dayKey: DAY });
+    // the next sitting on the same big one
+    const next = await as.mutation(api.tasks.startFromCard, { taskId, deal: deal(), dayKey: DAY });
+    await as.mutation(api.tasks.blockNotes, { sessionId: next.sessionId, fromIdx: 0, bookmark: "   ", done: false, dayKey: DAY });
     expect((await getTask(t, taskId))?.bookmark).toBe("claim");
     expect((await allEvents(t)).filter((e) => e.kind === "bookmark_written")).toHaveLength(1);
   });
@@ -267,7 +272,7 @@ describe("split, spread and the card menu", () => {
     expect(task?.pieces?.[1].stampedAt).toBeUndefined();
     // later minutes don't bring a number back
     await elapse(t, sessionId, 15);
-    await as.mutation(api.sessions.next, { sessionId, fromIdx: 0, dayKey: DAY });
+    await as.mutation(api.sessions.end, { sessionId, dayKey: DAY });
     expect(await getTask(t, taskId)).toMatchObject({ openTermsMin: null, workedMin: 15 });
   });
 
@@ -343,7 +348,8 @@ describe("ADR 0005: last repayment pick", () => {
   test("borrow and trade are remembered, override is not, and current carries it", async () => {
     const t = newT();
     const { as, userId } = await makeMember(t, "Ada");
-    const { sessionId } = await as.mutation(api.sessions.start, { deal: deal("Reading") });
+    // a break first: asks are made on it, and the trade goes into the focus block after
+    const { sessionId } = await as.mutation(api.sessions.start, { deal: { ...deal("Reading"), activity: "Reels" } });
     const lastRepay = () => t.run(async (ctx) => (await ctx.db.get(userId))?.lastRepay ?? "none");
 
     expect((await as.query(api.sessions.current, {}))?.lastRepay).toBeNull();

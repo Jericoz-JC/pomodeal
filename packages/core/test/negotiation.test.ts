@@ -7,7 +7,8 @@ import {
 
 const T0 = 1_700_000_000_000;
 const deal = { activity: "Reels", breakMin: 10, task: "Reading", focusMin: 8 };
-const fresh = (): SessionState => buildSession(deal, T0);
+// the spec 001 cases need later blocks to repay from and trade into: an older three-round session
+const fresh = (): SessionState => buildSession(deal, T0, 3);
 const withAsks = (n: number): SessionState => ({ ...fresh(), askCount: n });
 
 describe("makeOffer", () => {
