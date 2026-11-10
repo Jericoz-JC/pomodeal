@@ -10,7 +10,7 @@ export type GateState =
   | { kind: "waitlist"; email: string | null }
   | { kind: "member" };
 
-export interface InviteTicket { code: string; uses: number; maxUses: number }
+export interface InviteTicket { code: string; uses: number; maxUses: number; usedBy?: string | null; usedAt?: number | null }
 
 import { LANDING_CSS, bindLanding, landingHTML, type Provider } from "./landing";
 export type { Provider };
@@ -135,7 +135,7 @@ export function mountGate(actions: GateActions) {
         <button class="primary" id="pd-new" ${invitesLeft === 0 ? "disabled" : ""}>Make an invite ticket</button>
         <div class="list">${tickets.map((t) => `<section class="ticket" aria-label="Invite ${t.code}">
           <div class="body"><span class="soft">Invite code</span><span class="code">${t.code}</span></div>
-          <div class="stub"><div class="row"><span class="soft">${t.uses >= t.maxUses ? "Used" : "Not used yet"}</span>
+          <div class="stub"><div class="row"><span class="soft">${t.uses >= t.maxUses ? (t.usedBy ? `${esc(t.usedBy)} joined${t.usedAt ? ` ${new Date(t.usedAt).toLocaleDateString([], { month: "short", day: "numeric" })}` : ""}` : "Used") : "Not used yet"}</span>
             ${t.uses >= t.maxUses ? "" : `<button class="copy" data-copy="${esc(link(t.code))}">Copy link</button>`}</div></div>
           ${t.uses >= t.maxUses ? `<span class="stamp" aria-hidden="true">USED</span>` : ""}</section>`).join("")}</div>
         <div class="foot"><button class="textbtn" id="pd-close">Back to Pomodeal</button></div></div>`;
@@ -182,7 +182,8 @@ export function mountGate(actions: GateActions) {
     gate.querySelector<HTMLElement>("#pd-signout")?.addEventListener("click", actions.signOut);
     gate.querySelector<HTMLElement>("#pd-close")?.addEventListener("click", () => { invitesOpen = false; actions.closeInvites(); render(); });
     gate.querySelector<HTMLButtonElement>("#pd-new")?.addEventListener("click", async (e) => {
-      const b = e.currentTarget as HTMLButtonElement; b.disabled = true; await actions.createInvite();
+      const b = e.currentTarget as HTMLButtonElement; b.disabled = true;
+      try { await actions.createInvite(); } catch { b.disabled = false; b.textContent = "That didn't work. Try again"; }
     });
     gate.querySelectorAll<HTMLButtonElement>("[data-copy]").forEach((b) => b.addEventListener("click", async () => {
       try { await navigator.clipboard.writeText(b.dataset.copy!); b.textContent = "Copied"; } catch { b.textContent = b.dataset.copy!; }

@@ -32,13 +32,14 @@ const INSTALL_DONE_KEY = "pomodeal.installDone";
 function pendingInvite(): string | null {
   const fromUrl = new URLSearchParams(location.search).get("invite");
   try {
-    if (fromUrl) sessionStorage.setItem(INVITE_KEY, fromUrl.trim().toUpperCase());
-    return sessionStorage.getItem(INVITE_KEY);
+    // localStorage, not sessionStorage: sign-in can finish in another tab of the same browser
+    if (fromUrl) localStorage.setItem(INVITE_KEY, fromUrl.trim().toUpperCase());
+    return localStorage.getItem(INVITE_KEY) ?? sessionStorage.getItem(INVITE_KEY);
   } catch {
     return fromUrl ? fromUrl.trim().toUpperCase() : null;
   }
 }
-function clearInvite() { try { sessionStorage.removeItem(INVITE_KEY); } catch { /* storage blocked */ } }
+function clearInvite() { try { localStorage.removeItem(INVITE_KEY); sessionStorage.removeItem(INVITE_KEY); } catch { /* storage blocked */ } }
 
 async function start() {
   if (!convexUrl) { console.info("[pomodeal] no backend configured; prototype only"); return; }
@@ -95,9 +96,11 @@ async function start() {
         const name = [user.firstName, user.lastName].filter(Boolean).join(" ") || user.email.split("@")[0];
         await convex.mutation(api.beta.claim, { code: invite, displayName: name });
       } catch (e) {
-        clearInvite(); invite = null;
+        // The server said no (used, expired, not found): the code is spent. Anything else is a connection
+        // problem, so the code is kept and a reload tries again.
         const data = e instanceof ConvexError ? (e.data as { message?: unknown }) : null;
-        gate.setState({ kind: "claimError", message: data && typeof data.message === "string" ? data.message : "Something went wrong. Try the link again." });
+        if (data) { clearInvite(); invite = null; } else claiming = false;
+        gate.setState({ kind: "claimError", message: data && typeof data.message === "string" ? data.message : "Couldn't reach Pomodeal. Your invite is saved: reload to try again." });
       }
       return;
     }

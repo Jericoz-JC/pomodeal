@@ -58,7 +58,9 @@ export default defineSchema({
     inviteAllowance: v.number(),
     joinedAt: v.number(),
     lastRepay: v.optional(v.union(v.literal("borrow"), v.literal("trade"))), // ADR 0005 pre-selection
-  }).index("by_tokenIdentifier", ["tokenIdentifier"]),
+  }).index("by_tokenIdentifier", ["tokenIdentifier"])
+    // who joined on a ticket, for the inviter's "Maya joined" line
+    .index("by_inviteId", ["inviteId"]),
 
   // Invite tickets. createdBy is null for founder invites made from the CLI.
   invites: defineTable({
