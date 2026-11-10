@@ -45,3 +45,4 @@ npm run shoot -- prototypes/quick-deal/shots/rN   # design screenshots
 | --- | --- |
 | v0.1.0 | Phase 0 docs, build loop, prototype after design round 4 |
 | v0.2.0 | Monorepo, tested negotiation core, Convex backend, PWA shell on Vercel |
+| v0.3.0 | Closed beta live, big ones, the desk-and-feel design round (stamps, tape, desk stage, theme switch) |

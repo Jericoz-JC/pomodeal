@@ -28,53 +28,53 @@ export interface GateActions {
 }
 
 const CSS = `
+/* The gate's own screens (claim, invites, waiting) all sit in .wrap, so these rules stay there: the landing page and
+   the app keep their own styles. Their main button is the app's stamp, like every other action. */
 #pd-gate { position: fixed; inset: 0; z-index: 60; background: var(--paper); color: var(--ink); overflow-y: auto;
   padding: calc(24px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(24px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
 #pd-gate[hidden] { display: none; }
 #pd-gate .wrap { max-width: 440px; margin: 0 auto; min-height: 100%; display: flex; flex-direction: column; gap: 22px; }
-#pd-gate .mark { display: flex; align-items: center; gap: 10px; font-family: var(--font-head); font-stretch: 78%; font-weight: 800; font-size: 26px; }
-#pd-gate .mark img { width: 34px; height: 34px; border-radius: 9px; }
-#pd-gate h1 { font-family: var(--font-head); font-stretch: 78%; font-weight: 800; font-size: 40px; line-height: 1; margin: 0; text-wrap: balance; }
-#pd-gate p { margin: 0; font-size: 17px; line-height: 1.45; }
-#pd-gate .soft { color: var(--soft); }
-#pd-gate .ticket { position: relative; background: var(--card); border-radius: 6px; box-shadow: 0 1px 0 var(--rule), 0 18px 34px -26px rgba(27,33,29,.6); }
-#pd-gate .ticket .body { padding: 22px 20px 18px; display: flex; flex-direction: column; gap: 6px; }
-#pd-gate .ticket .stub { position: relative; border-top: 2px dashed var(--rule); padding: 16px 20px 18px; display: flex; flex-direction: column; gap: 10px; }
-#pd-gate .ticket .stub::before, #pd-gate .ticket .stub::after { content: ""; position: absolute; top: -11px; width: 20px; height: 20px; border-radius: 50%; background: var(--paper); }
-#pd-gate .ticket .stub::before { left: -10px; } #pd-gate .ticket .stub::after { right: -10px; }
-#pd-gate .big { font-family: var(--font-head); font-stretch: 78%; font-weight: 750; font-size: 30px; line-height: 1.1; }
-#pd-gate .code { font-family: var(--font-head); font-stretch: 85%; font-weight: 750; font-size: 28px; letter-spacing: .08em; }
-#pd-gate .stamp { position: absolute; right: 16px; top: 14px; font-family: var(--font-head); font-stretch: 70%; font-weight: 900; font-size: 22px; color: var(--deal);
+#pd-gate .wrap .mark { display: flex; align-items: center; gap: 10px; font-family: var(--font-head); font-stretch: 78%; font-weight: 800; font-size: 26px; }
+#pd-gate .wrap .mark img { width: 34px; height: 34px; border-radius: 9px; }
+#pd-gate .wrap h1 { font-family: var(--font-head); font-stretch: 78%; font-weight: 800; font-size: 40px; line-height: 1; margin: 0; text-wrap: balance; }
+#pd-gate .wrap p { margin: 0; font-size: 17px; line-height: 1.45; }
+#pd-gate .wrap .soft { color: var(--soft); }
+#pd-gate .wrap .ticket { position: relative; background: var(--card); border-radius: 6px; box-shadow: 0 1px 0 var(--rule), 0 18px 34px -26px rgba(27,33,29,.6); }
+#pd-gate .wrap .ticket .body { padding: 22px 20px 18px; display: flex; flex-direction: column; gap: 6px; }
+#pd-gate .wrap .ticket .stub { position: relative; border-top: 2px dashed var(--rule); padding: 16px 20px 18px; display: flex; flex-direction: column; gap: 10px; }
+#pd-gate .wrap .ticket .stub::before, #pd-gate .wrap .ticket .stub::after { content: ""; position: absolute; top: -11px; width: 20px; height: 20px; border-radius: 50%; background: var(--paper); }
+#pd-gate .wrap .ticket .stub::before { left: -10px; } #pd-gate .wrap .ticket .stub::after { right: -10px; }
+#pd-gate .wrap .big { font-family: var(--font-head); font-stretch: 78%; font-weight: 750; font-size: 30px; line-height: 1.1; }
+#pd-gate .wrap .code { font-family: var(--font-head); font-stretch: 85%; font-weight: 750; font-size: 28px; letter-spacing: .08em; }
+#pd-gate .wrap .stamp { position: absolute; right: 16px; top: 14px; font-family: var(--font-head); font-stretch: 70%; font-weight: 900; font-size: 22px; color: var(--deal);
   border: 3px solid var(--deal); border-radius: 8px; padding: 0 8px; transform: rotate(-9deg); opacity: .9; }
-#pd-gate .primary, #pd-gate .secondary { width: 100%; min-height: 54px; border-radius: 12px; padding: 14px 18px; font: inherit; font-weight: 700; font-size: 17px; cursor: pointer; }
-#pd-gate .primary { border: none; background: var(--deal); color: var(--on-deal); }
-#pd-gate .secondary { border: 1.5px solid var(--edge); background: transparent; color: var(--ink); }
-#pd-gate .primary:disabled { opacity: .5; cursor: not-allowed; }
-#pd-gate .textbtn { background: none; border: none; color: var(--soft); text-decoration: underline; text-underline-offset: 3px; padding: 10px 16px; min-height: 44px; align-self: center; font: inherit; font-size: 15px; cursor: pointer; }
-#pd-gate .foot { margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-#pd-gate .list { display: flex; flex-direction: column; gap: 10px; }
-#pd-gate .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-#pd-gate .copy { border: 1.5px solid var(--edge); background: transparent; border-radius: 999px; padding: 8px 16px; min-height: 44px; font: inherit; font-weight: 700; cursor: pointer; color: var(--ink); }
+#pd-gate .wrap .secondary { width: 100%; min-height: 54px; border-radius: 12px; padding: 14px 18px; font: inherit; font-weight: 700; font-size: 17px; cursor: pointer; }
+#pd-gate .wrap .secondary { border: 1.5px solid var(--edge); background: transparent; color: var(--ink); }
+#pd-gate .wrap .textbtn { background: none; border: none; color: var(--soft); text-decoration: underline; text-underline-offset: 3px; padding: 10px 16px; min-height: 44px; align-self: center; font: inherit; font-size: 15px; cursor: pointer; }
+#pd-gate .wrap .foot { margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+#pd-gate .wrap .list { display: flex; flex-direction: column; gap: 10px; }
+#pd-gate .wrap .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+#pd-gate .wrap .copy { border: 1.5px solid var(--edge); background: transparent; border-radius: 999px; padding: 8px 16px; min-height: 44px; font: inherit; font-weight: 700; cursor: pointer; color: var(--ink); }
 #pd-gate :focus-visible { outline: 3px solid var(--deal); outline-offset: 2px; border-radius: 8px; }
-#pd-gate .lede { font-size: 18px; color: var(--soft); max-width: 34ch; }
-#pd-gate .sample { position: relative; background: var(--card); border-radius: 6px; padding: 18px 18px 16px; box-shadow: 0 1px 0 var(--rule), 0 18px 34px -26px rgba(27,33,29,.6); }
-#pd-gate .sample .serial { font-family: var(--font-head); font-stretch: 80%; font-weight: 700; font-size: 14px; color: var(--soft); }
-#pd-gate .sample .deal { font-family: var(--font-head); font-stretch: 80%; font-weight: 750; font-size: 26px; line-height: 1.12; margin-top: 6px; padding-right: 86px; }
-#pd-gate .sample .stamp { top: 18px; }
-#pd-gate .steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; border-top: 1px solid var(--rule); }
-#pd-gate .steps li { display: grid; grid-template-columns: 36px 1fr; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--rule); }
-#pd-gate .steps li p { margin: 0; }
-#pd-gate .steps .n { font-family: var(--font-head); font-stretch: 75%; font-weight: 800; font-size: 26px; line-height: 1; color: var(--deal); }
-#pd-gate .steps b { display: block; font-size: 17px; margin-bottom: 2px; }
-#pd-gate .steps span { color: var(--soft); font-size: 15.5px; line-height: 1.4; }
-#pd-gate .signin { display: flex; flex-direction: column; gap: 10px; }
-#pd-gate .signin h2 { font-family: var(--font-head); font-stretch: 80%; font-weight: 800; font-size: 24px; margin: 0; }
-#pd-gate .prov { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 54px; border-radius: 12px; border: 1.5px solid var(--edge);
+#pd-gate .wrap .lede { font-size: 18px; color: var(--soft); max-width: 34ch; }
+#pd-gate .wrap .sample { position: relative; background: var(--card); border-radius: 6px; padding: 18px 18px 16px; box-shadow: 0 1px 0 var(--rule), 0 18px 34px -26px rgba(27,33,29,.6); }
+#pd-gate .wrap .sample .serial { font-family: var(--font-head); font-stretch: 80%; font-weight: 700; font-size: 14px; color: var(--soft); }
+#pd-gate .wrap .sample .deal { font-family: var(--font-head); font-stretch: 80%; font-weight: 750; font-size: 26px; line-height: 1.12; margin-top: 6px; padding-right: 86px; }
+#pd-gate .wrap .sample .stamp { top: 18px; }
+#pd-gate .wrap .steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; border-top: 1px solid var(--rule); }
+#pd-gate .wrap .steps li { display: grid; grid-template-columns: 36px 1fr; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--rule); }
+#pd-gate .wrap .steps li p { margin: 0; }
+#pd-gate .wrap .steps .n { font-family: var(--font-head); font-stretch: 75%; font-weight: 800; font-size: 26px; line-height: 1; color: var(--deal); }
+#pd-gate .wrap .steps b { display: block; font-size: 17px; margin-bottom: 2px; }
+#pd-gate .wrap .steps span { color: var(--soft); font-size: 15.5px; line-height: 1.4; }
+#pd-gate .wrap .signin { display: flex; flex-direction: column; gap: 10px; }
+#pd-gate .wrap .signin h2 { font-family: var(--font-head); font-stretch: 80%; font-weight: 800; font-size: 24px; margin: 0; }
+#pd-gate .wrap .prov { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 54px; border-radius: 12px; border: 1.5px solid var(--edge);
   background: var(--card); color: var(--ink); font: inherit; font-weight: 700; font-size: 17px; cursor: pointer; }
-#pd-gate .prov svg { width: 22px; height: 22px; flex: none; }
-#pd-gate .prov.dark { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-#pd-gate .prov:disabled { opacity: .6; }
-#pd-gate .fine { font-size: 14px; color: var(--soft); text-align: center; }
+#pd-gate .wrap .prov svg { width: 22px; height: 22px; flex: none; }
+#pd-gate .wrap .prov.dark { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+#pd-gate .wrap .prov:disabled { opacity: .6; }
+#pd-gate .wrap .fine { font-size: 14px; color: var(--soft); text-align: center; }
 @media (min-width: 900px) {
   #pd-gate .wrap.landing { max-width: 980px; display: grid; grid-template-columns: 1.2fr 1fr; grid-template-areas: "mark mark" "intro signin" "steps signin"; column-gap: 64px; row-gap: 28px; align-items: start; padding-top: 4vh; }
   #pd-gate .wrap.landing > .mark { grid-area: mark; }
@@ -84,7 +84,7 @@ const CSS = `
   #pd-gate .wrap.landing .signin { position: sticky; top: 24px; background: var(--card); border-radius: 14px; padding: 24px; box-shadow: 0 1px 0 var(--rule); }
   #pd-gate .wrap.landing h1 { font-size: 56px; }
 }
-#pd-gate .col { display: flex; flex-direction: column; gap: 22px; }
+#pd-gate .wrap .col { display: flex; flex-direction: column; gap: 22px; }
 #pd-account { position: fixed; z-index: 15; top: calc(8px + env(safe-area-inset-top, 0px)); right: max(10px, env(safe-area-inset-right, 0px));
   width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid var(--edge); background: var(--card); color: var(--ink);
   font-family: var(--font-head); font-weight: 800; font-size: 17px; cursor: pointer; }
@@ -93,6 +93,11 @@ const CSS = `
 #pd-menu[hidden] { display: none; }
 #pd-menu button { text-align: left; background: none; border: none; padding: 12px 14px; min-height: 44px; border-radius: 8px; font: inherit; font-size: 16px; color: var(--ink); cursor: pointer; }
 #pd-menu button:hover { background: var(--paper); }
+#pd-menu .pd-m-theme { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 6px 6px 6px 14px; border-block: 1px solid var(--rule); margin: 4px 0; font-size: 16px; color: var(--ink); }
+#pd-menu .themesw button { min-height: 36px; padding: 6px 10px; font-size: 14px; color: var(--soft); }
+#pd-menu .themesw button[aria-checked="true"] { background: var(--ink); color: var(--paper); }
+#pd-menu .themesw button:hover { background: var(--paper); color: var(--ink); }
+#pd-menu .themesw button[aria-checked="true"]:hover { background: var(--ink); color: var(--paper); }
 `;
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c] as string));
@@ -196,7 +201,10 @@ export function mountGate(actions: GateActions) {
   acct.id = "pd-account"; acct.hidden = true; acct.setAttribute("aria-haspopup", "menu"); acct.setAttribute("aria-label", "Account");
   const menu = document.createElement("div");
   menu.id = "pd-menu"; menu.hidden = true; menu.setAttribute("role", "menu");
-  menu.innerHTML = `<button role="menuitem" id="pd-m-invite">Invite friends</button><button role="menuitem" id="pd-m-out">Sign out</button>`;
+  menu.innerHTML = `<button role="menuitem" id="pd-m-invite">Invite friends</button><div class="pd-m-theme"><span id="pd-m-th">Theme</span><span class="themesw" aria-labelledby="pd-m-th"></span></div><button role="menuitem" id="pd-m-out">Sign out</button>`;
+  // the theme switch is the prototype's own (window.pomodealTheme), so the menu and the page agree
+  const sw = menu.querySelector<HTMLElement>(".themesw")!;
+  (window as unknown as { pomodealTheme?: { paint(b: HTMLElement): void } }).pomodealTheme?.paint(sw);
   document.body.append(acct, menu);
   acct.addEventListener("click", () => { menu.hidden = !menu.hidden; acct.setAttribute("aria-expanded", String(!menu.hidden)); });
   menu.querySelector("#pd-m-invite")!.addEventListener("click", () => { menu.hidden = true; openInvites(); });
