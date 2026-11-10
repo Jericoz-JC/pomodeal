@@ -49,9 +49,7 @@ The studying happens on a laptop and the app was one 440 px phone column at ever
 ## Open for Chris
 
 - Which scrolling animation looked off? This change fixed the jump when a big one loads, the scroll position carried between sections, and content being cut by the fixed bar (the bar is gone). If it was something else, say which screen.
-- Reviewers asked in every round for "See room" during focus. The earlier ruling was that the room is not a door out while you focus. Left as ruled.
-- Reviewers found "Next break 5 → 2 min. 2 more come out of later breaks." hard to follow, and "Bigger than one block?" and "All big ones" vague. Copy was left alone.
-- The room list and the split sheet's steppers are the parts reviewers still call generic.
+- The split sheet's steppers are the part every reviewer still calls generic.
 
 ## Design rounds
 
@@ -69,18 +67,42 @@ Scored per the build loop by four independent reviewers who never saw each other
 | r4 desktop | 6 / 7 / 6 / 7 | 7 / 8 / 7 / 7 | 7 / 7 / 6 / 7 | 5 / 6 / 5 / 6 | 7 / 7 / 6 / 7 | 8 / 9 / 8 / 8 | 6 / 6 / 6 / 6 | 6 / 7 / 7 / 6 | 4 / 5 / 5 / 5 | 6 / 6 / 6 / 6 | Stage raised to the wordmark; wheel sized so the friends line fits at 1440 by 900; sheets match the stage width, end inside the window and dim the whole desk |
 | r5 phone | 7 / 8 / 8 / 8 | 7 / 8 / 8 / 8 | 7 / 7 / 6 / 7 | 7 / 7 / 7 / 6 | 7 / 8 / 7 / 8 | 8 / 8 / 8 / 8 | 6 / 7 / 7 / 6 | 7 / 8 / 8 / 7 | | 7 / 7 / 7 / 7 | Stopped here. Darker wheel track and a more opaque dim behind desktop sheets were made after this round and not re-scored |
 | r5 desktop | 7 / 7 / 7 / 7 | 7 / 8 / 7 / 7 | 7 / 7 / 6 / 7 | 6 / 6 / 7 / 6 | 7 / 7 / 7 / 7 | 8 / 8 / 8 / 8 | 6 / 6 / 6 / 5 | 6 / 7 / 7 / 6 | 5 / 5 / 5 / 5 | 6 / 6 / 6 / 6 | |
+| r6 phone | 7 / 7 / 8 / 8 | 7 / 8 / 7 / 8 | 7 / 7 / 6 / 7 | 6 / 6 / 7 / 6 | 7 / 6 / 7 / 7 | 8 / 8 / 8 / 9 | 6 / 7 / 7 / 7 | 7 / 8 / 8 / 7 | | 7 / 7 / 7 / 7 | Defects only, not re-scored: friend rings visible in dark mode, "Break you chose" on one line, term stamp inside its slot and darker, serial numerals match on the tape, friends line hidden under a sheet, hint says "Press DEAL to start", every filled button carries the stamp's double rule |
+| r6 desktop | 6 / 7 / 7 / 7 | 7 / 8 / 7 / 7 | 7 / 7 / 6 / 7 | 5 / 6 / 6 / 6 | 6 / 6 / 7 / 7 | 8 / 8 / 8 / 8 | 5 / 6 / 6 / 6 | 6 / 7 / 7 / 6 | 4 / 5 / 5 / 5 | 5 / 6 / 6 / 6 | |
 
-**Where it stopped.** Five rounds, twenty independent reviews. Phone held at 7 overall from every reviewer in every round. Desktop went from 5 to 6 overall and its hierarchy, one-action and consistency scores each rose a point or two. The 9 out of 10 consensus Chris asked for was not reached, and more polish will not reach it: rounds 3 to 5 changed sub-scores but not one overall score.
+## Round 6: the rulings Chris lifted
 
-What every reviewer in rounds 4 and 5 says is holding it at 7 and 6:
+After round 5 Chris said to break the existing rulings, his own included. Round 6 did the four things every reviewer had named:
 
-1. **The room** is an avatar list with pill check-ins and carries none of the ticket idea.
-2. **Sheets** (block end, asking for time, the split planner with its plus and minus steppers) are stock bottom sheets on phone and a rounded panel on desktop. Three desktop treatments were tried; none scored better than the others.
-3. **The green button.** Reviewers want the stamp itself to be the action instead of a full-width button under a ghost stamp.
-4. **Desktop is still a phone column beside a tape.** They want the running ticket laid out for width (wheel on the left, title, next step and stop on the right) and the tape to print the running deal live.
-5. **Copy:** "Bigger than one block?", "All big ones", "Tap" on a laptop, "2h 5", and the borrow sentence.
+- **The stamp is the action.** The green Deal button is gone. The Deal control is the stamp's face, large and outlined on the ticket's stub; pressing it slams and inks it, and it travels to the head of the running ticket. Terms are taken by stamping their ticket, which shows a faint impression until you do. The control is still a real button named "Deal".
+- **The room is on paper.** Each friend is the stub of the ticket they are on, with their wheel on the stub end. A check-in is a stamp.
+- **Sheets are paper.** No grab handle or rounded corners: a length of paper torn across the top (and the bottom on desktop).
+- **The running ticket is laid out for width on desktop**: the wheel on the stub end, the title and next step beside it past a perforation. The tape prints the running deal as its first line.
+- **"See room" shows during focus too**, reversing the earlier ruling that the room is not a door out while you focus.
+- **Copy:** "Bigger than one sitting?", "All big tasks", "Click" instead of "Tap" on a wide window, "2h 5m", and "3 min from your next break (5 → 2), 2 from later breaks."
 
-Items 1 to 4 change how screens work, not how they look, and item 3 changes the product's main interaction, so they were left for Chris to rule on.
+**Where it stopped.** Six rounds, twenty-four independent reviews. Every reviewer scored the phone 7 overall in every round. Desktop went from 5 to 6 and stayed there. The 9 out of 10 consensus Chris asked for was not reached, and round 6 shows that the structural changes do not reach it either: reviewers approved each one and then named the next thing.
+
+What they name now:
+
+1. Desktop still reads as a phone column beside a tape. About a third of the stage is empty in most states. They want the ticket to fill the stage height and the number to be readable from across a desk.
+2. The other filled green buttons ("Start reading", "Save pieces", "Start 14 min with Maya") should be stamps too.
+3. The split planner's plus and minus steppers, the "..." menus and the "Or make a quick deal" row are stock controls.
+4. The room as five identical stubs reads as cards in costume to two of four reviewers; they want one roster sheet.
+5. After the press the DEAL stamp shrinks to a small tag; they want it to stay large on the running ticket.
+
+A score that does not move in six rounds, while the named problems change every round, says the panel's 7 is about as far as screenshots of this design will go. The next information worth having is from people using it: Chris on a real night, then the friend group.
+
+## Invites
+
+Chris reported that he invited a friend and could see nothing. An investigation (Opus 5.5, read-only) found this is mostly as built: an invite only lets someone into the beta, and friends, rooms and presence do not exist in the backend yet. The live Room says "open soon". Fixed on this branch:
+
+- A used ticket now says who joined and when ("Maya joined Nov 9"): first name only, shown only to the member who made the ticket. `users` has a new `by_inviteId` index; no new stored field. The privacy inventory row for `displayName` is updated.
+- The invite code is kept in `localStorage`, so it survives sign-in finishing in another tab.
+- A dropped connection during the claim no longer throws the code away; a reload tries again.
+- "Make an invite ticket" says so when it fails.
+
+Not fixed: an invite made from the command line belongs to nobody and shows in no one's list. A code opened in an in-app browser (Messages, Instagram) is still lost if sign-in finishes in a different browser. Whether Chris's friend actually finished signing in was not checked, because that means reading production data.
 
 ## Research: a smooth wheel
 

@@ -115,7 +115,7 @@ p { margin: 0; }
 /* buttons: Archivo, the voice for things you act on */
 .primary, .secondary { width: 100%; min-height: 54px; border-radius: 8px; padding: 12px 18px; display: block; text-align: center;
   font-family: var(--font-head); font-stretch: 85%; font-weight: 700; font-size: 1.1875rem; line-height: 1.25; letter-spacing: .01em; }
-.primary { border: none; background: var(--btn); color: var(--on-btn); transition: background-color .15s, color .15s; }
+.primary { border: none; background: var(--btn); color: var(--on-btn); box-shadow: inset 0 0 0 3px var(--btn), inset 0 0 0 4.5px color-mix(in srgb, var(--on-btn) 70%, transparent); transition: background-color .15s, color .15s; }
 /* not ready yet: a neutral button that says what it needs, never a faded green */
 .primary:disabled { background: var(--chip); color: var(--soft); box-shadow: inset 0 0 0 1px var(--edge-half); cursor: not-allowed; }
 /* while a deal is being stamped the button stays green */
@@ -565,13 +565,13 @@ button.term:focus-visible { outline-offset: 3px; }
 .now { display: flex; flex-direction: column; gap: 4px; }
 .nowhead { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 36px; }
 .sub { font-size: 1.0625rem; color: var(--ink); margin-top: 4px; text-wrap: balance; }
-.kind { display: inline-flex; align-items: center; gap: 8px; font-size: .9375rem; color: var(--soft); }
+.kind { white-space: nowrap; display: inline-flex; align-items: center; gap: 8px; font-size: .9375rem; color: var(--soft); }
 .swatch { width: 18px; height: 18px; border-radius: 50%; flex: none; }
 .swatch.focus { background: var(--deal); }
 .swatch.break { background: repeating-linear-gradient(135deg, var(--break-stripe) 0 1.5px, transparent 1.5px 5px), var(--break-base); }
 .note { font-size: 1.0625rem; color: var(--ink); text-align: center; min-height: 24px; text-wrap: balance; max-width: 32ch; }
 .note.go { color: var(--deal); font-weight: 700; }
-body.sheeted #view .act { visibility: hidden; }
+body.sheeted #view :is(.act, .rows) { visibility: hidden; }
 /* the halfway line on 45+ blocks: its own reserved slot, so the next step stays put and nothing jumps */
 .aside { font-size: .9375rem; color: var(--soft); text-align: center; min-height: 1.45em; margin-top: -4px; }
 .note .swatch { display: inline-block; width: 12px; height: 12px; margin-right: 8px; vertical-align: -1px; }
@@ -852,7 +852,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 /* ---------- the stamp is the action ----------
    You do not press a button under the deal, you stamp it. The Deal control is the stamp's face: outlined and clean while it
    waits, slammed and inked when you press. It then travels to the head of the running ticket. */
-.primary:is(#shake, #seal, #sealpre) { position: relative; display: block; width: auto; min-width: 180px; min-height: 76px; margin: 6px auto 4px; padding: 6px 34px 4px; background: none; color: var(--deal); border-radius: 10px;
+.primary:is(#shake, #seal, #sealpre) { position: relative; display: block; width: auto; min-width: 180px; min-height: 76px; margin: 6px auto 4px; padding: 6px 34px 4px; background: none; box-shadow: none; color: var(--deal); border-radius: 10px;
   font-size: 2.75rem; font-weight: 800; font-stretch: 76%; letter-spacing: .07em; text-transform: uppercase; line-height: 1; transform: rotate(-3deg); transition: transform .12s ease-out; }
 .primary:is(#shake, #seal, #sealpre)::before { content: ""; position: absolute; inset: 0; border: 6px double currentColor; border-radius: 10px; }
 .primary:is(#shake, #seal, #sealpre):hover:not(:disabled) { transform: rotate(-3deg) scale(1.03); }
@@ -865,7 +865,8 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 /* a term is taken by stamping its ticket: the slot shows a faint impression until you do */
 .slot { border-color: transparent; }
 .slot .tap { display: none; }
-.slot .stamp.ghost { visibility: visible; opacity: .24; filter: grayscale(1); font-size: 1.0625rem; inset: 2px; }
+.slot { margin-right: 12px; }
+.slot .stamp.ghost { visibility: visible; opacity: .5; font-size: 1rem; inset: 2px; }
 .stamped .slot .stamp.ghost { opacity: 1; filter: none; }
 
 /* ---------- the room on paper ----------
@@ -876,6 +877,8 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 .person { background: var(--card); border-radius: 6px 0 0 6px; padding: 10px 22px 10px 12px; min-height: 72px; -webkit-mask: var(--zig); mask: var(--zig); grid-template-columns: 64px 1fr auto; gap: 12px; }
 .person .who { padding-left: 14px; background: radial-gradient(circle, var(--edge) 1.2px, transparent 1.7px) 0 0 / 6px 8px repeat-y; align-self: stretch; display: flex; flex-direction: column; justify-content: center; }
 .person.you { background: var(--stub); }
+.person { --track: color-mix(in srgb, var(--ink) 20%, var(--card)); }
+.presence { --track: color-mix(in srgb, var(--ink) 22%, var(--paper)); }
 .pills { gap: 14px; padding: 6px 4px 2px; }
 .pills .chip { position: relative; border-radius: 6px; background: none; box-shadow: none; color: var(--soft); font-family: var(--font-head); font-stretch: 80%; font-weight: 800; font-size: 1.125rem; letter-spacing: .05em; text-transform: uppercase; min-height: 48px; }
 .pills .chip::before { content: ""; position: absolute; inset: 0; border: 4px double currentColor; border-radius: 6px; }
@@ -1362,7 +1365,7 @@ function ticket(peek) {
     </div>
     <div class="stub perf">
       <button class="primary" id="shake">Deal</button>
-      <p class="hint">${WIDE.matches ? "Click" : "Tap"} any underlined part to change it.</p>
+      <p class="hint">Press DEAL to start. ${WIDE.matches ? "Click" : "Tap"} an underlined part to change it.</p>
     </div>
   </section></div>`;
   }
@@ -1396,7 +1399,7 @@ function ticket(peek) {
     </div>
     <div class="stub perf">
       <button class="primary" id="shake">Deal</button>
-      <p class="hint">${WIDE.matches ? "Click" : "Tap"} any underlined part to change it.</p>
+      <p class="hint">Press DEAL to start. ${WIDE.matches ? "Click" : "Tap"} an underlined part to change it.</p>
     </div>
   </section></div>`;
 }
@@ -2236,7 +2239,7 @@ function ledgerView() {
   const any = ledger.length || studied;
   return `<div class="tapehead"><h2 id="tapeh" tabindex="-1">Today's deals</h2><span class="tapeval" id="tapeval"></span></div>
   ${!any ? `<p class="soft">Nothing yet. When you ask for more time, the deal and its terms land here.</p>` : ""}
-  ${ledger.length || S ? `<ul class="stubs" aria-label="Deals, newest first">${S ? `<li class="stubcard live"><span class="t"><b>now</b></span><span class="what"><span class="row"><span class="title">${esc(title(cur().label))}</span><span class="stamp plain">Running</span></span><em>${S.serial ? `No. ${S.serial}, ` : ""}${cur().type === "focus" ? "focus" : "the break you chose"}</em></span></li>` : ""}${ledger.map((e, i) => `<li class="stubcard${freshStub(e)}">${stubInner(e, i)}</li>`).reverse().join("")}</ul>` : ""}
+  ${ledger.length || S ? `<ul class="stubs" aria-label="Deals, newest first">${S ? `<li class="stubcard live"><span class="t"><b>now</b></span><span class="what"><span class="row"><span class="title">${esc(title(cur().label))}</span><span class="stamp plain">Running</span></span><em>${S.serial ? `<span class="num">No. ${S.serial}</span>, ` : ""}${cur().type === "focus" ? "focus" : "the break you chose"}</em></span></li>` : ""}${ledger.map((e, i) => `<li class="stubcard${freshStub(e)}">${stubInner(e, i)}</li>`).reverse().join("")}</ul>` : ""}
   ${any ? `<dl class="totals">
     <div class="go"><dt>Studied</dt><dd>${N(studied)} min</dd></div>
     <div><dt>Deals made</dt><dd>${deals}</dd></div>
