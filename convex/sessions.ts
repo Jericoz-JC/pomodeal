@@ -1,29 +1,41 @@
 import { mutation, query } from "./_generated/server";
 import { ConvexError, v, type Infer } from "convex/values";
 import type { Doc, Id } from "./_generated/dataModel";
-import type { MutationCtx } from "./_generated/server";
+import type { MutationCtx, QueryCtx } from "./_generated/server";
 import {
-  addWorkedDay, advance, applyBonus, applyTerm, buildSession, dealProblem, endSession, focusMinutesDone, makeOffer, openTerms,
-  type LedgerEntry,
+  addWorkedDay, advance, applyBonus, applyTerm, buildSession, dealEntry, dealProblem, endEarlyEntry, endSession, focusMinutesDone,
+  makeOffer, openTerms, skipEntry, type LedgerEntry,
 } from "../packages/core/src";
 import { currentMember, requireMember } from "./lib/members";
 import { cancelPushes, reschedule } from "./lib/pushSchedule";
 import { checkDayKey, ownTask } from "./lib/tasks";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+/** A day of deals is a few dozen rows; this only bounds the read. */
+const TAPE_MAX = 200;
 
 export const quickDeal = v.object({ activity: v.union(v.string(), v.null()), breakMin: v.number(), task: v.string(), focusMin: v.number() });
 export type QuickDealArgs = Infer<typeof quickDeal>;
 
-async function running(ctx: MutationCtx, userId: Id<"users">): Promise<Doc<"sessions"> | null> {
+async function running(ctx: QueryCtx | MutationCtx, userId: Id<"users">): Promise<Doc<"sessions"> | null> {
   return ctx.db
     .query("sessions")
     .withIndex("by_userId_and_status", (q) => q.eq("userId", userId).eq("status", "running"))
     .first();
 }
 
-async function log(ctx: MutationCtx, userId: Id<"users">, sessionId: Id<"sessions">, e: LedgerEntry) {
-  await ctx.db.insert("ledger", { userId, sessionId, ...e });
+type Owned = Pick<Doc<"sessions">, "userId" | "taskId">;
+
+/** Files a ledger row for a session; a row on a big one's session is linked to it. */
+async function log(ctx: MutationCtx, s: Owned & { _id: Id<"sessions"> }, e: LedgerEntry) {
+  await ctx.db.insert("ledger", { userId: s.userId, sessionId: s._id, ...e, ...(s.taskId ? { taskId: s.taskId } : {}) });
+}
+
+/** The big one's title, so a deal or a stop on it says which big one it was. Undefined for a Quick Deal or a deleted big one. */
+async function bigOneTitle(ctx: MutationCtx, s: Owned): Promise<string | undefined> {
+  if (!s.taskId) return undefined;
+  const task = await ctx.db.get(s.taskId);
+  return task && task.userId === s.userId ? task.title : undefined;
 }
 
 type SessionState = Doc<"sessions">["state"];
@@ -81,8 +93,20 @@ export async function creditTask(ctx: MutationCtx, session: Doc<"sessions">, min
 }
 
 /**
- * The one path every deal starts through (Quick Deal, a new big one, a card): ends any running session
- * (crediting its partial focus minutes and forgiving its debt) and starts the new one, linked to `taskId`.
+ * Stops a running session, from "Stop for now" or because a new deal replaces it: credits the running focus block's
+ * minutes to the big one, files `end_early` (and `forgiven` when borrowed minutes are still owed), and ends it.
+ */
+async function stop(ctx: MutationCtx, s: Doc<"sessions">, now: number, dayKey: string | undefined) {
+  await creditTask(ctx, s, focusMinutesDone(s.state, now), dayKey);
+  await log(ctx, s, endEarlyEntry(s.state, now, await bigOneTitle(ctx, s)));
+  const forgiven = endSession(s.state, now);
+  if (forgiven) await log(ctx, s, forgiven);
+  await saveState(ctx, s, s.state, "ended");
+}
+
+/**
+ * The one path every deal starts through (Quick Deal, a new big one, a card): stops any running session (see `stop`),
+ * starts the new one, linked to `taskId`, and files the deal itself on the ledger.
  * The caller has already checked that `taskId` is the user's.
  */
 export async function startSession(
@@ -96,12 +120,7 @@ export async function startSession(
   const problem = dealProblem(deal);
   if (problem) throw new ConvexError({ code: "BAD_DEAL", message: problem });
   const prev = await running(ctx, user._id);
-  if (prev) {
-    await creditTask(ctx, prev, focusMinutesDone(prev.state, now), dayKey);
-    const forgiven = endSession(prev.state, now);
-    if (forgiven) await log(ctx, user._id, prev._id, forgiven);
-    await saveState(ctx, prev, prev.state, "ended");
-  }
+  if (prev) await stop(ctx, prev, now, dayKey);
   // The card button offers the length chosen last time. Ramp lengths (19, 23) aren't on offer, so this is
   // the deal's chosen length, not a block's.
   if (taskId) await ctx.db.patch(taskId, { lastFocusMin: deal.focusMin });
@@ -113,6 +132,8 @@ export async function startSession(
     createdAt: now,
     ...(taskId ? { taskId } : {}),
   });
+  const session = { _id: sessionId, userId: user._id, taskId };
+  await log(ctx, session, dealEntry(state, now, await bigOneTitle(ctx, session)));
   await reschedule(ctx, sessionId, state, now);
   return sessionId;
 }
@@ -123,14 +144,12 @@ export const current = query({
   handler: async (ctx) => {
     const user = await currentMember(ctx);
     if (!user) return null;
-    const doc = await ctx.db
-      .query("sessions")
-      .withIndex("by_userId_and_status", (q) => q.eq("userId", user._id).eq("status", "running"))
-      .first();
+    const doc = await running(ctx, user._id);
     return doc ? { ...doc, lastRepay: user.lastRepay ?? null } : null;
   },
 });
 
+/** The tape: the newest rows from the 24 hours before `now` (the client moves `now` forward, see apps/web/src/main.ts). */
 export const today = query({
   args: { now: v.number() },
   handler: async (ctx, { now }) => {
@@ -140,7 +159,7 @@ export const today = query({
       .query("ledger")
       .withIndex("by_userId_and_at", (q) => q.eq("userId", user._id).gte("at", now - DAY_MS))
       .order("desc")
-      .collect();
+      .take(TAPE_MAX);
   },
 });
 
@@ -169,7 +188,7 @@ export const ask = mutation({
     if (!term) throw new Error("That deal isn't on offer");
     const { session, entry } = applyTerm(s.state, term, Date.now(), intention?.trim());
     await saveState(ctx, s, session);
-    await log(ctx, user._id, sessionId, entry);
+    await log(ctx, s, entry);
     // ADR 0005: remember borrow or trade so the next ask pre-selects it. Freebies and overrides aren't a choice.
     if ((term.kind === "borrow" || term.kind === "trade") && user.lastRepay !== term.kind) {
       await ctx.db.patch(user._id, { lastRepay: term.kind });
@@ -179,14 +198,18 @@ export const ask = mutation({
 });
 
 /** Move to the next block. Idempotent: two open devices can both call it at a block's end, but only the
- *  first advance from `fromIdx` counts. Leaving a focus block credits its minutes to the big one. */
+ *  first advance from `fromIdx` counts. Leaving a focus block credits its minutes to the big one.
+ *  `early` means the student ended the block before its time ("Start reading early"): that files a `skip`, unless
+ *  the block's time is already up by the server's clock. Ordinary block ends leave it off. */
 export const next = mutation({
-  args: { sessionId: v.id("sessions"), fromIdx: v.number(), dayKey: v.optional(v.string()) },
-  handler: async (ctx, { sessionId, fromIdx, dayKey }) => {
+  args: { sessionId: v.id("sessions"), fromIdx: v.number(), dayKey: v.optional(v.string()), early: v.optional(v.boolean()) },
+  handler: async (ctx, { sessionId, fromIdx, dayKey, early }) => {
     checkDayKey(dayKey);
     const { s } = await ownSession(ctx, sessionId);
     if (s.state.idx !== fromIdx) return;
     const now = Date.now();
+    const skip = early ? skipEntry(s.state, now) : null;
+    if (skip) await log(ctx, s, skip);
     await creditTask(ctx, s, focusMinutesDone(s.state, now), dayKey);
     // Core `advance` holds at the last block and restarts it. The client calls `next` there when the session's
     // last block ends (and when it reopens later), so that restart must not schedule another heads-up and end.
@@ -199,25 +222,21 @@ export const next = mutation({
 export const bonus = mutation({
   args: { sessionId: v.id("sessions") },
   handler: async (ctx, { sessionId }) => {
-    const { user, s } = await ownSession(ctx, sessionId);
+    const { s } = await ownSession(ctx, sessionId);
     if (s.state.blocks[s.state.idx].type !== "focus" || s.state.bonusOffered) return;
     const { session, entry } = applyBonus(s.state, Date.now());
     await saveState(ctx, s, session);
-    await log(ctx, user._id, sessionId, entry);
+    await log(ctx, s, entry);
   },
 });
 
-/** Ends the session; minutes done in a focus block so far are credited to the big one. */
+/** "Stop for now" (see `stop`). Only a running session stops, so a second device's call throws and files nothing. */
 export const end = mutation({
   args: { sessionId: v.id("sessions"), dayKey: v.optional(v.string()) },
   handler: async (ctx, { sessionId, dayKey }) => {
     checkDayKey(dayKey);
-    const { user, s } = await ownSession(ctx, sessionId);
-    const now = Date.now();
-    await creditTask(ctx, s, focusMinutesDone(s.state, now), dayKey);
-    const forgiven = endSession(s.state, now);
-    if (forgiven) await log(ctx, user._id, sessionId, forgiven);
-    await saveState(ctx, s, s.state, "ended");
+    const { s } = await ownSession(ctx, sessionId);
+    await stop(ctx, s, Date.now(), dayKey);
   },
 });
 

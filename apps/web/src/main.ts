@@ -142,7 +142,8 @@ interface SuggestHandle {
 interface Backend {
   start(deal: DealArgs): void;
   ask(pick: number | "override", intention?: string): void;
-  next(fromIdx: number): void;
+  /** early: the student ended the block before its time, which files a `skip` on the ledger. */
+  next(fromIdx: number, early?: boolean): void;
   bonus(): void;
   end(): void;
   /** namedAt: client time plus clock offset when the student first tapped "Bigger than one block?" */
@@ -202,12 +203,15 @@ function goLive(convex: ConvexClient) {
   const be: Backend = {
     start: (d) => {
       const sentAt = Date.now();
-      void convex.mutation(api.sessions.start, { deal: toDeal(d) })
+      // dayKey: a running big one this deal replaces gets its minutes credited to today
+      void convex.mutation(api.sessions.start, { deal: toDeal(d), dayKey: dayKey() })
         .then((r) => syncClock(sentAt, r.serverNow))
         .catch(report("start"));
     },
     ask: (pick, intention) => { if (sessionId) void convex.mutation(api.sessions.ask, { sessionId, pick, ...(intention ? { intention } : {}) }).catch(report("ask")); },
-    next: (fromIdx) => { if (sessionId) void convex.mutation(api.sessions.next, { sessionId, fromIdx, dayKey: dayKey() }).catch(report("next")); },
+    next: (fromIdx, early) => {
+      if (sessionId) void convex.mutation(api.sessions.next, { sessionId, fromIdx, dayKey: dayKey(), ...(early ? { early } : {}) }).catch(report("next"));
+    },
     bonus: () => { if (sessionId) void convex.mutation(api.sessions.bonus, { sessionId }).catch(report("bonus")); },
     end: () => { if (sessionId) void convex.mutation(api.sessions.end, { sessionId, dayKey: dayKey() }).catch(report("end")); },
     startBigOne: (d) => {
@@ -308,7 +312,21 @@ function goLive(convex: ConvexClient) {
   const sentAt = Date.now();
   convex.mutation(api.sessions.serverNow, {}).then((now) => syncClock(sentAt, now)).catch(report("serverNow"));
   convex.onUpdate(api.sessions.current, {}, (doc) => { sessionId = doc ? doc._id : null; app.session(doc); });
-  convex.onUpdate(api.sessions.today, { now: Date.now() }, (entries) => app.ledger(entries));
+  // The tape is the last 24 hours before `now`. A query can't read the clock, so the window moves forward by
+  // subscribing again: every hour, and when the app comes back to the front after a while (a phone left open overnight
+  // would otherwise keep yesterday's deals on the tape). New rows always arrive either way: the window has no end.
+  let dropToday: (() => void) | null = null;
+  let todayFrom = 0;
+  const watchToday = () => {
+    dropToday?.();
+    todayFrom = Date.now();
+    dropToday = convex.onUpdate(api.sessions.today, { now: todayFrom }, (entries) => app.ledger(entries));
+  };
+  watchToday();
+  setInterval(watchToday, 60 * 60_000);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && Date.now() - todayFrom > 10 * 60_000) watchToday();
+  });
 
   // Big-one cards: recomputed when the tasks change and at local midnight (comeback depends on today's key).
   const pushCards = () => {

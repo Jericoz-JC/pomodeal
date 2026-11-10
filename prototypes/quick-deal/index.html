@@ -728,8 +728,8 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 .stubcard .t b small { font-family: var(--font-body); font-weight: 400; font-stretch: normal; font-size: .875rem; color: var(--ink); margin-left: 1px; }
 .stubcard .what { padding: 11px 10px 11px 12px; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .stubcard .row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-.stubcard .title { flex: 1; font-family: var(--font-head); font-stretch: 74%; font-weight: 750; font-size: 1.25rem; line-height: 1.15; min-width: 0; }
-.stubcard .what em { font-style: normal; font-size: .9375rem; color: var(--soft); line-height: 1.35; }
+.stubcard .title { flex: 1; font-family: var(--font-head); font-stretch: 74%; font-weight: 750; font-size: 1.25rem; line-height: 1.15; min-width: 0; text-wrap: pretty; }
+.stubcard .what em { font-style: normal; font-size: .9375rem; color: var(--soft); line-height: 1.35; text-wrap: pretty; }
 /* ledger stamps: every deal is inked green, whatever its terms; the word carries the kind. Grey ink is only for
    things that were not deals (stopped early, opened without one). */
 .stubcard .stamp { flex: none; margin-top: 1px; font-size: 1rem; font-stretch: 85%; letter-spacing: .03em; padding: 3px 6px; }
@@ -1018,11 +1018,14 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   main { grid-area: stage; width: 100%; max-width: 720px; justify-self: start; padding-block: calc(50px + var(--stagetop)) 48px; gap: 24px; }
   .side { min-width: 0; }
   .roomside { display: none; }
-  .tapeside { grid-area: tape; position: sticky; top: 0; align-self: start; margin: 0; }
+  /* the column is exactly as tall as the window at most: the slot, the tape (which scrolls inside it) and the line under it.
+     If the column were taller than the window, the page would scroll to reach its end and slide the tape's head off the top. */
+  .tapeside { grid-area: tape; position: sticky; top: 0; align-self: start; margin: 0; display: flex; flex-direction: column; max-height: 100vh; max-height: 100dvh; }
+  .tapeside > * { flex: none; }
   /* signed in, the account button sits in the top right corner: the tape hangs below it */
-  body.live .tapeside { margin-top: 56px; top: 56px; }
-  body.live .tape { max-height: calc(100dvh - 96px); }
-  .tape { max-height: calc(100vh - 40px); max-height: calc(100dvh - 40px); overflow-y: auto; scrollbar-width: thin; padding: 24px 24px 34px; }
+  /* it hangs 76px down (the page's 20px top plus the 56px margin), so at the top of the page it fits the window too */
+  body.live .tapeside { margin-top: 56px; top: 56px; max-height: calc(100vh - 76px); max-height: calc(100dvh - 76px); }
+  .tapeside > .tape { flex: 0 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; padding: 24px 24px 34px; }
   /* the stage: one bold object, sized by the window's height so the way out of a block is never below the fold */
   /* while a block runs the stage holds one thing: the ticket you stamped, as tall as the window allows. Its head carries
      the title and the DEAL stamp, the wheel fills the middle large enough to read from across a desk, and what comes next
@@ -1141,11 +1144,30 @@ function applyTerm(s, term, intention) {
   if (term.kind === "trade") { const nf = nextOf(s, "focus"); nf.min += 5; nf.added = (nf.added || 0) + 5; }
   cur.min += term.addMin; s.durMs += term.addMin * 60000;
   s.askCount++;
-  const text = { freebie: `5 more min of ${cur.label}`, borrow: `5 more min of ${cur.label}`, trade: `5 more min of ${cur.label}`, override: `5 more min of ${cur.label}` }[term.kind];
-  return { t: clockStr(), kind: term.kind, text, note: intention || "" };
+  return stubOf({ kind: term.kind, blockLabel: cur.label, minutes: term.addMin, intention });
 }
-const MARK = { freebie: "Free", borrow: "Borrowed", trade: "+Focus", bonus: "Bonus", override: "No terms", cleared: "Stopped" };
-const TERMS = { freebie: "On the house", borrow: "Borrowed from a later break", trade: "Traded for 5 more min of focus", bonus: "Kept going, next break 3 min longer", override: "No terms", cleared: "Stopped" };
+/* ledger kinds, as the server files them (packages/core negotiation.ts, ADR 0006). `deal` is the deal itself; `end_early`
+   (Stop for now), `skip` (a block ended early) and `forgiven` (borrowed minutes cleared at the end) are not deals. */
+const MARK = { deal: "Deal", freebie: "Free", borrow: "Borrowed", trade: "+Focus", bonus: "Bonus", override: "No terms", end_early: "Stopped", skip: "Early", forgiven: "Cleared" };
+const TERMS = { deal: "The deal you made", freebie: "On the house", borrow: "Borrowed from a later break", trade: "Traded for 5 more min of focus", bonus: "Kept going, next break 3 min longer", override: "No terms", end_early: "Stopped for now", skip: "Moved on early", forgiven: "Borrowed minutes don't carry over" };
+const NOT_DEALS = { end_early: 1, skip: 1, forgiven: 1 };
+/* asks for more time: their title is "+5 min of Reels" */
+const ASKS = { freebie: 1, borrow: 1, trade: 1, override: 1, bonus: 1 };
+/* one ledger row (from the server, or made here in the demo) as a stub: the title, the line under it, and the note.
+   A row on a big one (taskId) says so. */
+function stubOf(e, t = clockStr(e.at)) {
+  const label = String(e.blockLabel), m = e.minutes, big = !!e.taskId;
+  const text = e.kind === "deal" || e.kind === "end_early" ? title(label)
+    : e.kind === "skip" ? `Ended ${label === "Your pick" ? "your break" : title(label)} early`
+    : e.kind === "forgiven" ? `Cleared ${m} borrowed min`
+    : e.kind === "bonus" ? `${m} more min of ${title(label).split(" ")[0].toLowerCase()}`
+    : `${m} more min of ${label}`;
+  const sub = e.kind === "deal" ? (big ? `Big one, starts with ${m} min` : `Starts with ${m} min of focus`)
+    : e.kind === "end_early" ? (m ? (big ? `${m} min done on this big one` : `${m} min of focus done`) : TERMS.end_early)
+    : e.kind === "skip" ? (m ? `After ${m} min` : "Right at the start")
+    : "";
+  return { t, kind: e.kind, text, sub, note: e.intention || "" };
+}
 
 /* ---------- state ---------- */
 const ACTS = ["Reels", "TikTok", "YouTube", "Texting", "Gaming"];
@@ -1289,7 +1311,11 @@ const cap = s => s.replace(/^./, c => c.toUpperCase());
 /* the task as it sits in the deal sentence: "BIO 180 ch. 7" (the part after the comma) */
 const taskTail = () => { const i = deal.task.indexOf(","); return (i >= 0 ? deal.task.slice(i + 1) : deal.task).trim() || deal.task; };
 function bankFocus() { if (S && cur().type === "focus") studied += Math.round(Math.min(vnow - S.startedAt, S.durMs) / 60000); }
-function nextBlock() { if (BE && S) BE.next(S.idx); bankFocus(); const was = S.idx, from = { type: cur().type, p: remaining() / S.durMs, label: title(cur().label) }; S.idx = Math.min(S.idx + 1, S.blocks.length - 1); if (S.idx !== was) { turnFrom = from; beat("turn"); offerInstall(); } S.startedAt = vnow; S.durMs = cur().min * 60000; S.askCount = 0; S.bonusOffered = false; closeSheet(); say(`${cur().type === "focus" ? "Focus" : "Break"}: ${title(cur().label)}, ${cur().min} minutes.`); }
+/* whole minutes of the running block so far, and of it that count as focus (core timer.ts focusMinutesDone) */
+const blockMinsDone = () => Math.floor(Math.min(Math.max(0, vnow - S.startedAt), S.durMs) / 60000);
+const focusMinsDone = () => cur().type === "focus" ? blockMinsDone() : 0;
+/* early: the student ended the block before its time; that is a `skip` on the ledger */
+function nextBlock(early = false) { if (BE && S) BE.next(S.idx, early); if (early && remaining() > 0) file(stubOf({ kind: "skip", blockLabel: cur().label, minutes: blockMinsDone() })); bankFocus(); const was = S.idx, from = { type: cur().type, p: remaining() / S.durMs, label: title(cur().label) }; S.idx = Math.min(S.idx + 1, S.blocks.length - 1); if (S.idx !== was) { turnFrom = from; beat("turn"); offerInstall(); } S.startedAt = vnow; S.durMs = cur().min * 60000; S.askCount = 0; S.bonusOffered = false; closeSheet(); say(`${cur().type === "focus" ? "Focus" : "Break"}: ${title(cur().label)}, ${cur().min} minutes.`); }
 /* spec 008: a focus block of a big one ends on the boundary sheet with two skippable notes (bookmark, done).
    Notes are sent once per focus block: when the next block starts, more time is asked for, or the sheet closes. */
 const needsNotes = () => !!(S && S.taskId) && cur().type === "focus" && (S.notedIdx == null || S.notedIdx < S.idx);
@@ -1319,7 +1345,17 @@ const doneInner = (k, on) => `<span class="ink">${on ? CHECK : ""}${DONE_CHOICES
 const doneChip = (k, on) => `<button class="inkchip lg" role="radio" data-done="${k}" aria-checked="${on}">${doneInner(k, on)}</button>`;
 /* the clock's 10 min offer at the end of a focus block: once per block, never on the last one, never past the ceiling */
 const canBonus = () => cur().type === "focus" && !S.bonusOffered && S.idx < S.blocks.length - 1 && cur().min + 10 <= CEILING;
-function stopNow() { if (S && remaining() <= 0) offerInstall(); if (BE) BE.end(); bankFocus(); file({ t: clockStr(), kind: "cleared", text: "Stopped for now", note: "" }); S = null; sheet = null; render(); }
+function stopNow() {
+  if (S && remaining() <= 0) offerInstall();
+  if (BE) BE.end();
+  if (S) {
+    /* a stop names what was being worked on: the big one's title, or the deal's task */
+    const c = S.taskId ? cardById(S.taskId) : null, focus = S.blocks.find(b => b.type === "focus");
+    file(stubOf({ kind: "end_early", blockLabel: c ? c.title : focus.label, minutes: focusMinsDone(), taskId: S.taskId }));
+    if (S.debt > 0) file(stubOf({ kind: "forgiven", blockLabel: cur().label, minutes: S.debt }));
+  }
+  bankFocus(); S = null; sheet = null; render();
+}
 function say(t) { const el = document.getElementById("sr"); if (el) el.textContent = t; }
 /* a short tap at the instant the stamp hits the paper (Android; iOS has no vibrate) */
 function buzz(pattern = 14, after = 0) { const v = () => { try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) {} }; if (after) setTimeout(v, after); else v(); }
@@ -1332,8 +1368,9 @@ const beat = k => { MO[k] = performance.now(); };
 const since = (k, win) => { const e = MO[k] == null ? Infinity : performance.now() - MO[k]; return e < win ? e : null; };
 const lagVar = e => `--lag:${-Math.round(e)}ms`;
 let turnFrom = null;
-/* every new ledger entry is marked fresh; the ledger tears it in the first time you see it */
-function file(e) { e.fresh = true; ledger.push(e); }
+/* every new ledger entry is marked fresh; the ledger tears it in the first time you see it. Signed in, the server files
+   every entry and the tape shows only its rows (pomodealApp.ledger), so nothing printed here can vanish on a reload. */
+function file(e) { if (BE) return; e.fresh = true; ledger.push(e); }
 
 /* ---------- views ---------- */
 const $ = s => document.querySelector(s);
@@ -1436,7 +1473,7 @@ addEventListener("scroll", tapePrint, { passive: true });
 function tapeSeen() { const t = $("#side-ledger"); if (!unseen || !t || t.hidden) return; if (t.getBoundingClientRect().top < innerHeight * .62) { unseen = 0; paintTape(); } }
 function paintTape() {
   const v = $("#tapeval"); if (!v) return;
-  const deals = ledger.filter(e => e.kind !== "cleared").length, txt = unseen ? `${unseen} new` : deals ? `${deals} deal${deals === 1 ? "" : "s"}` : "";
+  const deals = dealCount(), txt = unseen ? `${unseen} new` : deals ? `${deals} deal${deals === 1 ? "" : "s"}` : "";
   if (unseen && +v.dataset.n < unseen) { v.classList.remove("pop"); void v.offsetWidth; v.classList.add("pop"); }
   v.dataset.n = unseen; v.classList.toggle("new", !!unseen); if (v.textContent !== txt) v.textContent = txt;
 }
@@ -1567,22 +1604,29 @@ function ticket(peek) {
 }
 /* a ledger stub: the same torn ticket everywhere a deal is shown after the fact */
 const TILTS = [-2, 1.5, -1, 2.5, -3, 1];
-/* grey ink only for what wasn't a deal; borrowing is a deal like any other */
-const PLAIN = { override: 1, cleared: 1 };
+/* grey ink only for what wasn't a deal (a stop, a block ended early, cleared minutes) and for "no terms";
+   the deal itself and borrowing are deals like any other */
+const PLAIN = { ...NOT_DEALS, override: 1 };
+const dealCount = () => ledger.filter(e => !NOT_DEALS[e.kind]).length;
 const lower = t => t.replace(/^./, c => c.toLowerCase());
-const stubInner = (e, i, lead) => `<span class="t"><b>${e.t.replace(/[ap]m$/, "")}<small>${e.t.slice(-2)}</small></b></span><span class="what"><span class="row"><span class="title">${esc(e.text.replace(/ more min of /, " min of ").replace(/^(\d)/, "+$1"))}</span><span class="stamp${PLAIN[e.kind] ? " plain" : ""}" style="--tilt:${TILTS[i % TILTS.length]}deg">${MARK[e.kind]}</span></span><em>${N(lead ? `${lead}, ${lower(TERMS[e.kind])}` : TERMS[e.kind])}</em>${e.note && !lead ? `<em>First thing: ${N(esc(lower(e.note)))}${/[.?!]$/.test(e.note) ? "" : "."}</em>` : ""}</span>`;
-/* tonight's sample ledger. The start screen's "Last deal" and the intercept's "Last Reels deal" both read from it,
-   so every screen tells the same story. */
+const stubTitle = e => ASKS[e.kind] ? e.text.replace(/ more min of /, " min of ").replace(/^(\d)/, "+$1") : e.text;
+const stubInner = (e, i) => `<span class="t"><b>${e.t.replace(/[ap]m$/, "")}<small>${e.t.slice(-2)}</small></b></span><span class="what"><span class="row"><span class="title">${esc(stubTitle(e))}</span><span class="stamp${PLAIN[e.kind] ? " plain" : ""}" style="--tilt:${TILTS[i % TILTS.length]}deg">${MARK[e.kind]}</span></span><em>${N(esc(e.sub || TERMS[e.kind]))}</em>${e.note ? `<em>First thing: ${N(esc(lower(e.note)))}${/[.?!]$/.test(e.note) ? "" : "."}</em>` : ""}</span>`;
+/* tonight's sample ledger. The intercept's "Last Reels deal" reads from it, so every screen tells the same story:
+   an hour on the history paper, stopped partway; then a reading deal with a Reels break ended early; then TikTok. */
 const SEED = [
-  { t: "9:12pm", kind: "freebie", text: "5 more min of Reels", note: "" },
-  { t: "9:58pm", kind: "bonus", text: "10 more min of reading", note: "" },
-  { t: "10:31pm", kind: "borrow", text: "5 more min of TikTok", note: "" },
-  { t: "10:37pm", kind: "trade", text: "5 more min of TikTok", note: "Open the chapter" },
-];
-const newest = (list, act) => [...list].reverse().find(e => e.kind !== "cleared" && e.kind !== "override" && (!act || e.text.endsWith(" " + act)));
+  ["8:12pm", { kind: "deal", blockLabel: "History paper", minutes: 60, taskId: "paper" }],
+  ["8:53pm", { kind: "end_early", blockLabel: "History paper", minutes: 41, taskId: "paper" }],
+  ["9:05pm", { kind: "deal", blockLabel: "Reading, BIO 180 ch. 7", minutes: 8 }],
+  ["9:12pm", { kind: "freebie", blockLabel: "Reels", minutes: 5 }],
+  ["9:16pm", { kind: "skip", blockLabel: "Reels", minutes: 11 }],
+  ["9:58pm", { kind: "bonus", blockLabel: "Reading, BIO 180 ch. 7", minutes: 10 }],
+  ["10:31pm", { kind: "borrow", blockLabel: "TikTok", minutes: 5 }],
+  ["10:37pm", { kind: "trade", blockLabel: "TikTok", minutes: 5, intention: "Open the chapter" }],
+].map(([t, e]) => stubOf(e, t));
+/* the newest ask for more time, optionally on one activity ("Last Reels deal") */
+const newest = (list, act) => [...list].reverse().find(e => ASKS[e.kind] && e.kind !== "override" && (!act || e.text.endsWith(" " + act)));
 /* one short line, not a stub: tickets are for deals you can act on */
-const SHORT = { freebie: "on the house", borrow: "borrowed", trade: "added to focus", bonus: "bonus", override: "no terms", cleared: "" };
-const lastLine = e => `Last deal: ${esc(e.text.replace(/ more min of /, " min of ").replace(/^(\d)/, "+$1"))} at ${e.t}${SHORT[e.kind] ? `, ${SHORT[e.kind]}` : ""}.`;
+const SHORT = { deal: "a deal", freebie: "on the house", borrow: "borrowed", trade: "added to focus", bonus: "bonus", override: "no terms", end_early: "stopped", skip: "ended early", forgiven: "cleared" };
 const DOTS = `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>`;
 /* spec 008 "Day 2 and later": a card per open big one, above the ticket. A comeback card says what to do now and
    nothing about the time between. */
@@ -2396,10 +2440,10 @@ function closeSheet() { sheet = null; }
 
 function ledgerView() {
   const n = k => ledger.filter(e => e.kind === k).length;
-  const deals = ledger.filter(e => e.kind !== "cleared").length;
+  const deals = dealCount();
   const any = ledger.length || studied;
   return `<div class="tapehead"><h2 id="tapeh" tabindex="-1">Today's deals</h2><span class="tapeval" id="tapeval"></span></div>
-  ${!any ? `<p class="soft">Nothing yet. When you ask for more time, the deal and its terms land here.</p>` : ""}
+  ${!any ? `<p class="soft">Nothing yet. Every deal you make lands here, with its terms.</p>` : ""}
   ${ledger.length || S ? `<ul class="stubs" aria-label="Deals, newest first">${S ? `<li class="stubcard live"><span class="t"><b>now</b></span><span class="what"><span class="row"><span class="title">${esc(title(cur().label))}</span><span class="stamp plain">Running</span></span><em>${S.serial ? `<span class="num">No. ${S.serial}</span>, ` : ""}${cur().type === "focus" ? "focus" : "the break you chose"}</em></span></li>` : ""}${ledger.map((e, i) => `<li class="stubcard${freshStub(e)}">${stubInner(e, i)}</li>`).reverse().join("")}</ul>` : ""}
   ${any ? `<dl class="totals">
     <div class="go"><dt>Studied</dt><dd>${N(studied)} min</dd></div>
@@ -2554,6 +2598,8 @@ function bind() {
       }
       /* the demo has no server: its big one is a sample card, so the block-end notes have something to ask about */
       if (bg && !BE) { S.taskId = "demo"; bigOneCards = [{ id: "demo", title: bigTitle(), startWith: bg.move.trim(), progress: null, minutes: bg.pay, comeback: false, offerRespread: false, ...(bg.type ? { taskType: bg.type } : {}) }, ...cards().filter(c => c.id !== "demo")]; }
+      /* the deal itself goes on the tape (signed in, the server files it) */
+      file(stubOf({ kind: "deal", blockLabel: fc ? fc.title : bg ? bigTitle() : d.task, minutes: d.focusMin, taskId: S.taskId }));
       if (bg) big = newBig();
       const first = S.blocks[0];
       toast = first.type === "break" ? `Deal. ${fc ? fc.title : cap(shortTask())} starts at ${clockStr(Date.now() + first.min * 60000)}.` : "Deal. Go.";
@@ -2576,7 +2622,7 @@ function bind() {
     if (sheet.notes) { sendNotes(); Object.assign(sheet, { kind: "bonus", at: Date.now(), paused: true, focusMe: true, termsAt: performance.now() }); render(); return; }
     sheet.asking = true; sheet.focusMe = true; sheet.termsAt = performance.now(); render();
   });
-  on("#startnow", () => { file({ t: clockStr(), kind: "cleared", text: `Ended ${cur().label} early`, note: "" }); nextBlock(); render(); });
+  on("#startnow", () => { nextBlock(true); render(); });
   /* if the session already moved on elsewhere, the notes still go, and the sheet just closes onto the block that is running */
   on("#go", () => { const moved = movedOn(); sendNotes(); if (moved) { closeSheet(); render(); restoreFocus(); } else if (S.blocks[S.idx + 1]) { nextBlock(); render(); } else { stopNow(); focusTitle(); } });
   on("#nevermind", () => dismiss());
@@ -2737,8 +2783,9 @@ function dismiss() { if (!sheet) return; const moved = movedOn(); sendNotes(); i
 function restoreFocus() { const t = opener && document.body.contains(opener) ? opener : document.querySelector(".act button, #view h1"); if (t) { if (!t.matches("button")) t.tabIndex = -1; t.focus({ preventScroll: true }); } }
 function takeBonus() {
   if (BE) BE.bonus();
+  file(stubOf({ kind: "bonus", blockLabel: cur().label, minutes: 10 }));
   cur().min += 10; S.durMs += 10 * 60000; const nb = nextOf(S, "break"); if (nb) nb.min += 3;
-  file({ t: clockStr(), kind: "bonus", text: `10 more min of ${shortTask()}`, note: "" }); unseen++; S.bonusOffered = true; closeSheet(); beat("wind"); render(); restoreFocus();
+  unseen++; S.bonusOffered = true; closeSheet(); beat("wind"); render(); restoreFocus();
 }
 /* Escape never commits you to anything: it backs out one step, or does nothing */
 function escape() {
@@ -3057,11 +3104,6 @@ requestAnimationFrame(tick);
 const DEAL_KEY = "pomodeal.deal";
 let liveLedgerLoaded = false;
 function saveDeal() { try { localStorage.setItem(DEAL_KEY, JSON.stringify(deal)); } catch (e) {} }
-const SERVER_TEXT = (e) => {
-  if (e.kind === "forgiven") return `Cleared ${e.minutes} borrowed min`;
-  if (e.kind === "bonus") return `${e.minutes} more min of ${title(e.blockLabel).split(" ")[0].toLowerCase()}`;
-  return `${e.minutes} more min of ${e.blockLabel}`;
-};
 window.pomodealApp = {
   attach(backend) {
     if (BE) return;
@@ -3130,7 +3172,8 @@ window.pomodealApp = {
     if (!BE) return;
     /* entries this screen hasn't seen before tear in; the first load is just the pile */
     const old = new Map(ledger.map(e => [e.id, e])), first = !liveLedgerLoaded; liveLedgerLoaded = true;
-    ledger = entries.slice().reverse().map(e => { const prev = old.get(e._id); return { id: e._id, t: clockStr(e.at), kind: e.kind === "forgiven" ? "cleared" : e.kind, text: SERVER_TEXT(e), note: e.intention || "",
+    /* kinds this screen doesn't know yet (a newer server) are left off rather than drawn without a stamp */
+    ledger = entries.filter(e => MARK[e.kind]).reverse().map(e => { const prev = old.get(e._id); return { id: e._id, ...stubOf(e),
       fresh: prev ? prev.fresh : !first, freshAt: prev ? prev.freshAt : undefined }; });
     if (tab === "now") render();
   },

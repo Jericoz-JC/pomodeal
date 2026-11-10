@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Fix: deals now reach the ledger. Before, the server saved only asks, the bonus and cleared minutes, so a deal made on your phone was gone from the tape a few hours later (ADR 0006). The tape now keeps the deal you made, where you stopped (on a big one: which one and how many minutes you'd done) and a block you ended early, on every device and after a reload. Rows from before the fix stay as they were.
+- Desktop: the tape beside the clock fits the window and scrolls on its own, so a long night no longer pushes its head off the top or its last line below the fold.
+- The tape moves on to the last 24 hours when the app comes back to the front or every hour, so a phone left open overnight doesn't keep yesterday's deals on it.
+
 ## v0.3.0 (2026-11-09)
 
 Everything since v0.2.0: the closed beta going live, big ones, and the desk-and-feel design round (spec 009).

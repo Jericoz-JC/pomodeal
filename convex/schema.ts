@@ -94,7 +94,10 @@ export default defineSchema({
     blockLabel: v.string(),
     minutes: v.number(),
     intention: v.optional(v.string()),
-  }).index("by_userId_and_at", ["userId", "at"]),
+    taskId: v.optional(v.id("tasks")), // the big one the session worked on; cleared when it is deleted (ADR 0006)
+  })
+    .index("by_userId_and_at", ["userId", "at"])
+    .index("by_taskId", ["taskId"]),
 
   // A big one (spec 008): a task bigger than one block, worked through ordinary Quick Deal sessions.
   tasks: defineTable({
