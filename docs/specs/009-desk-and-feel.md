@@ -109,6 +109,18 @@ The product's signature moment, and the least crafted screen. The negotiation ru
 
 Not verified: Safari (desktop and iPhone) and a real phone. The haptic buzz only exists on Android Chrome; iOS has no vibration API. The motion was judged from 60 ms frame strips and a real-time clip in headless Edge, not by hand on a device.
 
+### 2. Motion: four moments
+
+Judged from real-speed recordings (`prototypes/shoot-motion.mjs`, which now records a desk too with `WIDTH=1440 HEIGHT=900`, and has a working `tape` moment in place of the old ledger tab), phone and desktop, light, dark and reduced motion. What the "before" clips showed, and what changed:
+
+- **The DEAL stamp.** Before: pressing it made it vanish for a frame (it restarted from transparent), nothing moved for about 300 ms after it landed, then the screen cut to the running ticket. The view transition that was meant to carry the stamp ran in Chrome but not in Safari before 18 or Firefox, and is not captured by recordings. Now it uses the same stamp language as the terms: it lifts at once, comes down at 200 ms with the ink, and the ticket takes the knock. At 400 ms it comes off its stub, which tears away underneath; at 620 ms the running ticket is drawn and the stamp itself flies to its place at the head, shrinking as it goes, and hands over to the one printed there. Plain transforms, so every browser gets it. A spacer holds its place, so the ticket does not shrink while the stub tears.
+- **The tape printing a new line.** Before: the new stub dropped in at an angle while the older ones were pushed, which read as a shuffle; on a phone it played below the fold where nobody saw it. Now the tape feeds the line out from under "now": the gap opens at a receipt printer's pace and the line rides down into it, then its stamp is inked. It waits for the sheet to leave. On a phone it prints when the tape scrolls into view.
+- **The block turn.** Before: the title swapped under the leaving sheet. Now the old title leaves up through the top of its line, and the new one rises in from under it, each clipped to the line it crosses; then the ring winds as before. Words never fade.
+- **The heads-up.** Before: the number faded in from 35 % and grew, which read as a flicker. Now it is pressed again like a date stamp (lifted, down, a small rebound, no fade), and "min to wrap up" prints in left to right after it lands. Time up uses the same press.
+- Reduced motion: the DEAL stamp inks in place and the running ticket appears; the tape line and the heads-up words simply appear; nothing flies, feeds or rises.
+
+Known and left: when the new title has more lines than the old one, the wheel steps down by a line at the start of the turn. Not verified: Safari (desktop and iPhone), a real phone's frame rate, and a 60 Hz desktop by eye; the clips are headless Edge.
+
 ## Invites
 
 Chris reported that he invited a friend and could see nothing. An investigation (Opus 5.5, read-only) found this is mostly as built: an invite only lets someone into the beta, and friends, rooms and presence do not exist in the backend yet. The live Room says "open soon". Fixed on this branch:

@@ -3,7 +3,8 @@
 //   <moment>-<variant>.png   a frame strip: one frame every STEP ms from just before the trigger, labelled with the time
 //   <moment>.webm            a real-time clip with light | dark | reduced side by side (if the browser can encode it)
 // Usage: node prototypes/shoot-motion.mjs <out-dir> [moment ...]
-//   Moments: stamp, turn-break, turn-focus, heads-up, time-up, offer-open, offer-pick, ledger, landing
+//   Moments: stamp, turn-break, turn-focus, heads-up, time-up, offer-open, offer-pick, tape, landing
+//   WIDTH=1440 HEIGHT=900 records a desk instead of a phone (each moment's dcrop, or the whole window)
 // No new dependencies: Edge over CDP (like shoot.mjs), Page.startScreencast for frames, the browser's own
 // MediaRecorder for the clip. "landing" starts Vite in-process (apps/web, production env) to render the signed-out page.
 import { spawn } from "node:child_process";
@@ -17,7 +18,9 @@ const out = resolve(process.argv[2] || join(here, "quick-deal/shots/motion"));
 const only = process.argv.slice(3);
 const app = pathToFileURL(resolve(here, "quick-deal/index.html")).href;
 const EDGE = "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe";
-const W = 375, H = 812, STEP = 60;
+const W = Number(process.env.WIDTH) || 375, H = Number(process.env.HEIGHT) || 812, STEP = 60;
+/* a desk: not a touch device, one pixel per CSS pixel, and the clip drawn at half size so three fit side by side */
+const DESK = W >= 820, DPR = DESK ? 1 : 2, CS = DESK ? .5 : 1;
 const wait = ms => new Promise(r => setTimeout(r, ms));
 
 /* each moment: where it starts, optional setup, the trigger (an expression returning the trigger time), how long to
@@ -25,14 +28,16 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
 /* a click is a real pointer press at the element's center (a scripted .click() leaves focus rings a tap would not) */
 const click = sel => ({ tap: sel });
 const MOMENTS = {
-  "stamp": { url: `${app}#start`, trigger: click("#shake"), ms: 1500, crop: [0, 40, W, 470] },
-  "turn-break": { url: `${app}#bonus`, trigger: click("#bonusno"), ms: 1000, crop: [0, 40, W, 520] },
-  "turn-focus": { url: `${app}#boundary`, trigger: click("#go"), ms: 1000, crop: [0, 40, W, 520] },
-  "heads-up": { url: `${app}#running`, setup: "speed = 1", trigger: "(() => { vnow = S.startedAt + S.durMs - 120000 + 30; return Date.now(); })()", ms: 1500, crop: [0, 110, W, 560] },
+  "stamp": { url: `${app}#start`, trigger: click("#shake"), ms: 1500, crop: [0, 40, W, 640], dcrop: [180, 120, 680, 640] },
+  "turn-break": { url: `${app}#bonus`, trigger: click("#bonusno"), ms: 1000, crop: [0, 40, W, 520], dcrop: [180, 120, 680, 640] },
+  "turn-focus": { url: `${app}#boundary`, trigger: click("#go"), ms: 1000, crop: [0, 40, W, 520], dcrop: [180, 120, 680, 640] },
+  "heads-up": { url: `${app}#running`, setup: "speed = 1", trigger: "(() => { vnow = S.startedAt + S.durMs - 120000 + 30; return Date.now(); })()", ms: 1500, crop: [0, 110, W, 560], dcrop: [180, 120, 680, 640] },
   "time-up": { url: `${app}#running`, setup: "speed = 1", trigger: "(() => { vnow = S.startedAt + S.durMs - 30; return Date.now(); })()", ms: 1700, crop: [0, 0, W, H] },
   "offer-open": { url: `${app}#boundary`, setup: "S.askCount = 1", trigger: click("#ask2"), ms: 900, crop: [0, 300, W, H] },
   "offer-pick": { url: `${app}#offer-terms`, trigger: click('[data-term="0"]'), ms: 1200, crop: [0, 300, W, H] },
-  "ledger": { url: `${app}#offer-terms`, setup: `seedLedger(); document.querySelector('[data-term="1"]').click()`, settle: 1500, trigger: click("#tab-ledger"), ms: 1200, crop: [0, 40, W, 700] },
+  /* the tape prints the deal you just stamped. On a phone the tape is under the clock, so it prints when it scrolls into view. */
+  "tape": DESK ? { url: `${app}#offer-terms`, trigger: click('[data-term="1"]'), ms: 2000, dcrop: [860, 60, 420, 560] }
+    : { url: `${app}#offer-terms`, setup: `document.querySelector('[data-term="1"]').click()`, settle: 1600, trigger: "(() => { document.querySelector('#side-ledger').scrollIntoView({ block: 'start' }); return Date.now(); })()", ms: 1400, crop: [0, 0, W, 560] },
   "landing": { landing: true, ms: 3800, step: 120, crop: [0, 200, W, 580] },
 };
 const VARIANTS = [
@@ -94,7 +99,7 @@ async function openTab() {
 async function record(m, v) {
   const { send, evaluate, listeners, close } = await openTab();
   await send("Page.bringToFront"); // a background tab gets no animation frames: only timers would run
-  await send("Emulation.setDeviceMetricsOverride", { width: W, height: H, deviceScaleFactor: 2, mobile: true });
+  await send("Emulation.setDeviceMetricsOverride", { width: W, height: H, deviceScaleFactor: DPR, mobile: !DESK });
   await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: v.scheme }, { name: "prefers-reduced-motion", value: v.reduce ? "reduce" : "no-preference" }] });
   const frames = [];
   listeners.add(msg => {
@@ -102,7 +107,7 @@ async function record(m, v) {
     frames.push({ t: msg.params.metadata.timestamp * 1000, data: msg.params.data });
     send("Page.screencastFrameAck", { sessionId: msg.params.sessionId }).catch(() => {});
   });
-  const cast = () => send("Page.startScreencast", { format: "jpeg", quality: 82, maxWidth: W * 2, maxHeight: H * 2 });
+  const cast = () => send("Page.startScreencast", { format: "jpeg", quality: 82, maxWidth: W * DPR, maxHeight: H * DPR });
   let t0;
   if (m.landing) {
     const url = await landingUrl();
@@ -139,7 +144,7 @@ async function openPage(html) {
 const frameAt = (frames, at) => { let best = frames[0]; for (const f of frames) if (f.at <= at) best = f; return best; };
 
 async function strip(name, m, v, rec) {
-  const [cx, cy, cw, ch] = m.crop, times = [];
+  const [cx, cy, cw, ch] = (DESK ? m.dcrop : m.crop) || [0, 0, W, H], times = [];
   const step = m.step || STEP;
   for (let t = -step; t <= m.ms; t += step) times.push(t);
   const scale = cw > 300 && ch > 600 ? 0.5 : 1; // whole-screen moments shrink so the strip stays readable
@@ -157,10 +162,11 @@ async function strip(name, m, v, rec) {
 /* light | dark | reduced side by side, played back at real speed into the browser's own WebM encoder */
 async function clip(name, m, recs) {
   const lead = 400, tail = 700, dur = lead + m.ms + tail;
+  const CW = Math.round(W * CS), CH = Math.round(H * CS);
   const tracks = recs.map(r => ({ key: r.v.key, frames: r.rec.frames.map(f => ({ at: f.at, src: `data:image/jpeg;base64,${f.data}` })) }));
   await openPage(`<!doctype html><meta charset="utf-8"><body style="margin:0"><script>window.TRACKS = ${JSON.stringify(tracks).replace(/</g, "\u003c")};</script>`);
   const b64 = await rv.evaluate(`(async () => {
-    const tracks = window.TRACKS, W = ${W}, H = ${H}, lead = ${lead}, dur = ${dur}, gap = 12, label = 30;
+    const tracks = window.TRACKS, W = ${CW}, H = ${CH}, lead = ${lead}, dur = ${dur}, gap = 12, label = 30;
     for (const t of tracks) for (const f of t.frames) { f.img = new Image(); await new Promise(r => { f.img.onload = f.img.onerror = r; f.img.src = f.src; }); }
     const c = document.createElement("canvas"); c.width = (W * 3 + gap * 4); c.height = H + label + gap; document.body.append(c);
     const g = c.getContext("2d");
@@ -201,7 +207,8 @@ try {
       if (!rec || !rec.frames.length) console.warn(`${name} ${v.key}: no frames`); else recs.push({ v, rec });
     }
     for (const r of recs) await strip(name, m, r.v, r.rec);
-    if (recs.length === 3) await clip(name, m, recs);
+    /* a clip that stalls (the review tab sometimes stops getting frames) is skipped, not fatal: the strips are written */
+    if (recs.length === 3) await clip(name, m, recs).catch(e => console.warn(`${name}: no clip (${e.message.slice(0, 60)})`));
     console.log(`${name}: ${recs.map(r => `${r.v.key} ${r.rec.frames.length} frames`).join(", ")}`);
   }
 } finally {

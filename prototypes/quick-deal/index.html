@@ -608,15 +608,10 @@ body.sheeted #view :is(.act, .rows) { visibility: hidden; }
 
 /* the stamped stub of tonight's deal stays with the session */
 .dealtwrap { flex: none; filter: drop-shadow(0 1px 0 var(--rule)) drop-shadow(0 3px 5px var(--lift)); }
-.dealtwrap.fresh { animation: dealtin .3s ease-out; }
 .dealt { display: flex; align-items: center; gap: 10px; min-height: 32px; padding: 4px 20px 4px 10px; background: var(--card); border-radius: 4px 0 0 4px; -webkit-mask: var(--zig); mask: var(--zig); }
 .dealt .serial { font-size: .8125rem; }
 .dealt .stamp { --tilt: -5deg; font-size: .8125rem; padding: 2px 5px; }
 .dealt .stamp::before { border-width: 2.5px; border-radius: 4px; }
-@keyframes dealtin { from { transform: translateY(-8px); opacity: 0; } }
-/* the stamp you just inked travels from the ticket up into the session's stub */
-#ticket .stampbox .stamp, .dealtwrap.fresh .stamp { view-transition-name: dealstamp; }
-::view-transition-group(dealstamp) { animation-duration: .3s; animation-timing-function: cubic-bezier(.3, .7, .2, 1); }
 .rows + .soft { margin-top: -6px; }
 
 /* presence strip: the room, in one line */
@@ -797,16 +792,19 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 @keyframes thud { 30% { transform: translateY(2px); } }
 .primary.pressed { animation: press .22s ease-out; }
 /* then the stub tears away: paper falls, it doesn't fade. The ticket's own edge clips it as it drops. */
-.ticket.torn .stub { opacity: 1; transform: translateY(70px) rotate(5deg); transition: transform .3s cubic-bezier(.4, 0, .8, .3); }
+.ticket.torn .stub { opacity: 1; transform: translateY(80px) rotate(5deg); transition: transform .24s cubic-bezier(.5, 0, .9, .4); }
+/* the inked stamp leaves the stub before it tears, and is carried up to the head of the running ticket (flyStamp) */
+.primary#shake.pressed.freed { position: fixed; z-index: 30; margin: 0; pointer-events: none; animation: none; transform: rotate(var(--tilt)); }
+/* moving it restarts its animations: it has already landed, so it stays as it is */
+.primary#shake.pressed.freed::after { animation: none; }
 /* the stamped ticket shrinks into the session's header chip, so you see where the deal went */
-.ticket.torn, .dealtwrap.fresh { view-transition-name: dealticket; }
-::view-transition-group(dealticket) { animation-duration: .34s; animation-timing-function: cubic-bezier(.3, .7, .2, 1); }
-.dealtwrap.fresh { animation: none; }
+/* the new running ticket: its words settle into place under the arriving stamp; the ring winds once the stamp is on its way */
+.now.dealin > * { animation: settle .32s var(--lag, 0ms) ease-out backwards; }
 /* a ring always winds on from empty with the knob riding its leading edge: a new session, a new block, minutes you
    just bought. This one move drives the ring's own --p (a registered property that only repaints the ring's mask),
    the single exception to transform/opacity (docs/decisions/0004). Gentle and short, so it never reads as a loading spinner. */
-.dial.sweep { animation-duration: .6s; animation-timing-function: cubic-bezier(.3, .7, .2, 1); }
-.ticket.stamped { animation: thud .26s .15s ease-out; }
+.dial.sweep { animation-duration: .6s; animation-delay: .12s; animation-fill-mode: backwards; animation-timing-function: cubic-bezier(.3, .7, .2, 1); }
+.ticket.stamped { animation: hit .3s .2s ease-out; }
 
 /* 2. block change: whatever was left of the old ring lifts off; once the sheet is out of the way the new ring winds on
    in its own material (solid green for focus, the hatch for a break). The words stay readable throughout. */
@@ -816,7 +814,14 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 .dial.wind { animation: sweep .55s calc(var(--lag, 0ms) + 160ms) cubic-bezier(.3, .7, .2, 1) backwards; }
 .dial.turn :is(.edge, .face) { z-index: 2; }
 /* the words are readable from the first frame: they only settle into place, they never fade */
-.dial.turn .face > *, .now.turn > * { animation: settle .3s var(--lag, 0ms) ease-out backwards; }
+.dial.turn .face > *, .now.turn > :not(h1) { animation: settle .3s var(--lag, 0ms) ease-out backwards; }
+/* the title is fed like a ticket: the old one leaves up through the top edge of its line, the new one rises in from
+   under the bottom edge. Each is clipped to the line it is crossing, so nothing fades and nothing overlaps. */
+.now.turn h1 { position: relative; }
+.now.turn h1 .isname { display: block; animation: feed-up .34s calc(var(--lag, 0ms) + 170ms) cubic-bezier(.2, .7, .2, 1) backwards; }
+.now.turn h1 .wasname { position: absolute; left: 0; top: 0; width: 100%; animation: feed-off .2s var(--lag, 0ms) cubic-bezier(.5, 0, .8, .4) forwards; }
+@keyframes feed-up { from { transform: translateY(100%); clip-path: inset(0 0 100% 0); } to { transform: none; clip-path: inset(0 0 -20% 0); } }
+@keyframes feed-off { to { transform: translateY(-100%); clip-path: inset(100% 0 -20% 0); } }
 @keyframes ring-out { to { opacity: 0; transform: scale(1.045); } }
 @keyframes settle { from { transform: translateY(6px); } }
 
@@ -824,10 +829,14 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
    it settles. No flashing, nothing that repeats. At time-up the sheet comes up at the same moment. */
 .face.reink .big { animation: reink .44s var(--lag, 0ms) linear backwards; }
 @keyframes reink {
-  0% { transform: scale(1.16); opacity: .35; animation-timing-function: cubic-bezier(.55, 0, .8, .3); }
-  30% { transform: scale(.96); opacity: 1; animation-timing-function: cubic-bezier(.2, .7, .3, 1); }
-  100% { transform: none; opacity: 1; }
+  0% { transform: translateY(-4%) scale(1.12); animation-timing-function: cubic-bezier(.6, 0, .9, .4); }
+  34% { transform: scale(.94); animation-timing-function: cubic-bezier(.2, .7, .3, 1); }
+  62% { transform: scale(1.02); }
+  100% { transform: none; }
 }
+/* the words under it print left to right once the number has landed, like a line from the tape */
+.face.reink .unit { animation: type-on .36s calc(var(--lag, 0ms) + 170ms) steps(12, end) backwards; }
+@keyframes type-on { from { clip-path: inset(0 100% 0 0); } }
 .act.fresh > * { animation: settle .3s var(--lag, 0ms) ease-out backwards; }
 
 /* sheets rise from the bottom edge and slide back down when they close. The dimming is its own layer, so fading it
@@ -879,11 +888,14 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 @keyframes lift { to { transform: translateY(-3px) scale(1.012); } }
 
 /* 5. ledger: the newest stub, already stamped, drops onto the top of the pile. The tab's count pops once. */
-.stubcard.fresh { z-index: 1; transform-origin: 0 0; animation: stub-in .38s var(--lag, 0ms) cubic-bezier(.2, .8, .2, 1) backwards; }
+/* the tape feeds out a new line under "now": the gap opens at the speed of a receipt printer, the line rides down
+   into it (pushing tonight's earlier deals down), and once it is out its stamp is inked. It waits for the sheet to leave. */
+.stubcard.fresh { overflow: hidden; animation: feed .46s calc(var(--lag, 0ms) + 240ms) cubic-bezier(.3, .55, .25, 1) backwards; }
+.stubcard.fresh > * { animation: feed-in .46s calc(var(--lag, 0ms) + 240ms) cubic-bezier(.3, .55, .25, 1) backwards; }
+.stubcard.fresh .stamp { animation: ink .5s calc(var(--lag, 0ms) + 700ms) linear backwards; }
+@keyframes feed { from { max-height: 0; border-top-color: transparent; } to { max-height: var(--h, 160px); } }
+@keyframes feed-in { from { transform: translateY(calc(-1 * var(--h, 160px))); } }
 /* the older stubs start where they were and are pushed down by the new one (--push is its height, set after render) */
-.stubs.pushing > .stubcard:not(.fresh) { animation: push .38s var(--lag, 0ms) cubic-bezier(.2, .8, .2, 1) backwards; }
-@keyframes push { from { transform: translateY(var(--push, 0px)); } }
-@keyframes stub-in { from { opacity: 0; transform: translateY(-16px) rotate(-2.5deg); } 70% { transform: rotate(.4deg); } }
 @keyframes pop { from { transform: scale(.4); opacity: 0; } }
 
 
@@ -892,12 +904,15 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
    You do not press a button under the deal, you stamp it. The Deal control is the stamp's face: outlined and clean while it
    waits, slammed and inked when you press. It then travels to the head of the running ticket. */
 .primary#shake { position: relative; display: block; width: auto; min-width: 180px; min-height: 76px; margin: 6px auto 4px; padding: 6px 34px 4px; background: none; box-shadow: none; color: var(--deal); border-radius: 10px;
-  font-size: 2.75rem; font-weight: 800; font-stretch: 76%; letter-spacing: .07em; text-transform: uppercase; line-height: 1; transform: rotate(-3deg); transition: transform .12s ease-out; }
+  font-size: 2.75rem; font-weight: 800; font-stretch: 76%; letter-spacing: .07em; text-transform: uppercase; line-height: 1; --tilt: -3deg; transform: rotate(var(--tilt)); transition: transform .12s ease-out; }
 .primary#shake::before { content: ""; position: absolute; inset: 0; border: 6px double currentColor; border-radius: 10px; }
 .primary#shake:hover:not(:disabled) { transform: rotate(-3deg) scale(1.03); }
 .primary#shake:active:not(:disabled) { transform: rotate(-3deg) scale(.96); }
 .primary#shake:disabled:not(.pressed) { color: var(--soft); }
-.primary#shake.pressed { animation: ink .56s linear backwards; view-transition-name: dealstamp; }
+.primary#shake.pressed { animation: slam .62s linear both; }
+/* on impact the face takes ink: a wash of the stamp's colour through the same texture */
+.primary#shake::after { content: ""; position: absolute; inset: 0; border-radius: 10px; background: currentColor; opacity: 0; -webkit-mask: var(--noise) 0 0 / 120px 60px; mask: var(--noise) 0 0 / 120px 60px; pointer-events: none; }
+.primary#shake.pressed::after { opacity: .14; animation: inked .3s .2s ease-out backwards; }
 .primary#shake.pressed::before { -webkit-mask: var(--noise) 0 0 / 120px 60px; mask: var(--noise) 0 0 / 120px 60px; }
 #ticket .stampbox { display: none; }
 .stub.perf .hint { margin-top: 6px; }
@@ -993,7 +1008,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   .terms.picking > .term:not(.stamped) { animation: fade-out .16s .22s ease-in forwards !important; }
   .stamped .stamp.ghost { transform: rotate(var(--tilt)); opacity: 1; }
   /* a taken term is simply inked: no lift, no knock */
-  .term.stamped .pad .stamp { transform: rotate(var(--tilt)); }
+  .term.stamped .pad .stamp, .primary#shake.pressed { transform: rotate(var(--tilt)); }
   .term.stamped .pad .stamp::after { animation: fade .2s ease-out backwards !important; }
 }
 </style>
@@ -1195,7 +1210,7 @@ const cap = s => s.replace(/^./, c => c.toUpperCase());
 /* the task as it sits in the deal sentence: "BIO 180 ch. 7" (the part after the comma) */
 const taskTail = () => { const i = deal.task.indexOf(","); return (i >= 0 ? deal.task.slice(i + 1) : deal.task).trim() || deal.task; };
 function bankFocus() { if (S && cur().type === "focus") studied += Math.round(Math.min(vnow - S.startedAt, S.durMs) / 60000); }
-function nextBlock() { if (BE && S) BE.next(S.idx); bankFocus(); const was = S.idx, from = { type: cur().type, p: remaining() / S.durMs }; S.idx = Math.min(S.idx + 1, S.blocks.length - 1); if (S.idx !== was) { turnFrom = from; beat("turn"); offerInstall(); } S.startedAt = vnow; S.durMs = cur().min * 60000; S.askCount = 0; S.bonusOffered = false; closeSheet(); say(`${cur().type === "focus" ? "Focus" : "Break"}: ${title(cur().label)}, ${cur().min} minutes.`); }
+function nextBlock() { if (BE && S) BE.next(S.idx); bankFocus(); const was = S.idx, from = { type: cur().type, p: remaining() / S.durMs, label: title(cur().label) }; S.idx = Math.min(S.idx + 1, S.blocks.length - 1); if (S.idx !== was) { turnFrom = from; beat("turn"); offerInstall(); } S.startedAt = vnow; S.durMs = cur().min * 60000; S.askCount = 0; S.bonusOffered = false; closeSheet(); say(`${cur().type === "focus" ? "Focus" : "Break"}: ${title(cur().label)}, ${cur().min} minutes.`); }
 /* spec 008: a focus block of a big one ends on the boundary sheet with two skippable notes (bookmark, done).
    Notes are sent once per focus block: when the next block starts, more time is asked for, or the sheet closes. */
 const needsNotes = () => !!(S && S.taskId) && cur().type === "focus" && (S.notedIdx == null || S.notedIdx < S.idx);
@@ -1335,6 +1350,10 @@ const WIDE = matchMedia("(min-width: 820px)");
 function setTab(t) { if (t !== tab) { scrollAt[tab] = window.scrollY; requestAnimationFrame(() => window.scrollTo(0, t === "now" ? 0 : scrollAt[t] || 0)); } tab = t; }
 /* the head of the tape counts tonight; a deal you have not looked at yet is "new" until the tape is on screen */
 function navNow() { if (!S) return "Ready"; const r = remaining(); return r <= 0 ? "Time's up" : `${minsLeft()} min ${cur().type === "focus" ? "left" : "of break"}`; }
+function tapeInView() { const t = $("#side-ledger"); return !!t && !t.hidden && t.getBoundingClientRect().top + 150 < innerHeight; }
+/* a line still waiting to print prints once the tape scrolls into view */
+function tapePrint() { if (!sheet && ledger.some(e => e.fresh && e.freshAt == null) && tapeInView()) render(); }
+addEventListener("scroll", tapePrint, { passive: true });
 function tapeSeen() { const t = $("#side-ledger"); if (!unseen || !t || t.hidden) return; if (t.getBoundingClientRect().top < innerHeight * .62) { unseen = 0; paintTape(); } }
 function paintTape() {
   const v = $("#tapeval"); if (!v) return;
@@ -1381,9 +1400,8 @@ function render() {
   paintTape(); tapeSeen(); syncArcs();
   bind();
   syncWake();
-  /* a fresh ledger stub pushes the pile down by its own height */
-  const fs = document.querySelector(".stubcard.fresh");
-  if (fs) { const ul = fs.parentElement; ul.classList.add("pushing"); ul.style.setProperty("--push", `${-(fs.offsetHeight + 10)}px`); ul.style.setProperty("--lag", fs.style.getPropertyValue("--lag")); }
+  /* a fresh line on the tape feeds out by its own height */
+  document.querySelectorAll(".stubcard.fresh").forEach(fs => fs.style.setProperty("--h", `${fs.scrollHeight}px`));
   if (key && !opening) { const el = document.querySelector(key); if (el && el !== document.activeElement && !((sheet || panel) && !el.closest(".sheet"))) { el.focus({ preventScroll: true });
     /* a field drawn again mid-typing keeps the caret at the end, not the start */
     if (el.matches("input, textarea") && el.value) { try { el.setSelectionRange(el.value.length, el.value.length); } catch (e) {} } } }
@@ -1575,19 +1593,20 @@ function runningView() {
   const half = isHalfway();
   const aside = b.type === "focus" && S.durMs >= LONG_MS ? `<p class="aside">${half && !quiet ? "Halfway. Stretch if you like." : ""}</p>` : "";
   /* motion windows: a block change, minutes wound on after a deal, the heads-up, time up */
-  const tn = since("turn", 900), wd = since("wind", 900), hu = since("heads", 700), up = since("up", 700), ink = hu ?? up, dl = tn ?? wd;
+  const tn = since("turn", 900), wd = since("wind", 900), hu = since("heads", 700), up = since("up", 700), ink = hu ?? up, dl = tn ?? wd, dn = since("deal", 700);
   /* a big one's focus block says its first move (the bookmark once one is left) under the title */
   const sw = !isB && S.taskId ? (S.firstMove ?? (cardById(S.taskId) || {}).startWith ?? "") : "";
   /* R37: the app's one printed checkbox, a quiet row under the ring */
   const keepOn = !isB && WAKE_OK ? `<button class="keepon" id="keepon" role="switch" aria-checked="${wakeOn}"><span class="cbox" aria-hidden="true">${CHECK}</span>Keep screen on</button>` : "";
   /* spec 008: the permission step. The browser's prompt only comes after this tap. */
   const askPush = pushAsk && !quiet ? `<button class="pushask" id="pushask"${pushAsk === "asking" ? ` aria-disabled="true"` : ""}>${TAPS}Turn on taps at block ends</button>` : "";
-  return `<div class="runwrap"><section class="runticket" aria-label="Your deal, running"><div class="now${tn != null ? " turn" : ""}"${tn != null ? ` style="${lagVar(tn)}"` : ""}>
+  const nowLag = tn ?? dn;
+  return `<div class="runwrap"><section class="runticket" aria-label="Your deal, running"><div class="now${tn != null ? " turn" : dn != null ? " dealin" : ""}"${nowLag != null ? ` style="${lagVar(nowLag)}"` : ""}>
     <div class="nowhead">
       <span class="kind"><span class="swatch ${isB ? "break" : "focus"}" aria-hidden="true"></span>${isB ? "Break you chose" : "Focus"}</span>
       ${S.serial ? `<span class="dealtwrap${S.justStarted ? " fresh" : ""}"><span class="dealt"><span class="serial">No. ${S.serial}</span><span class="stamp">DEAL</span></span></span>` : ""}
     </div>
-    <h1>${esc(title(b.label))}</h1>
+    <h1>${tn != null && turnFrom && turnFrom.label ? `<span class="isname">${esc(title(b.label))}</span><span class="wasname" aria-hidden="true">${esc(turnFrom.label)}</span>` : esc(title(b.label))}</h1>
     ${sw ? `<p class="sub startw"><span>Start with:</span> ${N(esc(moveText(sw)))}</p>` : ""}
   </div>
   <div class="timerwrap">
@@ -2306,8 +2325,10 @@ function ledgerView() {
 /* a new stub tears in the first time the ledger shows it, and keeps tearing in smoothly across re-renders */
 function freshStub(e) {
   if (!e.fresh) return "";
+  /* on a phone the tape is under the clock: the line prints when the tape comes into view, not off screen */
+  if (e.freshAt == null && !tapeInView()) return "";
   const now = performance.now(); if (e.freshAt == null) e.freshAt = now;
-  const el = now - e.freshAt; if (el >= 1000) { e.fresh = false; return ""; }
+  const el = now - e.freshAt; if (el >= 1400) { e.fresh = false; return ""; }
   return ` fresh" style="${lagVar(el)}`;
 }
 function roomView(side) {
@@ -2424,7 +2445,7 @@ function bind() {
     });
   });
   on("#shake", () => {
-    const t = $("#ticket"), btn = $("#shake"); t.classList.add("stamped"); btn.classList.add("pressed"); btn.disabled = true; buzz(14, reduce ? 0 : 150); stamping = true;
+    const t = $("#ticket"), btn = $("#shake"); t.classList.add("stamped"); btn.classList.add("pressed"); btn.disabled = true; buzz(14, reduce ? 0 : 200); stamping = true;
     const serial = String(412 + ledger.length).padStart(4, "0");
     /* a ticket loaded from a card starts that big one; a big one runs as an ordinary Quick Deal whose first focus block is the first payment (15 or 30) */
     const fc = mode !== "intercept" ? fromCard : null;
@@ -2448,14 +2469,15 @@ function bind() {
       const first = S.blocks[0];
       toast = first.type === "break" ? `Deal. ${fc ? fc.title : cap(shortTask())} starts at ${clockStr(Date.now() + first.min * 60000)}.` : "Deal. Go.";
       setTimeout(() => { toast = null; if (S) S.justStarted = false; lastSig = ""; }, 3500);
-      say(toast); lastSig = ""; render();
+      /* drawn once here: a second draw on the next frame would replace the stamp that is about to fly */
+      say(toast); render(); lastSig = signature(); wasHeads = isHeads();
     };
     /* reduced motion: the stamp fades in, holds a moment, then the session starts */
     if (reduce) return void setTimeout(go, 450);
-    /* the stamp has landed and rebounded by about 400 ms; then the stub tears off */
-    setTimeout(() => t.classList.add("torn"), 420);
-    /* the inked stamp moves up into the running screen's stub */
-    setTimeout(() => { if (!document.startViewTransition) return go(); const vt = document.startViewTransition(go); vt.ready.catch(() => {}); }, 720);
+    /* the stamp hits at 200 ms and has settled by about 400; it comes off the stub, which tears away under it */
+    setTimeout(() => { freeStamp(btn); t.classList.add("torn"); }, 400);
+    /* then the running ticket is drawn and the inked stamp is carried up to its head */
+    setTimeout(() => { beat("deal"); go(); flyStamp(btn); }, 620);
   });
   on("#letmein", () => { file({ t: clockStr(), kind: "override", text: "Opened Instagram without a deal", note: "" }); unseen++; mode = "start"; render(); });
   on("#ask", () => { openSheet({ kind: "offer", asking: true }); render(); });
@@ -2569,6 +2591,33 @@ function pauseBonus() {
   say("Timer stopped. Nothing happens until you pick.");
 }
 document.addEventListener("focusin", e => { const t = e.target; if (t && t.closest && t.closest(".sheet") && t.id !== "sh") pauseBonus(); });
+/* the DEAL stamp is lifted off its stub where it is, so the stub can tear away without it */
+function freeStamp(btn) {
+  const r = btn.getBoundingClientRect(), w = btn.offsetWidth, h = btn.offsetHeight;
+  Object.assign(btn.style, { left: `${r.left + r.width / 2 - w / 2}px`, top: `${r.top + r.height / 2 - h / 2}px`, width: `${w}px`, height: `${h}px` });
+  /* out of the ticket altogether: inside it, the tearing stub's transform and the ticket's mask would carry and clip it */
+  /* a spacer keeps its place, so the ticket does not shrink while its stub tears */
+  const keep = document.createElement("span"); keep.style.cssText = `display:block;height:${h}px;margin:6px auto 4px`; btn.before(keep);
+  btn.classList.add("freed"); document.body.append(btn);
+}
+/* carry the inked stamp from where it was pressed to its place at the head of the running ticket. The stamp itself
+   flies, on the page above everything (no ticket's mask can clip it), shrinking to the size of the one waiting there;
+   when it lands it hands over to that one. Plain transforms, so every browser does it. */
+function flyStamp(btn) {
+  const to = document.querySelector(".dealtwrap.fresh .stamp");
+  if (!to || !btn.animate) { btn.remove(); return; }
+  const a = btn.getBoundingClientRect(), b = to.getBoundingClientRect();
+  const dx = b.left + b.width / 2 - (a.left + a.width / 2), dy = b.top + b.height / 2 - (a.top + a.height / 2), k = to.offsetWidth / btn.offsetWidth;
+  const tilt = getComputedStyle(to).getPropertyValue("--tilt").trim() || "-5deg";
+  to.style.visibility = "hidden";
+  const fly = btn.animate([{ transform: "rotate(-3deg)" }, { transform: `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px) scale(${k.toFixed(3)}) rotate(${tilt})` }],
+    { duration: 460, easing: "cubic-bezier(.3, .7, .2, 1)", fill: "forwards" });
+  let done = false;
+  const land = () => { if (done) return; done = true; btn.remove(); to.style.visibility = "";
+    /* it lands: the stub it lands on gives a little */
+    const wrap = to.closest(".dealtwrap"); if (wrap && wrap.animate) wrap.animate([{ transform: "none" }, { transform: "translateY(2px)" }, { transform: "none" }], { duration: 200, easing: "ease-out" }); };
+  fly.onfinish = land; fly.oncancel = land;
+}
 /* Deal stamps the picked ticket, then the sheet closes */
 function seal(i) {
   const offer = makeOffer(S), term = i === "x" ? offer.override : offer.terms[+i];
@@ -2866,7 +2915,7 @@ window.pomodealApp = {
     if (!BE) return;
     if (!doc) { if (S && !sheet) { S = null; lastSig = ""; render(); } return; }
     /* a block change that came from the server (the scheduled boundary, or another device) turns the dial too */
-    if (S && S.id === doc._id && doc.state.idx !== S.idx && S.blocks[S.idx]) { turnFrom = { type: S.blocks[S.idx].type, p: remaining() / S.durMs }; beat("turn"); if (doc.state.idx > S.idx) offerInstall(); }
+    if (S && S.id === doc._id && doc.state.idx !== S.idx && S.blocks[S.idx]) { turnFrom = { type: S.blocks[S.idx].type, p: remaining() / S.durMs, label: title(S.blocks[S.idx].label) }; beat("turn"); if (doc.state.idx > S.idx) offerInstall(); }
     const extra = S && S.id === doc._id ? { serial: S.serial, justStarted: S.justStarted, with: S.with, firstMove: S.firstMove }
       : { serial: String(Math.floor(doc.createdAt / 1000) % 10000).padStart(4, "0") };
     /* the big one rides on the session doc, not its state; notes already sent here or on another device aren't asked again */
