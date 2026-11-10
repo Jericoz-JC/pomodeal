@@ -93,6 +93,11 @@ const CSS = `
 #pd-menu[hidden] { display: none; }
 #pd-menu button { text-align: left; background: none; border: none; padding: 12px 14px; min-height: 44px; border-radius: 8px; font: inherit; font-size: 16px; color: var(--ink); cursor: pointer; }
 #pd-menu button:hover { background: var(--paper); }
+#pd-menu .pd-m-theme { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 6px 6px 6px 14px; border-block: 1px solid var(--rule); margin: 4px 0; font-size: 16px; color: var(--ink); }
+#pd-menu .themesw button { min-height: 36px; padding: 6px 10px; font-size: 14px; color: var(--soft); }
+#pd-menu .themesw button[aria-checked="true"] { background: var(--ink); color: var(--paper); }
+#pd-menu .themesw button:hover { background: var(--paper); color: var(--ink); }
+#pd-menu .themesw button[aria-checked="true"]:hover { background: var(--ink); color: var(--paper); }
 `;
 
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c] as string));
@@ -196,7 +201,10 @@ export function mountGate(actions: GateActions) {
   acct.id = "pd-account"; acct.hidden = true; acct.setAttribute("aria-haspopup", "menu"); acct.setAttribute("aria-label", "Account");
   const menu = document.createElement("div");
   menu.id = "pd-menu"; menu.hidden = true; menu.setAttribute("role", "menu");
-  menu.innerHTML = `<button role="menuitem" id="pd-m-invite">Invite friends</button><button role="menuitem" id="pd-m-out">Sign out</button>`;
+  menu.innerHTML = `<button role="menuitem" id="pd-m-invite">Invite friends</button><div class="pd-m-theme"><span id="pd-m-th">Theme</span><span class="themesw" aria-labelledby="pd-m-th"></span></div><button role="menuitem" id="pd-m-out">Sign out</button>`;
+  // the theme switch is the prototype's own (window.pomodealTheme), so the menu and the page agree
+  const sw = menu.querySelector<HTMLElement>(".themesw")!;
+  (window as unknown as { pomodealTheme?: { paint(b: HTMLElement): void } }).pomodealTheme?.paint(sw);
   document.body.append(acct, menu);
   acct.addEventListener("click", () => { menu.hidden = !menu.hidden; acct.setAttribute("aria-expanded", String(!menu.hidden)); });
   menu.querySelector("#pd-m-invite")!.addEventListener("click", () => { menu.hidden = true; openInvites(); });

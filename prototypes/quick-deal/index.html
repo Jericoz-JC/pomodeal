@@ -662,6 +662,10 @@ body.sheeted #view :is(.act, .rows) { visibility: hidden; }
 /* inside things already set in Archivo (buttons, chips, headings), a number just takes the surrounding type */
 :is(.primary, .secondary, .chip, .trychip, h1, h2, .title, .top) .num { font: inherit; letter-spacing: inherit; }
 .chipbtn .num { font-size: 1em; }
+/* the theme switch: three choices in one row, the one in use filled */
+.themesw { display: inline-flex; padding: 2px; gap: 2px; border-radius: 8px; box-shadow: inset 0 0 0 1px var(--rule); }
+.themesw button { min-height: 32px; padding: 4px 10px; border: none; border-radius: 6px; background: none; color: var(--soft); font-size: .8125rem; }
+.themesw button[aria-checked="true"] { background: var(--ink); color: var(--paper); }
 
 /* the stamped stub of tonight's deal stays with the session */
 .dealtwrap { flex: none; filter: drop-shadow(0 1px 0 var(--rule)) drop-shadow(0 3px 5px var(--lift)); }
@@ -1085,6 +1089,8 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 }
 </style>
 
+<!-- the theme you picked (Device, Light, Dark) is set before anything is drawn, so a forced theme never flashes the other one -->
+<script>try { var t = localStorage.getItem("pomodeal.theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch (e) {}</script>
 <div class="app">
   <div class="proto" role="region" aria-label="Prototype controls">
     <strong>Prototype</strong>
@@ -1094,6 +1100,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
     <button class="chipbtn" id="jump">Skip to end of block</button>
     <button class="chipbtn" id="reset">Restart</button>
     <span>Ledger and Room use sample data.</span>
+    <span>Theme</span><span class="themesw" id="proto-theme"></span>
   </div>
   <header class="deskhead" id="deskhead"></header>
   <div class="desk">
@@ -2836,6 +2843,33 @@ const focusTitle = () => { const h = $("#view h1"); if (h) { h.tabIndex = -1; h.
 WIDE.addEventListener("change", () => { lastSig = ""; render(); });
 setInterval(() => { if (!S) return; if (BE) vnow = Date.now() + clockOffset; paintTitle(); }, 1000);
 addEventListener("scroll", tapeSeen, { passive: true });
+/* ---------- theme: follow the device, or always light, or always dark ----------
+   Kept on this device only (localStorage "pomodeal.theme"; nothing for "Device"). The account menu and the prototype
+   bar both draw themeSwitch(), and the app shell reaches it through window.pomodealTheme. */
+const THEME_KEY = "pomodeal.theme", THEMES = [["device", "Device"], ["light", "Light"], ["dark", "Dark"]];
+const PAPER = { light: "#EDEFE9", dark: "#18201C" };
+function themeNow() { try { const v = localStorage.getItem(THEME_KEY); return v === "light" || v === "dark" ? v : "device"; } catch (e) { return "device"; } }
+function applyTheme(v) {
+  const r = document.documentElement;
+  if (v === "device") delete r.dataset.theme; else r.dataset.theme = v;
+  /* the phone's status bar follows the page: a forced theme overrides both of the device's colours */
+  document.querySelectorAll('meta[name="theme-color"]').forEach(m => { if (!m.dataset.device) m.dataset.device = m.content; m.content = v === "device" ? m.dataset.device : PAPER[v]; });
+  if (pipWin) { const d = pipWin.document.documentElement; if (v === "device") delete d.dataset.theme; else d.dataset.theme = v; }
+  document.querySelectorAll(".themesw").forEach(paintThemeSwitch);
+}
+function setTheme(v) { try { if (v === "device") localStorage.removeItem(THEME_KEY); else localStorage.setItem(THEME_KEY, v); } catch (e) {} applyTheme(v); }
+/* three choices in one row; the one in use is checked. Arrow keys move along it, as a radio group should. */
+function paintThemeSwitch(box) {
+  const now = themeNow();
+  box.setAttribute("role", "radiogroup"); box.setAttribute("aria-label", "Theme");
+  box.innerHTML = THEMES.map(([k, l]) => `<button type="button" role="radio" data-theme-pick="${k}" aria-checked="${k === now}" tabindex="${k === now ? 0 : -1}">${l}</button>`).join("");
+  box.querySelectorAll("[data-theme-pick]").forEach((b, i, all) => {
+    b.onclick = e => { e.stopPropagation(); setTheme(b.dataset.themePick); say(`Theme: ${b.textContent}.`); box.querySelector(`[data-theme-pick="${b.dataset.themePick}"]`).focus(); };
+    b.onkeydown = e => { const d = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key]; if (!d) return; e.preventDefault(); e.stopPropagation(); all[(i + d + all.length) % all.length].click(); };
+  });
+}
+window.pomodealTheme = { get: themeNow, set: setTheme, paint: paintThemeSwitch };
+applyTheme(themeNow());
 $("#sp1").onclick = () => { speed = 1; $("#sp1").setAttribute("aria-pressed", "true"); $("#sp30").setAttribute("aria-pressed", "false"); };
 $("#sp30").onclick = () => { speed = 30; $("#sp30").setAttribute("aria-pressed", "true"); $("#sp1").setAttribute("aria-pressed", "false"); };
 $("#jump").onclick = () => { if (S) vnow = S.startedAt + S.durMs - 1000; };

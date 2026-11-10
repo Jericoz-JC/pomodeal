@@ -151,6 +151,12 @@ Not verified: the floating window itself. Headless Edge and the app's own browse
 
 Not verified: sign-in itself (the buttons are unchanged, but the page was only checked in the local production-mode preview, not against a real sign-in), Safari, and the iPhone install hint.
 
+### A theme switch
+
+Chris asked how light and dark are chosen: the app only followed the device, with no way to change it. The account menu now has **Theme: Device, Light, Dark** (a radio group; arrow keys move along it). Device is the default and stores nothing; Light or Dark is kept on this device only (`pomodeal.theme`, listed in the privacy inventory). The choice is applied before the page draws, so a forced theme never flashes the other one, and the phone's status bar colour follows it, as does the floating wheel. Signed out, the landing page follows the choice already made on that device. The prototype bar has the same switch for reviews.
+
+Not verified: the status bar colour on a real iPhone or Android phone.
+
 ## Invites
 
 Chris reported that he invited a friend and could see nothing. An investigation (Opus 5.5, read-only) found this is mostly as built: an invite only lets someone into the beta, and friends, rooms and presence do not exist in the backend yet. The live Room says "open soon". Fixed on this branch:
