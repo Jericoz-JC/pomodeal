@@ -1,4 +1,4 @@
-import { nextFocusLength, type Block, type SessionState } from "./negotiation";
+import { BONUS_FOCUS_MIN, BREAK_FLOOR_MIN, nextFocusLength, type Block, type SessionState } from "./negotiation";
 
 /** Spec 007. Quick lengths are on first look; longer ones sit behind "Longer…". */
 export const FOCUS_QUICK = [5, 8, 12, 15, 20] as const;
@@ -17,11 +17,6 @@ export interface QuickDeal {
 /** Long blocks start at the length you chose and hold; quick ones ramp. */
 export const isLongFocus = (focusMin: number): boolean => focusMin >= FOCUS_LONG[0];
 
-/** A session is about 90–120 min of focus: 45 and 60 get two blocks, everything else three. */
-export function roundsFor(focusMin: number): number {
-  return focusMin >= 45 ? 2 : 3;
-}
-
 /** Break after focus block `i`: 5 then 7 for quick sessions, a quarter of the block for long ones. */
 export function breakBetween(focusMin: number, i: number): number {
   return isLongFocus(focusMin) ? Math.round(focusMin / 4) : 5 + i * 2;
@@ -34,8 +29,12 @@ export function dealProblem(d: QuickDeal): string | null {
   return null;
 }
 
-/** Builds a session from a Quick Deal: the current distraction becomes the first, planned block. */
-export function buildSession(d: QuickDeal, now: number, rounds = roundsFor(d.focusMin)): SessionState {
+/**
+ * Builds a session from a Quick Deal: the current distraction becomes the first, planned block, then one focus block.
+ * Spec 010: a deal is one sitting, exactly its ticket. `rounds` above 1 builds the older multi-block sessions that may
+ * still be running; nothing starts one now.
+ */
+export function buildSession(d: QuickDeal, now: number, rounds = 1): SessionState {
   const blocks: Block[] = [];
   if (d.activity) blocks.push({ type: "break", label: d.activity, min: d.breakMin });
   // the ramp grows +4 up to max(25, chosen), so a long block simply holds its length
@@ -48,4 +47,30 @@ export function buildSession(d: QuickDeal, now: number, rounds = roundsFor(d.foc
     focus = nextFocusLength(focus, false, target);
   }
   return { blocks, idx: 0, startedAt: now, durMs: blocks[0].min * 60_000, askCount: 0, debt: 0, bonusOffered: false };
+}
+
+/**
+ * Spec 010: the next round, offered as a fresh ticket when a deal is done. Quick lengths step up one notch
+ * (5 → 8 → 12 → 15 → 20), long ones repeat; the break is the one between rounds, of the same activity (an unnamed
+ * break when none was chosen). The length is the one chosen: minutes added by trades or the bonus don't count.
+ */
+export function nextRound(s: SessionState): QuickDeal {
+  const focus = s.blocks.find((b) => b.type === "focus") ?? s.blocks[0];
+  const first = s.blocks[0];
+  // the bonus is taken on the running block and marks it (bonusOffered), unlike a trade's `added`
+  const bonus = s.blocks[s.idx] === focus && s.bonusOffered ? BONUS_FOCUS_MIN : 0;
+  const chosen = [...FOCUS_LENGTHS].reverse().find((m) => m <= focus.min - (focus.added ?? 0) - bonus) ?? FOCUS_LENGTHS[0];
+  const focusMin = isLongFocus(chosen) ? chosen : FOCUS_QUICK.find((m) => m > chosen) ?? FOCUS_QUICK[FOCUS_QUICK.length - 1];
+  return { activity: first.type === "break" ? first.label : "Your pick", breakMin: breakBetween(chosen, 0), task: focus.label, focusMin };
+}
+
+/**
+ * Borrowed minutes still owed come off the next deal's break, down to the floor (spec 001 "Borrow", spec 010).
+ * What the break can't take, or all of it when the next deal has no break, is forgiven.
+ */
+export function repayDebt(d: QuickDeal, debt: number): { deal: QuickDeal; repaid: number; forgiven: number } {
+  if (debt <= 0) return { deal: d, repaid: 0, forgiven: 0 };
+  if (!d.activity) return { deal: d, repaid: 0, forgiven: debt };
+  const repaid = Math.min(debt, Math.max(0, d.breakMin - BREAK_FLOOR_MIN));
+  return { deal: { ...d, breakMin: d.breakMin - repaid }, repaid, forgiven: debt - repaid };
 }

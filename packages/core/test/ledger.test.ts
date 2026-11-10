@@ -1,7 +1,7 @@
 // Ledger entries for what a student does outside an ask: making the deal, stopping, ending a block early
-// (spec 001 "Ask: skip a break / end early"). Every outcome becomes a ledger entry.
+// (spec 001 "Ask: skip a break / end early"). Every outcome becomes a ledger entry. `done` is in sitting.test.ts.
 import { describe, expect, it } from "vitest";
-import { advance, buildSession, dealEntry, endEarlyEntry, skipEntry, type SessionState } from "../src";
+import { buildSession, dealEntry, endEntry, skipEntry, type SessionState } from "../src";
 
 const T0 = 1_700_000_000_000;
 const MIN = 60_000;
@@ -17,17 +17,13 @@ describe("dealEntry", () => {
   });
 });
 
-describe("endEarlyEntry", () => {
+describe("endEntry before the time is up", () => {
   it("records the focus minutes done in the running block", () => {
-    expect(endEarlyEntry(focusFirst(), T0 + 40 * MIN + 30_000)).toEqual({ at: T0 + 40 * MIN + 30_000, kind: "end_early", blockLabel: "History paper", minutes: 40 });
+    expect(endEntry(focusFirst(), T0 + 40 * MIN + 30_000)).toEqual({ at: T0 + 40 * MIN + 30_000, kind: "end_early", blockLabel: "History paper", minutes: 40 });
   });
-  it("names the big one, not the break, when stopped during a break", () => {
-    const s = advance(focusFirst(), T0 + 60 * MIN);
-    expect(endEarlyEntry(s, T0 + 63 * MIN, "History paper")).toMatchObject({ kind: "end_early", blockLabel: "History paper", minutes: 0 });
-    expect(endEarlyEntry(withBreak(), T0 + 2 * MIN)).toMatchObject({ blockLabel: "Reading", minutes: 0 });
-  });
-  it("never counts more than the block's length", () => {
-    expect(endEarlyEntry(focusFirst(30), T0 + 90 * MIN).minutes).toBe(30);
+  it("names the task (or the big one), not the break, when stopped during the break", () => {
+    expect(endEntry(withBreak(), T0 + 2 * MIN)).toMatchObject({ kind: "end_early", blockLabel: "Reading", minutes: 0 });
+    expect(endEntry(withBreak(), T0 + 2 * MIN, "History paper")).toMatchObject({ blockLabel: "History paper", minutes: 0 });
   });
 });
 

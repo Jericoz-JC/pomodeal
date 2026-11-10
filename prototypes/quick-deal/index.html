@@ -188,8 +188,6 @@ p { margin: 0; }
 /* longer lengths sit under the quick ones, past a hairline, with one line that says what changes (spec 007; council r1: always shown) */
 .longrow { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 8px; padding-top: 10px; margin-top: 2px; border-top: 1px solid var(--rule); }
 .longrow .why { flex-basis: 100%; font-size: .9375rem; color: var(--soft); }
-/* the shape of a long session, said once under the sentence so the second block isn't a surprise */
-.plan { font-size: .9375rem; color: var(--soft); margin-top: -4px; }
 /* spec 008: "Bigger than one block?" is a box printed on the ticket, empty and dashed in ink like the stamp box.
    Ticking it inks the box green and turns the deal into the first payment on a big one. */
 /* the first payment starts its own line, like a second line item under the break */
@@ -236,7 +234,8 @@ p { margin: 0; }
 .firstmove textarea { display: block; width: 100%; min-height: 44px; margin: 0; padding: 8px 0 7px; resize: none; overflow: hidden; border: none; border-bottom: 1.5px solid var(--edge); border-radius: 0; background: none;
   font: inherit; font-size: 1.125rem; line-height: 1.4; color: var(--ink); field-sizing: content; }
 /* an example, not an answer: upright and lighter than anything typed (62% ink keeps it at 4.5:1) */
-.firstmove textarea::placeholder { color: color-mix(in srgb, var(--ink) 62%, transparent); font-style: normal; opacity: 1; }
+/* a hint, not an answer: italic and soft, like the other fields' hints (spec 010 council) */
+.firstmove textarea::placeholder { color: var(--soft); font-style: italic; opacity: 1; }
 .firstmove textarea:focus { border-bottom-color: var(--deal); }
 .firstmove textarea:focus-visible { outline-offset: 4px; }
 /* block end of a big one: the bookmark on the same ruled line as the first move, then the done question */
@@ -580,6 +579,10 @@ button.term:focus-visible { outline-offset: 3px; }
 .tearrow.stacked .used > span { flex: 1; min-width: 0; }
 .tearrow.stacked .usedwrap .stamp { left: auto; right: 22px; bottom: auto; top: 9px; }
 .tearrow.stacked .rest { justify-content: flex-start; gap: 10px; padding: 16px 26px 18px 20px; }
+/* spec 010: on the done sheet the next round is offered as a question over its ticket, said like the clock's other lines */
+.againq { margin: 6px 0 -4px; font-family: var(--font-head); font-stretch: 78%; font-weight: 750; font-size: 1.375rem; line-height: 1.15; }
+/* a deal kept is not a used-up break: its stub is printed at full ink, holding just its minutes and the Done stamp */
+.tearrow.kept .used { opacity: 1; }
 .tearrow .rest > p { display: flex; flex-direction: column; gap: 4px; }
 .tearrow .rest .nperf { flex: none; height: 6px; margin: 4px -26px 0 -20px; background: radial-gradient(circle, var(--edge) 1.2px, transparent 1.7px) 4px 50% / 8px 6px repeat-x; }
 .tearrow .rest .notes { padding: 0; }
@@ -704,14 +707,6 @@ div.presence { cursor: default; color: var(--soft); }
 .field input { border: 1.5px solid var(--edge); border-radius: 10px; padding: 12px; min-height: 48px; background: var(--card); }
 .field input::placeholder { color: var(--soft); font-style: italic; }
 
-/* "Take my break" is its own countdown: a meter inside its bottom edge, a faint full-width track with a bar that drains right to left,
-   clipped by the button's own corners */
-.countbtn { --p: 1; position: relative; overflow: hidden; isolation: isolate; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; }
-.countbtn.counting::before, .countbtn.counting::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 4px; z-index: -1; }
-.countbtn.counting::before { background: var(--rule); }
-.countbtn.counting::after { background: var(--edge); transform-origin: left; transform: scaleX(var(--p)); }
-.countbtn small { font-family: var(--font-body); font-weight: 400; font-stretch: normal; font-size: .875rem; letter-spacing: 0; color: var(--soft); }
-
 /* ledger: torn stubs, ink-stamped */
 .tally { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
 .tally.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -835,9 +830,6 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
    Six moments, each answering something you did or something the clock did. Only transform and opacity move.
    A moment records when it began (JS `beat`); a re-render inside its window passes the elapsed time as a negative
    --lag, so the moment carries on where it was instead of restarting. Animation never drives time. */
-
-/* a line that replaces a 44px button keeps its height, so nothing above it moves */
-.held { min-height: 44px; display: grid; place-items: center; }
 
 /* 1. the stamp. The button gives under the thumb, the stamp comes down (ease-in), hits the paper at 28%, squashes,
    rebounds once and settles. The ticket dips on impact, and phones that can buzz, buzz at the same instant. */
@@ -1111,10 +1103,11 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
     <main id="view"></main>
     <aside class="side tapeside" id="side-ledger" aria-label="Today's deals" hidden></aside>
   </div>
-  <p id="sr" class="vh" aria-live="polite"></p>
 </div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><pattern id="brk-hatch" width="4.2" height="4.2" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="4.2" height="4.2"/><path d="M0 0V4.2"/></pattern></defs></svg>
 <div id="sheet-root"></div>
+<!-- outside .app, which goes inert under a sheet: an inert live region is never read out -->
+<p id="sr" class="vh" aria-live="polite"></p>
 <div id="panel-root"></div>
 
 <script>
@@ -1146,23 +1139,25 @@ function applyTerm(s, term, intention) {
   s.askCount++;
   return stubOf({ kind: term.kind, blockLabel: cur.label, minutes: term.addMin, intention });
 }
-/* ledger kinds, as the server files them (packages/core negotiation.ts, ADR 0006). `deal` is the deal itself; `end_early`
-   (Stop for now), `skip` (a block ended early) and `forgiven` (borrowed minutes cleared at the end) are not deals. */
-const MARK = { deal: "Deal", freebie: "Free", borrow: "Borrowed", trade: "+Focus", bonus: "Bonus", override: "No terms", end_early: "Stopped", skip: "Early", forgiven: "Cleared" };
-const TERMS = { deal: "The deal you made", freebie: "On the house", borrow: "Borrowed from a later break", trade: "Traded for 5 more min of focus", bonus: "Kept going, next break 3 min longer", override: "No terms", end_early: "Stopped for now", skip: "Moved on early", forgiven: "Borrowed minutes don't carry over" };
-const NOT_DEALS = { end_early: 1, skip: 1, forgiven: 1 };
+/* ledger kinds, as the server files them (packages/core negotiation.ts, ADRs 0006 and 0007). `deal` is the deal itself;
+   `done` (it ran its full time), `end_early` (Stop for now), `skip` (a block ended early) and `forgiven` (borrowed
+   minutes cleared) are not more deals. `done` is green: it is the deal kept, not a deal missed. */
+const MARK = { deal: "Deal", done: "Done", freebie: "Free", borrow: "Borrowed", trade: "+Focus", bonus: "Bonus", override: "No terms", end_early: "Stopped", skip: "Early", forgiven: "Cleared" };
+const TERMS = { deal: "The deal you made", done: "The whole deal", freebie: "On the house", borrow: "Borrowed from a later break", trade: "Traded for 5 more min of focus", bonus: "Kept going for 10 more", override: "No terms", end_early: "Stopped for now", skip: "Moved on early", forgiven: "Borrowed minutes don't carry over" };
+const NOT_DEALS = { done: 1, end_early: 1, skip: 1, forgiven: 1 };
 /* asks for more time: their title is "+5 min of Reels" */
 const ASKS = { freebie: 1, borrow: 1, trade: 1, override: 1, bonus: 1 };
 /* one ledger row (from the server, or made here in the demo) as a stub: the title, the line under it, and the note.
    A row on a big one (taskId) says so. */
 function stubOf(e, t = clockStr(e.at)) {
   const label = String(e.blockLabel), m = e.minutes, big = !!e.taskId;
-  const text = e.kind === "deal" || e.kind === "end_early" ? title(label)
+  const text = e.kind === "deal" || e.kind === "done" || e.kind === "end_early" ? title(label)
     : e.kind === "skip" ? `Ended ${label === "Your pick" ? "your break" : title(label)} early`
     : e.kind === "forgiven" ? `Cleared ${m} borrowed min`
     : e.kind === "bonus" ? `${m} more min of ${title(label).split(" ")[0].toLowerCase()}`
     : `${m} more min of ${label}`;
-  const sub = e.kind === "deal" ? (big ? `Big one, starts with ${m} min` : `Starts with ${m} min of focus`)
+  const sub = e.kind === "deal" ? (big ? `Big one, ${m} min of focus` : `${m} min of focus`)
+    : e.kind === "done" ? (big ? `${m} min on this big one` : `${m} min of focus`)
     : e.kind === "end_early" ? (m ? (big ? `${m} min done on this big one` : `${m} min of focus done`) : TERMS.end_early)
     : e.kind === "skip" ? (m ? `After ${m} min` : "Right at the start")
     : "";
@@ -1268,19 +1263,31 @@ const newBig = () => ({ on: false, type: null, gut: null, move: "", edited: fals
 /* the big one is named exactly as typed (commas kept), cut to 80 characters counted as the core counts them */
 const bigTitle = () => [...String(deal.task).trim()].slice(0, 80).join("");
 function fresh() { nudged = false; deal = { act: "Reels", breakMin: 10, task: "Reading, BIO 180 ch. 7", focusMin: 8 }; big = newBig(); ledger = []; S = null; sheet = null; picker = null; toast = null; unseen = 0; studied = 0; fromCard = null; panel = null; lastRepay = null; quickOpen = false; }
-/* mirrors packages/core/src/session.ts: quick lengths ramp +4 up to max(25, chosen); long ones hold.
-   45 and 60 get two focus blocks, the rest three; a long block's break is a quarter of it. */
-const roundsFor = f => f >= 45 ? 2 : 3;
-const breakBetween = (f, i) => isLong(f) ? Math.round(f / 4) : 5 + i * 2;
+/* mirrors packages/core/src/session.ts. Spec 010: a deal is one sitting, exactly its ticket: the break you chose (if
+   any), then one focus block. The next round is a fresh ticket: quick lengths step up one notch, long ones repeat,
+   with the break between rounds (5 min, or a quarter of a long block) of the same activity. */
+const breakBetween = f => isLong(f) ? Math.round(f / 4) : 5;
 function buildSession(d) {
-  const blocks = [], rounds = roundsFor(d.focusMin), target = Math.max(25, d.focusMin);
+  const blocks = [];
   if (d.act) blocks.push({ type: "break", label: d.act, min: d.breakMin });
-  for (let i = 0, f = d.focusMin; i < rounds; i++, f = Math.min(target, f + 4)) {
-    blocks.push({ type: "focus", label: d.task, min: f });
-    /* later breaks are the break you chose, so every screen can name it */
-    if (i < rounds - 1) blocks.push({ type: "break", label: d.act || "Your pick", min: breakBetween(d.focusMin, i) });
-  }
+  blocks.push({ type: "focus", label: d.task, min: d.focusMin });
   return { blocks, idx: 0, startedAt: vnow, durMs: blocks[0].min * 60000, askCount: 0, debt: 0, bonusOffered: false };
+}
+const ALL_FOCUS = [...FOCUS_QUICK, ...FOCUS_LONG];
+function nextRound(s) {
+  const focus = s.blocks.find(b => b.type === "focus") || s.blocks[0], first = s.blocks[0];
+  /* the 10 more minutes mark the running block (bonusOffered), unlike a trade's added */
+  const bonus = s.blocks[s.idx] === focus && s.bonusOffered ? 10 : 0;
+  const chosen = [...ALL_FOCUS].reverse().find(m => m <= focus.min - (focus.added || 0) - bonus) || ALL_FOCUS[0];
+  const focusMin = isLong(chosen) ? chosen : FOCUS_QUICK.find(m => m > chosen) || FOCUS_QUICK[FOCUS_QUICK.length - 1];
+  return { act: first.type === "break" ? first.label : "Your pick", breakMin: breakBetween(chosen), task: focus.label, focusMin };
+}
+/* borrowed minutes still owed come off the next deal's break, down to the floor; the rest is cleared */
+function repayDebt(d, debt) {
+  if (debt <= 0) return { deal: d, repaid: 0, forgiven: 0 };
+  if (!d.act) return { deal: d, repaid: 0, forgiven: debt };
+  const repaid = Math.min(debt, Math.max(0, d.breakMin - FLOOR));
+  return { deal: { ...d, breakMin: d.breakMin - repaid }, repaid, forgiven: debt - repaid };
 }
 /* mirrors packages/core/src/timer.ts */
 const LONG_MS = 45 * 60000;
@@ -1288,13 +1295,11 @@ const headsUpMs = () => S.durMs >= LONG_MS ? 300000 : 120000;
 const isHeads = () => { const r = remaining(); return r > 0 && r <= headsUpMs(); };
 function isHalfway() { if (cur().type !== "focus" || S.durMs < LONG_MS) return false; const since = vnow - S.startedAt - S.durMs / 2; return since >= 0 && since < 180000; }
 function dialTicks(min) { const n = Math.max(1, Math.round(min)), s5 = n > 30 ? 15 : 5, k = n % s5 ? n : s5; return `--minor:${(360 / n).toFixed(4)}deg;--major:${(360 * k / n).toFixed(4)}deg`; }
-/* "Then 15 min of Reels, and one more 60 min block if you want it." Said only for long deals: later blocks are offered,
-   not owed. The break is named the way the running screen names it ("Then Reels for 15 min."). */
 const an = n => /^(8|11|18)/.test(String(n)) ? "an" : "a";
-function planLine(d) {
-  const f = d.focusMin, b = breakBetween(f, 0), brk = d.act ? `${b} min of ${d.act}` : `${an(b)} ${b} min break`;
-  return roundsFor(f) === 2 ? `Then ${brk}, and one more ${f} min block if you want it.` : `Then ${brk}, and two more ${f} min blocks if you want them.`;
-}
+/* the part of a task after its comma: "BIO 180 ch. 7" of "Reading, BIO 180 ch. 7" */
+const tailOf = t => { const i = t.indexOf(","); return (i >= 0 ? t.slice(i + 1) : t).trim() || t; };
+/* a deal said as the ticket says it: "5 min of Reels, then 12 min of BIO 180 ch. 7." */
+const dealLine = d => cap(`${d.act === "Your pick" ? `${an(d.breakMin)} ${d.breakMin} min break` : `${d.breakMin} min of ${d.act}`}, then ${d.focusMin} min of ${tailOf(d.task)}.`);
 const cur = () => S.blocks[S.idx];
 const remaining = () => Math.max(0, S.startedAt + S.durMs - vnow);
 const minsLeft = () => Math.ceil(remaining() / 60000);
@@ -1302,6 +1307,8 @@ const minsLeft = () => Math.ceil(remaining() / 60000);
 let DEMO_SHIFT = (() => { const d = new Date(); d.setHours(22, 41, 0, 0); return d.getTime() - Date.now(); })();
 function clockStr(ms) { const d = new Date((ms ?? Date.now()) + DEMO_SHIFT); return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }).replace(/\s?([AP])M/i, (m, a) => a.toLowerCase() + "m"); }
 function shortTask() { return deal.task.split(",")[0].toLowerCase(); }
+/* a block named the way a sentence says it: "reading" of "Reading, BIO 180 ch. 7" */
+const shortName = b => String(b.label).split(",")[0].toLowerCase();
 /* one wording for the task everywhere: "Reading BIO 180 ch. 7" as a title, "reading BIO 180 ch. 7" mid-sentence */
 const title = l => String(l).replace(/,\s*/, " ");
 const taskPhrase = () => title(deal.task).replace(/^./, c => c.toLowerCase());
@@ -1309,18 +1316,19 @@ function nameOf(b) { return b ? (b.type === "focus" ? shortTask() : "your break"
 const longName = b => b ? (b.type === "focus" ? taskPhrase() : b.label === "Your pick" ? "your break" : title(b.label)) : "the end";
 const cap = s => s.replace(/^./, c => c.toUpperCase());
 /* the task as it sits in the deal sentence: "BIO 180 ch. 7" (the part after the comma) */
-const taskTail = () => { const i = deal.task.indexOf(","); return (i >= 0 ? deal.task.slice(i + 1) : deal.task).trim() || deal.task; };
+const taskTail = () => tailOf(deal.task);
 function bankFocus() { if (S && cur().type === "focus") studied += Math.round(Math.min(vnow - S.startedAt, S.durMs) / 60000); }
 /* whole minutes of the running block so far, and of it that count as focus (core timer.ts focusMinutesDone) */
 const blockMinsDone = () => Math.floor(Math.min(Math.max(0, vnow - S.startedAt), S.durMs) / 60000);
 const focusMinsDone = () => cur().type === "focus" ? blockMinsDone() : 0;
 /* early: the student ended the block before its time; that is a `skip` on the ledger */
 function nextBlock(early = false) { if (BE && S) BE.next(S.idx, early); if (early && remaining() > 0) file(stubOf({ kind: "skip", blockLabel: cur().label, minutes: blockMinsDone() })); bankFocus(); const was = S.idx, from = { type: cur().type, p: remaining() / S.durMs, label: title(cur().label) }; S.idx = Math.min(S.idx + 1, S.blocks.length - 1); if (S.idx !== was) { turnFrom = from; beat("turn"); offerInstall(); } S.startedAt = vnow; S.durMs = cur().min * 60000; S.askCount = 0; S.bonusOffered = false; closeSheet(); say(`${cur().type === "focus" ? "Focus" : "Break"}: ${title(cur().label)}, ${cur().min} minutes.`); }
-/* spec 008: a focus block of a big one ends on the boundary sheet with two skippable notes (bookmark, done).
-   Notes are sent once per focus block: when the next block starts, more time is asked for, or the sheet closes. */
+/* spec 008: a big one's focus block ends on the done sheet with two skippable notes (bookmark, finished?).
+   Notes are sent once per focus block: on the next round, Done for now, or 10 more minutes. */
 const needsNotes = () => !!(S && S.taskId) && cur().type === "focus" && (S.notedIdx == null || S.notedIdx < S.idx);
-/* the notes belong to the focus block that just ended, even if another device moves the session on under the sheet */
-const newNotes = () => ({ sid: S.id, idx: S.idx, bookmark: "", done: false, sent: false });
+/* the notes belong to the focus block that just ended, even if another device moves the session on under the sheet.
+   done starts unanswered (spec 010): nothing is pre-picked under a heading that already says "done". */
+const newNotes = () => ({ sid: S.id, idx: S.idx, bookmark: "", done: null, sent: false });
 /* the session moved past the block these notes are about (the server, or another device, advanced it) */
 const movedOn = () => !!(sheet && sheet.notes && S.idx !== sheet.notes.idx);
 function sendNotes() {
@@ -1336,25 +1344,47 @@ function notesCopy() {
   const name = c.title || title(S.blocks[sheet.notes.idx].label);
   return {
     hint: type ? BOOKMARK_HINTS[type] : "Where you'll pick up",
-    q: c.currentPiece ? `Finished ${c.currentPiece}?` : `Is ${name} done for now?`,
+    q: c.currentPiece ? `Finished ${c.currentPiece}?` : `Is ${name} finished?`,
   };
 }
-/* R44: no answer means not done, so "Not yet" shows as picked (quietly) until "Yes" is; it also takes the first focus (spec 008) */
+/* no answer means not finished; spec 010 shows neither as picked (R44's quiet "Not yet" contradicted the heading) */
 const DONE_CHOICES = [["yes", "Yes, stamp it"], ["no", "Not yet"]];
 const doneInner = (k, on) => `<span class="ink">${on ? CHECK : ""}${DONE_CHOICES.find(c => c[0] === k)[1]}</span>`;
 const doneChip = (k, on) => `<button class="inkchip lg" role="radio" data-done="${k}" aria-checked="${on}">${doneInner(k, on)}</button>`;
-/* the clock's 10 min offer at the end of a focus block: once per block, never on the last one, never past the ceiling */
-const canBonus = () => cur().type === "focus" && !S.bonusOffered && S.idx < S.blocks.length - 1 && cur().min + 10 <= CEILING;
+/* the clock's 10 min offer at the end of a focus block ("10 more minutes" on the done sheet): once, never past the ceiling */
+const canBonus = () => cur().type === "focus" && !S.bonusOffered && cur().min + 10 <= CEILING;
+/* the deal ran its full time: its one focus block (the last block) is at zero */
+const dealDone = () => !!S && S.idx >= S.blocks.length - 1 && remaining() <= 0;
+/* the demo's copy of what the server files when a deal stops (convex/sessions.ts stop): done or end_early, named by
+   the big one's title or the task, then whatever borrowed minutes are still owed */
+function fileStop(owed = S.debt) {
+  const c = S.taskId ? cardById(S.taskId) : null, focus = S.blocks.find(b => b.type === "focus");
+  file(stubOf({ kind: dealDone() ? "done" : "end_early", blockLabel: c ? c.title : focus.label, minutes: focusMinsDone(), taskId: S.taskId }));
+  if (owed > 0) file(stubOf({ kind: "forgiven", blockLabel: cur().label, minutes: owed }));
+}
+/* Stop for now, or Done for now */
 function stopNow() {
   if (S && remaining() <= 0) offerInstall();
   if (BE) BE.end();
-  if (S) {
-    /* a stop names what was being worked on: the big one's title, or the deal's task */
-    const c = S.taskId ? cardById(S.taskId) : null, focus = S.blocks.find(b => b.type === "focus");
-    file(stubOf({ kind: "end_early", blockLabel: c ? c.title : focus.label, minutes: focusMinsDone(), taskId: S.taskId }));
-    if (S.debt > 0) file(stubOf({ kind: "forgiven", blockLabel: cur().label, minutes: S.debt }));
-  }
+  if (S) fileStop();
   bankFocus(); S = null; sheet = null; render();
+}
+/* spec 010: the next round, stamped from the done sheet. An ordinary new deal on the same task (or big one); the
+   borrowed minutes come off its break, which the server works out again from the session it replaces. */
+function goAgain() {
+  sendNotes();
+  const d0 = nextRound(S), { deal: d, forgiven } = repayDebt(d0, S.debt), taskId = S.taskId, card = taskId ? cardById(taskId) : null, move = S.firstMove;
+  if (BE) { if (taskId) BE.startFromCard(taskId, d0); else BE.start(d0); }
+  fileStop(forgiven); bankFocus();
+  S = buildSession(d); S.justStarted = true; S.serial = String(412 + ledger.length).padStart(4, "0");
+  /* a big one starts its next round where the bookmark just left it */
+  if (taskId) { S.taskId = taskId; S.firstMove = move || (card && card.startWith) || ""; }
+  file(stubOf({ kind: "deal", blockLabel: card ? card.title : d.task, minutes: d.focusMin, taskId }));
+  closeSheet(); beat("deal");
+  const first = S.blocks[0];
+  toast = first.type === "break" ? `Deal. ${cap(tailOf(d.task))} starts at ${clockStr(Date.now() + first.min * 60000)}.` : "Deal. Go.";
+  setTimeout(() => { toast = null; if (S) S.justStarted = false; lastSig = ""; }, 3500);
+  say(toast); lastSig = ""; render(); focusTitle();
 }
 function say(t) { const el = document.getElementById("sr"); if (el) el.textContent = t; }
 /* a short tap at the instant the stamp hits the paper (Android; iOS has no vibrate) */
@@ -1558,7 +1588,6 @@ function ticket(peek) {
       <div class="tickethead"><span class="serial">No. ${serial}<br>${clockStr()}</span>${STAMPBOX}</div>
       <p class="sentence">${s}</p>
       ${fc.startWith ? `<p class="startw"><span>Start with:</span> ${N(esc(moveText(fc.startWith)))}</p>` : ""}
-      ${isLong(deal.focusMin) && p !== "focus" ? `<p class="plan">${N(planLine(deal))}</p>` : ""}
       ${pk}
       <button class="textbtn notcard" id="notcard">Not this one</button>
     </div>
@@ -1591,7 +1620,6 @@ function ticket(peek) {
     <div class="body">
       <div class="tickethead"><span class="serial">No. ${serial}<br>${clockStr()}</span>${STAMPBOX}</div>
       <p class="sentence">${sentence}</p>
-      ${!isBig && isLong(deal.focusMin) && p !== "focus" ? `<p class="plan">${N(planLine(deal))}</p>` : ""}
       ${pk}
       ${bigChip}
       ${bigRows}
@@ -1605,28 +1633,33 @@ function ticket(peek) {
 /* a ledger stub: the same torn ticket everywhere a deal is shown after the fact */
 const TILTS = [-2, 1.5, -1, 2.5, -3, 1];
 /* grey ink only for what wasn't a deal (a stop, a block ended early, cleared minutes) and for "no terms";
-   the deal itself and borrowing are deals like any other */
-const PLAIN = { ...NOT_DEALS, override: 1 };
+   the deal itself, a deal done, and borrowing are inked like any other deal */
+const PLAIN = { end_early: 1, skip: 1, forgiven: 1, override: 1 };
 const dealCount = () => ledger.filter(e => !NOT_DEALS[e.kind]).length;
 const lower = t => t.replace(/^./, c => c.toLowerCase());
 const stubTitle = e => ASKS[e.kind] ? e.text.replace(/ more min of /, " min of ").replace(/^(\d)/, "+$1") : e.text;
 const stubInner = (e, i) => `<span class="t"><b>${e.t.replace(/[ap]m$/, "")}<small>${e.t.slice(-2)}</small></b></span><span class="what"><span class="row"><span class="title">${esc(stubTitle(e))}</span><span class="stamp${PLAIN[e.kind] ? " plain" : ""}" style="--tilt:${TILTS[i % TILTS.length]}deg">${MARK[e.kind]}</span></span><em>${N(esc(e.sub || TERMS[e.kind]))}</em>${e.note ? `<em>First thing: ${N(esc(lower(e.note)))}${/[.?!]$/.test(e.note) ? "" : "."}</em>` : ""}</span>`;
 /* tonight's sample ledger. The intercept's "Last Reels deal" reads from it, so every screen tells the same story:
-   an hour on the history paper, stopped partway; then a reading deal with a Reels break ended early; then TikTok. */
+   an hour on the history paper, stopped partway; a reading deal with its Reels break ended early, done; the next
+   round, kept going 10 more, done; then a TikTok deal. */
 const SEED = [
   ["8:12pm", { kind: "deal", blockLabel: "History paper", minutes: 60, taskId: "paper" }],
   ["8:53pm", { kind: "end_early", blockLabel: "History paper", minutes: 41, taskId: "paper" }],
   ["9:05pm", { kind: "deal", blockLabel: "Reading, BIO 180 ch. 7", minutes: 8 }],
   ["9:12pm", { kind: "freebie", blockLabel: "Reels", minutes: 5 }],
   ["9:16pm", { kind: "skip", blockLabel: "Reels", minutes: 11 }],
-  ["9:58pm", { kind: "bonus", blockLabel: "Reading, BIO 180 ch. 7", minutes: 10 }],
+  ["9:24pm", { kind: "done", blockLabel: "Reading, BIO 180 ch. 7", minutes: 8 }],
+  ["9:25pm", { kind: "deal", blockLabel: "Reading, BIO 180 ch. 7", minutes: 12 }],
+  ["9:42pm", { kind: "bonus", blockLabel: "Reading, BIO 180 ch. 7", minutes: 10 }],
+  ["9:52pm", { kind: "done", blockLabel: "Reading, BIO 180 ch. 7", minutes: 22 }],
+  ["10:26pm", { kind: "deal", blockLabel: "Reading, BIO 180 ch. 7", minutes: 15 }],
   ["10:31pm", { kind: "borrow", blockLabel: "TikTok", minutes: 5 }],
   ["10:37pm", { kind: "trade", blockLabel: "TikTok", minutes: 5, intention: "Open the chapter" }],
 ].map(([t, e]) => stubOf(e, t));
 /* the newest ask for more time, optionally on one activity ("Last Reels deal") */
 const newest = (list, act) => [...list].reverse().find(e => ASKS[e.kind] && e.kind !== "override" && (!act || e.text.endsWith(" " + act)));
 /* one short line, not a stub: tickets are for deals you can act on */
-const SHORT = { deal: "a deal", freebie: "on the house", borrow: "borrowed", trade: "added to focus", bonus: "bonus", override: "no terms", end_early: "stopped", skip: "ended early", forgiven: "cleared" };
+const SHORT = { deal: "a deal", done: "done", freebie: "on the house", borrow: "borrowed", trade: "added to focus", bonus: "bonus", override: "no terms", end_early: "stopped", skip: "ended early", forgiven: "cleared" };
 const DOTS = `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>`;
 /* spec 008 "Day 2 and later": a card per open big one, above the ticket. A comeback card says what to do now and
    nothing about the time between. */
@@ -1711,7 +1744,7 @@ function runningView() {
   const f = face(r, m);
   /* while a sheet is open it does the talking: the dial keeps only its number and ring */
   const quiet = !!(sheet && tab === "now");
-  const then = nxt ? `<span class="swatch ${nxt.type}" aria-hidden="true"></span>Then ${esc(longName(nxt))} for ${nxt.min} min.` : "Last block tonight.";
+  const then = nxt ? `<span class="swatch ${nxt.type}" aria-hidden="true"></span>Then ${esc(longName(nxt))} for ${nxt.min} min.` : "Then you're done.";
   /* the next step always sits under the dial, in every state, so the dial never moves */
   const note = quiet ? `<p class="note"></p>` : toast ? `<p class="note go" role="status">${N(esc(toast))}</p>` : `<p class="note">${N(then)}</p>`;
   /* on focus blocks of 45+, a reserved slot under the next step: silent, 3 minutes at the midpoint, then empty again */
@@ -1735,7 +1768,7 @@ function runningView() {
     ${sw ? `<p class="sub startw"><span>Start with:</span> ${N(esc(moveText(sw)))}</p>` : ""}
   </div>
   <div class="timerwrap">
-    <div class="dial${S.justStarted ? " sweep" : ""}${r <= 0 ? " done" : ""}${heads ? " heads" : ""}${tn != null ? " turn" : wd != null ? " wind" : ""}" style="--p:${r <= 0 ? 0 : (r / S.durMs).toFixed(4)};${dialTicks(S.durMs / 60000)}${dl != null ? ";" + lagVar(dl) : ""}" role="img" aria-label="${r <= 0 ? "Time is up" : m + " minutes left" + (half ? ", halfway" : "")}">
+    <div class="dial${S.justStarted ? " sweep" : ""}${r <= 0 ? " done" : ""}${heads ? " heads" : ""}${tn != null ? " turn" : wd != null ? " wind" : ""}" style="--p:${r <= 0 ? 0 : (r / S.durMs).toFixed(4)};${dialTicks(S.durMs / 60000)}${dl != null ? ";" + lagVar(dl) : ""}" role="img" aria-label="${r <= 0 ? (dealDone() ? "Deal done" : "Time is up") : m + " minutes left" + (half ? ", halfway" : "")}">
       ${dial(isB ? "break" : "focus", S.durMs / 60000)}${tn != null && turnFrom && turnFrom.p > .005 ? `<span class="fill was ${turnFrom.type}" style="--p:${turnFrom.p.toFixed(4)}">${ARC}</span>` : ""}
       <span class="face${ink != null ? " reink" : ""}"${ink != null ? ` style="${lagVar(ink)}"` : ""}><span class="big ${f.cls}" id="mins">${f.big}</span><span class="unit" id="unit">${quiet ? "" : esc(f.unit)}</span></span>
     </div>
@@ -1750,7 +1783,7 @@ function runningView() {
   <section class="rows" aria-label="Your room">
     ${presence(!isB)}
   </section>
-  ${S.debt > 0 ? `<p class="soft small">${N(S.debt)} borrowed minutes come out of later breaks. Anything left is cleared tonight.</p>` : ""}`;
+  ${S.debt > 0 ? `<p class="soft small">${N(S.debt)} borrowed minutes come off your next round's break. If you're done for now, they're cleared.</p>` : ""}`;
 }
 
 function renderSheet() {
@@ -1770,8 +1803,8 @@ function renderSheet() {
   if (!same) {
     root.dataset.sig = body;
     body = body.replace(BOOKMARK_SLOT, () => esc(sheet.notes ? sheet.notes.bookmark : "")).replace(VOICE_SLOT, voiceMark);
-    /* a big one's block end also describes the dialog with its done question, since focus lands on "Not yet" below it */
-    const desc = body.includes('id="dealcost"') ? ` aria-describedby="dealcost${body.includes('id="doneq"') ? " doneq" : ""}"` : "";
+    /* the torn ticket's line describes the dialog ("That was the deal.", or what comes next after a break) */
+    const desc = body.includes('id="dealcost"') ? ` aria-describedby="dealcost"` : "";
     /* a sheet rises once when it opens; the terms come off the pad once when they first appear */
     const oe = sheet.openedAt == null ? Infinity : performance.now() - sheet.openedAt;
     const te = sheet.termsAt == null ? Infinity : performance.now() - sheet.termsAt;
@@ -1780,9 +1813,9 @@ function renderSheet() {
     root.innerHTML = `<div class="scrim${rise}"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sh"${desc}>${body}</div></div>`;
   }
   setInert();
-  updateCountdown();
-  /* a big one's block end puts you on "Not yet" (spec 008: its default focus), with nothing picked; other sheets on their heading */
-  if (sheet.focusMe) { const h = (sheet.notes && sheet.kind === "boundary" && !sheet.asking && $('[data-done="no"]')) || $("#sh"); if (h) h.focus({ preventScroll: true }); sheet.focusMe = false; }
+  /* every sheet opens on its heading, never on a button, so a stray tap, a switch step or a screen reader's double tap
+     can't start anything (spec 010) */
+  if (sheet.focusMe) { const h = $("#sh"); if (h) h.focus({ preventScroll: true }); sheet.focusMe = false; }
 }
 /* the bookmark's text goes in after the sheet is compared, so typing alone never redraws it */
 const BOOKMARK_SLOT = "{{bookmark-text}}";
@@ -1792,13 +1825,25 @@ function sheetBody() {
   const at = sheet.notes ? sheet.notes.idx : S.idx;
   const b = S.blocks[at], nxt = S.blocks[at + 1], over = remaining() <= 0;
   let body = "";
+  const serial = S.serial ? `<span class="serial">No. ${S.serial}</span>` : "";
   if (sheet.kind === "boundary" && !sheet.asking) {
-    /* the session ticket: the break half is torn off and marked used; the rest of the deal is still yours */
-    const rest = !nxt ? "That was the last block tonight."
-      : `<span class="nowrap">${nxt.min} min of</span> <span class="nowrap">${esc(nxt.type === "focus" ? taskTail() : longName(nxt))}</span>`;
-    /* a big one's focus block: two notes on the sheet, under the torn ticket. More time here is the clock's
-       10 min offer (the same one a plain focus block gets), and only while it's still on the table. */
-    const n = sheet.notes, nc = n ? notesCopy() : null;
+    /* the end of a break: its half of the ticket is torn off and marked used; the rest of the deal is still yours.
+       "Done" is kept for the end of the deal (spec 010). */
+    const rest = !nxt ? "That was the deal."
+      : `<span class="nowrap">${nxt.min} min of</span> <span class="nowrap">${esc(nxt.type === "focus" ? tailOf(nxt.label) : longName(nxt))}</span>`;
+    body = `<span class="grab" aria-hidden="true"></span>
+      <h2 id="sh" tabindex="-1">Time's up on ${esc(longName(b))}.</h2>
+      <div class="tearrow">
+        <span class="usedwrap" aria-hidden="true"><span class="used"><b>${N(b.min)} min</b><span>${esc(title(b.label))}</span></span><span class="stamp plain">Used</span></span>
+        <p class="rest" id="dealcost">${serial}<b>${N(rest)}</b></p>
+      </div>
+      <button class="primary" id="go">${nxt ? `Start ${esc(nameOf(nxt))}` : "Stop for now"}</button>
+      <button class="textbtn" id="ask2">Ask for ${N(5)} more minutes</button>`;
+  } else if (sheet.kind === "done") {
+    /* spec 010: the deal ran its full time. The ticket is stamped Done; a big one's two notes sit under it; then the
+       next round as a fresh ticket to stamp, Done for now at the same size, and the clock's 10 more minutes. */
+    const n = sheet.notes, nc = n ? notesCopy() : null, card = S.taskId ? cardById(S.taskId) : null;
+    const name = card ? card.title : title(b.label);
     const notes = n ? `<span class="nperf" aria-hidden="true"></span><div class="notes">
         <div class="firstmove"><label for="bookmark">Next time, start with…</label><textarea id="bookmark" rows="1" maxlength="140" enterkeyhint="done" placeholder="${esc(nc.hint)}">${BOOKMARK_SLOT}</textarea></div>
         <div class="donerow" role="radiogroup" aria-labelledby="doneq">
@@ -1806,16 +1851,19 @@ function sheetBody() {
           <div class="chips">${DONE_CHOICES.map(([k]) => doneChip(k, n.done === (k === "yes"))).join("")}</div>
         </div>
       </div>` : "";
-    const more = !n ? `<button class="textbtn" id="ask2">Ask for ${N(5)} more minutes</button>`
-      : canBonus() && !movedOn() ? `<button class="textbtn" id="ask2">Ask for ${N(10)} more minutes</button>` : "";
+    const { deal: d, repaid } = repayDebt(nextRound(S), S.debt), line = dealLine(d);
+    const owed = repaid ? `${repaid} borrowed ${repaid === 1 ? "minute comes" : "minutes come"} off this break.` : "";
+    const more = canBonus() && !movedOn() ? `<button class="textbtn" id="more10">10 more minutes of ${esc(card ? card.title : shortName(b))}</button>` : "";
     body = `<span class="grab" aria-hidden="true"></span>
-      <h2 id="sh" tabindex="-1">${esc(title(b.label))}, done.</h2>
-      <div class="tearrow${n ? " stacked" : ""}">
-        <span class="usedwrap" aria-hidden="true"><span class="used"><b>${N(b.min)} min</b><span>${esc(title(b.label))}</span></span><span class="stamp plain">Used</span></span>
-        ${n ? `<div class="rest"><p id="dealcost">${S.serial ? `<span class="serial">No. ${S.serial}</span>` : ""}<b>${N(rest)}</b></p>${notes}</div>`
-          : `<p class="rest" id="dealcost">${S.serial ? `<span class="serial">No. ${S.serial}</span>` : ""}<b>${N(rest)}</b></p>`}
+      <h2 id="sh" tabindex="-1">That was the deal.</h2>
+      <div class="tearrow kept${n ? " stacked" : ""}">
+        <span class="usedwrap" aria-hidden="true"><span class="used"><b>${N(b.min)} min</b></span><span class="stamp">Done</span></span>
+        ${n ? `<div class="rest"><p id="dealcost">${serial}<b>${N(`${b.min} min of ${esc(card ? name : lower(name))}`)}</b></p>${notes}</div>`
+          : `<p class="rest" id="dealcost">${serial}<b>${N(`${b.min} min of ${esc(card ? name : lower(name))}`)}</b></p>`}
       </div>
-      <button class="primary" id="go">${nxt ? `Start ${esc(nameOf(nxt))}` : "Stop for now"}</button>
+      <p class="againq" id="againh">Another round?</p>
+      <div class="terms" role="group" aria-labelledby="againh">${termTicket("button", ` id="again" aria-label="Deal another round: ${esc(line)}${owed ? ` ${esc(owed)}` : ""}"`, esc(line).replace(/(\d+) min\b/g, `<span class="nowrap">$1 min</span>`), esc(owed))}</div>
+      <button class="secondary" id="donenow">Done for now</button>
       ${more}`;
   } else if (sheet.kind === "boundary" || sheet.kind === "offer") {
     const offer = makeOffer(S);
@@ -1838,7 +1886,7 @@ function sheetBody() {
       const pre = offer.terms.findIndex(t => t.kind === lastRepay);
       /* what each term costs, said as a sentence in your own words: no arrows, no figures to decode */
       const mins = n => `${n} ${n === 1 ? "minute" : "minutes"}`;
-      const borrow = !bp.from ? ["Take them from a later break tonight.", ""]
+      const borrow = !bp.from ? ["Take them from my next round's break.", "If I'm done for now, they're cleared."]
         : bp.from === bp.to ? ["Take them from later breaks.", `My next break stays at ${mins(bp.from)}.`]
         : bp.carry ? ["Take them from my next break.", `It goes from ${mins(bp.from)} to ${bp.to}, and the other ${bp.carry} ${bp.carry === 1 ? "comes off a later break" : "come off later breaks"}.`]
         : ["Take them from my next break.", `It goes from ${mins(bp.from)} to ${bp.to}.`];
@@ -1869,13 +1917,6 @@ function sheetBody() {
           ${noterms}`;
       }
     }
-  } else if (sheet.kind === "bonus") {
-    const nb = nextOf(S, "break");
-    body = `<span class="grab" aria-hidden="true"></span>
-      <h2 id="sh" tabindex="-1">Want to keep going?</h2>
-      <div class="terms">${termTicket("button", ` id="bonusyes"`, `10 more minutes of ${esc(shortTask())}.`, nb ? `Your next break goes from ${nb.min} minutes to ${nb.min + 3}.` : "Your break gets 3 minutes longer.")}</div>
-      <button class="secondary countbtn${sheet.paused ? "" : " counting"}" id="bonusno"><span>Take my break</span>${sheet.paused ? `<small>Waits for you</small>` : `<small id="cdtext">${N("Starts on its own in 30 seconds")}</small>`}</button>
-      ${sheet.paused ? `<p class="soft small center held">Take your time. Nothing happens until you pick.</p>` : `<button class="textbtn" id="moretime">More time to decide</button>`}`;
   }
   return body;
 }
@@ -2435,7 +2476,8 @@ function setInert() {
   const on = !!(sheet && S && tab === "now") || panelOpen();
   document.querySelectorAll(".app").forEach(el => { if (on) el.setAttribute("inert", ""); else el.removeAttribute("inert"); });
 }
-function openSheet(s) { opener = document.activeElement; const at = performance.now(); sheet = { ...s, focusMe: true, openedAt: at, termsAt: s.asking ? at : null }; say(s.kind === "bonus" ? "Focus block ended. Offer to keep going." : `${title(cur().label)} time is up.`); }
+function openSheet(s) { opener = document.activeElement; const at = performance.now(); sheet = { ...s, focusMe: true, openedAt: at, termsAt: s.asking ? at : null }; /* the done sheet says itself: focus lands on "That was the deal." (a live region outside an aria-modal dialog can be dropped, or read twice) */
+  if (s.kind !== "done") say(`Time's up on ${longName(cur())}.`); }
 function closeSheet() { sheet = null; }
 
 function ledgerView() {
@@ -2616,15 +2658,21 @@ function bind() {
   });
   on("#letmein", () => { file({ t: clockStr(), kind: "override", text: "Opened Instagram without a deal", note: "" }); unseen++; mode = "start"; render(); });
   on("#ask", () => { openSheet({ kind: "offer", asking: true }); render(); });
-  on("#ask2", () => {
-    /* on a big one's focus block, more time is the 10 min offer, already waiting for a pick (no countdown) */
-    if (sheet.notes && movedOn()) { sendNotes(); closeSheet(); render(); restoreFocus(); return; }
-    if (sheet.notes) { sendNotes(); Object.assign(sheet, { kind: "bonus", at: Date.now(), paused: true, focusMe: true, termsAt: performance.now() }); render(); return; }
-    sheet.asking = true; sheet.focusMe = true; sheet.termsAt = performance.now(); render();
+  on("#ask2", () => { sheet.asking = true; sheet.focusMe = true; sheet.termsAt = performance.now(); render(); });
+  /* spec 010, the done sheet. The next round is stamped like any term ticket, then starts as a new deal. */
+  on("#again", () => {
+    if (sheet.sealing) return;
+    const t = $("#again"); if (t) { t.classList.add("stamped"); t.parentElement.classList.add("picking"); t.setAttribute("aria-disabled", "true"); } buzz(14, reduce ? 0 : 200); sheet.sealing = true; $(".sheet").classList.add("busy", "knock");
+    /* the other buttons go quiet; the stamp keeps focus while it lands, so focus never falls to the page */
+    document.querySelectorAll(".sheet button:not(#again)").forEach(x => x.disabled = true);
+    setTimeout(() => { if (sheet && sheet.kind === "done") goAgain(); }, reduce ? 450 : 760);
   });
+  on("#donenow", () => { sendNotes(); stopNow(); focusTitle(); });
+  /* the notes go first; if another device already moved the session on, the sheet just closes onto what is running */
+  on("#more10", () => { const moved = movedOn(); sendNotes(); if (moved) { closeSheet(); render(); restoreFocus(); } else takeBonus(); });
   on("#startnow", () => { nextBlock(true); render(); });
   /* if the session already moved on elsewhere, the notes still go, and the sheet just closes onto the block that is running */
-  on("#go", () => { const moved = movedOn(); sendNotes(); if (moved) { closeSheet(); render(); restoreFocus(); } else if (S.blocks[S.idx + 1]) { nextBlock(); render(); } else { stopNow(); focusTitle(); } });
+  on("#go", () => { if (S.blocks[S.idx + 1]) { nextBlock(); render(); } else { stopNow(); focusTitle(); } });
   on("#nevermind", () => dismiss());
   on("#endearly", () => stopNow());
   on("#pipbtn", () => { openPip(); });
@@ -2670,13 +2718,6 @@ function bind() {
     setTimeout(() => { toast = null; if (S) S.justStarted = false; lastSig = ""; }, 3500); render(); focusTitle();
   });
   on("#nudge", () => { nudged = true; nextFocus = "#nudged"; render(); say("Nudge queued. Sam sees it at his next break."); });
-  on("#bonusyes", () => {
-    const t = $("#bonusyes"); if (t) { t.classList.add("stamped"); t.parentElement.classList.add("picking"); } buzz(14, reduce ? 0 : 200); sheet.sealing = true; $(".sheet").classList.add("busy", "knock");
-    document.querySelectorAll(".sheet button").forEach(x => x.disabled = true);
-    setTimeout(() => { if (sheet && sheet.kind === "bonus") takeBonus(); }, reduce ? 450 : 760);
-  });
-  on("#bonusno", () => { S.bonusOffered = true; nextBlock(); render(); });
-  on("#moretime", () => { sheet.paused = true; nextFocus = "#bonusyes"; render(); say("Timer stopped. Nothing happens until you pick."); });
   on("#tryit", () => { tried = true; render(); });
   document.querySelectorAll("[data-ci]").forEach(b => b.onclick = () => { checkin = { c: b.dataset.ci, t: clockStr() }; render(); say(`Sent: ${checkin.c}. The room sees it at their next break.`); });
   roving();
@@ -2723,19 +2764,6 @@ function fitLine(el, again = true) {
   if (again && document.fonts) document.fonts.ready.then(() => { if (el.isConnected) fitLine(el, false); });
 }
 const intentNow = () => (sheet.typing ? (sheet.typed || "").trim() : sheet.draft) || "";
-/* the bonus timer stops the moment anyone moves into the sheet (keyboard, switch, screen reader, or a tap).
-   It updates in place so the control being pressed is never swapped out from under the press. */
-function pauseBonus() {
-  if (!sheet || sheet.kind !== "bonus" || sheet.paused || sheet.sealing) return;
-  sheet.paused = true;
-  const cb = $("#bonusno"); if (cb) cb.classList.remove("counting");
-  /* same size before and after: a press that paused the timer still lands on the button it started on */
-  const tx = $("#cdtext"); if (tx) { tx.removeAttribute("id"); tx.textContent = "Waits for you"; }
-  const mt = $("#moretime");
-  if (mt && document.activeElement !== mt) { const p = document.createElement("p"); p.className = "soft small center held"; p.textContent = "Take your time. Nothing happens until you pick."; mt.replaceWith(p); }
-  say("Timer stopped. Nothing happens until you pick.");
-}
-document.addEventListener("focusin", e => { const t = e.target; if (t && t.closest && t.closest(".sheet") && t.id !== "sh") pauseBonus(); });
 /* the DEAL stamp is lifted off its stub where it is, so the stub can tear away without it */
 function freeStamp(btn) {
   const r = btn.getBoundingClientRect(), w = btn.offsetWidth, h = btn.offsetHeight;
@@ -2778,8 +2806,14 @@ function seal(i) {
 /* the announcement says what the deal cost, not only what it bought */
 function take(term, i) { const intention = sheet && sheet.intention; if (BE) BE.ask(i === "x" ? "override" : +i, intention);
   /* ADR 0005: remembered here at once; the server keeps the same pick on the user */
-  if (term.kind === "borrow" || term.kind === "trade") { lastRepay = term.kind; S.lastRepay = term.kind; } file(applyTerm(S, term, intention)); unseen++; closeSheet(); beat("wind"); say(`Deal, ${lower(TERMS[term.kind])}. ${title(cur().label)} for ${minsLeft()} more minutes.${S.debt > 0 ? ` ${S.debt} borrowed minutes come out of later breaks.` : ""}`); render(); restoreFocus(); }
-function dismiss() { if (!sheet) return; const moved = movedOn(); sendNotes(); if (moved) closeSheet(); else if (sheet.kind === "bonus") { S.bonusOffered = true; nextBlock(); } else if (remaining() <= 0) nextBlock(); else closeSheet(); render(); restoreFocus(); }
+  if (term.kind === "borrow" || term.kind === "trade") { lastRepay = term.kind; S.lastRepay = term.kind; } file(applyTerm(S, term, intention)); unseen++; closeSheet(); beat("wind"); say(`Deal, ${lower(TERMS[term.kind])}. ${title(cur().label)} for ${minsLeft()} more minutes.${S.debt > 0 ? ` ${S.debt} borrowed minutes come off your next round's break.` : ""}`); render(); restoreFocus(); }
+/* a tap outside, Back or Escape: on the done sheet that is Done for now (it never starts anything); after a break's
+   time is up, the next block; otherwise the sheet just closes */
+function dismiss() {
+  if (!sheet) return;
+  if (sheet.kind === "done") { sendNotes(); if (movedOn()) { closeSheet(); render(); restoreFocus(); } else { stopNow(); focusTitle(); } return; }
+  if (remaining() <= 0) nextBlock(); else closeSheet(); render(); restoreFocus();
+}
 function restoreFocus() { const t = opener && document.body.contains(opener) ? opener : document.querySelector(".act button, #view h1"); if (t) { if (!t.matches("button")) t.tabIndex = -1; t.focus({ preventScroll: true }); } }
 function takeBonus() {
   if (BE) BE.bonus();
@@ -2791,7 +2825,7 @@ function takeBonus() {
 function escape() {
   if (sheet.sealing) return;
   if (sheet.pick) { sheet.pick = false; nextFocus = "#intenttok"; render(); return; }
-  if (sheet.kind === "bonus") { if (!sheet.paused) { sheet.paused = true; nextFocus = "#bonusyes"; render(); } return; }
+  if (sheet.kind === "done") { dismiss(); return; }
   if (sheet.kind === "boundary" && sheet.asking) { sheet.asking = false; sheet.need = false; sheet.focusMe = true; render(); return; }
   if (sheet.kind === "offer") { closeSheet(); render(); restoreFocus(); }
 }
@@ -2839,18 +2873,21 @@ function paintPip() {
 }
 
 /* ---------- keyboard shortcuts on a desk ----------
-   D deals: the DEAL stamp, the free 5 minutes, the repayment you picked last time, or the offer to keep going.
-   1 and 2 take the first or second term. M asks for more time where the clock offers it. S stops (only where a Stop is
+   D deals: the DEAL stamp, the free 5 minutes, the repayment you picked last time, or the next round when a deal is done.
+   1 and 2 take the first or second term. M asks for more time where the clock offers it. S stops, or is Done for now (only where one is
    on screen). Nothing fires while you type, with a modifier held, or from inside a dialog's text field. Every key
    presses the same control a click would, so each one stamps, announces and moves focus exactly as it does by hand. */
 const SHORTCUTS = {
-  d: () => $("#shake:not(:disabled)") || $("#sheet-root .scrim:not(.leaving) [data-term='0']:only-child") || $("#sheet-root .scrim:not(.leaving) button.term.pre") || $("#sheet-root .scrim:not(.leaving) #bonusyes"),
+  d: () => $("#shake:not(:disabled)") || $("#sheet-root .scrim:not(.leaving) [data-term='0']:only-child") || $("#sheet-root .scrim:not(.leaving) button.term.pre") || $("#sheet-root .scrim:not(.leaving) #again"),
   1: () => $("#sheet-root .scrim:not(.leaving) button.term[data-term='0']"),
   2: () => $("#sheet-root .scrim:not(.leaving) button.term[data-term='1']"),
   m: () => $("#sheet-root .scrim:not(.leaving) #ask2"),
-  s: () => $("#endearly") || [...document.querySelectorAll("#sheet-root .scrim:not(.leaving) #go")].find(b => /^Stop/.test(b.textContent)),
+  s: () => $("#endearly") || $("#sheet-root .scrim:not(.leaving) #donenow") || [...document.querySelectorAll("#sheet-root .scrim:not(.leaving) #go")].find(b => /^Stop/.test(b.textContent)),
 };
 document.addEventListener("keydown", e => {
+  /* desk only, where the keycaps are printed: on a phone a stray key from a Bluetooth keyboard or a key-mapped switch
+     must not start a round or end a deal (WCAG 2.1.4) */
+  if (!FINE.matches) return;
   if (e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
   const t = e.target; if (t && t.closest && t.closest("input, textarea, select, [contenteditable]")) return;
   if (!sheet && panelOpen()) return;
@@ -2859,7 +2896,7 @@ document.addEventListener("keydown", e => {
   e.preventDefault(); b.click();
 });
 /* the keys are printed on the controls they press, on a desk only (a fine pointer that can hover) */
-const KEYCAP = { shake: "D", ask2: "M", endearly: "S", bonusyes: "D" };
+const KEYCAP = { shake: "D", ask2: "M", endearly: "S", again: "D", donenow: "S" };
 function markKeys() {
   if (!FINE.matches) return;
   for (const [id, k] of Object.entries(KEYCAP)) { const b = document.getElementById(id); if (b && !b.querySelector(".key")) { b.setAttribute("aria-keyshortcuts", k); b.insertAdjacentHTML("beforeend", `<kbd class="key" aria-hidden="true">${k}</kbd>`); } }
@@ -2926,37 +2963,17 @@ $("#reset").onclick = () => { fresh(); mode = "start"; setTab("now"); history.re
 let lastSig = "", wasHeads = false;
 /* what forces a full re-render: block, heads-up, time up, sheet, toast, the halfway line */
 const signature = () => [S.idx, isHeads(), remaining() <= 0, sheet && sheet.kind, sheet && sheet.asking, !!toast, isHalfway()].join("|");
-/* the bonus sheet's timer, said in words: whole seconds, every 5 s, then every second for the last 5.
-   The bar under "Take my break" drains as the time runs out. */
-function updateCountdown() {
-  if (!sheet || sheet.kind !== "bonus") return;
-  const left = Math.max(0, Math.min(30, 30 - (Date.now() - sheet.at) / 1000));
-  const cb = $("#bonusno"); if (cb && cb.classList.contains("counting")) cb.style.setProperty("--p", (left / 30).toFixed(4));
-  const s = Math.ceil(left), shown = s > 5 ? Math.ceil(s / 5) * 5 : s;
-  const tx = $("#cdtext"); if (tx) { const w = `Starts on its own in ${shown} second${shown === 1 ? "" : "s"}`; if (tx.textContent !== w) tx.innerHTML = N(w); }
-  if (!sheet.paused && !sheet.warned && left <= 20) { sheet.warned = true; say("Your break starts in 20 seconds. More time to decide stops it."); }
-}
 function tick() {
   /* live mode reads the real clock: animation frames pause in background tabs, real time does not */
   const now = performance.now(); if (BE) vnow = Date.now() + clockOffset; else vnow += (now - lastReal) * speed; lastReal = now;
   if (S && tab === "now") {
     const r = remaining(), b = cur();
     if (r <= 0 && !sheet) {
-      /* time up: the 0 is re-inked and a soft double tap, as the sheet rises */
-      const offerBonus = canBonus(), notes = needsNotes();
-      if (b.type === "break" || offerBonus || notes) { beat("up"); buzz([12, 90, 12]); }
+      /* time up: the 0 is re-inked and a soft double tap, as the sheet rises. A break ends on the boundary sheet; the
+         focus block ends the deal (spec 010), on the done sheet, with a big one's two notes. Nothing starts on its own. */
+      beat("up"); buzz([12, 90, 12]);
       if (b.type === "break") openSheet({ kind: "boundary", asking: false, calm: true });
-      /* a big one's focus block ends on the boundary sheet with its two notes; the 10 min offer moves behind its link */
-      else if (notes) openSheet({ kind: "boundary", asking: false, calm: true, notes: newNotes() });
-      else if (offerBonus) openSheet({ kind: "bonus", at: Date.now(), paused: reduce, calm: true });
-      else nextBlock();
-    }
-    if (sheet && sheet.kind === "bonus" && !sheet.sealing) {
-      /* anyone moving focus into the sheet stops the clock (VoiceOver and Switch Control move focus without :focus-visible) */
-      const a = document.activeElement, inside = a && a.closest && a.closest(".sheet") && a.id !== "sh";
-      if (inside) pauseBonus();
-      if (!sheet.paused && Date.now() - sheet.at > 30000) { S.bonusOffered = true; nextBlock(); }
-      updateCountdown();
+      else openSheet({ kind: "done", calm: true, sid: S.id, ...(needsNotes() ? { notes: newNotes() } : {}) });
     }
     const heads = isHeads();
     const sig = signature();
@@ -2974,7 +2991,7 @@ function tick() {
 /* ---------- hash entry points (for interviews and screenshots) ---------- */
 function seedLedger() {
   ledger = SEED.map(e => ({ ...e }));
-  studied = 64;
+  studied = 71;
 }
 /* spec 008 day 2: sample big ones, in the order the server sends them (comeback first, then newest worked) */
 const DEMO_CARDS = [
@@ -3014,7 +3031,8 @@ function fromHash() {
   else if (h === "offer-free") { run(0); sheet = { kind: "boundary", asking: true, focusMe: true }; }
   else if (h === "offer-terms") { run(0, 1); sheet = { kind: "boundary", asking: true, focusMe: true }; }
   else if (h === "offer-intention") { run(0, 2); sheet = { kind: "boundary", asking: true, focusMe: true }; }
-  else if (h === "bonus") { run(9 * 60000); S.idx = 1; S.durMs = cur().min * 60000; S.startedAt = vnow - S.durMs; sheet = { kind: "bonus", at: Date.now(), focusMe: true, paused: reduce }; }
+  /* spec 010: the reading block (the last block) has just ended; done-borrowed owes 5 borrowed minutes */
+  else if (h === "done" || h === "done-borrowed") { run(9 * 60000); S.idx = 1; S.durMs = cur().min * 60000; S.startedAt = vnow - S.durMs; if (h === "done-borrowed") S.debt = 5; sheet = { kind: "done", focusMe: true }; }
   else if (h === "focus") { run(9 * 60000); S.idx = 1; S.durMs = cur().min * 60000; S.startedAt = vnow - S.durMs * .4; }
   /* spec 007: long blocks */
   else if (h === "picker-focus") picker = "focus";
@@ -3037,7 +3055,7 @@ function fromHash() {
       big = newBig(); deal.focusMin = 15; run(0); S.idx = 1; S.durMs = cur().min * 60000; S.startedAt = vnow - S.durMs; S.taskId = "demo";
       bigOneCards = [{ id: "demo", title: deal.task, startWith: FIRST_MOVES.writing, progress: null, minutes: 15, comeback: false, offerRespread: false, taskType: "writing",
         ...(h === "bigone-boundary-piece" ? { currentPiece: "Intro" } : {}) }];
-      sheet = { kind: "boundary", asking: false, focusMe: true, notes: newNotes() };
+      sheet = { kind: "done", focusMe: true, notes: newNotes() };
     }
   }
   /* spec 008, day 2: cards above the ticket; a comeback card first; more than three behind "All big ones" */
@@ -3153,7 +3171,8 @@ window.pomodealApp = {
   /** the running session from the server, or null */
   session(doc) {
     if (!BE) return;
-    if (!doc) { if (S && !sheet) { S = null; lastSig = ""; render(); } return; }
+    /* the session ended (here or on another device): a done sheet over it goes too, since there is nothing left to finish */
+    if (!doc) { if (S && (!sheet || sheet.kind === "done")) { S = null; sheet = null; lastSig = ""; render(); } return; }
     /* a block change that came from the server (the scheduled boundary, or another device) turns the dial too */
     if (S && S.id === doc._id && doc.state.idx !== S.idx && S.blocks[S.idx]) { turnFrom = { type: S.blocks[S.idx].type, p: remaining() / S.durMs, label: title(S.blocks[S.idx].label) }; beat("turn"); if (doc.state.idx > S.idx) offerInstall(); }
     const extra = S && S.id === doc._id ? { serial: S.serial, justStarted: S.justStarted, with: S.with, firstMove: S.firstMove }
@@ -3165,6 +3184,8 @@ window.pomodealApp = {
     S.lastRepay = doc.lastRepay ?? null; lastRepay = S.lastRepay;
     /* a different session replaced this one (started on another device): these notes have nowhere to go, so the sheet closes */
     if (sheet && sheet.notes && sheet.notes.sid !== S.id) { sheet = null; lastSig = ""; render(); return; }
+    /* the done sheet belongs to its deal: another round started elsewhere, or 10 more minutes taken there, closes it */
+    if (sheet && sheet.kind === "done" && (sheet.sid !== S.id || remaining() > 0)) { sheet = null; lastSig = ""; render(); return; }
     lastSig = ""; if (!sheet) render();
   },
   /** today's ledger from the server, newest first */

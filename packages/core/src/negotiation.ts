@@ -2,7 +2,7 @@
 // Source of truth: docs/specs/001-negotiation-rules.md. Pure functions only: no I/O, no clocks.
 // Both clients and Convex call these so a deal is identical everywhere.
 
-import { focusMinutesDone, remainingMs } from "./timer";
+import { endsAt, focusMinutesDone, remainingMs } from "./timer";
 
 export const ASK_MIN = 5;
 export const BREAK_FLOOR_MIN = 2;
@@ -45,8 +45,9 @@ export interface Offer {
   override: Term;
 }
 
-/** `deal` is the deal itself, filed when a session starts; `skip` and `end_early` are spec 001's "Ask: skip a break / end early". */
-export type LedgerKind = Term["kind"] | "bonus" | "deal" | "skip" | "end_early" | "forgiven";
+/** `deal` is the deal itself, filed when a session starts; `done` is a deal that ran its full time (spec 010);
+ *  `skip` and `end_early` are spec 001's "Ask: skip a break / end early". */
+export type LedgerKind = Term["kind"] | "bonus" | "deal" | "done" | "skip" | "end_early" | "forgiven";
 
 export interface LedgerEntry {
   at: number;
@@ -113,11 +114,11 @@ export function applyTerm(s: SessionState, term: Term, now: number, intention?: 
   return { session, entry };
 }
 
-/** Clock-initiated "keep going" offer at the end of a focus block. */
+/** Clock-initiated "keep going" offer at the end of a focus block: once per block, never past the ceiling.
+ *  Spec 010: the last block gets it too ("10 more minutes" on the done sheet). */
 export function canOfferBonus(s: SessionState, pausedInLast5Min: boolean): boolean {
   const cur = s.blocks[s.idx];
-  return cur.type === "focus" && !s.bonusOffered && !pausedInLast5Min && s.idx < s.blocks.length - 1
-    && cur.min + BONUS_FOCUS_MIN <= FOCUS_CEILING_MIN;
+  return cur.type === "focus" && !s.bonusOffered && !pausedInLast5Min && cur.min + BONUS_FOCUS_MIN <= FOCUS_CEILING_MIN;
 }
 
 export function applyBonus(s: SessionState, now: number): { session: SessionState; entry: LedgerEntry } {
@@ -152,9 +153,14 @@ export function dealEntry(s: SessionState, now: number, label?: string): LedgerE
   return { at: now, kind: "deal", blockLabel: label ?? focus.label, minutes: focus.min };
 }
 
-/** Stopping a session: what was being worked on and the focus minutes done in the running block (0 in a break). */
-export function endEarlyEntry(s: SessionState, now: number, label?: string): LedgerEntry {
-  return { at: now, kind: "end_early", blockLabel: label ?? firstFocus(s).label, minutes: focusMinutesDone(s, now) };
+/**
+ * Stopping a session: what was being worked on (the big one's title, `label`) and the focus minutes done.
+ * A deal that ran its full time is `done`, dated when its block ended (spec 010); any other stop is `end_early`.
+ */
+export function endEntry(s: SessionState, now: number, label?: string): LedgerEntry {
+  const blockLabel = label ?? firstFocus(s).label, minutes = focusMinutesDone(s, now);
+  if (s.idx >= s.blocks.length - 1 && remainingMs(s, now) <= 0) return { at: endsAt(s), kind: "done", blockLabel, minutes };
+  return { at: now, kind: "end_early", blockLabel, minutes };
 }
 
 /** Ending a block before its time is up: the block and the whole minutes it ran. Null once its time is up. */

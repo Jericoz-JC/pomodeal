@@ -3,8 +3,8 @@ import { ConvexError, v, type Infer } from "convex/values";
 import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import {
-  addWorkedDay, advance, applyBonus, applyTerm, buildSession, dealEntry, dealProblem, endEarlyEntry, endSession, focusMinutesDone,
-  makeOffer, openTerms, skipEntry, type LedgerEntry,
+  addWorkedDay, advance, applyBonus, applyTerm, buildSession, canOfferBonus, dealEntry, dealProblem, endEntry, endSession, focusMinutesDone,
+  makeOffer, openTerms, repayDebt, skipEntry, type LedgerEntry,
 } from "../packages/core/src";
 import { currentMember, requireMember } from "./lib/members";
 import { cancelPushes, reschedule } from "./lib/pushSchedule";
@@ -93,21 +93,22 @@ export async function creditTask(ctx: MutationCtx, session: Doc<"sessions">, min
 }
 
 /**
- * Stops a running session, from "Stop for now" or because a new deal replaces it: credits the running focus block's
- * minutes to the big one, files `end_early` (and `forgiven` when borrowed minutes are still owed), and ends it.
+ * Stops a running session: "Done for now", "Stop for now", or a new deal replacing it. Credits the running focus
+ * block's minutes to the big one, files `done` (it ran its full time, spec 010) or `end_early`, files `forgiven` for
+ * borrowed minutes still owed (`owed`: what the next deal's break couldn't take), and ends it.
  */
-async function stop(ctx: MutationCtx, s: Doc<"sessions">, now: number, dayKey: string | undefined) {
+async function stop(ctx: MutationCtx, s: Doc<"sessions">, now: number, dayKey: string | undefined, owed = s.state.debt) {
   await creditTask(ctx, s, focusMinutesDone(s.state, now), dayKey);
-  await log(ctx, s, endEarlyEntry(s.state, now, await bigOneTitle(ctx, s)));
-  const forgiven = endSession(s.state, now);
+  await log(ctx, s, endEntry(s.state, now, await bigOneTitle(ctx, s)));
+  const forgiven = endSession({ ...s.state, debt: owed }, now);
   if (forgiven) await log(ctx, s, forgiven);
   await saveState(ctx, s, s.state, "ended");
 }
 
 /**
- * The one path every deal starts through (Quick Deal, a new big one, a card): stops any running session (see `stop`),
- * starts the new one, linked to `taskId`, and files the deal itself on the ledger.
- * The caller has already checked that `taskId` is the user's.
+ * The one path every deal starts through (Quick Deal, the next round, a new big one, a card): stops any running
+ * session (see `stop`), takes its borrowed minutes off this deal's break (spec 010), starts the new one, linked to
+ * `taskId`, and files the deal itself on the ledger. The caller has already checked that `taskId` is the user's.
  */
 export async function startSession(
   ctx: MutationCtx,
@@ -120,11 +121,11 @@ export async function startSession(
   const problem = dealProblem(deal);
   if (problem) throw new ConvexError({ code: "BAD_DEAL", message: problem });
   const prev = await running(ctx, user._id);
-  if (prev) await stop(ctx, prev, now, dayKey);
-  // The card button offers the length chosen last time. Ramp lengths (19, 23) aren't on offer, so this is
-  // the deal's chosen length, not a block's.
+  const repay = repayDebt(deal, prev ? prev.state.debt : 0);
+  if (prev) await stop(ctx, prev, now, dayKey, repay.forgiven);
+  // The card button offers the length chosen last time: the deal's chosen length, not a block's.
   if (taskId) await ctx.db.patch(taskId, { lastFocusMin: deal.focusMin });
-  const state: SessionState = { ...buildSession(deal, now), version: 1 };
+  const state: SessionState = { ...buildSession(repay.deal, now), version: 1 };
   const sessionId = await ctx.db.insert("sessions", {
     userId: user._id,
     state,
@@ -200,30 +201,29 @@ export const ask = mutation({
 /** Move to the next block. Idempotent: two open devices can both call it at a block's end, but only the
  *  first advance from `fromIdx` counts. Leaving a focus block credits its minutes to the big one.
  *  `early` means the student ended the block before its time ("Start reading early"): that files a `skip`, unless
- *  the block's time is already up by the server's clock. Ordinary block ends leave it off. */
+ *  the block's time is already up by the server's clock. Ordinary block ends leave it off.
+ *  The last block has no next: it ends the deal, which stops through `end` or the next deal (spec 010). */
 export const next = mutation({
   args: { sessionId: v.id("sessions"), fromIdx: v.number(), dayKey: v.optional(v.string()), early: v.optional(v.boolean()) },
   handler: async (ctx, { sessionId, fromIdx, dayKey, early }) => {
     checkDayKey(dayKey);
     const { s } = await ownSession(ctx, sessionId);
-    if (s.state.idx !== fromIdx) return;
+    if (s.state.idx !== fromIdx || s.state.idx >= s.state.blocks.length - 1) return;
     const now = Date.now();
     const skip = early ? skipEntry(s.state, now) : null;
     if (skip) await log(ctx, s, skip);
     await creditTask(ctx, s, focusMinutesDone(s.state, now), dayKey);
-    // Core `advance` holds at the last block and restarts it. The client calls `next` there when the session's
-    // last block ends (and when it reopens later), so that restart must not schedule another heads-up and end.
-    const onLast = s.state.idx >= s.state.blocks.length - 1;
-    await saveState(ctx, s, advance(s.state, now), undefined, { schedule: !onLast });
+    await saveState(ctx, s, advance(s.state, now));
   },
 });
 
-/** The clock's offer at the end of a focus block: keep going for 10 more, and the next break grows by 3. */
+/** The clock's offer at the end of a focus block: keep going for 10 more (on the done sheet, spec 010); a next
+ *  break, in an older session, grows by 3. Once per block, never past the 75 min ceiling. */
 export const bonus = mutation({
   args: { sessionId: v.id("sessions") },
   handler: async (ctx, { sessionId }) => {
     const { s } = await ownSession(ctx, sessionId);
-    if (s.state.blocks[s.state.idx].type !== "focus" || s.state.bonusOffered) return;
+    if (!canOfferBonus(s.state, false)) return;
     const { session, entry } = applyBonus(s.state, Date.now());
     await saveState(ctx, s, session);
     await log(ctx, s, entry);

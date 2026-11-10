@@ -54,7 +54,8 @@ Built (ADR 0006): `skip` records the block ended early and the minutes it ran; `
 
 ## The deal itself
 
-- Starting a session → `deal`, with the task (or the big one's title) and the focus length chosen. A deal that replaces a running session files that session's `end_early` first.
+- Starting a session → `deal`, with the task (or the big one's title) and the focus length chosen. A deal that replaces a running session files that session's `end_early` (or `done`, spec 010) first.
+- A deal that ran its full time → `done` when it stops, dated when its block ended (spec 010).
 
 ## Earned-break mode (optional preset)
 

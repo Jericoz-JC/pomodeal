@@ -3,7 +3,7 @@ import { api } from "../_generated/api";
 import { makeMember } from "./helpers.test-util";
 import { newT } from "./setup.test-util";
 
-test("a member starts a 15 min deal and sees a running session with 3 focus blocks", async () => {
+test("a member starts a 15 min deal and sees a running session with one 15 min focus block (spec 010)", async () => {
   const t = newT();
   const { as } = await makeMember(t, "Ada");
   await as.mutation(api.sessions.start, {
@@ -12,7 +12,7 @@ test("a member starts a 15 min deal and sees a running session with 3 focus bloc
   const s = await as.query(api.sessions.current, {});
   expect(s?.status).toBe("running");
   const focus = s!.state.blocks.filter((b) => b.type === "focus");
-  expect(focus.map((b) => b.min)).toEqual([15, 19, 23]);
+  expect(focus.map((b) => b.min)).toEqual([15]);
 });
 
 const deal = { activity: null, breakMin: 5, task: "read chapter 3", focusMin: 15 };
@@ -24,10 +24,11 @@ test("start returns the server's clock, within 5 s of now", async () => {
   expect(Math.abs(serverNow - Date.now())).toBeLessThan(5000);
 });
 
-test("every session change bumps the version: start 1, ask 2, bonus 3, next 4", async () => {
+test("every session change bumps the version: start 1, ask 2, next 3", async () => {
   const t = newT();
   const { as } = await makeMember(t, "Ada");
-  const { sessionId } = await as.mutation(api.sessions.start, { deal });
+  // a break first, so there is a next block to move to
+  const { sessionId } = await as.mutation(api.sessions.start, { deal: { ...deal, activity: "Reels" } });
   expect((await as.query(api.sessions.current, {}))!.state.version).toBe(1);
   await as.mutation(api.sessions.ask, { sessionId, pick: "override" });
   expect((await as.query(api.sessions.current, {}))!.state.version).toBe(2);

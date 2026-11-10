@@ -10,7 +10,7 @@ import { tmpdir } from "node:os";
 const here = dirname(fileURLToPath(import.meta.url));
 const out = resolve(process.argv[2] || join(here, "shots"));
 const page = resolve(here, process.argv[3] || "quick-deal/index.html");
-const STATES = ["start", "intercept", "running", "focus", "heads-up", "boundary", "offer-free", "offer-terms", "offer-intention", "bonus", "ledger", "room",
+const STATES = ["start", "intercept", "running", "focus", "heads-up", "boundary", "offer-free", "offer-terms", "offer-intention", "done", "done-borrowed", "ledger", "room",
   // spec 007: long blocks
   "picker-focus", "picker-60", "start-60", "long-running", "long-halfway", "long-heads-up",
   // spec 008: big ones

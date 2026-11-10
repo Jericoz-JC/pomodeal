@@ -32,8 +32,9 @@ export function pushBody(s: SessionState, kind: PushKind): string {
     const nextName = next ? nameOf(next) : null;
     return nextName ? `${capitalize(nextName)} is up next.` : "Your break is done.";
   }
-  const done = name ? `${capitalize(name)} block is done.` : "This block is done.";
-  return next ? `${done} Your break is ready.` : `${done} That was the last block.`;
+  // spec 010: the last block is the end of the deal
+  if (!next) return `${name ? `${capitalize(name)} is` : "It's"} done. That was the deal.`;
+  return `${name ? `${capitalize(name)} block is done.` : "This block is done."} Your break is ready.`;
 }
 
 export function pushPayload(s: SessionState, kind: PushKind): PushPayload {

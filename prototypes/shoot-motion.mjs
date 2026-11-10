@@ -3,7 +3,7 @@
 //   <moment>-<variant>.png   a frame strip: one frame every STEP ms from just before the trigger, labelled with the time
 //   <moment>.webm            a real-time clip with light | dark | reduced side by side (if the browser can encode it)
 // Usage: node prototypes/shoot-motion.mjs <out-dir> [moment ...]
-//   Moments: stamp, turn-break, turn-focus, heads-up, time-up, offer-open, offer-pick, tape, landing, landing-deal
+//   Moments: stamp, again, turn-focus, heads-up, time-up, offer-open, offer-pick, tape, landing, landing-deal
 //   WIDTH=1440 HEIGHT=900 records a desk instead of a phone (each moment's dcrop, or the whole window)
 // No new dependencies: Edge over CDP (like shoot.mjs), Page.startScreencast for frames, the browser's own
 // MediaRecorder for the clip. "landing" starts Vite in-process (apps/web, production env) to render the signed-out page.
@@ -29,7 +29,8 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
 const click = sel => ({ tap: sel });
 const MOMENTS = {
   "stamp": { url: `${app}#start`, trigger: click("#shake"), ms: 1500, crop: [0, 40, W, 640], dcrop: [180, 120, 680, 640] },
-  "turn-break": { url: `${app}#bonus`, trigger: click("#bonusno"), ms: 1000, crop: [0, 40, W, 520], dcrop: [180, 120, 680, 640] },
+  /* spec 010: the next round is stamped from the done sheet */
+  "again": { url: `${app}#done`, trigger: click("#again"), ms: 1500, crop: [0, 0, W, H], dcrop: [180, 120, 680, 640] },
   "turn-focus": { url: `${app}#boundary`, trigger: click("#go"), ms: 1000, crop: [0, 40, W, 520], dcrop: [180, 120, 680, 640] },
   "heads-up": { url: `${app}#running`, setup: "speed = 1", trigger: "(() => { vnow = S.startedAt + S.durMs - 120000 + 30; return Date.now(); })()", ms: 1500, crop: [0, 110, W, 560], dcrop: [180, 120, 680, 640] },
   "time-up": { url: `${app}#running`, setup: "speed = 1", trigger: "(() => { vnow = S.startedAt + S.durMs - 30; return Date.now(); })()", ms: 1700, crop: [0, 0, W, H] },

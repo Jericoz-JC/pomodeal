@@ -13,47 +13,47 @@ const at = (s: SessionState, idx: number): SessionState => {
 
 describe("push body", () => {
   it("heads-up says 2 min on a short block, with the block's label", () => {
-    const s = at(buildSession(deal(15), T0), 1); // focus 15
+    const s = at(buildSession(deal(15), T0, 3), 1); // focus 15
     expect(pushBody(s, "headsUp")).toBe("2 min to wrap up BIO 180 ch. 7.");
   });
 
   it("heads-up says 5 min on a block of 45+", () => {
-    const s = at(buildSession(deal(45), T0), 1); // focus 45
+    const s = at(buildSession(deal(45), T0, 2), 1); // focus 45
     expect(pushBody(s, "headsUp")).toBe("5 min to wrap up BIO 180 ch. 7.");
   });
 
   it("heads-up on a break names the break", () => {
-    expect(pushBody(buildSession(deal(15), T0), "headsUp")).toBe("2 min to wrap up Reels.");
+    expect(pushBody(buildSession(deal(15), T0, 3), "headsUp")).toBe("2 min to wrap up Reels.");
   });
 
   it("end of a break names what is up next", () => {
-    expect(pushBody(buildSession(deal(15), T0), "blockEnd")).toBe("BIO 180 ch. 7 is up next.");
+    expect(pushBody(buildSession(deal(15), T0, 3), "blockEnd")).toBe("BIO 180 ch. 7 is up next.");
   });
 
   it("end of a focus block says the break is ready", () => {
-    const s = at(buildSession(deal(15), T0), 1);
+    const s = at(buildSession(deal(15), T0, 3), 1);
     expect(pushBody(s, "blockEnd")).toBe("BIO 180 ch. 7 block is done. Your break is ready.");
   });
 
-  it("end of the last focus block doesn't promise a break", () => {
-    const s0 = buildSession(deal(15), T0);
+  it("end of the last focus block says the deal is done", () => {
+    const s0 = buildSession(deal(15), T0, 3);
     const s = at(s0, s0.blocks.length - 1);
-    expect(pushBody(s, "blockEnd")).toBe("BIO 180 ch. 7 block is done. That was the last block.");
+    expect(pushBody(s, "blockEnd")).toBe("BIO 180 ch. 7 is done. That was the deal.");
   });
 
   it("a break with no activity reads as your break", () => {
-    const s = at(buildSession(deal(15, null), T0), 1); // "Your pick" break
+    const s = at(buildSession(deal(15, null), T0, 3), 1); // "Your pick" break
     expect(s.blocks[s.idx].type).toBe("break");
     expect(pushBody(s, "headsUp")).toBe("2 min to wrap up your break.");
   });
 
   it("a lowercase next label still starts the sentence with a capital", () => {
-    const s = buildSession({ ...deal(15), task: "reading" }, T0);
+    const s = buildSession({ ...deal(15), task: "reading" }, T0, 3);
     expect(pushBody(s, "blockEnd")).toBe("Reading is up next.");
   });
 
   it("a blank label falls back to plain words", () => {
-    const s = at(buildSession({ ...deal(15), task: "  " }, T0), 1);
+    const s = at(buildSession({ ...deal(15), task: "  " }, T0, 3), 1);
     expect(pushBody(s, "headsUp")).toBe("2 min to wrap up this block.");
     expect(pushBody(s, "blockEnd")).toBe("This block is done. Your break is ready.");
   });
@@ -61,7 +61,7 @@ describe("push body", () => {
 
 describe("push payload", () => {
   it("is declarative Web Push that opens the app", () => {
-    const s = at(buildSession(deal(15), T0), 1);
+    const s = at(buildSession(deal(15), T0, 3), 1);
     expect(pushPayload(s, "headsUp")).toEqual({
       web_push: 8030,
       notification: { title: "Pomodeal", body: "2 min to wrap up BIO 180 ch. 7.", navigate: "/" },
@@ -71,7 +71,7 @@ describe("push payload", () => {
 
 describe("service worker notification", () => {
   it("shows a declarative payload's title and body, and opens its path", () => {
-    const s = at(buildSession(deal(15), T0), 1);
+    const s = at(buildSession(deal(15), T0, 3), 1);
     expect(notificationFromPush(pushPayload(s, "headsUp"))).toEqual({
       title: "Pomodeal",
       options: { body: "2 min to wrap up BIO 180 ch. 7.", tag: "pomodeal-block", renotify: true, icon: "/icon-192.png", data: { navigate: "/" } },
@@ -90,7 +90,7 @@ describe("service worker notification", () => {
   });
 
   it("alerts again when the block end replaces the heads-up under the same tag", () => {
-    const s = at(buildSession(deal(15), T0), 1);
+    const s = at(buildSession(deal(15), T0, 3), 1);
     const heads = notificationFromPush(pushPayload(s, "headsUp"));
     const end = notificationFromPush(pushPayload(s, "blockEnd"));
     expect(end?.options.tag).toBe(heads?.options.tag);
