@@ -437,12 +437,6 @@ p { margin: 0; }
 .howto .shot .ink { stroke: var(--ink); }
 .howto .cap { font-size: .9375rem; line-height: 1.3; overflow-wrap: anywhere; }
 .howto .n { display: block; margin-bottom: 2px; font-family: var(--font-head); font-stretch: 80%; font-weight: 800; font-size: 1.25rem; line-height: 1; color: var(--deal-ink); }
-/* ADR 0005: the repayment picked last time waits pre-selected (green edge, a check in its stamp box); Deal takes it in one tap */
-.term.pre::before { background: var(--sel-card); box-shadow: inset 0 0 0 2px var(--deal); }
-.term.pre .slot { border: 2px solid var(--deal); color: var(--deal); }
-.term.pre .slot > svg { width: 20px; height: 20px; }
-.term.pre.stamped .slot > svg { visibility: hidden; }
-.term .lastpick { display: block; margin-top: 3px; font-family: var(--font-body); font-stretch: normal; font-weight: 400; font-size: 1rem; line-height: 1.25; color: var(--deal-ink); }
 
 /* ---------- one stamp: double-ruled border with the ink texture, letters solid so they stay readable ---------- */
 .stamp { --tilt: -3deg; position: relative; display: inline-grid; place-items: center; color: var(--deal); font-family: var(--font-head); font-stretch: 82%; font-weight: 800;
@@ -460,29 +454,58 @@ p { margin: 0; }
 .stampbox { width: 76px; height: 34px; }
 .stampbox .stamp { --tilt: -4deg; position: absolute; inset: -3px -4px; font-size: 1.5rem; pointer-events: none; }
 
-/* term tickets: the ledger stub layout. Left, what it costs as one figure you can compare at a glance;
-   a dotted perforation; right, what you're agreeing to. Each one is a button: one tap stamps it and closes the sheet. */
+/* ---------- asking for time ----------
+   You ask; the clock answers. Your line is quoted small at the top; the clock's answer is the biggest thing on the sheet,
+   said by the wheel itself (small, showing what is left of this block). Each term is a ticket with one plain sentence
+   (what you give up, in words, never a "5 → 2" figure) and a stub past a perforation that carries the DEAL stamp's face.
+   Pressing the ticket is pressing the stamp: it lifts, slams down, inks, and the ticket and sheet take the hit. */
+.sheet h2.you { align-self: flex-end; max-width: 84%; font-family: var(--font-body); font-stretch: normal; font-weight: 400; font-size: 1.0625rem; line-height: 1.35; color: var(--soft); text-align: right; text-wrap: balance; }
+.answer { display: flex; align-items: center; gap: 14px; margin-bottom: 2px; }
+.voice { flex: none; width: 60px; height: 60px; overflow: visible; }
+.voice .bed { fill: none; stroke: color-mix(in srgb, var(--ink) 22%, var(--sheet)); stroke-width: 12; }
+.voice .arc { fill: none; stroke-width: 12; stroke: var(--deal); }
+.voice.break .arc { stroke: url(#brk-hatch); }
+.voice .more { fill: none; stroke-width: 12; stroke: color-mix(in srgb, var(--deal) 45%, var(--sheet)); }
+.voice .tk line { stroke: var(--ink); stroke-width: 2.4; stroke-linecap: round; }
+.answer .says .num { font: inherit; letter-spacing: inherit; }
+.voice .kn circle { fill: var(--ink); stroke: var(--sheet); stroke-width: 3; }
+.answer .says { font-family: var(--font-head); font-stretch: 80%; font-weight: 750; font-size: 1.625rem; line-height: 1.12; color: var(--ink); text-wrap: balance; }
+.answer .says:focus { outline: none; }
+.answer .says .tok { font-size: 1em; font-weight: 750; padding-block: 1px; }
+
 .terms { display: flex; flex-direction: column; gap: 10px; }
-.term { position: relative; z-index: 0; width: 100%; padding: 0 22px 0 0; border: none; background: none; color: var(--ink); text-align: left; font: inherit;
-  display: grid; grid-template-columns: 88px minmax(0, 1fr) auto; grid-template-rows: auto auto; align-items: center; min-height: 64px; padding-right: 18px; }
+.term { position: relative; z-index: 0; width: 100%; padding: 0; border: none; background: none; color: var(--ink); text-align: left; font: inherit;
+  display: grid; grid-template-columns: minmax(0, 1fr) 108px; align-items: stretch; min-height: 92px; }
 .term::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: 6px 0 0 6px; background: var(--card); box-shadow: inset 0 1px 0 var(--hi); -webkit-mask: var(--zig); mask: var(--zig); }
 /* a button has a visible edge at rest, about 3.9:1 against the sheet */
 button.term { cursor: pointer; transition: transform .08s ease-out; }
 button.term::before { box-shadow: inset 0 0 0 1px var(--edge), inset 0 2px 0 var(--hi); }
-button.term:hover::before { box-shadow: inset 0 0 0 1.5px var(--edge); }
 button.term:active { transform: translateY(1px); }
 .term.stamped::before { background: var(--sel-card); box-shadow: inset 0 0 0 2px var(--deal); }
 button.term:focus-visible { outline-offset: 3px; }
-.term .fig { grid-row: 1 / 3; align-self: stretch; display: grid; place-items: center; padding: 10px 12px 10px 8px; background: radial-gradient(circle, var(--edge) 1.2px, transparent 1.7px) 100% 0 / 6px 8px repeat-y;
-  font-family: var(--font-head); font-stretch: 78%; font-weight: 800; font-size: 1.625rem; line-height: 1; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.term .fig i { font-style: normal; font-weight: 500; font-size: .7em; margin-inline: 1px; color: var(--soft); vertical-align: .12em; }
-.term .top { grid-column: 2; padding: 11px 6px 1px 14px; font-family: var(--font-head); font-stretch: 74%; font-weight: 750; font-size: 1.25rem; line-height: 1.12; }
-.term .cost { grid-column: 2 / 4; padding: 2px 6px 12px 14px; color: var(--ink); font-size: .9375rem; line-height: 1.35; display: block; }
-.term .slot { grid-column: 3; grid-row: 1; width: 58px; height: 38px; margin-top: 10px; align-self: start; display: grid; place-items: center; }
-.term .slot .stamp { --tilt: -5deg; position: absolute; inset: -2px -3px; font-size: 1.3125rem; pointer-events: none; }
-/* on a button ticket the box says what it is for */
-.slot .tap { font-family: var(--font-head); font-stretch: 85%; font-weight: 700; font-size: .8125rem; line-height: 1.05; color: var(--deal); text-align: center; }
-.term.stamped .slot .tap { visibility: hidden; }
+/* the sentence: what you agree to, in bold, then what it does to the rest of tonight */
+.term .say { align-self: center; padding: 14px 12px 15px 16px; font-size: 1.0625rem; line-height: 1.4; text-wrap: pretty; }
+.term .say b { font-weight: 700; }
+.term .say .lastpick { display: block; margin-top: 6px; font-size: .9375rem; line-height: 1.3; color: var(--deal-ink); }
+/* ADR 0005: the repayment picked last time waits with a green edge and says so; stamping it is still one tap */
+.term.pre::before { box-shadow: inset 0 0 0 2px var(--deal), inset 0 2px 0 var(--hi); }
+/* the stub you stamp: a perforation down its left edge, the stamp's face in the middle */
+.term .pad { position: relative; display: grid; place-items: center; padding: 10px 18px 10px 8px; background: radial-gradient(circle, var(--edge) 1.2px, transparent 1.7px) 0 0 / 6px 8px repeat-y; }
+.term .pad .stamp { --tilt: -6deg; font-size: 1.5rem; letter-spacing: .07em; padding: 9px 10px 7px 11px; transition: transform .14s ease-out, filter .14s ease-out; }
+/* at rest the face is clean rubber: a crisp double rule. The ink texture only exists once it has hit the paper. */
+.term .pad .stamp::before { border-width: 4.5px; border-radius: 7px; -webkit-mask: none; mask: none; }
+.term .pad .stamp::after { content: ""; position: absolute; inset: 0; border-radius: 7px; background: var(--deal); opacity: 0; -webkit-mask: var(--noise) 0 0 / 120px 60px; mask: var(--noise) 0 0 / 120px 60px; }
+/* a ticket that only shows what you would get (Deal is pressed below it) has an empty impression on its stub */
+.term .pad.empty .stamp { opacity: .2; filter: grayscale(1); }
+.term.stamped .pad .stamp { opacity: 1; filter: none; }
+.term.stamped .pad .stamp::before { -webkit-mask: var(--noise) 0 0 / 120px 60px; mask: var(--noise) 0 0 / 120px 60px; }
+.term.stamped .pad .stamp::after { opacity: .16; }
+@media (hover: hover) {
+  /* the stamp rises off the paper under the pointer, ready to come down */
+  button.term:hover:not(:disabled) .pad .stamp { transform: translateY(-3px) rotate(-8deg) scale(1.05); filter: drop-shadow(0 5px 4px var(--lift)); }
+  button.term:hover:not(:disabled)::before { box-shadow: inset 0 0 0 1.5px var(--edge), inset 0 2px 0 var(--hi); }
+  button.term.pre:hover:not(:disabled)::before { box-shadow: inset 0 0 0 2px var(--deal), inset 0 2px 0 var(--hi); }
+}
 .prompt { font-size: 1rem; }
 
 /* the boundary: the session ticket, its break half torn off and marked used, the rest of the deal still yours */
@@ -783,7 +806,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
    just bought. This one move drives the ring's own --p (a registered property that only repaints the ring's mask),
    the single exception to transform/opacity (docs/decisions/0004). Gentle and short, so it never reads as a loading spinner. */
 .dial.sweep { animation-duration: .6s; animation-timing-function: cubic-bezier(.3, .7, .2, 1); }
-.ticket.stamped, .term.stamped { animation: thud .26s .15s ease-out; }
+.ticket.stamped { animation: thud .26s .15s ease-out; }
 
 /* 2. block change: whatever was left of the old ring lifts off; once the sheet is out of the way the new ring winds on
    in its own material (solid green for focus, the hatch for a break). The words stay readable throughout. */
@@ -834,8 +857,24 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 .terms.deal-in > .term { transform-origin: 0 50%; animation: tear-in .34s calc(var(--lag, 0ms) + 30ms) cubic-bezier(.2, .8, .2, 1) backwards; }
 .terms.deal-in > .term:nth-child(2) { animation-delay: calc(var(--lag, 0ms) + 90ms); }
 @keyframes tear-in { from { opacity: 0; transform: translateX(-12px) rotate(-3deg); } 70% { transform: rotate(.5deg); } }
-.terms.picking > .term:not(.stamped) { animation: fall .24s .22s cubic-bezier(.5, 0, .8, .4) forwards; }
-.terms.picking > .term.stamped { animation: thud .26s .15s ease-out, lift .22s .34s ease-out forwards; }
+.terms.picking > .term:not(.stamped) { animation: fall .26s .32s cubic-bezier(.5, 0, .8, .4) forwards; }
+.terms.picking > .term.stamped { animation: hit .3s .2s ease-out, lift .22s .48s ease-out forwards; }
+/* taking a term: the stamp lifts off its stub at once (you see it answer the press), comes down hard at 200 ms, squashes,
+   rebounds and settles. On impact the ink appears, the ticket is driven down and the whole sheet takes the knock. */
+.term.stamped .pad .stamp { transition: none; animation: slam .62s linear both; }
+.term.stamped .pad .stamp::after { animation: inked .3s .2s ease-out backwards; }
+@keyframes slam {
+  0% { transform: rotate(var(--tilt)); animation-timing-function: cubic-bezier(.2, .6, .4, 1); }
+  20% { transform: translateY(-10px) scale(1.24) rotate(calc(var(--tilt) - 9deg)); filter: drop-shadow(0 10px 6px var(--lift)); animation-timing-function: cubic-bezier(.7, 0, 1, .5); }
+  32% { transform: scale(.88) rotate(calc(var(--tilt) + 1.5deg)); filter: none; animation-timing-function: cubic-bezier(.2, .7, .3, 1); }
+  52% { transform: scale(1.05) rotate(calc(var(--tilt) - .6deg)); }
+  74% { transform: scale(.99) rotate(var(--tilt)); }
+  100% { transform: rotate(var(--tilt)); }
+}
+@keyframes inked { from { opacity: .5; } }
+@keyframes hit { 30% { transform: translateY(3px) scale(.994); } }
+.sheet.knock { animation: knock .22s .2s ease-out; }
+@keyframes knock { 30% { transform: translateY(2px); } }
 @keyframes fall { to { opacity: 0; transform: translateY(10px) rotate(1.5deg); } }
 @keyframes lift { to { transform: translateY(-3px) scale(1.012); } }
 
@@ -852,22 +891,16 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 /* ---------- the stamp is the action ----------
    You do not press a button under the deal, you stamp it. The Deal control is the stamp's face: outlined and clean while it
    waits, slammed and inked when you press. It then travels to the head of the running ticket. */
-.primary:is(#shake, #seal, #sealpre) { position: relative; display: block; width: auto; min-width: 180px; min-height: 76px; margin: 6px auto 4px; padding: 6px 34px 4px; background: none; box-shadow: none; color: var(--deal); border-radius: 10px;
+.primary#shake { position: relative; display: block; width: auto; min-width: 180px; min-height: 76px; margin: 6px auto 4px; padding: 6px 34px 4px; background: none; box-shadow: none; color: var(--deal); border-radius: 10px;
   font-size: 2.75rem; font-weight: 800; font-stretch: 76%; letter-spacing: .07em; text-transform: uppercase; line-height: 1; transform: rotate(-3deg); transition: transform .12s ease-out; }
-.primary:is(#shake, #seal, #sealpre)::before { content: ""; position: absolute; inset: 0; border: 6px double currentColor; border-radius: 10px; }
-.primary:is(#shake, #seal, #sealpre):hover:not(:disabled) { transform: rotate(-3deg) scale(1.03); }
-.primary:is(#shake, #seal, #sealpre):active:not(:disabled) { transform: rotate(-3deg) scale(.96); }
-.primary:is(#shake, #seal, #sealpre):disabled:not(.pressed) { color: var(--soft); }
-.primary:is(#shake, #seal, #sealpre).pressed { animation: ink .56s linear backwards; view-transition-name: dealstamp; }
-.primary:is(#shake, #seal, #sealpre).pressed::before { -webkit-mask: var(--noise) 0 0 / 120px 60px; mask: var(--noise) 0 0 / 120px 60px; }
+.primary#shake::before { content: ""; position: absolute; inset: 0; border: 6px double currentColor; border-radius: 10px; }
+.primary#shake:hover:not(:disabled) { transform: rotate(-3deg) scale(1.03); }
+.primary#shake:active:not(:disabled) { transform: rotate(-3deg) scale(.96); }
+.primary#shake:disabled:not(.pressed) { color: var(--soft); }
+.primary#shake.pressed { animation: ink .56s linear backwards; view-transition-name: dealstamp; }
+.primary#shake.pressed::before { -webkit-mask: var(--noise) 0 0 / 120px 60px; mask: var(--noise) 0 0 / 120px 60px; }
 #ticket .stampbox { display: none; }
 .stub.perf .hint { margin-top: 6px; }
-/* a term is taken by stamping its ticket: the slot shows a faint impression until you do */
-.slot { border-color: transparent; }
-.slot .tap { display: none; }
-.slot { margin-right: 12px; }
-.slot .stamp.ghost { visibility: visible; opacity: .5; font-size: 1rem; inset: 2px; }
-.stamped .slot .stamp.ghost { opacity: 1; filter: none; }
 
 /* ---------- the room on paper ----------
    Each friend is the stub of the ticket they are on: their wheel on the stub end, what they are doing, how long is left.
@@ -937,6 +970,15 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
     -webkit-mask: linear-gradient(#000 0 0) center / 100% calc(100% - 16px) no-repeat, conic-gradient(from 135deg at top, #000 90deg, #0000 0) left top / 16px 8px repeat-x, conic-gradient(from -45deg at bottom, #000 90deg, #0000 0) left bottom / 16px 8px repeat-x;
     mask: linear-gradient(#000 0 0) center / 100% calc(100% - 16px) no-repeat, conic-gradient(from 135deg at top, #000 90deg, #0000 0) left top / 16px 8px repeat-x, conic-gradient(from -45deg at bottom, #000 90deg, #0000 0) left bottom / 16px 8px repeat-x; }
   @keyframes sheet-in { from { transform: translateY(18px); opacity: 0; } }
+  /* asking for time at a desk: the clock's answer and the stamps read from arm's length */
+  .voice { width: 76px; height: 76px; }
+  .answer { gap: 18px; }
+  .answer .says { font-size: 2.125rem; }
+  .sheet h2.you { font-size: 1.1875rem; }
+  .term { grid-template-columns: minmax(0, 1fr) 150px; min-height: 104px; }
+  .term .say { padding: 18px 16px 19px 22px; font-size: 1.1875rem; }
+  .term .pad { padding-right: 24px; }
+  .term .pad .stamp { font-size: 1.875rem; }
   @keyframes sheet-out { to { transform: translateY(12px); opacity: 0; } }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -950,6 +992,9 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   .scrim.leaving::before, .scrim.leaving .sheet { animation: none !important; }
   .terms.picking > .term:not(.stamped) { animation: fade-out .16s .22s ease-in forwards !important; }
   .stamped .stamp.ghost { transform: rotate(var(--tilt)); opacity: 1; }
+  /* a taken term is simply inked: no lift, no knock */
+  .term.stamped .pad .stamp { transform: rotate(var(--tilt)); }
+  .term.stamped .pad .stamp::after { animation: fade .2s ease-out backwards !important; }
 }
 </style>
 
@@ -1207,6 +1252,25 @@ function clockMark() {
   const d = new Date(Date.now() + DEMO_SHIFT), m = d.getMinutes(), h = (d.getHours() % 12) + m / 60;
   return `<svg class="clockface" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="18.6" fill="var(--card)" stroke="var(--ink)" stroke-width="2.2"/><path d="${TICKS}" stroke="var(--ink)" stroke-width="1.3" stroke-linecap="round" opacity=".55"/><g transform="rotate(${(h * 30).toFixed(1)} 20 20)"><line class="hand h" x1="20" y1="21.5" x2="20" y2="12" stroke="var(--ink)" stroke-width="2.8" stroke-linecap="round"/></g><g transform="rotate(${m * 6} 20 20)"><line class="hand m" x1="20" y1="22" x2="20" y2="7.5" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"/></g><circle cx="20" cy="20" r="3.2" fill="var(--deal)"/></svg>`;
 }
+/* when you ask for time the clock answers in person: the wheel itself, small, drawn on the scale it will have if you
+   agree. What is left of this block is the solid arc with the knob on its end; the 5 minutes on offer wait as a pale arc
+   after it, the same stretch the big wheel winds on once you stamp. A ring of ticks makes it a clock face, not a spinner.
+   It goes in after the sheet is compared (VOICE_SLOT), and syncVoice() keeps it current, so it never redraws the sheet. */
+const VOICE_SLOT = "{{voice}}", VR = 38, VC = 2 * Math.PI * VR, OFFER_MS = 5 * 60000;
+const VTICKS = Array.from({ length: 12 }, (_, i) => `<line x1="0" y1="-46.5" x2="0" y2="${i % 3 ? -49 : -50.5}" transform="rotate(${i * 30})"/>`).join("");
+function voiceGeom() {
+  const all = S ? S.durMs + OFFER_MS : 1, r = S ? remaining() : 0, p = Math.max(0, Math.min(1, r / all)), q = Math.max(0, Math.min(1 - p, OFFER_MS / all));
+  return { now: `${(p * VC).toFixed(2)} ${VC.toFixed(2)}`, more: `${(q * VC).toFixed(2)} ${VC.toFixed(2)}`, at: (p * 360).toFixed(1) };
+}
+const voiceMark = () => { const g = voiceGeom(); return `<svg class="voice ${S && cur().type === "break" ? "break" : "focus"}" viewBox="-50 -50 100 100" aria-hidden="true"><g class="tk">${VTICKS}</g><circle class="bed" r="${VR}"/><circle class="more" r="${VR}" transform="rotate(${-90 + +g.at})" style="stroke-dasharray:${g.more}"/><circle class="arc" r="${VR}" transform="rotate(-90)" style="stroke-dasharray:${g.now}"/><g class="kn" transform="rotate(${g.at})"><circle cy="-${VR}" r="7.5"/></g></svg>`; };
+function syncVoice() {
+  const v = document.querySelector("#sheet-root .scrim:not(.leaving) .voice"); if (!v || !S) return;
+  const g = voiceGeom(), a = v.querySelector(".arc");
+  if (a.style.strokeDasharray === g.now) return;
+  a.style.strokeDasharray = g.now; v.querySelector(".kn").setAttribute("transform", `rotate(${g.at})`);
+  const m = v.querySelector(".more"); m.style.strokeDasharray = g.more; m.setAttribute("transform", `rotate(${-90 + +g.at})`);
+}
+const clockAnswers = (html, id) => `<div class="answer">${VOICE_SLOT}<p class="says" id="${id}" tabindex="-1">${N(html)}</p></div>`;
 const clockSays = (html, id) => `<div class="clockline tick">${clockMark()}<p class="bubble"${id ? ` id="${id}" tabindex="-1"` : ""}>${N(html)}</p></div>`;
 const CHEV = `<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 5l5 5-5 5"/></svg>`;
 /* a phone with a tap on each side: the push, drawn as what it feels like */
@@ -1229,13 +1293,12 @@ const HOWTO_OPEN = `<svg viewBox="0 0 96 72" fill="none" stroke="currentColor" s
 const CHECK = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 8.5l3 3 6-7"/></svg>`;
 /* one way to say a change everywhere: "Next break 5 → 2 min". Screen readers hear "5 becomes 2", not "right arrow". */
 const arrow = (a, b) => `${a} <span aria-hidden="true">→</span><span class="vh"> becomes </span> ${b}`;
-/* the figure on the left of a term ticket: the same change, compact, for comparing at a glance (the line beside it is read aloud) */
-const figArrow = (a, b) => `${a}<i>→</i>${b}`;
 /* the stamp box is printed empty; the DEAL stamp inside it stays hidden until you agree */
 const STAMPBOX = `<span class="stampbox" aria-hidden="true"><span class="stamp ghost">DEAL</span></span>`;
-const GHOST = `<span class="slot" aria-hidden="true"><span class="stamp ghost">DEAL</span></span>`;
-/* on a ticket you tap, the empty box says what it is for */
-const TAPSLOT = `<span class="slot" aria-hidden="true"><span class="tap">Tap to stamp</span><span class="stamp ghost">DEAL</span></span>`;
+/* a term ticket: what you agree to as one plain sentence (the part you agree to in bold), a perforation, and the stub
+   carrying the stamp's face. A button ticket is pressed to stamp it; a div ticket only shows the deal, with an empty
+   impression on its stub, and is stamped when Deal under it is pressed. */
+const termTicket = (tag, attrs, lead, rest, pre) => `<${tag} class="term${pre ? " pre" : ""}"${attrs}><span class="say"${tag === "div" ? ` id="dealcost"` : ""}><b>${N(lead)}</b>${rest ? ` ${N(rest)}` : ""}${pre ? ` <span class="lastpick">You picked this last time.</span>` : ""}</span><span class="pad${tag === "div" ? " empty" : ""}" aria-hidden="true"><span class="stamp">DEAL</span></span></${tag}>`;
 /* the dial's line work is drawn once per block as SVG: a scale sized to the block's minutes, and the plate's rosette */
 const polar = (r, deg) => { const a = (deg - 90) * Math.PI / 180; return `${(r * Math.cos(a)).toFixed(2)} ${(r * Math.sin(a)).toFixed(2)}`; };
 function scaleSvg(min) {
@@ -1562,7 +1625,7 @@ function renderSheet() {
   const same = root.dataset.sig === body && root.querySelector(".scrim:not(.leaving)");
   if (!same) {
     root.dataset.sig = body;
-    body = body.replace(BOOKMARK_SLOT, () => esc(sheet.notes ? sheet.notes.bookmark : ""));
+    body = body.replace(BOOKMARK_SLOT, () => esc(sheet.notes ? sheet.notes.bookmark : "")).replace(VOICE_SLOT, voiceMark);
     /* a big one's block end also describes the dialog with its done question, since focus lands on "Not yet" below it */
     const desc = body.includes('id="dealcost"') ? ` aria-describedby="dealcost${body.includes('id="doneq"') ? " doneq" : ""}"` : "";
     /* a sheet rises once when it opens; the terms come off the pad once when they first appear */
@@ -1585,8 +1648,6 @@ function sheetBody() {
   const at = sheet.notes ? sheet.notes.idx : S.idx;
   const b = S.blocks[at], nxt = S.blocks[at + 1], over = remaining() <= 0;
   let body = "";
-  /* every ticket in a sheet shares one layout: figure | perforation | what you agree to | stamp box */
-  const tick = (tag, attrs, fig, top, slot, cost) => `<${tag} class="term"${attrs}><span class="fig" aria-hidden="true"><span>${fig}</span></span><span class="top">${top}${/[.?!]$/.test(top) ? "" : `<span class="vh">.</span>`}</span>${slot}<span class="cost"${tag === "div" ? ` id="dealcost"` : ""}>${N(cost)}</span></${tag}>`;
   if (sheet.kind === "boundary" && !sheet.asking) {
     /* the session ticket: the break half is torn off and marked used; the rest of the deal is still yours */
     const rest = !nxt ? "That was the last block tonight."
@@ -1615,36 +1676,32 @@ function sheetBody() {
   } else if (sheet.kind === "boundary" || sheet.kind === "offer") {
     const offer = makeOffer(S);
     const back = `<button class="secondary" id="nevermind">${over ? `Start ${esc(nameOf(nxt))} instead` : "Never mind"}</button>`;
-    const ask = `5 more minutes of ${esc(title(b.label))}?`;
+    /* you ask, quoted small; the clock answers, large */
+    const ask = `<h2 id="sh" class="you" tabindex="-1">“5 more minutes of ${esc(title(b.label))}?”</h2>`;
     if (offer.terms[0].kind === "freebie") {
-      body = `<span class="grab" aria-hidden="true"></span>
-        <h2 id="sh" tabindex="-1">${ask}</h2>
-        ${clockSays("Sure, first one's free.")}
-        <div class="terms">${tick("div", ` data-term="0"`, "0", `+5 min of ${esc(title(b.label))}`, GHOST, `Costs nothing. Back to ${esc(shortTask())} at ${clockStr(Date.now() + 5 * 60000)}.`)}</div>
-        <button class="primary" id="seal">Deal</button>
+      const ends = clockStr(Date.now() + remaining() + 5 * 60000);
+      body = `${ask}
+        ${clockAnswers("Sure. The first one's free.", "freeh")}
+        <div class="terms" role="group" aria-labelledby="freeh">${termTicket("button", ` data-term="0"`, "5 more minutes, on the house.", b.type === "break" ? `You're back to ${esc(shortTask())} at ${ends}.` : `This block now ends at ${ends}.`)}</div>
         ${back}`;
     } else {
       const bp = borrowPreview(S), nf = nextOf(S, "focus");
       const needs = offer.requiresIntention;
       if (needs && sheet.draft == null && !sheet.typing) sheet.draft = "Open the chapter";
       const sug = ["Open the chapter", "Read one page"];
-      /* each term is its own button: one tap stamps it and the sheet closes. ADR 0005: the one picked last time
-         waits pre-selected, and Deal under the pad takes it, so the usual answer is one tap on the usual spot. */
+      /* each term is its own ticket: one press stamps it and the sheet closes. ADR 0005: the one picked last time
+         waits with a green edge and says so, so the usual answer is still one press. */
       const pre = offer.terms.findIndex(t => t.kind === lastRepay);
-      /* R36: the pre-selected one has the green edge and a check in its stamp box, and says "Last pick" in plain words;
-         beside it the other is an empty stamp box, so nothing tells you to tap */
-      const PRESLOT = `<span class="slot" aria-hidden="true">${CHECK}<span class="stamp ghost">DEAL</span></span>`;
-      const termTicket = (i, fig, top, cost) => i === pre
-        ? tick("button", ` data-term="${i}"`, fig, `${top}<span class="vh">.</span> <span class="lastpick">Last pick</span>`, PRESLOT, cost).replace('class="term"', 'class="term pre"')
-        : tick("button", ` data-term="${i}"`, fig, top, pre >= 0 ? GHOST : TAPSLOT, cost);
-      const dealPre = pre >= 0 ? `<button class="primary" id="sealpre">Deal</button>` : "";
-      const borrowCost = !bp.from ? "Paid back from a later break tonight."
-        : bp.carry ? `${bp.from - bp.to} min from your next break (${arrow(bp.from, bp.to)}), ${bp.carry} from later breaks.`
-        : `Next break ${arrow(bp.from, bp.to)} min.`;
-      const tickets = `${offer.terms.map((t, i) => t.kind === "borrow"
-          ? termTicket(i, bp.from ? figArrow(bp.from, bp.to) : "Later", "Borrow from next break", borrowCost)
-          : termTicket(i, figArrow(nf.min, nf.min + 5), "Add to next focus", `Next ${esc(shortTask())} block ${arrow(nf.min, nf.min + 5)} min.`)).join("")}
-`;
+      /* what each term costs, said as a sentence in your own words: no arrows, no figures to decode */
+      const mins = n => `${n} ${n === 1 ? "minute" : "minutes"}`;
+      const borrow = !bp.from ? ["Take them from a later break tonight.", ""]
+        : bp.from === bp.to ? ["Take them from later breaks.", `My next break stays at ${mins(bp.from)}.`]
+        : bp.carry ? ["Take them from my next break.", `It goes from ${mins(bp.from)} to ${bp.to}, and the other ${bp.carry} ${bp.carry === 1 ? "comes off a later break" : "come off later breaks"}.`]
+        : ["Take them from my next break.", `It goes from ${mins(bp.from)} to ${bp.to}.`];
+      const tickets = offer.terms.map((t, i) => {
+        const [lead, rest] = t.kind === "borrow" ? borrow : [`Add them to my next ${esc(shortTask())} block.`, `It goes from ${mins(nf.min)} to ${nf.min + 5}.`];
+        return termTicket("button", ` data-term="${i}"`, lead, rest, i === pre);
+      }).join("");
       /* the override always works, but stays a quiet link under the healthier choice */
       const noterms = `<button class="textbtn" data-term="x">No terms. I need this.</button>`;
       if (needs) {
@@ -1653,21 +1710,17 @@ function sheetBody() {
         const tok = `<button class="tok" id="intenttok" aria-controls="intent-picker" aria-expanded="${!!sheet.pick}" aria-label="${esc(shown)}, first thing you'll do, change">${esc(shown)}</button>`;
         const pick = sheet.pick ? `<div class="picker row" id="intent-picker" role="radiogroup" aria-label="First thing you'll do">${sug.map(x => { const on = !sheet.typing && sheet.draft === x; return `<button class="chip" role="radio" data-sug="${x}" aria-checked="${on}">${on ? CHECK : ""}${x}</button>`; }).join("")}<button class="chip" role="radio" id="typeown" aria-checked="${!!sheet.typing}">${sheet.typing ? CHECK : ""}Type my own</button></div>
           ${sheet.typing ? `<div class="field"><label for="intent" class="vh">First thing I'll do</label><input id="intent" maxlength="60" placeholder="like “open ch. 7”" enterkeyhint="done" value="${esc(sheet.typed || "")}"${sheet.need ? ` aria-describedby="needtxt"` : ""}></div>` : ""}` : "";
-        body = `<span class="grab" aria-hidden="true"></span>
-          <h2 id="sh" tabindex="-1">${ask}</h2>
-          ${clockSays(`Sure. First thing when you start: ${tok}.`, "firsth")}
+        body = `${ask}
+          ${clockAnswers(`Sure. First thing when you start: ${tok}.`, "firsth")}
           ${pick}
           ${sheet.need ? `<p class="need" id="needtxt">Type the first thing, or pick one above.</p>` : ""}
           <div class="terms" role="group" aria-label="Where the 5 minutes come from">${tickets}</div>
-          ${dealPre}
           ${back}
           ${noterms}`;
       } else {
-        body = `<span class="grab" aria-hidden="true"></span>
-          <h2 id="sh" tabindex="-1">${ask}</h2>
-          ${clockSays("Sure. Where do the 5 minutes come from?", "fromh")}
+        body = `${ask}
+          ${clockAnswers("Sure. Where do the 5 minutes come from?", "fromh")}
           <div class="terms" role="group" aria-labelledby="fromh">${tickets}</div>
-          ${dealPre}
           ${back}
           ${noterms}`;
       }
@@ -1676,7 +1729,7 @@ function sheetBody() {
     const nb = nextOf(S, "break");
     body = `<span class="grab" aria-hidden="true"></span>
       <h2 id="sh" tabindex="-1">Want to keep going?</h2>
-      <div class="terms">${tick("div", ` id="bonusticket"`, nb ? figArrow(nb.min, nb.min + 3) : "+3", `+10 min of ${esc(shortTask())}`, GHOST, nb ? `Next break ${arrow(nb.min, nb.min + 3)} min.` : "Your break is 3 min longer.")}</div>
+      <div class="terms">${termTicket("div", ` id="bonusticket"`, `10 more minutes of ${esc(shortTask())}.`, nb ? `Your next break goes from ${nb.min} minutes to ${nb.min + 3}.` : "Your break gets 3 minutes longer.")}</div>
       <button class="primary" id="bonusyes">Deal</button>
       <button class="secondary countbtn${sheet.paused ? "" : " counting"}" id="bonusno"><span>Take my break</span>${sheet.paused ? `<small>Waits for you</small>` : `<small id="cdtext">${N("Starts on its own in 30 seconds")}</small>`}</button>
       ${sheet.paused ? `<p class="soft small center held">Take your time. Nothing happens until you pick.</p>` : `<button class="textbtn" id="moretime">More time to decide</button>`}`;
@@ -2370,7 +2423,6 @@ function bind() {
       say(toast); lastSig = ""; if (S) { render(); if (had) focusTitle(); }
     });
   });
-  on("#sealpre", () => { const b = $("button.term.pre"); if (b && b.onclick) b.onclick(); });
   on("#shake", () => {
     const t = $("#ticket"), btn = $("#shake"); t.classList.add("stamped"); btn.classList.add("pressed"); btn.disabled = true; buzz(14, reduce ? 0 : 150); stamping = true;
     const serial = String(412 + ledger.length).padStart(4, "0");
@@ -2436,7 +2488,6 @@ function bind() {
     const root = $("#sheet-root"); if (root.dataset.sig) root.dataset.sig = sheetBody();
     nextFocus = null; b.focus({ preventScroll: true });
   });
-  on("#seal", () => seal("0"));
   on("#toroom", () => { setTab("room"); render(); focusTitle(); });
   on("#backnow", () => { setTab("now"); lastSig = ""; render(); focusTitle(); });
   on("#typeown", () => { sheet.typing = true; if (!arrowing) nextFocus = "#intent"; render(); });
@@ -2523,10 +2574,12 @@ function seal(i) {
   const offer = makeOffer(S), term = i === "x" ? offer.override : offer.terms[+i];
   if (!term) return;
   if (offer.requiresIntention) { const v = sheet.typing ? (sheet.typed || "").trim() : sheet.draft; if (v) sheet.intention = v; }
-  const t = document.querySelector(`[data-term="${i}"]`); if (t) { t.classList.add("stamped"); const pad = t.closest(".terms"); if (pad) pad.classList.add("picking"); }
-  buzz(14, reduce ? 0 : 150); sheet.sealing = true; $(".sheet").classList.add("busy");
+  const t = document.querySelector(`[data-term="${i}"]`), stamp = !!t && t.classList.contains("term");
+  if (stamp) { t.classList.add("stamped"); const pad = t.closest(".terms"); if (pad) pad.classList.add("picking"); }
+  /* the phone buzzes when the stamp hits the paper, not when you press */
+  buzz(14, reduce ? 0 : 200); sheet.sealing = true; $(".sheet").classList.add("busy"); if (stamp) $(".sheet").classList.add("knock");
   document.querySelectorAll(".sheet button").forEach(x => x.disabled = true);
-  setTimeout(() => take(term, i), !t || !t.classList.contains("term") ? 0 : reduce ? 450 : 600);
+  setTimeout(() => take(term, i), !stamp ? 0 : reduce ? 450 : 760);
 }
 /* the announcement says what the deal cost, not only what it bought */
 function take(term, i) { const intention = sheet && sheet.intention; if (BE) BE.ask(i === "x" ? "override" : +i, intention);
@@ -2620,7 +2673,7 @@ function tick() {
       if (d && !reduce && !S.justStarted) d.style.setProperty("--p", (r / S.durMs).toFixed(4));
     }
   }
-  syncArcs();
+  syncArcs(); syncVoice();
   requestAnimationFrame(tick);
 }
 

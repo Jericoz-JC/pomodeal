@@ -52,7 +52,7 @@ ws.addEventListener("message", e => { const m = JSON.parse(e.data); if (m.id && 
 const send = (method, params = {}) => new Promise(r => { const i = ++id; pending.set(i, r); ws.send(JSON.stringify({ id: i, method, params })); });
 
 await send("Page.enable");
-await send("Emulation.setDeviceMetricsOverride", { width: WIDTH, height: HEIGHT, deviceScaleFactor: 2, mobile: true });
+await send("Emulation.setDeviceMetricsOverride", { width: WIDTH, height: HEIGHT, deviceScaleFactor: Number(process.env.SCALE) || 2, mobile: WIDTH < 820 });
 const base = pathToFileURL(page).href;
 for (const scheme of ["light", "dark"]) {
   await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: scheme }] });

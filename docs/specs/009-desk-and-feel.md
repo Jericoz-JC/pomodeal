@@ -93,6 +93,22 @@ What they name now:
 
 A score that does not move in six rounds, while the named problems change every round, says the panel's 7 is about as far as screenshots of this design will go. The next information worth having is from people using it: Chris on a real night, then the friend group.
 
+## Round 7: Chris's list, one item at a time
+
+Branch `design/desk-feel`, cut from this one. No review council: Chris judges each item from screenshots and clips.
+
+### 1. Asking for time
+
+The product's signature moment, and the least crafted screen. The negotiation rules (`packages/core`, and the prototype's mirror of them) are unchanged.
+
+- **The clock speaks.** Your ask is quoted small at the top, right-aligned: “5 more minutes of Reels?”. The clock's answer is the largest text on the sheet, said by the wheel itself: a small copy of the timer, with a ring of ticks so it reads as a clock face and not a spinner. It is drawn on the scale it will have if you agree. What is left of this block is the solid arc with the knob; the 5 minutes on offer wait after it as a pale green arc, which is the stretch the big wheel winds on once you stamp. It stays current while the sheet is open without redrawing the sheet.
+- **Each term is one plain sentence in your own words.** No "5 → 2" figure. "**Take them from my next break.** It goes from 5 minutes to 2, and the other 2 come off later breaks." "**Add them to my next reading block.** It goes from 8 minutes to 13." "**5 more minutes, on the house.** You're back to reading at 10:46pm." The edge cases have their own sentences: no break left, or a next break already at the 2-minute floor.
+- **Taking a term is a stamp.** Each ticket has a stub past a perforation carrying the DEAL stamp's face, clean double-ruled rubber. On a desk it rises under the pointer. Pressing the ticket lifts the stamp off the stub at once, brings it down hard at 200 ms, squashes and rebounds. On impact the ink texture appears, the ticket is driven down, the whole sheet takes a 2 px knock, and phones that can vibrate buzz. The other ticket falls away and the sheet closes at about 760 ms. With reduced motion the stamp is simply inked and the other ticket fades.
+- **One press, everywhere.** The free one is a ticket you stamp too; the separate Deal button under it is gone. ADR 0005 holds: the repayment picked last time has a green edge and says "You picked this last time", and stamping it is one press, so the extra Deal button under the terms is gone as well.
+- The "keep going" offer at the end of a focus block uses the same sentence ticket, with an empty impression on its stub, but still has its green Deal button. That button becomes a stamp in item 3.
+
+Not verified: Safari (desktop and iPhone) and a real phone. The haptic buzz only exists on Android Chrome; iOS has no vibration API. The motion was judged from 60 ms frame strips and a real-time clip in headless Edge, not by hand on a device.
+
 ## Invites
 
 Chris reported that he invited a friend and could see nothing. An investigation (Opus 5.5, read-only) found this is mostly as built: an invite only lets someone into the beta, and friends, rooms and presence do not exist in the backend yet. The live Room says "open soon". Fixed on this branch:
