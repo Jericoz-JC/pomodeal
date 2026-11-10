@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pomodeal</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main>
+      <section class="now" aria-labelledby="now-h">
+        <h1 id="now-h" class="sr">Current block</h1>
+        <div class="ring" id="ring" data-kind="none" aria-hidden="true"><span id="clock">--:--</span></div>
+        <p id="status" class="status" role="status">Nothing running.</p>
+      </section>
+
+      <section aria-labelledby="start-h">
+        <h2 id="start-h">Start a test block</h2>
+        <form id="start">
+          <div class="pair">
+            <label>This is for <input name="label" value="Reels" maxlength="40" required /></label>
+            <label>Then <input name="next" value="Reading" maxlength="40" required /></label>
+          </div>
+          <div class="kinds">
+            <button type="submit" name="preset" value="break:40">40 s break</button>
+            <button type="submit" name="preset" value="break:120">2 min break</button>
+            <button type="submit" name="preset" value="focus:40">40 s focus</button>
+          </div>
+        </form>
+        <button id="end-now" type="button" class="quiet">End the current block now</button>
+      </section>
+
+      <section aria-labelledby="perm-h">
+        <h2 id="perm-h">Break-over overlay</h2>
+        <p id="perm-status" class="hint">Checking site access…</p>
+        <button id="perm" type="button" hidden>Allow the overlay on all sites</button>
+      </section>
+
+      <section aria-labelledby="link-h">
+        <h2 id="link-h">Web app link</h2>
+        <p id="link" class="hint">Not connected. Use Connect extension in the web app.</p>
+      </section>
+
+      <section aria-labelledby="log-h">
+        <h2 id="log-h">Worker log</h2>
+        <ol id="log" class="log"></ol>
+      </section>
+    </main>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
