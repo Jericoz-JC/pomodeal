@@ -680,6 +680,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 .mini .track { background: var(--track); }
 .mini .fill { -webkit-mask: conic-gradient(#000 calc(var(--p) * 1turn), transparent 0), radial-gradient(circle closest-side, transparent calc(var(--w) - .6%), #000 var(--w)); -webkit-mask-composite: source-in;
   mask: conic-gradient(#000 calc(var(--p) * 1turn), transparent 0) intersect, radial-gradient(circle closest-side, transparent calc(var(--w) - .6%), #000 var(--w)); }
+.mini .fill.focus { background: var(--deal); }
 .mini .fill.break { background: repeating-conic-gradient(var(--break-base) 0 26deg, transparent 26deg 30deg); }
 .mini.sm .fill.break { background: repeating-conic-gradient(var(--break-base) 0 52deg, transparent 52deg 60deg); }
 .mini .ini { display: grid; place-items: center; font-family: var(--font-head); font-stretch: 80%; font-weight: 750; font-size: 1.3125rem; }
@@ -847,17 +848,60 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 @keyframes pop { from { transform: scale(.4); opacity: 0; } }
 
 
+
+/* ---------- the stamp is the action ----------
+   You do not press a button under the deal, you stamp it. The Deal control is the stamp's face: outlined and clean while it
+   waits, slammed and inked when you press. It then travels to the head of the running ticket. */
+.primary:is(#shake, #seal, #sealpre) { position: relative; display: block; width: auto; min-width: 180px; min-height: 76px; margin: 6px auto 4px; padding: 6px 34px 4px; background: none; color: var(--deal); border-radius: 10px;
+  font-size: 2.75rem; font-weight: 800; font-stretch: 76%; letter-spacing: .07em; text-transform: uppercase; line-height: 1; transform: rotate(-3deg); transition: transform .12s ease-out; }
+.primary:is(#shake, #seal, #sealpre)::before { content: ""; position: absolute; inset: 0; border: 6px double currentColor; border-radius: 10px; }
+.primary:is(#shake, #seal, #sealpre):hover:not(:disabled) { transform: rotate(-3deg) scale(1.03); }
+.primary:is(#shake, #seal, #sealpre):active:not(:disabled) { transform: rotate(-3deg) scale(.96); }
+.primary:is(#shake, #seal, #sealpre):disabled:not(.pressed) { color: var(--soft); }
+.primary:is(#shake, #seal, #sealpre).pressed { animation: ink .56s linear backwards; view-transition-name: dealstamp; }
+.primary:is(#shake, #seal, #sealpre).pressed::before { -webkit-mask: var(--noise) 0 0 / 120px 60px; mask: var(--noise) 0 0 / 120px 60px; }
+#ticket .stampbox { display: none; }
+.stub.perf .hint { margin-top: 6px; }
+/* a term is taken by stamping its ticket: the slot shows a faint impression until you do */
+.slot { border-color: transparent; }
+.slot .tap { display: none; }
+.slot .stamp.ghost { visibility: visible; opacity: .24; filter: grayscale(1); }
+.stamped .slot .stamp.ghost { opacity: 1; filter: none; }
+
+/* ---------- the room on paper ----------
+   Each friend is the stub of the ticket they are on: their wheel on the stub end, what they are doing, how long is left.
+   A check-in is a stamp you put on your own. */
+.people { gap: 8px; filter: drop-shadow(0 1px 0 var(--rule)) drop-shadow(0 6px 10px var(--lift)); }
+.person, .person + .person, .person.you, .person:last-child { border: none; }
+.person { background: var(--card); border-radius: 6px 0 0 6px; padding: 10px 22px 10px 12px; min-height: 72px; -webkit-mask: var(--zig); mask: var(--zig); grid-template-columns: 64px 1fr auto; gap: 12px; }
+.person .who { padding-left: 14px; background: radial-gradient(circle, var(--edge) 1.2px, transparent 1.7px) 0 0 / 6px 8px repeat-y; align-self: stretch; display: flex; flex-direction: column; justify-content: center; }
+.person.you { background: var(--stub); }
+.pills { gap: 14px; padding: 6px 4px 2px; }
+.pills .chip { position: relative; border-radius: 6px; background: none; box-shadow: none; color: var(--soft); font-family: var(--font-head); font-stretch: 80%; font-weight: 800; font-size: 1.125rem; letter-spacing: .05em; text-transform: uppercase; min-height: 48px; }
+.pills .chip::before { content: ""; position: absolute; inset: 0; border: 4px double currentColor; border-radius: 6px; }
+.pills .chip:nth-child(1) { transform: rotate(-2deg); } .pills .chip:nth-child(2) { transform: rotate(1.5deg); } .pills .chip:nth-child(3) { transform: rotate(-1deg); }
+.pills .chip[aria-checked="true"] { background: none; color: var(--deal); box-shadow: none; }
+.pills .chip[aria-checked="true"]::before { -webkit-mask: var(--noise) 0 0 / 120px 60px; mask: var(--noise) 0 0 / 120px 60px; }
+.pills .chip svg { display: none; }
+
+/* ---------- sheets are paper ----------
+   No grab handle and no rounded corners: a sheet is a length of paper fed up from the bottom, torn across its top. */
+.sheet:not(.paper) { border-top: none; border-radius: 0; padding-top: 26px;
+  -webkit-mask: linear-gradient(#000 0 0) bottom / 100% calc(100% - 8px) no-repeat, conic-gradient(from 135deg at top, #000 90deg, #0000 0) left top / 16px 8px repeat-x;
+  mask: linear-gradient(#000 0 0) bottom / 100% calc(100% - 8px) no-repeat, conic-gradient(from 135deg at top, #000 90deg, #0000 0) left top / 16px 8px repeat-x; }
+.grab { display: none; }
+
 /* ---------- the desk (wide windows) ----------
    Two things on a desk: the clock you are dealing with, large, and tonight's tape hanging from the top edge of the window.
    No header bar, no columns of widgets. The room stays one line under the clock, as on a phone, and opens in the stage. */
 @media (min-width: 820px) {
-  :root { --pad: clamp(28px, 5vw, 72px); --gap: clamp(36px, 6vw, 96px); --tapew: clamp(300px, 30vw, 372px); --stagetop: clamp(14px, 3vh, 30px); }
+  :root { --pad: clamp(28px, 5vw, 72px); --gap: clamp(28px, 4vw, 56px); --tapew: clamp(300px, 30vw, 372px); --stagetop: clamp(14px, 3vh, 30px); }
   .app { max-width: 1200px; padding-inline: var(--pad); }
   .deskhead { display: flex; align-items: baseline; gap: 14px; padding-top: 30px; font-family: var(--font-head); font-stretch: 76%; font-weight: 800; font-size: 1.25rem; line-height: 1; color: var(--soft); }
   .deskhead .mark { color: var(--ink); }
   .deskhead .day { font-family: var(--font-body); font-weight: 400; font-stretch: normal; font-size: .9375rem; }
   .desk { display: grid; grid-template-columns: minmax(0, 1fr) var(--tapew); grid-template-areas: "stage tape"; align-items: start; column-gap: var(--gap); margin-top: -50px; }
-  main { grid-area: stage; width: 100%; max-width: 560px; justify-self: start; padding-block: calc(50px + var(--stagetop)) 48px; gap: 24px; }
+  main { grid-area: stage; width: 100%; max-width: 720px; justify-self: start; padding-block: calc(50px + var(--stagetop)) 48px; gap: 24px; }
   .side { min-width: 0; }
   .roomside { display: none; }
   .tapeside { grid-area: tape; position: sticky; top: 0; align-self: start; margin: 0; }
@@ -866,8 +910,18 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   body.live .tape { max-height: calc(100dvh - 96px); }
   .tape { max-height: calc(100vh - 40px); max-height: calc(100dvh - 40px); overflow-y: auto; scrollbar-width: thin; padding: 24px 24px 34px; }
   /* the stage: one bold object, sized by the window's height so the way out of a block is never below the fold */
-  .dial { width: clamp(272px, 40vh, 380px); }
-  .runticket { padding: 20px 36px 0 28px; } .runticket .note { margin: 8px -36px 0 -28px; padding: 16px 36px 18px 28px; }
+  /* the running ticket is laid out for width: the wheel is its stub end, the words are beside it past a perforation */
+  .runticket { display: grid; grid-template-columns: auto minmax(0, 1fr); align-content: center; gap: 0; padding: 0; position: relative; }
+  .runticket .timerwrap { display: contents; }
+  .runticket .dial { grid-column: 1; grid-row: 1 / span 3; width: clamp(220px, 34vh, 300px); margin: 30px 30px 30px 32px; }
+  .runticket::after { content: ""; grid-column: 2; grid-row: 1 / span 3; justify-self: start; align-self: stretch; border-left: 2px dotted var(--edge); pointer-events: none; }
+  .runticket .now { grid-column: 2; grid-row: 1; align-self: end; padding: 28px 38px 0 30px; gap: 8px; }
+  .runticket .note { grid-column: 2; grid-row: 2; align-self: start; justify-self: start; margin: 0; padding: 14px 38px 6px 30px; border-top: none; text-align: left; }
+  .runticket .aside { grid-column: 2; grid-row: 3; align-self: start; text-align: left; padding: 0 38px 20px 30px; margin: 0; }
+  .runticket .note:last-child, .runticket .aside:empty { padding-bottom: 28px; }
+  .runticket h1 { font-size: 2.25rem; }
+  .runticket .note { max-width: none; }
+  .runticket .dial { margin: 28px 26px 28px 30px; }
   .timerwrap { gap: 14px; }
   h1 { font-size: 2.75rem; }
   .sentence { font-size: 2rem; line-height: 1.4; }
@@ -876,9 +930,9 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   @media (max-width: 1150px) { .tape { padding-inline: 18px; } .tape .stubcard { grid-template-columns: 58px 1fr; } .tape .stubcard .title { font-size: 1.0625rem; } .tape .stubcard .t b { font-size: 1.0625rem; } }
   /* a decision is made at the stage: the paper lands over the clock, the tape stays readable beside it */
   .scrim { align-items: center; justify-content: flex-start; padding: 24px 0 24px calc(var(--pad) + max(0px, (100vw - 1200px) / 2)); -webkit-backdrop-filter: none; backdrop-filter: none; }
-  .scrim::before { background: color-mix(in srgb, var(--paper) 84%, transparent); }
-  .sheet { --behind: var(--sheet); width: min(560px, 100vw - 2 * var(--pad) - var(--tapew) - var(--gap)); max-width: none; border: 1px solid var(--rule); border-radius: 8px; padding: 26px 28px 24px; box-shadow: 0 1px 0 var(--rule), 0 20px 44px var(--lift); max-height: calc(100% - 48px); -webkit-mask: none; mask: none; }
-  .grab { display: none; }
+  .sheet, .sheet:not(.paper) { --behind: var(--sheet); width: min(720px, 100vw - 2 * var(--pad) - var(--tapew) - var(--gap)); max-width: none; border: none; border-radius: 0; padding: 34px 32px 34px; max-height: calc(100% - 48px);
+    -webkit-mask: linear-gradient(#000 0 0) center / 100% calc(100% - 16px) no-repeat, conic-gradient(from 135deg at top, #000 90deg, #0000 0) left top / 16px 8px repeat-x, conic-gradient(from -45deg at bottom, #000 90deg, #0000 0) left bottom / 16px 8px repeat-x;
+    mask: linear-gradient(#000 0 0) center / 100% calc(100% - 16px) no-repeat, conic-gradient(from 135deg at top, #000 90deg, #0000 0) left top / 16px 8px repeat-x, conic-gradient(from -45deg at bottom, #000 90deg, #0000 0) left bottom / 16px 8px repeat-x; }
   @keyframes sheet-in { from { transform: translateY(18px); opacity: 0; } }
   @keyframes sheet-out { to { transform: translateY(12px); opacity: 0; } }
 }
@@ -980,7 +1034,7 @@ let panel = null;
 /* ADR 0005: the repayment picked last time (users.lastRepay), pre-selected from the second ask */
 let lastRepay = null;
 /* progress words (R2): under an hour "45 min", then "2h 5" or "2h" */
-const hm = m => { m = Math.max(0, Math.round(m)); if (m < 60) return `${m} min`; const h = Math.floor(m / 60), r = m % 60; return r ? `${h}h ${r}` : `${h}h`; };
+const hm = m => { m = Math.max(0, Math.round(m)); if (m < 60) return `${m} min`; const h = Math.floor(m / 60), r = m % 60; return r ? `${h}h ${r}m` : `${h}h`; };
 function progressText(p) {
   if (!p) return "";
   if (p.kind === "stamped") return `${p.n} stamped`;
@@ -1224,7 +1278,7 @@ function paintTape() {
 }
 /* the browser tab keeps the time when Pomodeal is behind your notes */
 const BASE_TITLE = document.title;
-function paintTitle() { const t = S ? `${navNow()}, ${cur().type === "focus" ? shortTask() : "break"} | Pomodeal` : BASE_TITLE; if (document.title !== t) document.title = t; }
+function paintTitle() { const t = S ? `${remaining() <= 0 ? "Time's up" : `${minsLeft()} min left`}, ${title(cur().label)} | Pomodeal` : BASE_TITLE; if (document.title !== t) document.title = t; }
 function deskHead() {
   const d = new Date(Date.now() + (BE ? 0 : DEMO_SHIFT));
   return `<span class="mark">Pomodeal</span><span class="day">${N(`${d.toLocaleDateString([], { weekday: "long" })}, ${clockStr()}`)}</span>`;
@@ -1308,7 +1362,7 @@ function ticket(peek) {
     </div>
     <div class="stub perf">
       <button class="primary" id="shake">Deal</button>
-      <p class="hint">Tap any underlined part to change it.</p>
+      <p class="hint">${WIDE.matches ? "Click" : "Tap"} any underlined part to change it.</p>
     </div>
   </section></div>`;
   }
@@ -1323,7 +1377,7 @@ function ticket(peek) {
     : deal.act
       ? `<span class="nowrap">${tokB(p)} of ${tokA(p)},</span> then <span class="nowrap">${tokF(p)} of</span> <span class="nowrap">${tokT(p)}.</span>`
       : `${tokA(p)}. Straight into <span class="nowrap">${tokF(p)} of</span> <span class="nowrap">${tokT(p)}.</span>`;
-  const bigChip = offerBig ? `<button class="bigchip" id="bigchip" aria-pressed="${big.on}"><span class="cbox" aria-hidden="true">${CHECK}</span>Bigger than one block?</button>` : "";
+  const bigChip = offerBig ? `<button class="bigchip" id="bigchip" aria-pressed="${big.on}"><span class="cbox" aria-hidden="true">${CHECK}</span>Bigger than one sitting?</button>` : "";
   /* R32: the two optional rows are phrases on the ticket, "About 2h" and "Mostly writing", with printed boxes to ink.
      Each name starts with what's printed ("2h, about 2 hours"), so voice control and screen readers agree. */
   const bigRows = isBig ? `<div class="phrases">
@@ -1342,7 +1396,7 @@ function ticket(peek) {
     </div>
     <div class="stub perf">
       <button class="primary" id="shake">Deal</button>
-      <p class="hint">Tap any underlined part to change it.</p>
+      <p class="hint">${WIDE.matches ? "Click" : "Tap"} any underlined part to change it.</p>
     </div>
   </section></div>`;
 }
@@ -1391,7 +1445,7 @@ function cardsView() {
   /* the card loaded into the ticket is on the ticket now, not above it */
   if (bigOneCards === null) return "";
   const shown = shownCards();
-  const link = `<button class="textbtn allbig" id="allbig" aria-haspopup="dialog">All big ones</button>`;
+  const link = `<button class="textbtn allbig" id="allbig" aria-haspopup="dialog">All big tasks</button>`;
   /* R28: the list also holds the ones set aside, so it stays reachable whenever a card is shown or one is set aside */
   if (!shown.length) return asideKnown() ? link : "";
   shown.forEach(c => { if (c.comeback) noteComeback(c.id); });
@@ -1439,7 +1493,7 @@ function presence(still) {
   if (BE) return "";
   const faces = `<span class="faces">${ROOM.slice(0, 3).map(p => mini(p, "sm")).join("")}</span>`;
   /* while you focus, the room is company, not a door out */
-  if (still) return `<div class="presence">${faces}<span>${S && S.with ? "Focusing with Maya" : "Maya’s focusing too"}</span></div>`;
+  if (still) return `<button class="presence" id="toroom">${faces}<span>${S && S.with ? "Focusing with Maya" : "Maya’s focusing too"}</span><span class="see">See room</span></button>`;
   return `<button class="presence" id="toroom">${faces}<span>${N("Maya, 14 min left")}</span><span class="see">See room</span></button>`;
 }
 function runningView() {
@@ -1582,7 +1636,7 @@ function sheetBody() {
         : tick("button", ` data-term="${i}"`, fig, top, pre >= 0 ? GHOST : TAPSLOT, cost);
       const dealPre = pre >= 0 ? `<button class="primary" id="sealpre">Deal</button>` : "";
       const borrowCost = !bp.from ? "Paid back from a later break tonight."
-        : bp.carry ? `Next break ${arrow(bp.from, bp.to)} min. ${bp.carry} more come out of later breaks.`
+        : bp.carry ? `${bp.from - bp.to} min from your next break (${arrow(bp.from, bp.to)}), ${bp.carry} from later breaks.`
         : `Next break ${arrow(bp.from, bp.to)} min.`;
       const tickets = `${offer.terms.map((t, i) => t.kind === "borrow"
           ? termTicket(i, bp.from ? figArrow(bp.from, bp.to) : "Later", "Borrow from next break", borrowCost)
@@ -1657,7 +1711,7 @@ function panelBody() {
         <button class="mrow" id="m-split">Split into pieces<small>${hasPieces ? "Rename, resize, add or remove pieces." : "Name the parts and guess the minutes for each."}</small></button>
         <button class="mrow" id="m-spread">Spread over the days left<small>${spreadable(pl) ? "A little each day up to the due day. Nothing is set until you sign." : "Split it first, then spread the pieces."}</small></button>
         <button class="mrow" id="m-fresh">Start fresh on this one<small>Clears the bookmark and your gut size. Pieces stay.</small></button>
-        <button class="mrow" id="m-aside">Set aside<small>Off this screen. It waits in All big ones.</small></button>
+        <button class="mrow" id="m-aside">Set aside<small>Off this screen. It waits in All big tasks.</small></button>
         <button class="mrow gone" id="m-del">Delete<small>Gone for good, bookmark and all.</small></button>
       </div>
       <button class="textbtn pclose" id="p-close">Close</button>`;
@@ -1672,10 +1726,10 @@ function panelBody() {
   const open = (items || []).filter(i => i.status !== "set_aside"), aside = (items || []).filter(i => i.status === "set_aside");
   const list = panel.error ? `<p>Your big ones didn't load.</p><button class="secondary" id="l-retry">Try again</button>`
     : !items ? `<p class="soft" role="status">Getting your big ones…</p>`
-    : !items.length ? `<p class="soft">Nothing here yet. Tick “Bigger than one block?” on a deal to start one.</p>`
+    : !items.length ? `<p class="soft">Nothing here yet. Tick “Bigger than one sitting?” on a deal to start one.</p>`
     : `${open.length ? `<ul class="biglist" aria-label="Open">${open.map(row).join("")}</ul>` : ""}
       ${aside.length ? `<h3 class="asideh" id="asideh">Set aside</h3><ul class="biglist" aria-labelledby="asideh">${aside.map(row).join("")}</ul>` : ""}`;
-  return `<h2 id="ph" tabindex="-1">All big ones</h2>
+  return `<h2 id="ph" tabindex="-1">All big tasks</h2>
     <span class="pperf" aria-hidden="true"></span>
     ${list}
     <button class="textbtn pclose" id="p-close">Close</button>`;
@@ -2139,7 +2193,7 @@ function cardAction(id, action) {
   const next = cards().find(x => x.id !== id), to = cardById(id) ? `[data-menu="${id}"]` : next ? `[data-card="${next.id}"]` : "#allbig";
   panel = null; render();
   const el = to && document.querySelector(to); if (el) el.focus({ preventScroll: true }); else focusTitle();
-  say(action === "remove" ? `Deleted ${c.title}.` : action === "setAside" ? `${c.title} set aside. It waits in All big ones.` : `Starting fresh on ${c.title}.`);
+  say(action === "remove" ? `Deleted ${c.title}.` : action === "setAside" ? `${c.title} set aside. It waits in All big tasks.` : `Starting fresh on ${c.title}.`);
 }
 function bindPanel() {
   on("#p-close", () => closePanel());
@@ -2182,7 +2236,7 @@ function ledgerView() {
   const any = ledger.length || studied;
   return `<div class="tapehead"><h2 id="tapeh" tabindex="-1">Today's deals</h2><span class="tapeval" id="tapeval"></span></div>
   ${!any ? `<p class="soft">Nothing yet. When you ask for more time, the deal and its terms land here.</p>` : ""}
-  ${ledger.length ? `<ul class="stubs" aria-label="Deals, newest first">${ledger.map((e, i) => `<li class="stubcard${freshStub(e)}">${stubInner(e, i)}</li>`).reverse().join("")}</ul>` : ""}
+  ${ledger.length || S ? `<ul class="stubs" aria-label="Deals, newest first">${S ? `<li class="stubcard live"><span class="t"><b>now</b></span><span class="what"><span class="row"><span class="title">${esc(title(cur().label))}</span><span class="stamp plain">Running</span></span><em>${S.serial ? `No. ${S.serial}, ` : ""}${cur().type === "focus" ? "focus" : "the break you chose"}</em></span></li>` : ""}${ledger.map((e, i) => `<li class="stubcard${freshStub(e)}">${stubInner(e, i)}</li>`).reverse().join("")}</ul>` : ""}
   ${any ? `<dl class="totals">
     <div class="go"><dt>Studied</dt><dd>${N(studied)} min</dd></div>
     <div><dt>Deals made</dt><dd>${deals}</dd></div>
