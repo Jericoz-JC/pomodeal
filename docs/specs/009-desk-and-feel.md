@@ -65,6 +65,22 @@ Scored per the build loop by four independent reviewers who never saw each other
 | r2 desktop | 6 / 6 / 6 / 6 | 7 / 7 / 7 / 7 | 7 / 7 / 6 / 7 | 6 / 6 / 6 / 6 | 6 / 7 / 7 / 7 | 8 / 8 / 8 / 8 | 5 / 6 / 6 / 5 | 6 / 7 / 6 / 6 | 4 / 5 / 5 / 5 | 5 / 6 / 6 / 6 | Stage aligned to the wordmark; dial sized so the friends line fits; decisions laid on the stage instead of a dialog; tape kept beside the room; larger deal sentence; dark button and paper |
 | r3 phone | 7 / 8 / 8 / 8 | 7 / 8 / 8 / 8 | 7 / 7 / 7 / 7 | 6 / 7 / 7 / 6 | 7 / 8 / 7 / 8 | 8 / 8 / 9 / 8 | 7 / 7 / 7 / 6 | 7 / 8 / 8 / 7 | | 7 / 7 / 7 / 7 | Running block moved onto the stamped ticket; wheel returned to its original look as SVG strokes (Chris's call, with a research pass on methods); no numeral repeats the centre number |
 | r3 desktop | 6 / 7 / 6 / 6 | 7 / 8 / 7 / 7 | 7 / 7 / 7 / 7 | 5 / 6 / 5 / 6 | 6 / 7 / 7 / 7 | 8 / 8 / 9 / 8 | 6 / 6 / 6 / 5 | 6 / 7 / 7 / 6 | 4 / 5 / 5 / 5 | 5 / 6 / 6 / 6 | Decisions rise over the dimmed clock again instead of replacing it (round 3's bare stage scored worse); sheet padding restored; action buttons capped at 340 px; tape type tightened at 1024 px |
+| r4 phone | 8 / 8 / 7 / 8 | 7 / 8 / 7 / 8 | 7 / 7 / 6 / 7 | 7 / 7 / 6 / 6 | 8 / 8 / 7 / 8 | 8 / 9 / 8 / 8 | 7 / 7 / 7 / 7 | 7 / 8 / 7 / 7 | | 7 / 7 / 7 / 7 | "Keep screen on" moved under the ticket; one bold tick on short blocks; rim outlines removed; finer break hatch; squarer buttons; room names in the heading face |
+| r4 desktop | 6 / 7 / 6 / 7 | 7 / 8 / 7 / 7 | 7 / 7 / 6 / 7 | 5 / 6 / 5 / 6 | 7 / 7 / 6 / 7 | 8 / 9 / 8 / 8 | 6 / 6 / 6 / 6 | 6 / 7 / 7 / 6 | 4 / 5 / 5 / 5 | 6 / 6 / 6 / 6 | Stage raised to the wordmark; wheel sized so the friends line fits at 1440 by 900; sheets match the stage width, end inside the window and dim the whole desk |
+| r5 phone | 7 / 8 / 8 / 8 | 7 / 8 / 8 / 8 | 7 / 7 / 6 / 7 | 7 / 7 / 7 / 6 | 7 / 8 / 7 / 8 | 8 / 8 / 8 / 8 | 6 / 7 / 7 / 6 | 7 / 8 / 8 / 7 | | 7 / 7 / 7 / 7 | Stopped here. Darker wheel track and a more opaque dim behind desktop sheets were made after this round and not re-scored |
+| r5 desktop | 7 / 7 / 7 / 7 | 7 / 8 / 7 / 7 | 7 / 7 / 6 / 7 | 6 / 6 / 7 / 6 | 7 / 7 / 7 / 7 | 8 / 8 / 8 / 8 | 6 / 6 / 6 / 5 | 6 / 7 / 7 / 6 | 5 / 5 / 5 / 5 | 6 / 6 / 6 / 6 | |
+
+**Where it stopped.** Five rounds, twenty independent reviews. Phone held at 7 overall from every reviewer in every round. Desktop went from 5 to 6 overall and its hierarchy, one-action and consistency scores each rose a point or two. The 9 out of 10 consensus Chris asked for was not reached, and more polish will not reach it: rounds 3 to 5 changed sub-scores but not one overall score.
+
+What every reviewer in rounds 4 and 5 says is holding it at 7 and 6:
+
+1. **The room** is an avatar list with pill check-ins and carries none of the ticket idea.
+2. **Sheets** (block end, asking for time, the split planner with its plus and minus steppers) are stock bottom sheets on phone and a rounded panel on desktop. Three desktop treatments were tried; none scored better than the others.
+3. **The green button.** Reviewers want the stamp itself to be the action instead of a full-width button under a ghost stamp.
+4. **Desktop is still a phone column beside a tape.** They want the running ticket laid out for width (wheel on the left, title, next step and stop on the right) and the tape to print the running deal live.
+5. **Copy:** "Bigger than one block?", "All big ones", "Tap" on a laptop, "2h 5", and the borrow sentence.
+
+Items 1 to 4 change how screens work, not how they look, and item 3 changes the product's main interaction, so they were left for Chris to rule on.
 
 ## Research: a smooth wheel
 

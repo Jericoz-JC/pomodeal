@@ -548,7 +548,7 @@ button.term:focus-visible { outline-offset: 3px; }
 /* the running block is the ticket you stamped: its serial and stamp at the head, the clock printed on it as its seal,
    and what comes next on the stub under the perforation */
 .runwrap { filter: drop-shadow(0 1px 0 var(--rule)) drop-shadow(0 8px 12px var(--lift)); margin-right: -4px; }
-.runticket { --behind: var(--card); --track: color-mix(in srgb, var(--ink) 14%, var(--card)); display: flex; flex-direction: column; gap: 6px; padding: 14px 26px 0 20px; background: var(--card); border-radius: 6px 0 0 6px; box-shadow: inset 0 1px 0 var(--hi); -webkit-mask: var(--zig); mask: var(--zig); }
+.runticket { --behind: var(--card); --track: color-mix(in srgb, var(--ink) 24%, var(--card)); display: flex; flex-direction: column; gap: 6px; padding: 14px 26px 0 20px; background: var(--card); border-radius: 6px 0 0 6px; box-shadow: inset 0 1px 0 var(--hi); -webkit-mask: var(--zig); mask: var(--zig); }
 .runticket .dealtwrap { filter: none; }
 .runticket .dealt { background: none; -webkit-mask: none; mask: none; padding: 0; }
 .runticket .timerwrap { padding-top: 6px; }
@@ -876,7 +876,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   @media (max-width: 1150px) { .tape { padding-inline: 18px; } .tape .stubcard { grid-template-columns: 58px 1fr; } .tape .stubcard .title { font-size: 1.0625rem; } .tape .stubcard .t b { font-size: 1.0625rem; } }
   /* a decision is made at the stage: the paper lands over the clock, the tape stays readable beside it */
   .scrim { align-items: center; justify-content: flex-start; padding: 24px 0 24px calc(var(--pad) + max(0px, (100vw - 1200px) / 2)); -webkit-backdrop-filter: none; backdrop-filter: none; }
-  .scrim::before { background: color-mix(in srgb, var(--paper) 66%, transparent); }
+  .scrim::before { background: color-mix(in srgb, var(--paper) 84%, transparent); }
   .sheet { --behind: var(--sheet); width: min(560px, 100vw - 2 * var(--pad) - var(--tapew) - var(--gap)); max-width: none; border: 1px solid var(--rule); border-radius: 8px; padding: 26px 28px 24px; box-shadow: 0 1px 0 var(--rule), 0 20px 44px var(--lift); max-height: calc(100% - 48px); -webkit-mask: none; mask: none; }
   .grab { display: none; }
   @keyframes sheet-in { from { transform: translateY(18px); opacity: 0; } }
