@@ -602,13 +602,12 @@ button.term:focus-visible { outline-offset: 3px; }
 .term.pre::before { box-shadow: inset 0 0 0 2px var(--deal), inset 0 2px 0 var(--hi); }
 /* the stub you stamp: a perforation down its left edge, the stamp's face in the middle */
 .term .pad { position: relative; display: grid; place-items: center; padding: 10px 18px 10px 8px; background: radial-gradient(circle, var(--edge) 1.5px, transparent 2px) 0 0 / 6px 10px repeat-y; }
-.term .pad .stamp { --tilt: -6deg; font-size: 1.5rem; letter-spacing: .07em; padding: 9px 10px 7px 11px; transition: transform .14s ease-out, filter .14s ease-out; }
+.term .pad .stamp { --tilt: -4deg; font-size: 1.25rem; letter-spacing: .07em; padding: 9px 10px 7px 11px; transition: transform .14s ease-out, filter .14s ease-out; }
 /* at rest the face is clean rubber: a crisp double rule. The ink texture only exists once it has hit the paper. */
 .term .pad .stamp::before { border-width: 4.5px; border-radius: 7px; -webkit-mask: none; mask: none; }
 .term .pad .stamp::after { content: ""; position: absolute; inset: 0; border-radius: 7px; background: var(--deal); opacity: 0; -webkit-mask: var(--noise) 0 0 / 120px 60px; mask: var(--noise) 0 0 / 120px 60px; }
 /* a ticket that only shows what you would get (Deal is pressed below it) has an empty impression on its stub */
-.term .pad.empty .stamp, .term:not(.stamped) .pad .stamp { opacity: .22; filter: grayscale(1); }
-@media (hover: hover) { button.term:hover:not(:disabled) .pad .stamp { opacity: .6; filter: none; } }
+.term .pad.empty .stamp { opacity: .22; filter: grayscale(1); }
 .term.stamped .pad .stamp { opacity: 1; filter: none; }
 .term.stamped .pad .stamp::before { -webkit-mask: var(--noise) 0 0 / 120px 60px; mask: var(--noise) 0 0 / 120px 60px; }
 .term.stamped .pad .stamp::after { opacity: .16; }
@@ -701,6 +700,10 @@ button.term:focus-visible { outline-offset: 3px; }
 .runticket .dealt .serial { padding-top: 4px; }
 .runticket .timerwrap { padding-top: 6px; }
 .runticket .note { justify-self: stretch; max-width: none; margin: 8px -26px 0 -20px; padding: 16px 26px 16px 20px; background: var(--holes-x); background-position: 0 0; }
+/* benchmark r3: the timer is the hero, straight on the paper like Flow's, not inside a card. ("main" outranks the desk rules.) */
+main .runwrap { filter: none; margin-right: 0; }
+main .runticket { --behind: var(--paper); --track: color-mix(in srgb, var(--deal) 8%, color-mix(in srgb, var(--ink) var(--track-ink), var(--paper))); background: none; box-shadow: none; -webkit-mask: none; mask: none; padding-left: 0; padding-right: 0; min-height: 0; }
+main .runticket .note { margin: 10px 0 0; padding: 0; background: none; text-align: center; font-size: 1rem; color: var(--soft); }
 .runticket .note:empty { background: none; }
 .runticket .aside:not(:empty) { margin-bottom: 12px; }
 .act .keepon, .act .pushask { align-self: center; margin-top: 0; }
@@ -887,8 +890,9 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 .totals .go dd { color: var(--deal-ink); }
 .tape .stubcard:first-child { border-top: 1px solid var(--edge-half); }
 .tape .stubcard .stamp { font-size: 1rem; font-stretch: var(--wd-act); font-weight: 700; letter-spacing: .02em; padding: 1px 6px 2px; }
-.tape .stubcard .stamp::before { border: 1.5px solid currentColor; border-radius: 4px; -webkit-mask: none; mask: none; }
-.tape .stubcard .stamp { color: var(--soft); --tilt: 0deg !important; }
+.tape .stubcard .stamp::before { display: none; }
+.tape .stubcard .stamp { color: var(--deal-ink); padding: 0; --tilt: 0deg !important; }
+.tape .stubcard .stamp.plain { color: var(--soft); }
 .tape .stubcard.fresh .stamp { color: var(--deal); --tilt: -3deg !important; }
 .tape .stubcard:nth-child(3n+1) .stamp { --tilt: -4deg; } .tape .stubcard:nth-child(3n+2) .stamp { --tilt: 2.5deg; } .tape .stubcard:nth-child(3n) .stamp { --tilt: -2deg; }
 .tape .stubcard .stamp { transform: rotate(var(--tilt)); }

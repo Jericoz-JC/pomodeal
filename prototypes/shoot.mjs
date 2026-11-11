@@ -54,7 +54,9 @@ for (const scheme of ["light", "dark"]) {
     for (let tryNo = 1; !shot; tryNo++) {
       await send("Page.navigate", { url: "about:blank" });
       await send("Page.navigate", { url: `${base}#${s}` });
-      await wait(1200); // fonts + first render
+      await wait(1200); // first render
+      // web fonts can be slow: a shot taken before they load shows fallback type, so wait for them (up to 8 s)
+      await send("Runtime.evaluate", { expression: "Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 8000))]).then(() => document.fonts.status)", awaitPromise: true, returnByValue: true });
       try { shot = await send("Page.captureScreenshot", { format: "png" }); }
       catch (e) { if (tryNo >= 2) throw e; console.warn(`${s}-${scheme}: ${e.message}, retrying`); }
     }
