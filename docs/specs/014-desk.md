@@ -19,7 +19,7 @@ The desk keeps one rhythm by constant gaps rather than stretched objects: ticket
 
 ### The roll
 
-- **A sitting** is a panel as long as its minutes, with its name and length ("30 min, 1 of 2"). **A break** between sittings is a hatched length, as on the dial. Both ends of the roll are torn at round half-holes.
+- **A sitting** is a panel as long as its minutes, with its name and length ("30 min, part 1 of 2"). **A break** between sittings is a hatched length, as on the dial. Both ends of the roll are torn at round half-holes.
 - **The caption** is one quiet sentence: what's left on the left ("10 min of Reels, then 2h 5 min of focus", naming the deal's own break), "Done around **10:34**pm" on the right, one size in every state.
 - **Under it**, a clock in the dial's ticks: a tick every 5 minutes, longer each quarter hour, each hour named ("8pm"). Chris ruled for clock hours (spec 012 had ruled out clock times for sittings; the roll shows where they fall without assigning start times).
 - **While you type tonight's line** the roll is a dashed outline that grows with each comma; the item still being typed is a fainter outline. Pressing an outline opens that item's lengths on the ticket.
