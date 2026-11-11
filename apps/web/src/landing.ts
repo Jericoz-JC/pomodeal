@@ -37,16 +37,16 @@ export const LANDING_CSS = `
 #pd-gate .ld > :not(.ld-dock) { position: relative; z-index: 1; }
 #pd-gate .ld-in { max-width: 1080px; margin: 0 auto; padding: calc(14px + env(safe-area-inset-top, 0px)) max(18px, env(safe-area-inset-right, 0px)) 0 max(18px, env(safe-area-inset-left, 0px)); }
 #pd-gate .ld-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-#pd-gate .ld-top .mark { display: flex; align-items: center; gap: 10px; font-family: var(--font-head); font-stretch: 78%; font-weight: 800; font-size: 23px; }
+#pd-gate .ld-top .mark { display: flex; align-items: center; gap: 10px; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 23px; }
 #pd-gate .ld-top .mark img { width: 30px; height: 30px; border-radius: 8px; }
 #pd-gate .ld-pill { font-size: 14px; color: var(--soft); }
 #pd-gate .ld-pill.inv { color: var(--ink); border: 1.5px dashed var(--deal); border-radius: 999px; padding: 4px 10px; font-weight: 700; }
-#pd-gate .ld-pill.inv b { font-family: var(--font-head); font-stretch: 85%; letter-spacing: .06em; }
+#pd-gate .ld-pill.inv b { font-family: var(--font-head); font-stretch: var(--wd-act); letter-spacing: .06em; }
 #pd-gate .ld p { margin: 0; }
 
 #pd-gate .ld-hero { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; padding: 18px 0 8px; }
 #pd-gate .ld-copy { position: relative; display: flex; flex-direction: column; gap: 10px; }
-#pd-gate .ld h1 { font-family: var(--font-head); font-stretch: 72%; font-weight: 800; font-size: clamp(40px, 11vw, 78px); line-height: .94; letter-spacing: -.01em; margin: 0; color: var(--ink); }
+#pd-gate .ld h1 { font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: clamp(40px, 11vw, 78px); line-height: .94; letter-spacing: -.01em; margin: 0; color: var(--ink); }
 #pd-gate .ld h1 span { display: block; white-space: nowrap; }
 #pd-gate .ld-sub { font-size: 17px; line-height: 1.45; color: var(--soft); max-width: 34ch; }
 
@@ -55,7 +55,7 @@ export const LANDING_CSS = `
 #pd-gate .ld-twrap { position: relative; width: 100%; max-width: 420px; min-width: 0; margin-bottom: 40px; }
 #pd-gate .ld-peek { position: absolute; left: 0; right: 0; bottom: -34px; height: 70px; background: var(--stub); border-radius: 6px 0 0 6px; transform: rotate(-2deg); transform-origin: 30% 0;
   -webkit-mask: var(--zig); mask: var(--zig); box-shadow: inset 0 0 0 1px var(--rule); display: flex; align-items: flex-end; justify-content: space-between; padding: 0 26px 9px 18px;
-  font-family: var(--font-head); font-stretch: 80%; font-weight: 700; font-size: 13px; color: var(--soft); }
+  font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 700; font-size: 13px; color: var(--soft); }
 #pd-gate .ld-peek .stamp { --tilt: -7deg; font-size: 1rem; padding: 2px 6px; }
 #pd-gate .ld-ticket { position: relative; z-index: 2; width: 100%; min-width: 0; scroll-margin-bottom: calc(130px + env(safe-area-inset-bottom, 0px)); background: var(--card);
   border-radius: 6px 0 0 6px; -webkit-mask: var(--zig); mask: var(--zig); filter: drop-shadow(0 1px 0 var(--rule)) drop-shadow(0 18px 22px var(--lift)); }
@@ -70,7 +70,7 @@ export const LANDING_CSS = `
 #pd-gate .ld-wheel { display: grid; place-items: center; padding: 4px 0 6px; }
 #pd-gate .ld-wheel .dial { width: min(62vw, 236px); }
 #pd-gate .ld-wheel .face .unit { font-size: .875rem; }
-#pd-gate .ld-sentence { font-family: var(--font-head); font-stretch: 86%; font-weight: 500; font-size: 1.5rem; line-height: 1.35; color: var(--soft); text-wrap: balance; }
+#pd-gate .ld-sentence { font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 500; font-size: 1.5rem; line-height: 1.35; color: var(--soft); text-wrap: balance; }
 /* bold, not underlined: in the app an underline means you can tap it, and here the chips do the changing */
 #pd-gate .ld-sentence b { font-size: 1.2em; font-weight: 700; color: var(--ink); }
 /* one sideways row, like the app's pickers */
@@ -87,7 +87,7 @@ export const LANDING_CSS = `
 #pd-gate .ld-say { display: flex; gap: 12px; align-items: center; min-height: 44px; }
 #pd-gate .ld-say .voice { width: 44px; height: 44px; }
 #pd-gate .ld-say .voice .kn circle { stroke: var(--card); }
-#pd-gate .ld-say p { font-family: var(--font-head); font-stretch: 82%; font-weight: 700; font-size: 1.25rem; line-height: 1.2; color: var(--ink); text-wrap: balance; }
+#pd-gate .ld-say p { font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 700; font-size: 1.25rem; line-height: 1.2; color: var(--ink); text-wrap: balance; }
 #pd-gate .ld-say p.pop { animation: settle .26s ease-out; }
 #pd-gate .ld-you { align-self: flex-end; font-size: 16px; color: var(--soft); }
 #pd-gate .ld-you[hidden] { display: none; }
@@ -96,7 +96,7 @@ export const LANDING_CSS = `
 #pd-gate .ld .term .say { font-size: 1rem; }
 /* the stamp face is the control: clean rubber while it waits, slammed and inked when pressed (the app's own keyframes) */
 #pd-gate .ld-press { --tilt: -3deg; position: relative; align-self: center; min-width: 170px; min-height: 68px; margin: 2px auto 0; padding: 6px 30px 4px; border: none; border-radius: 10px; background: none;
-  color: var(--deal); font-family: var(--font-head); font-stretch: 76%; font-weight: 800; font-size: 2.5rem; letter-spacing: .07em; text-transform: uppercase; line-height: 1; cursor: pointer;
+  color: var(--deal); font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 2.5rem; letter-spacing: .07em; text-transform: uppercase; line-height: 1; cursor: pointer;
   transform: rotate(var(--tilt)); transition: transform .14s ease-out, filter .14s ease-out; }
 #pd-gate .ld-press::before { content: ""; position: absolute; inset: 0; border: 6px double currentColor; border-radius: 10px; }
 #pd-gate .ld-press::after { content: ""; position: absolute; inset: 0; border-radius: 10px; background: currentColor; opacity: 0; -webkit-mask: var(--noise) 0 0 / 120px 60px; mask: var(--noise) 0 0 / 120px 60px; }
@@ -113,11 +113,11 @@ export const LANDING_CSS = `
 #pd-gate .ld-ask[hidden] { display: none; }
 
 #pd-gate .ld-signin { display: flex; flex-direction: column; gap: 10px; scroll-margin-top: 20px; padding-top: 6px; }
-#pd-gate .ld-signin h2 { font-family: var(--font-head); font-stretch: 80%; font-weight: 800; font-size: 28px; margin: 0; }
+#pd-gate .ld-signin h2 { font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 28px; margin: 0; }
 #pd-gate .ld-note { color: var(--soft); margin: 0 0 4px; font-size: 16px; line-height: 1.45; }
 #pd-gate .ld-invite { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 12px 16px; border: 1.5px dashed var(--deal); border-radius: 10px; }
 #pd-gate .ld-invite span { color: var(--soft); font-size: 15px; }
-#pd-gate .ld-invite b { font-family: var(--font-head); font-stretch: 85%; font-weight: 800; font-size: 22px; letter-spacing: .08em; }
+#pd-gate .ld-invite b { font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 800; font-size: 22px; letter-spacing: .08em; }
 #pd-gate .ld-prov { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 54px; border-radius: 10px; border: 1.5px solid var(--edge);
   background: var(--card); color: var(--ink); font: inherit; font-weight: 700; font-size: 17px; cursor: pointer; }
 #pd-gate .ld-prov svg { width: 22px; height: 22px; flex: none; }
@@ -130,9 +130,9 @@ export const LANDING_CSS = `
 
 /* how a deal works: each point shows the app's own part, not a drawing of it */
 #pd-gate .ld-how { padding: 44px 0 20px; display: grid; gap: 38px; }
-#pd-gate .ld-how h2 { font-family: var(--font-head); font-stretch: 78%; font-weight: 800; font-size: clamp(30px, 7vw, 44px); line-height: 1; margin: 0; max-width: 18ch; }
+#pd-gate .ld-how h2 { font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: clamp(30px, 7vw, 44px); line-height: 1; margin: 0; max-width: 18ch; }
 #pd-gate .ld-row { display: grid; gap: 14px; align-content: start; }
-#pd-gate .ld-row h3 { font-family: var(--font-head); font-stretch: 82%; font-weight: 800; font-size: 22px; margin: 0; }
+#pd-gate .ld-row h3 { font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 22px; margin: 0; }
 #pd-gate .ld-row > p { color: var(--soft); font-size: 16.5px; line-height: 1.5; max-width: 40ch; }
 #pd-gate .ld-art { display: flex; flex-direction: column; gap: 10px; }
 #pd-gate .ld-art .term .pad .stamp { animation: none; }
@@ -145,7 +145,7 @@ export const LANDING_CSS = `
 #pd-gate .ld-tapeart .stubcard:first-child { border-top: none; }
 #pd-gate .ld-run { max-width: 300px; padding: 16px 28px 0 20px; background: var(--card); border-radius: 6px 0 0 6px; -webkit-mask: var(--zig); mask: var(--zig); display: flex; flex-direction: column; gap: 4px; }
 #pd-gate .ld-runk { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--soft); }
-#pd-gate .ld-runt { font-family: var(--font-head); font-stretch: 76%; font-weight: 800; font-size: 1.5rem; line-height: 1.05; }
+#pd-gate .ld-runt { font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 1.5rem; line-height: 1.05; }
 #pd-gate .ld-runw { display: grid; place-items: center; padding: 10px 0 12px; }
 #pd-gate .ld-runw .dial { width: 168px; }
 #pd-gate .ld-runw .face .unit { font-size: .8125rem; }
@@ -161,7 +161,7 @@ export const LANDING_CSS = `
 #pd-gate .ld-people i.b::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: repeating-linear-gradient(45deg, var(--break-base) 0 2px, var(--break-stripe) 2px 3px);
   -webkit-mask: radial-gradient(circle, transparent 14px, #000 14.5px); mask: radial-gradient(circle, transparent 14px, #000 14.5px); }
 #pd-gate .ld-people em { font-style: normal; color: var(--soft); font-size: 14px; }
-#pd-gate .ld-people b { font-family: var(--font-head); font-stretch: 78%; font-weight: 800; font-size: 1.375rem; }
+#pd-gate .ld-people b { font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 1.375rem; }
 #pd-gate .ld-foot { padding: 28px 0 calc(130px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--rule); margin-top: 20px; color: var(--soft); font-size: 14.5px; }
 
 /* phones: sign-in lives in a dock that stays under the thumb */
@@ -277,7 +277,7 @@ export function landingHTML(o: LandingOptions): string {
           </div>
           <div class="ld-perf">
             <p class="ld-you" id="ld-you" hidden>“5 more minutes of Reels?”</p>
-            <div class="ld-say">${VOICE}<p id="ld-say" aria-live="polite">Pick what you’re on, then press DEAL.</p></div>
+            <div class="ld-say">${VOICE}<p id="ld-say" aria-live="polite">What are you on right now?</p></div>
             <div class="terms" id="ld-terms" role="group" aria-labelledby="ld-say" hidden>
               ${term("button", ` data-term="borrow"`, "Take them from my next break.", "It goes from 7 minutes to 2.")}
               ${term("button", ` data-term="trade"`, "Add them to my next reading block.", "It goes from 8 minutes to 13.")}
@@ -324,7 +324,7 @@ export function landingHTML(o: LandingOptions): string {
         <div class="ld-people" aria-hidden="true">
           <div><i class="f">M</i><span>Maya<br><em>Focusing on Orgo</em></span><b>14</b></div>
           <div><i class="b">J</i><span>Jordan<br><em>On a break</em></span><b>3</b></div>
-          <div><i>P</i><span>Priya<br><em>Picking her next block</em></span><em>Deciding</em></div>
+          <div><i>P</i><span>Priya<br><em>Picking a next block</em></span><em>Deciding</em></div>
         </div></div>
     </section>
 

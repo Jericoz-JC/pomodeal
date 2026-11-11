@@ -26,7 +26,7 @@ One loop, repeated per feature. Each turn of the loop leaves a trail in `docs/` 
 Adapted from Theo's "Agents Sucked At UI (Until Today)" (t3.gg, 2026). His point: agents get good at UI when you turn taste into a **score they can climb**, not when you add more instructions.
 
 1. **Screenshot every state** at 375 px (and desktop when relevant), light and dark. Prototypes expose states by URL hash (`#deal`, `#running`, `#boundary`, …) so screenshots are scriptable (headless Edge/Chrome `--screenshot`).
-2. **A council of independent reviewers** scores each category 1–10: *hierarchy, typography, color & contrast, consistency, clarity of the one action, tone (no-shame), delight*. Reviewers are separate subagents with different lenses: a product designer, a stressed student at 11 PM, and an accessibility reviewer. Read-only, no shared context.
+2. **A council of independent reviewers** (the `design-council` skill in `.claude/skills/`, adapted from tstack's `council`) scores the change: a product designer, the primary user (a capable student who studies with Pomodeal nightly; Pomodeal is built for Chris's taste), and an art director for taste. Read-only, no target score. Each gets `settled.md`, Chris's decisions, and every fix is checked against it before it is built.
 3. **Score against references, not in a vacuum.** Absolute scores drift; relative ones are honest. Include screenshots or descriptions of 2–3 reference apps (e.g. Focusmate, Forest, Opal, one sec) and ask: is ours better than these?
 4. **Don't tell reviewers the target score.** Knowing "we need a 9" inflates scores.
 5. **Log every round** in the spec's "Design rounds" table: scores per reviewer per category, and what changed. Before/after screenshots side by side.
