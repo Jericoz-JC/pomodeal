@@ -1,6 +1,9 @@
 import { ConvexError, v } from "convex/values";
-import { internalMutation, mutation, query } from "./_generated/server";
+import type { UserIdentity } from "convex/server";
+import { internalMutation, mutation, query, type MutationCtx } from "./_generated/server";
+import { emailHashOf } from "./lib/email";
 import { currentMember, requireMember } from "./lib/members";
+import { getBetaSettings } from "./lib/signups";
 
 /** Each member can hand out this many single-use invites (a room holds 12, including you). */
 export const DEFAULT_ALLOWANCE = 11;
@@ -20,7 +23,7 @@ export const me = query({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return { status: "signedOut" as const };
     const user = await currentMember(ctx);
-    if (!user) return { status: "waitlist" as const };
+    if (!user) return { status: "waitlist" as const, signups: (await getBetaSettings(ctx)).signups };
     const mine = await ctx.db.query("invites").withIndex("by_createdBy", (q) => q.eq("createdBy", user._id)).collect();
     const given = mine.reduce((n, i) => n + i.maxUses, 0);
     return {
@@ -39,7 +42,7 @@ export const claim = mutation({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new ConvexError({ code: "SIGNED_OUT", message: "Sign in first." });
     const existing = await currentMember(ctx);
-    if (existing) return { already: true };
+    if (existing || (await tryRelink(ctx, identity))) return { already: true };
 
     const invite = await ctx.db.query("invites").withIndex("by_code", (q) => q.eq("code", code.trim().toUpperCase())).unique();
     const now = Date.now();
@@ -48,17 +51,99 @@ export const claim = mutation({
     if (invite.expiresAt && invite.expiresAt < now) throw new ConvexError({ code: "INVITE_EXPIRED", message: "That invite has expired. Ask your friend for a new one." });
 
     await ctx.db.patch(invite._id, { uses: invite.uses + 1 });
-    const name = displayName.trim().slice(0, 40) || "New member";
     await ctx.db.insert("users", {
       tokenIdentifier: identity.tokenIdentifier,
-      displayName: name,
+      displayName: cleanName(displayName),
       role: "member",
       inviteId: invite._id,
       invitedBy: invite.createdBy,
       inviteAllowance: DEFAULT_ALLOWANCE,
       joinedAt: now,
+      ...(await hashField(identity)),
     });
+    await leaveWaitlist(ctx, identity.tokenIdentifier);
+    await afterJoin(ctx, now);
     return { already: false };
+  },
+});
+
+function cleanName(displayName: string): string {
+  return displayName.trim().slice(0, 40) || "New member";
+}
+
+async function hashField(identity: UserIdentity): Promise<{ emailHash?: string }> {
+  const emailHash = await emailHashOf(identity);
+  return emailHash ? { emailHash } : {};
+}
+
+/** The issuer part of a stored tokenIdentifier ("<issuer>|<subject>"). */
+function issuerOf(tokenIdentifier: string): string {
+  return tokenIdentifier.slice(0, tokenIdentifier.indexOf("|"));
+}
+
+async function leaveWaitlist(ctx: MutationCtx, tokenIdentifier: string): Promise<void> {
+  const row = await ctx.db.query("waitlist").withIndex("by_tokenIdentifier", (q) => q.eq("tokenIdentifier", tokenIdentifier)).unique();
+  if (row) await ctx.db.delete(row._id);
+}
+
+/**
+ * A member who signed up in another WorkOS environment (same verified email, different issuer) is moved onto this
+ * identity: same row, same data, same invites. Returns whether that happened.
+ */
+async function tryRelink(ctx: MutationCtx, identity: UserIdentity): Promise<boolean> {
+  const emailHash = await emailHashOf(identity);
+  if (!emailHash || identity.emailVerified !== true) return false;
+  const match = await ctx.db.query("users").withIndex("by_emailHash", (q) => q.eq("emailHash", emailHash)).first();
+  if (!match || issuerOf(match.tokenIdentifier) === identity.issuer) return false;
+  await ctx.db.patch(match._id, { tokenIdentifier: identity.tokenIdentifier });
+  await leaveWaitlist(ctx, identity.tokenIdentifier);
+  return true;
+}
+
+/** After any new member: closes sign-ups if a limit is reached (spec 010, the brake). */
+async function afterJoin(_ctx: MutationCtx, _now: number): Promise<void> {}
+
+/**
+ * Spec 010: runs on every app load once the sign-in token is attached. In order: a member gets a missing emailHash
+ * filled in; a member arriving from another WorkOS environment (same verified email, different issuer) is moved onto
+ * the new identity; when sign-ups are open a new account joins; otherwise it waits on the list.
+ */
+export const enter = mutation({
+  args: { displayName: v.string() },
+  returns: v.object({ status: v.union(v.literal("member"), v.literal("waitlist")), relinked: v.boolean() }),
+  handler: async (ctx, { displayName }) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new ConvexError({ code: "SIGNED_OUT", message: "Sign in first." });
+    const emailHash = await emailHashOf(identity);
+
+    const user = await currentMember(ctx);
+    if (user) {
+      if (emailHash && user.emailHash !== emailHash) await ctx.db.patch(user._id, { emailHash });
+      return { status: "member" as const, relinked: false };
+    }
+
+    if (await tryRelink(ctx, identity)) return { status: "member" as const, relinked: true };
+
+    const now = Date.now();
+    if ((await getBetaSettings(ctx)).signups === "open") {
+      await ctx.db.insert("users", {
+        tokenIdentifier: identity.tokenIdentifier,
+        displayName: cleanName(displayName),
+        role: "member",
+        inviteId: null,
+        invitedBy: null,
+        inviteAllowance: DEFAULT_ALLOWANCE,
+        joinedAt: now,
+        ...(emailHash ? { emailHash } : {}),
+      });
+      await leaveWaitlist(ctx, identity.tokenIdentifier);
+      await afterJoin(ctx, now);
+      return { status: "member" as const, relinked: false };
+    }
+
+    const waiting = await ctx.db.query("waitlist").withIndex("by_tokenIdentifier", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier)).unique();
+    if (!waiting) await ctx.db.insert("waitlist", { tokenIdentifier: identity.tokenIdentifier, firstSeenAt: now });
+    return { status: "waitlist" as const, relinked: false };
   },
 });
 
