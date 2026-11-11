@@ -146,3 +146,15 @@ Chris also ruled on instructions and key hints:
 - **No lines that explain basic UI.** Removed: "Tap an underlined word to change it, then press DEAL.", the split's "Slide a dotted line…", "One tap." on the room check-in, "Change any of them before you save." after suggested pieces, the empty list's "Tick “Needs more than one sitting?”…", and the landing's "Pick what you're on, then press DEAL." (now "What are you on right now?"). Kept: the iPhone install steps, which describe Safari's hidden menu, not this app.
 - **No key badges** on controls. The shortcuts still work and are announced through `aria-keyshortcuts`.
 - A try at printing the deal as two line items ("Your break / 10 min / Reels", "Then / 8 min / BIO 180 ch. 7") was rejected; the sentence stays.
+
+### Council c4 to c6 (the design-council loop)
+
+From here every change went to the council in small rounds (`.claude/skills/design-council`, adapted from tstack's `council`). One score out of 10 per reviewer; fixes two or more agreed on were made before the next round; three rounds on one change, then the founder decides.
+
+| Change | Designer | Accessibility | Taste | Fixed after it |
+| --- | --- | --- | --- | --- |
+| c4: desk layout, sentence without instructions, card stack, split steppers, ledger tag | 7/10 | 7/10 | 7/10 | quieter split row; slim cards get the Start stamp; untagged deal rows; solid green underline; "then the first 15 min of History paper."; DEAL level with the sentence on desk |
+| c5: those fixes | 7/10 | 7.5/10 | 7/10 | ledger tag under the time; stacked mini stamp; sizes on one line; sticky stub shadow and scroll padding; heavier −/+ with limits; "2h 5 min"; big ones keep capitals |
+| c6: those fixes | 7/10 | 7.5/10 | 6.5/10 | first move asked before size and kind; slim stamps lead on the left, 14 px words; DEAL centred and larger on desk; desk start centred beside the tape; tag column in em; "building something", "The first one's free", "Kept going 10 more minutes" |
+
+Not taken, with why: boxes round − and + (accessibility, c6) after two reviewers asked for bare glyphs in c5; a grip on the tear line (designer, c6); "Needs more than one sitting" as a statement (taste); duplicate piece names spoken with their position (accessibility), left for the split's own round.

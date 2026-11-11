@@ -289,7 +289,7 @@ p { margin: 0; }
    a bare row beside a ticket read as two different objects). One shadow for the stack follows each ticket's torn edge. */
 .bigones { filter: var(--paper-shadow); }
 .bigones > .cardwrap { margin-bottom: 4px; }
-.bigones > .bitem { margin-top: 6px; padding: 6px 16px 6px 14px; background: var(--card); border-radius: 6px 0 0 6px; -webkit-mask: var(--zig); mask: var(--zig); }
+.bigones > .bitem { margin-top: 6px; padding: 6px 16px 6px 10px; gap: 16px; background: var(--card); border-radius: 6px 0 0 6px; -webkit-mask: var(--zig); mask: var(--zig); }
 .bigones > .bitem .ministub { background-color: var(--paper); }
 .bigcard { position: relative; display: grid; grid-template-columns: 70px minmax(0, 1fr); background: var(--card); border-radius: 6px 0 0 6px; box-shadow: inset 0 1px 0 var(--hi); -webkit-mask: var(--zig); mask: var(--zig); }
 .bigcard .go { border: none; margin: 0; padding: 12px 4px; border-radius: 6px 0 0 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
@@ -327,10 +327,10 @@ p { margin: 0; }
   -webkit-mask: var(--zig); mask: var(--zig); font-family: var(--font-head); font-variant-numeric: tabular-nums; }
 .ministub b { font-stretch: var(--wd-display); font-weight: 800; font-size: 1.625rem; line-height: 1; }
 /* spec 011 (council c4): a small stamp, the same rubber as the full card's Start tab */
-.ministub { --tilt: -3deg; position: relative; flex-direction: column; align-items: center; gap: 1px; min-width: 52px; min-height: 44px; padding: 5px 8px 4px; background: none !important; box-shadow: none; -webkit-mask: none; mask: none; border-radius: 6px; transform: rotate(var(--tilt)); }
+.ministub { --tilt: -1.5deg; position: relative; flex-direction: column; align-items: center; gap: 1px; min-width: 52px; min-height: 44px; padding: 5px 8px 4px; background: none !important; box-shadow: none; -webkit-mask: none; mask: none; border-radius: 6px; transform: rotate(var(--tilt)); }
 .ministub::before { content: ""; position: absolute; inset: 0; border: 3.5px double currentColor; border-radius: 6px; pointer-events: none; }
 @media (hover: hover) { .ministub:hover { transform: translateY(-1px) rotate(calc(var(--tilt) - 1deg)); } }
-.ministub span { font-stretch: var(--wd-act); font-weight: 700; font-size: .75rem; line-height: 1; }
+.ministub span { font-stretch: var(--wd-act); font-weight: 700; font-size: .875rem; line-height: 1; }
 .ministub b { font-size: 1.375rem !important; }
 .ministub:focus-visible { outline-offset: -7px; }
 .sheet.paper .ministub { background-color: var(--paper); }
@@ -879,9 +879,9 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 .tape .stubcard .t { background: none; padding: 14px 8px 12px 0; align-items: flex-start; justify-content: flex-start; }
 .tape .stubcard .what { padding-right: 0; }
 /* council c5: like a receipt's margin mark, the tag is stamped under the time; title and details keep the whole line */
-.tape .stubcard { grid-template-columns: 76px 1fr; }
+.tape .stubcard { grid-template-columns: 5.25em 1fr; }
 .tape .stubcard .t { gap: 7px; }
-.tape .stubcard .t .stamp { font-size: .875rem; padding: 1px 5px 2px; margin-left: -1px; }
+.tape .stubcard .t .stamp { font-size: .9375rem; padding: 1px 5px 2px; margin-left: -1px; }
 /* a receipt totals at the bottom: one line each, a dotted leader, the figure on the right */
 .totals { margin: 0; padding-top: 12px; border-top: 3px double var(--edge); display: flex; flex-direction: column; gap: 6px; }
 .totals div { display: flex; align-items: baseline; gap: 8px; }
@@ -1090,7 +1090,8 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   .ticket .stub, .ticket .stub.perf { padding: 26px 26px 22px 30px; justify-content: center; align-items: center; text-align: center; background: radial-gradient(circle, var(--edge) 1.5px, transparent 2px) 0 0 / 6px 10px repeat-y; }
   .ticket .stub.perf::before { top: -7px; left: -4px; clip-path: inset(50% 0 0 0); }
   .ticket.big .stub { position: relative; bottom: auto; background: radial-gradient(circle, var(--edge) 1.5px, transparent 2px) 0 0 / 6px 10px repeat-y, var(--card); }
-  .ticket.big .stub { justify-content: flex-start; padding-top: 74px; }
+  .ticket .stub .primary#shake { font-size: 3.25rem; }
+  main:not(:has(> .runwrap)) { min-height: calc(100dvh - 60px); justify-content: center; padding-bottom: 96px; }
   /* above the stage, which is pulled up under it: the floating-wheel control up here has to take clicks */
   .deskhead { position: relative; z-index: 2; display: flex; align-items: baseline; gap: 14px; padding-top: 30px; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 1.25rem; line-height: 1; color: var(--soft); }
   .deskhead .mark { color: var(--ink); }
@@ -1137,7 +1138,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   h1 { font-size: 2.75rem; }
   .sentence { font-size: 2rem; line-height: 1.4; }
   .keepon { display: none; }
-  @media (max-width: 1150px) { .tape { padding-inline: 18px; } .tape .stubcard { grid-template-columns: 70px 1fr; } .tape .stubcard .title { font-size: 1.0625rem; } .tape .stubcard .t b { font-size: 1.0625rem; } }
+  @media (max-width: 1150px) { .tape { padding-inline: 18px; } .tape .stubcard { grid-template-columns: 5.25em 1fr; } .tape .stubcard .title { font-size: 1.0625rem; } .tape .stubcard .t b { font-size: 1.0625rem; } }
   /* a decision is made at the stage: the paper lands over the clock, the tape stays readable beside it */
   .scrim { align-items: flex-end; justify-content: flex-start; padding: 24px 0 0 calc(var(--pad) + max(0px, (100vw - var(--appw)) / 2)); -webkit-backdrop-filter: none; backdrop-filter: none; }
   .sheet, .sheet:not(.paper) { --behind: var(--sheet); width: min(860px, min(100vw, var(--appw)) - 2 * var(--pad) - var(--tapew) - var(--gap)); max-width: none; border: none; border-radius: 0; padding: 34px 32px 30px; max-height: calc(100% - 24px);
@@ -1231,7 +1232,7 @@ function applyTerm(s, term, intention) {
    `done` (it ran its full time), `end_early` (Stop for now), `skip` (a block ended early) and `forgiven` (borrowed
    minutes cleared) are not more deals. `done` is green: it is the deal kept, not a deal missed. */
 const MARK = { deal: "Deal", done: "Done", freebie: "Free", borrow: "Borrowed", trade: "Traded", bonus: "Bonus", override: "No terms", end_early: "Stopped", skip: "Early", forgiven: "Cleared" };
-const TERMS = { deal: "The deal you made", done: "The whole deal", freebie: "On the house", borrow: "Borrowed from a later break", trade: "Traded for 5 more min of focus", bonus: "Kept going for 10 more", override: "No terms", end_early: "Stopped for now", skip: "Moved on early", forgiven: "Borrowed minutes don't carry over" };
+const TERMS = { deal: "The deal you made", done: "The whole deal", freebie: "The first one's free", borrow: "Borrowed from a later break", trade: "Traded for 5 more min of focus", bonus: "Kept going 10 more minutes", override: "No terms", end_early: "Stopped for now", skip: "Moved on early", forgiven: "Borrowed minutes don't carry over" };
 const NOT_DEALS = { done: 1, end_early: 1, skip: 1, forgiven: 1 };
 /* asks for more time: their title is "+5 min of Reels" */
 const ASKS = { freebie: 1, borrow: 1, trade: 1, override: 1, bonus: 1 };
@@ -1344,7 +1345,7 @@ const GUTS = [60, 120, 180, 240];
 const gutText = m => m === 240 ? "4h+" : `${m / 60}h`;
 const gutSpoken = m => m === 240 ? "4 hours or more" : m === 60 ? "1 hour" : `${m / 60} hours`;
 /* R32: the type row reads on from "Mostly": "Mostly writing", "Mostly a project" */
-const TYPE_PHRASE = { writing: "writing", problems: "problems & code", exam: "exam study", project: "a project" };
+const TYPE_PHRASE = { writing: "writing", problems: "problems & code", exam: "exam study", project: "building something" };
 /* the big-one half of the ticket: off until the student ticks "Bigger than one block?" (never pre-selected).
    move is the first move; edited stops a type change from overwriting what they wrote. namedAt is the first tick. */
 const newBig = () => ({ on: false, type: null, gut: null, move: "", edited: false, pay: 15, namedAt: null });
@@ -1698,11 +1699,11 @@ function ticket(peek) {
   const bigChip = offerBig ? `<button class="bigchip" id="bigchip" aria-pressed="${big.on}"><span class="cbox" aria-hidden="true">${CHECK}</span>Needs more than one sitting?</button>` : "";
   /* R32: the two optional rows are phrases on the ticket, "About 2h" and "Mostly writing", with printed boxes to ink.
      Each name starts with what's printed ("2h, about 2 hours"), so voice control and screen readers agree. */
-  const bigRows = isBig ? `<div class="phrases">
+  const bigRows = isBig ? `<div class="firstmove"><label for="firstmove">When I sit down, I'll first:</label><textarea id="firstmove" rows="1" maxlength="140" enterkeyhint="done" placeholder="Open the doc and write one line">${esc(big.move)}</textarea></div>
+      <div class="phrases">
       <div class="phrase" role="group" aria-labelledby="gutlab"><span class="pw" id="gutlab">Takes about</span>${GUTS.map(m => `<button class="inkchip size" data-gut="${m}" aria-pressed="${big.gut === m}"><span class="ink">${big.gut === m ? CHECK : ""}${gutText(m)}</span><span class="vh">, about ${gutSpoken(m)}</span></button>`).join("")}</div>
       <div class="phrase" role="group" aria-labelledby="typelab"><span class="pw" id="typelab">It's mostly</span>${Object.keys(BIG_TYPES).map(k => `<button class="inkchip kind" data-type="${k}" aria-pressed="${big.type === k}"><span class="ink">${big.type === k ? CHECK : ""}${esc(TYPE_PHRASE[k])}</span></button>`).join("")}</div>
-    </div>
-      <div class="firstmove"><label for="firstmove">When I sit down, I'll first:</label><textarea id="firstmove" rows="1" maxlength="140" enterkeyhint="done" placeholder="Open the doc and write one line">${esc(big.move)}</textarea></div>` : "";
+    </div>` : "";
   return `<div class="ticketwrap${peek ? " peek" : ""}"><section class="ticket${isBig ? " big" : ""}" id="ticket" aria-label="${isBig ? "Your first sitting" : "Your deal"}">
     <div class="body">
       <div class="tickethead"><span class="serial">No. ${serial}<br>${clockStr()}</span>${STAMPBOX}</div>
@@ -1767,7 +1768,7 @@ function bigCard(c) {
 /* the next ones: a plain row each, the title and "Start 20 min", with the same ⋯ menu */
 /* R45: the title, a small stub with the minutes (the start button), the menu */
 const miniStub = (attr, id, m, t) => `<button class="ministub" ${attr}="${esc(id)}" aria-label="Start ${m} min on ${esc(t)}"><span>Start</span><b>${m}</b><span>min</span></button>`;
-const bigRow = c => `<li class="bitem"><span class="btitle">${esc(c.title)}</span>${miniStub("data-card", c.id, c.minutes, c.title)}<button class="more" data-menu="${esc(c.id)}" aria-haspopup="dialog" aria-label="More for ${esc(c.title)}">${DOTS}</button></li>`;
+const bigRow = c => `<li class="bitem">${miniStub("data-card", c.id, c.minutes, c.title)}<span class="btitle">${esc(c.title)}</span><button class="more" data-menu="${esc(c.id)}" aria-haspopup="dialog" aria-label="More for ${esc(c.title)}">${DOTS}</button></li>`;
 /* the cards on screen: open big ones, less the one loaded onto the ticket */
 const shownCards = () => bigOneCards === null ? [] : cards().filter(c => !fromCard || c.id !== fromCard.id).slice(0, CARDS_SHOWN);
 function cardsView() {
