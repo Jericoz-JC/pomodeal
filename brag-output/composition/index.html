@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "Archivo"; src: url("assets/fonts/archivo-var.woff2") format("woff2"); font-weight: 400 900; font-stretch: 62% 125%; }
+      @font-face { font-family: "Atkinson Hyperlegible"; src: url("assets/fonts/atkinson-400.woff2") format("woff2"); font-weight: 400; }
+      @font-face { font-family: "Atkinson Hyperlegible"; src: url("assets/fonts/atkinson-700.woff2") format("woff2"); font-weight: 700; }
+      /* Pomodeal's own tokens (prototypes/quick-deal/index.html) */
+      :root { --paper: #cdd5ca; --card: #fefefa; --ink: #1b211d; --deal: #0e7447; --on-deal: #f4f7f1; --soft: #4d5a52; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { margin: 0; width: 1080px; height: 1920px; overflow: hidden; background: var(--paper); }
+      #root { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: var(--paper); color: var(--ink); font-family: "Atkinson Hyperlegible", sans-serif; }
+      .full { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+      .head { font-family: "Archivo", sans-serif; font-stretch: 68%; font-weight: 800; letter-spacing: -0.012em; }
+
+      /* the lockup that stays at the top of every product scene */
+      #lockup { position: absolute; left: 0; top: 172px; width: 1080px; height: 96px; z-index: 5; }
+      #lockup-in { display: flex; align-items: center; justify-content: center; gap: 22px; height: 96px; }
+      #lockup-in img { width: 92px; height: 92px; display: block; }
+      #lockup-in span { font-size: 88px; line-height: 1; }
+
+      /* captions: one fixed place, between the lockup and the product */
+      .cap { position: absolute; left: 40px; top: 296px; width: 1000px; height: 150px; z-index: 6; display: flex; align-items: center; justify-content: center; text-align: center; }
+      .cap span { display: block; font-size: 70px; line-height: 1.04; }
+
+      /* scene 1: the excuse */
+      #hook { z-index: 4; }
+      #quote { position: absolute; left: 130px; top: 600px; width: 900px; font-size: 172px; line-height: 0.98; font-stretch: 64%; }
+      #quote .hang { display: block; margin-left: -0.42em; }
+      #stampwrap { position: absolute; left: 372px; top: 1150px; width: 620px; height: 300px; z-index: 8; }
+      .stamp { width: 100%; height: 100%; border-radius: 26px; background: var(--deal); display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 0 10px var(--deal), inset 0 0 0 16px var(--on-deal); }
+      .stamp b { font-family: "Archivo", sans-serif; font-stretch: 78%; font-weight: 800; font-size: 190px; letter-spacing: 0.05em; color: var(--on-deal); line-height: 1; }
+
+      /* green sheets: the name, and the end card */
+      .sheet { z-index: 20; }
+      .sheet-in { position: absolute; left: 0; top: 0; width: 1080px; height: 1980px; background: var(--deal); color: var(--on-deal);
+        -webkit-mask: radial-gradient(circle 22px at 30px 100%, transparent 21px, #000 22px) 0 0 / 60px 100%; mask: radial-gradient(circle 22px at 30px 100%, transparent 21px, #000 22px) 0 0 / 60px 100%; }
+      .mark { position: absolute; left: 390px; width: 300px; height: 300px; }
+      .mark svg { width: 300px; height: 300px; display: block; overflow: visible; }
+      .word { position: absolute; left: 0; width: 1080px; text-align: center; font-size: 262px; line-height: 1; font-stretch: 62%; white-space: nowrap; }
+      .word i { display: inline-block; font-style: normal; }
+      .line { position: absolute; left: 60px; width: 960px; text-align: center; }
+      #name-mark { top: 520px; } #name-word { top: 850px; }
+      #name-line { top: 1140px; font-size: 54px; line-height: 1.2; }
+      #end-mark { top: 400px; } #end-word { top: 730px; }
+      #end-line { top: 1010px; font-size: 104px; line-height: 1; }
+      #end-url { position: absolute; left: 0; top: 1170px; width: 1080px; display: flex; justify-content: center; }
+      #end-url span { display: block; background: var(--card); color: var(--ink); font-size: 66px; font-weight: 700; padding: 18px 44px 22px; border-radius: 14px; }
+      #end-beta { top: 1312px; font-size: 40px; opacity: 0.9; }
+
+      /* the phone */
+      #phone { position: absolute; left: 204px; top: 452px; width: 672px; height: 1417px; z-index: 3; }
+      #phone-body { position: absolute; left: 0; top: 0; width: 672px; height: 1417px; border-radius: 84px; background: #161b18; box-shadow: 0 2px 0 rgba(255, 255, 255, 0.35) inset, 0 40px 70px rgba(20, 30, 24, 0.28), 0 6px 14px rgba(20, 30, 24, 0.2); }
+      #phone-screen { position: absolute; left: 16px; top: 16px; width: 640px; height: 1385px; border-radius: 68px; overflow: hidden; background: var(--paper); }
+      #phone-screen video { position: absolute; left: 0; top: 0; width: 640px; height: 1385px; display: block; }
+
+      /* the desk */
+      #desk { position: absolute; left: 0; top: 0; width: 1000px; height: 734px; z-index: 3; }
+      #desk-body { width: 1000px; height: 734px; border-radius: 22px; overflow: hidden; background: var(--paper); box-shadow: 0 0 0 3px #161b18, 0 40px 70px rgba(20, 30, 24, 0.28), 0 6px 14px rgba(20, 30, 24, 0.2); }
+      #desk-bar { height: 46px; background: #161b18; display: flex; align-items: center; justify-content: center; }
+      #desk-bar span { color: #dfe5dc; font-size: 22px; background: rgba(255, 255, 255, 0.12); padding: 3px 26px 5px; border-radius: 8px; }
+      #desk-view { position: relative; width: 1000px; height: 688px; overflow: hidden; }
+      #desk-view video { position: absolute; left: 0; top: 0; width: 1000px; height: 688px; display: block; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="27.2" data-width="1080" data-height="1920" data-fps="60">
+      <!-- lockup -->
+      <div id="lockup" class="clip" data-start="0" data-duration="23.9" data-track-index="1">
+        <div id="lockup-in"><img src="assets/brand/icon.svg" alt="" /><span class="head">Pomodeal</span></div>
+      </div>
+
+      <!-- scene 1: the excuse -->
+      <div id="hook" class="clip full" data-start="0" data-duration="2.7" data-track-index="2">
+        <div id="hook-in" class="full">
+          <p id="quote" class="head"><span class="hang">“10 more minutes,</span>then I’ll start.”</p>
+          <div id="stampwrap"><div id="stamp" class="stamp"><b id="stamp-word">DEAL</b></div></div>
+        </div>
+      </div>
+
+      <!-- scene 2: the name -->
+      <div id="name" class="clip full sheet" data-start="2.55" data-duration="2.6" data-track-index="3">
+        <div id="name-in" class="sheet-in">
+          <div id="name-mark" class="mark">
+            <svg viewBox="0 0 512 512"><g fill="none" stroke="#f4f7f1" stroke-linecap="round"><circle cx="256" cy="256" r="150" stroke-width="40" stroke-opacity=".28" /><path id="name-arc" pathLength="1" d="M256 106a150 150 0 1 1-130 225" stroke-width="40" /><path d="M256 256l-62-70" stroke-width="30" /><path d="M256 256l96-104" stroke-width="22" /></g><circle cx="256" cy="256" r="20" fill="#f4f7f1" /></svg>
+          </div>
+          <div id="name-word" class="word head"><i>P</i><i>o</i><i>m</i><i>o</i><i>d</i><i>e</i><i>a</i><i>l</i></div>
+          <p id="name-line" class="line">The study timer that<br />negotiates with you.</p>
+        </div>
+      </div>
+
+      <!-- scenes 3 and 4: the phone -->
+      <div id="phone">
+        <div id="phone-body"></div>
+        <div id="phone-screen">
+          <video id="v-deal" class="clip" data-start="4.78" data-duration="7.87" data-track-index="4" muted playsinline src="assets/clips/phone-deal.mp4"></video>
+          <video id="v-split" class="clip" data-start="12.65" data-duration="5.3" data-track-index="4" muted playsinline src="assets/clips/phone-split.mp4"></video>
+        </div>
+      </div>
+
+      <!-- scene 5: the desk -->
+      <div id="desk" data-layout-allow-overflow>
+        <div id="desk-body">
+          <div id="desk-bar"><span data-layout-ignore>pomodeal.app</span></div>
+          <div id="desk-view">
+            <video id="v-desk" class="clip" data-start="17.98" data-duration="5.97" data-track-index="5" muted playsinline src="assets/clips/desk-tonight.mp4"></video>
+          </div>
+        </div>
+      </div>
+
+      <!-- captions -->
+      <div id="c1" class="cap clip" data-start="5" data-duration="3.45" data-track-index="6"><span class="head">Scroll first. Then study.</span></div>
+      <div id="c2" class="cap clip" data-start="8.5" data-duration="1.85" data-track-index="6"><span class="head">Want 5 more minutes? Ask.</span></div>
+      <div id="c3" class="cap clip" data-start="10.4" data-duration="2.2" data-track-index="6"><span class="head">The clock tells you what it costs.</span></div>
+      <div id="c4" class="cap clip" data-start="12.75" data-duration="2.7" data-track-index="6"><span class="head">Big task? Tear it into pieces.</span></div>
+      <div id="c5" class="cap clip" data-start="15.5" data-duration="2.35" data-track-index="6"><span class="head">One piece per sitting.</span></div>
+      <div id="c6" class="cap clip" data-start="18.05" data-duration="2.6" data-track-index="6"><span class="head">On your laptop: tonight, in one line.</span></div>
+      <div id="c7" class="cap clip" data-start="20.7" data-duration="3" data-track-index="6"><span class="head">It prints the whole night.</span></div>
+
+      <!-- scene 6: end card -->
+      <div id="end" class="clip full sheet" data-start="23.5" data-duration="3.7" data-track-index="7">
+        <div id="end-in" class="sheet-in">
+          <div id="end-mark" class="mark">
+            <svg viewBox="0 0 512 512"><g fill="none" stroke="#f4f7f1" stroke-linecap="round"><circle cx="256" cy="256" r="150" stroke-width="40" stroke-opacity=".28" /><path id="end-arc" pathLength="1" d="M256 106a150 150 0 1 1-130 225" stroke-width="40" /><path d="M256 256l-62-70" stroke-width="30" /><path d="M256 256l96-104" stroke-width="22" /></g><circle cx="256" cy="256" r="20" fill="#f4f7f1" /></svg>
+          </div>
+          <div id="end-word" class="word head"><i>P</i><i>o</i><i>m</i><i>o</i><i>d</i><i>e</i><i>a</i><i>l</i></div>
+          <p id="end-line" class="line head">Make a deal.</p>
+          <div id="end-url"><span>pomodeal.app</span></div>
+          <p id="end-beta" class="line">Private beta</p>
+        </div>
+      </div>
+
+      <!-- sound: music by Sascha Ende, ende.app (CC BY 4.0); effects by Kenney (CC0) -->
+      <audio id="music" class="clip" data-start="0" data-duration="27.2" data-track-index="10" data-volume="0.5" data-fade-out="1.2" src="assets/music/happy-beats-business-moves-vol-11-by-ende-dot-app.mp3"></audio>
+      <audio id="s-hook" class="clip" data-start="1.58" data-duration="0.6" data-track-index="11" data-volume="1" src="assets/sfx/impactSoft_heavy_001.ogg"></audio>
+      <audio id="s-name" class="clip" data-start="2.68" data-duration="0.3" data-track-index="12" data-volume="0.6" src="assets/sfx/impactSoft_medium_001.ogg"></audio>
+      <audio id="s-tear" class="clip" data-start="4.6" data-duration="0.5" data-track-index="11" data-volume="0.5" src="assets/sfx/card-slide-1.ogg"></audio>
+      <audio id="s-tap1" class="clip" data-start="5.48" data-duration="0.06" data-track-index="12" data-volume="0.8" src="assets/sfx/click2.ogg"></audio>
+      <audio id="s-deal1" class="clip" data-start="5.79" data-duration="0.6" data-track-index="11" data-volume="0.95" src="assets/sfx/impactSoft_heavy_003.ogg"></audio>
+      <audio id="s-tap2" class="clip" data-start="9.03" data-duration="0.06" data-track-index="12" data-volume="0.8" src="assets/sfx/click2.ogg"></audio>
+      <audio id="s-tap3" class="clip" data-start="10.68" data-duration="0.06" data-track-index="12" data-volume="0.8" src="assets/sfx/click2.ogg"></audio>
+      <audio id="s-term" class="clip" data-start="10.99" data-duration="0.4" data-track-index="11" data-volume="0.8" src="assets/sfx/impactWood_medium_001.ogg"></audio>
+      <audio id="s-cut" class="clip" data-start="12.58" data-duration="0.5" data-track-index="13" data-volume="0.45" src="assets/sfx/card-slide-1.ogg"></audio>
+      <audio id="s-tap4" class="clip" data-start="13.1" data-duration="0.06" data-track-index="12" data-volume="0.8" src="assets/sfx/click2.ogg"></audio>
+      <audio id="s-tap5" class="clip" data-start="14" data-duration="0.06" data-track-index="12" data-volume="0.8" src="assets/sfx/click2.ogg"></audio>
+      <audio id="s-tap6" class="clip" data-start="17.15" data-duration="0.06" data-track-index="12" data-volume="0.8" src="assets/sfx/click2.ogg"></audio>
+      <audio id="s-save" class="clip" data-start="17.45" data-duration="0.14" data-track-index="11" data-volume="0.85" src="assets/sfx/impactSoft_medium_002.ogg"></audio>
+      <audio id="s-desk" class="clip" data-start="17.92" data-duration="0.5" data-track-index="13" data-volume="0.45" src="assets/sfx/card-slide-1.ogg"></audio>
+      <audio id="k1" class="clip" data-start="18.51" data-duration="0.2" data-track-index="14" data-volume="0.4" src="assets/sfx/keypress-001.wav"></audio>
+      <audio id="k2" class="clip" data-start="18.68" data-duration="0.2" data-track-index="15" data-volume="0.4" src="assets/sfx/keypress-003.wav"></audio>
+      <audio id="k3" class="clip" data-start="18.85" data-duration="0.2" data-track-index="14" data-volume="0.4" src="assets/sfx/keypress-002.wav"></audio>
+      <audio id="k4" class="clip" data-start="19.02" data-duration="0.2" data-track-index="15" data-volume="0.4" src="assets/sfx/keypress-005.wav"></audio>
+      <audio id="k5" class="clip" data-start="19.19" data-duration="0.2" data-track-index="14" data-volume="0.4" src="assets/sfx/keypress-004.wav"></audio>
+      <audio id="k6" class="clip" data-start="19.36" data-duration="0.2" data-track-index="15" data-volume="0.4" src="assets/sfx/keypress-006.wav"></audio>
+      <audio id="k7" class="clip" data-start="19.53" data-duration="0.2" data-track-index="14" data-volume="0.4" src="assets/sfx/keypress-001.wav"></audio>
+      <audio id="k8" class="clip" data-start="19.7" data-duration="0.2" data-track-index="15" data-volume="0.4" src="assets/sfx/keypress-003.wav"></audio>
+      <audio id="k9" class="clip" data-start="19.87" data-duration="0.2" data-track-index="14" data-volume="0.4" src="assets/sfx/keypress-005.wav"></audio>
+      <audio id="k10" class="clip" data-start="20.04" data-duration="0.2" data-track-index="15" data-volume="0.4" src="assets/sfx/keypress-002.wav"></audio>
+      <audio id="s-tap7" class="clip" data-start="20.66" data-duration="0.06" data-track-index="12" data-volume="0.8" src="assets/sfx/click2.ogg"></audio>
+      <audio id="s-print" class="clip" data-start="20.97" data-duration="0.14" data-track-index="11" data-volume="0.85" src="assets/sfx/impactSoft_medium_004.ogg"></audio>
+      <audio id="s-tap8" class="clip" data-start="22.33" data-duration="0.06" data-track-index="12" data-volume="0.8" src="assets/sfx/click2.ogg"></audio>
+      <audio id="s-deal2" class="clip" data-start="22.64" data-duration="0.6" data-track-index="11" data-volume="0.95" src="assets/sfx/impactSoft_heavy_001.ogg"></audio>
+      <audio id="s-logo" class="clip" data-start="24.2" data-duration="1.45" data-track-index="11" data-volume="0.45" src="assets/sfx/impactBell_heavy_000.ogg"></audio>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const IN = "expo.out", THRU = "power3.in", CAM = "power2.inOut";
+
+      /* ---------- scene 1: the excuse (0 to 2.65) ---------- */
+      // beat-locked: 1.60s, the DEAL stamp lands on the first strong cue
+      tl.fromTo("#stamp", { scale: 2.7, rotation: -14, opacity: 0 }, { scale: 1, rotation: -5, opacity: 1, duration: 0.2, ease: THRU }, 1.4);
+      tl.fromTo("#quote", { y: 0 }, { y: 10, duration: 0.05, ease: "power1.out" }, 1.6);
+      tl.to("#quote", { y: 0, duration: 0.3, ease: "power3.out" }, 1.65);
+      tl.to("#stamp", { scale: 0.965, duration: 0.05, ease: "power1.out" }, 1.6);
+      tl.to("#stamp", { scale: 1, duration: 0.22, ease: "power3.out" }, 1.65);
+      // zoom through the stamp: its green becomes the next scene
+      tl.to("#stamp-word", { opacity: 0, duration: 0.14, ease: "power1.in" }, 2.36);
+      tl.to("#stamp", { scale: 9, rotation: 0, duration: 0.3, ease: THRU }, 2.36);
+
+      /* ---------- scene 2: the name (2.65 to 4.75) ---------- */
+      tl.fromTo("#name-in", { y: 0 }, { y: 0, duration: 0.01 }, 2.55);
+      tl.fromTo("#name-mark", { scale: 0.55, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.34, ease: IN }, 2.68);
+      tl.fromTo("#name-arc", { strokeDasharray: "0 1" }, { strokeDasharray: "1 1", duration: 0.55, ease: "power2.out" }, 2.72);
+      tl.fromTo("#name-word i", { y: 70, opacity: 0, filter: "blur(10px)" }, { y: 0, opacity: 1, filter: "blur(0px)", duration: 0.34, ease: IN, stagger: 0.028 }, 2.86);
+      tl.fromTo("#name-line", { opacity: 0, filter: "blur(8px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power2.out" }, 3.02);
+      // the sheet tears away upward and the phone comes up under it
+      tl.to("#name-in", { y: -2040, duration: 0.5, ease: "power3.inOut" }, 4.55);
+
+      /* ---------- lockup ---------- */
+      tl.fromTo("#lockup-in", { scale: 1 }, { scale: 1, duration: 0.01 }, 0);
+
+      /* ---------- scenes 3 and 4: the phone (4.75 to 17.91) ---------- */
+      tl.set("#phone", { y: 1500 }, 0);
+      tl.fromTo("#phone", { y: 1500, rotation: 3 }, { y: 0, rotation: 0, duration: 0.6, ease: IN }, 4.62);
+      // beat-locked: 5.80s, DEAL lands on the phone; the phone takes the knock
+      tl.to("#phone", { y: 9, duration: 0.05, ease: "power1.out" }, 5.8);
+      tl.to("#phone", { y: 0, duration: 0.3, ease: "power3.out" }, 5.85);
+      tl.to("#phone", { y: 6, duration: 0.05, ease: "power1.out" }, 11.0);
+      tl.to("#phone", { y: 0, duration: 0.26, ease: "power3.out" }, 11.05);
+      // squash cut into the next screen at the fastest frame
+      tl.to("#phone", { scale: 0.94, duration: 0.1, ease: "power2.in" }, 12.55);
+      tl.to("#phone", { scale: 1, duration: 0.36, ease: IN }, 12.65);
+      tl.to("#phone", { y: 6, duration: 0.05, ease: "power1.out" }, 17.47);
+      tl.to("#phone", { y: 0, duration: 0.18, ease: "power3.out" }, 17.52);
+      tl.to("#phone", { x: -1100, rotation: -4, duration: 0.26, ease: THRU }, 17.7);
+
+      /* ---------- scene 5: the desk (17.91 to 23.70) ---------- */
+      // close on the ticket while tonight is typed
+      tl.set("#desk", { x: 1200, y: 480, scale: 1.75, transformOrigin: "0 0" }, 0);
+      tl.fromTo("#desk", { x: 1200, y: 480, scale: 1.75 }, { x: -29, y: 480, scale: 1.75, duration: 0.5, ease: IN }, 17.94);
+      // pull back as PRINT lands: the whole night along the front of the desk
+      tl.to("#desk", { x: 40, y: 620, scale: 1, duration: 0.7, ease: CAM }, 20.6);
+      // in on the ticket and the roll for the deal
+      tl.to("#desk", { x: -26, y: 520, scale: 1.3, duration: 0.6, ease: CAM }, 21.8);
+      // beat-locked: 22.65s, DEAL lands on the desk
+      tl.to("#desk", { y: 528, duration: 0.05, ease: "power1.out" }, 22.65);
+      tl.to("#desk", { y: 520, duration: 0.3, ease: "power3.out" }, 22.7);
+
+      /* ---------- captions: blur in, sit still, blur out ---------- */
+      [["#c1", 5, 3.45], ["#c2", 8.5, 1.85], ["#c3", 10.4, 2.2], ["#c4", 12.75, 2.7], ["#c5", 15.5, 2.35], ["#c6", 18.05, 2.6], ["#c7", 20.7, 3]].forEach(([id, at, dur]) => {
+        tl.fromTo(id + " span", { opacity: 0, filter: "blur(10px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.17, ease: "power2.out" }, at + 0.02);
+        tl.to(id + " span", { opacity: 0, filter: "blur(8px)", duration: 0.13, ease: "power1.in" }, at + dur - 0.14);
+      });
+
+      /* ---------- scene 6: end card (23.70 to 27.20) ---------- */
+      tl.fromTo("#end-in", { clipPath: "circle(0px at 430px 900px)" }, { clipPath: "circle(2300px at 430px 900px)", duration: 0.36, ease: "power2.in" }, 23.52);
+      // beat-locked: 24.23s, the logo lands
+      tl.fromTo("#end-mark", { scale: 0.5, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: IN }, 24.0);
+      tl.fromTo("#end-arc", { strokeDasharray: "0 1" }, { strokeDasharray: "1 1", duration: 0.6, ease: "power2.out" }, 24.1);
+      tl.fromTo("#end-word i", { y: 80, opacity: 0, filter: "blur(10px)" }, { y: 0, opacity: 1, filter: "blur(0px)", duration: 0.36, ease: IN, stagger: 0.03 }, 24.26);
+      tl.fromTo("#end-line", { opacity: 0, filter: "blur(10px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.2, ease: "power2.out" }, 24.8);
+      tl.fromTo("#end-url span", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: IN }, 25.02);
+      tl.fromTo("#end-beta", { opacity: 0 }, { opacity: 0.9, duration: 0.25, ease: "power2.out" }, 25.15);
+      tl.to({}, { duration: 0.01 }, 27.19);
+
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
