@@ -70,7 +70,7 @@ async function start() {
     signOut: () => { clearInvite(); authkit.signOut({ returnTo: location.origin }); },
     createInvite: async () => { await convex.mutation(api.beta.createInvite, {}); },
     closeInvites: () => history.replaceState(null, "", "/"),
-    // Spec 010: the admin Sign-ups panel. Queries don't read the clock, so the panel passes the minute and
+    // Spec 016: the admin Sign-ups panel. Queries don't read the clock, so the panel passes the minute and
     // re-subscribes each minute while it is open, which keeps "the last 24 hours" moving.
     watchSignups: (on) => {
       stopOverview?.(); stopOverview = null; clearInterval(overviewTimer);
@@ -96,7 +96,7 @@ async function start() {
   });
 
   const name = [user.firstName, user.lastName].filter(Boolean).join(" ") || user.email.split("@")[0];
-  // Spec 010: once per load, beta.enter fills in the email hash, carries an account across WorkOS environments,
+  // Spec 016: once per load, beta.enter fills in the email hash, carries an account across WorkOS environments,
   // and lets a new account in when sign-ups are open. A waitlisted person is let in live if sign-ups reopen.
   let entered = false, entering = false;
   async function enter() {

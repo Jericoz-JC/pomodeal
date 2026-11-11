@@ -228,7 +228,7 @@ const term = (tag: "button" | "div", attrs: string, lead: string, rest: string, 
 const ACTS = ["Reels", "TikTok", "YouTube", "Texting"];
 
 export function landingHTML(o: LandingOptions): string {
-  // Google first, GitHub second (spec 010 dropped Apple: it needs a Mac to set up); email and the rest stay one tap away.
+  // Google first, GitHub second (spec 016 dropped Apple: it needs a Mac to set up); email and the rest stay one tap away.
   const primary: Provider = o.providers.includes("GoogleOAuth") ? "GoogleOAuth" : o.providers[0];
   const second = (["GoogleOAuth", "GitHubOAuth"] as Provider[]).find((p) => p !== primary && o.providers.includes(p));
   const extra = o.providers.filter((p) => p !== primary && p !== second);

@@ -1,4 +1,4 @@
-// Spec 010 "Admin screen": the numbers and the sign-up controls, for admins only.
+// Spec 016 "Admin screen": the numbers and the sign-up controls, for admins only.
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { api } from "../_generated/api";
 import { getBetaSettings, putBetaSettings } from "../lib/signups";

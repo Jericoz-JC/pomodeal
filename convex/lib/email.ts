@@ -1,4 +1,4 @@
-// Spec 010: a member's sign-in email, kept only as a hash, so an account can be matched across WorkOS
+// Spec 016: a member's sign-in email, kept only as a hash, so an account can be matched across WorkOS
 // environments (staging to production) where the WorkOS user id and the token issuer both change.
 import type { UserIdentity } from "convex/server";
 

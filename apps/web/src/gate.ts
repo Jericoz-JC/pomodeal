@@ -12,7 +12,7 @@ export type GateState =
 
 export interface InviteTicket { code: string; uses: number; maxUses: number; usedBy?: string | null; usedAt?: number | null }
 
-/** Spec 010: what the admin Sign-ups panel shows (api.admin.overview). */
+/** Spec 016: what the admin Sign-ups panel shows (api.admin.overview). */
 export interface AdminOverview {
   signups: "open" | "inviteOnly"; memberCap: number; dayLimit: number;
   paused: { at: number; reason: "dayLimit" | "memberCap" | "manual"; count: number } | null;
@@ -96,7 +96,7 @@ const CSS = `
   #pd-gate .wrap.landing h1 { font-size: 56px; }
 }
 #pd-gate .wrap .col { display: flex; flex-direction: column; gap: 22px; }
-/* Spec 010: the admin Sign-ups panel. The status is a stamped ticket; the numbers total up like the deal tape. */
+/* Spec 016: the admin Sign-ups panel. The status is a stamped ticket; the numbers total up like the deal tape. */
 #pd-gate .wrap .stamp.off { color: var(--soft); border-color: var(--soft); }
 #pd-gate .wrap .ticket .body .big { padding-right: 112px; }
 #pd-gate .wrap .su-tally { margin: 0; display: flex; flex-direction: column; }
@@ -151,7 +151,7 @@ export function mountGate(actions: GateActions) {
 
   const app = () => document.querySelectorAll<HTMLElement>(".app, nav.tabs");
   let invitesOpen = false;
-  let signupsOpen = false; // spec 010: the admin Sign-ups panel
+  let signupsOpen = false; // spec 016: the admin Sign-ups panel
   let isAdmin = false;
   let overview: AdminOverview | null = null;
   let tickets: InviteTicket[] = [];

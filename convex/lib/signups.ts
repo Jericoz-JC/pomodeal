@@ -1,4 +1,4 @@
-// Spec 010: the sign-up mode, the brake's limits, and the member counts the brake reads.
+// Spec 016: the sign-up mode, the brake's limits, and the member counts the brake reads.
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
 

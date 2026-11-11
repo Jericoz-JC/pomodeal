@@ -1,4 +1,4 @@
-// Spec 010 "Admin screen": how many people are joining and using Pomodeal, and the sign-up switch and limits.
+// Spec 016 "Admin screen": how many people are joining and using Pomodeal, and the sign-up switch and limits.
 // Admins only; identity comes from the token.
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";

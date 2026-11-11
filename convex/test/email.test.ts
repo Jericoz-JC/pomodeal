@@ -1,4 +1,4 @@
-// Spec 010: the email hash that carries a member across WorkOS environments.
+// Spec 016: the email hash that carries a member across WorkOS environments.
 import { describe, expect, test } from "vitest";
 import { emailHashOf, hashEmail } from "../lib/email";
 

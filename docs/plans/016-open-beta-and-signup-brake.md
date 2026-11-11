@@ -8,7 +8,7 @@
 
 **Tech Stack:** Convex (convex-test + vitest), WorkOS AuthKit JWT template, TypeScript web client (`apps/web/src`), Web Push via the existing `pushNode.send`.
 
-**Spec:** [docs/specs/010-open-beta-and-signup-brake.md](../specs/010-open-beta-and-signup-brake.md)
+**Spec:** [docs/specs/016-open-beta-and-signup-brake.md](../specs/016-open-beta-and-signup-brake.md)
 
 ## Global Constraints
 
@@ -231,19 +231,19 @@ git commit -m "Open sign-ups in the app, an admin Sign-ups panel, and no Apple s
 ### Task 7: Docs and decision
 
 **Files:**
-- Create: `docs/decisions/0006-open-beta-with-brake.md`
-- Modify: `docs/08-launch-and-beta-access.md`, `docs/03-roadmap.md`, `CHANGELOG.md`, `docs/specs/010-open-beta-and-signup-brake.md` (status line)
+- Create: `docs/decisions/0009-open-beta-with-brake.md`
+- Modify: `docs/08-launch-and-beta-access.md`, `docs/03-roadmap.md`, `CHANGELOG.md`, `docs/specs/016-open-beta-and-signup-brake.md` (status line)
 
-- [ ] **Step 1: ADR 0006** (context, decision, consequences): open sign-ups plus an automatic brake instead of invite-only; Apple dropped; accounts carried by email hash.
+- [ ] **Step 1: ADR 0009** (context, decision, consequences): open sign-ups plus an automatic brake instead of invite-only; Apple dropped; accounts carried by email hash.
 - [ ] **Step 2: Launch doc:** replace the "How beta access works" diagram and text with the open/invite-only flow and the brake; add the admin screen; add the spec's "Switching WorkOS to production" checklist; drop Apple. Keep `beta:makeAdmin` and `beta:seedInvite` in the admin commands; sign-up controls live on the screen, not the CLI.
 - [ ] **Step 3: Roadmap "Where we are":** sign-in is GitHub / Google / email; open beta with a brake and an admin screen; the WorkOS move needs every member signed in once first.
-- [ ] **Step 4: CHANGELOG** under Unreleased; spec 010 status → "built on `beta/open-signups`, not merged".
+- [ ] **Step 4: CHANGELOG** under Unreleased; spec 016 status → "built on `beta/open-signups`, not merged".
 - [ ] **Step 5: Final check:** `npm test`, `npm run test:convex`, `npm run typecheck` all pass.
 - [ ] **Step 6: Commit**
 
 ```bash
 git add docs CHANGELOG.md
-git commit -m "Docs: open beta with a brake, ADR 0006, WorkOS production checklist"
+git commit -m "Docs: open beta with a brake, ADR 0009, WorkOS production checklist"
 ```
 
 Then ask Chris before merging or opening a PR. Before merging, Chris adds the same JWT template to the WorkOS staging environment the live site uses (the one whose client id is `WORKOS_CLIENT_ID` on `affable-hound-751`); otherwise live members never get an `emailHash` and the switch to production can't carry them. Sign-ups start invite-only after the deploy until he opens them from the screen.

@@ -102,7 +102,7 @@ async function tryRelink(ctx: MutationCtx, identity: UserIdentity): Promise<bool
 }
 
 /**
- * Spec 010, the brake: after any new member (open join or invite), if sign-ups are open and a limit has been reached,
+ * Spec 016, the brake: after any new member (open join or invite), if sign-ups are open and a limit has been reached,
  * close them in this same transaction and alert the admins. The join that reaches the limit has already succeeded.
  */
 async function afterJoin(ctx: MutationCtx, now: number): Promise<void> {
@@ -118,7 +118,7 @@ async function afterJoin(ctx: MutationCtx, now: number): Promise<void> {
 }
 
 /**
- * Spec 010: runs on every app load once the sign-in token is attached. In order: a member gets a missing emailHash
+ * Spec 016: runs on every app load once the sign-in token is attached. In order: a member gets a missing emailHash
  * filled in; a member arriving from another WorkOS environment (same verified email, different issuer) is moved onto
  * the new identity; when sign-ups are open a new account joins; otherwise it waits on the list.
  */

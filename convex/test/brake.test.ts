@@ -1,4 +1,4 @@
-// Spec 010 "The brake": sign-ups close themselves at the day limit or the member cap, and admins get a push.
+// Spec 016 "The brake": sign-ups close themselves at the day limit or the member cap, and admins get a push.
 // No real network calls: the Node send action is only ever scheduled here, never run.
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { api, internal } from "../_generated/api";

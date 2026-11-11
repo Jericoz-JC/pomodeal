@@ -37,7 +37,7 @@ describe("invite tickets", () => {
   });
 });
 
-// Spec 010: beta.enter runs on every app load.
+// Spec 016: beta.enter runs on every app load.
 const STAGING = "https://api.workos.com/user_management/client_STAGING";
 const PROD = "https://api.workos.com/user_management/client_PROD";
 function account(t: ReturnType<typeof newT>, issuer: string, subject: string, email?: string, emailVerified?: boolean) {

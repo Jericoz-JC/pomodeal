@@ -84,7 +84,7 @@ export const fire = internalMutation({
   },
 });
 
-/** Spec 010: the brake's alert, one push per admin device (each admin's newest MAX_SUBSCRIPTIONS). */
+/** Spec 016: the brake's alert, one push per admin device (each admin's newest MAX_SUBSCRIPTIONS). */
 export const notifyAdmins = internalMutation({
   args: { title: v.string(), body: v.string() },
   returns: v.null(),

@@ -19,7 +19,7 @@ export async function requireMember(ctx: QueryCtx | MutationCtx): Promise<Doc<"u
   return user;
 }
 
-/** Throws unless the caller is a signed-in admin (spec 010: the sign-ups screen). */
+/** Throws unless the caller is a signed-in admin (spec 016: the sign-ups screen). */
 export async function requireAdmin(ctx: QueryCtx | MutationCtx): Promise<Doc<"users">> {
   const user = await requireMember(ctx);
   if (user.role !== "admin") throw new ConvexError({ code: "NOT_ADMIN", message: "Only admins can do that." });

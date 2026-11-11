@@ -1,4 +1,4 @@
-// Spec 010: sign-up settings, the brake's decision, and the member counts it reads.
+// Spec 016: sign-up settings, the brake's decision, and the member counts it reads.
 import { describe, expect, test } from "vitest";
 import { brakeReason, getBetaSettings, memberCounts, putBetaSettings } from "../lib/signups";
 import { makeMember } from "./helpers.test-util";

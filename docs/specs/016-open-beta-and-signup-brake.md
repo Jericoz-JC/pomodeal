@@ -1,4 +1,4 @@
-# 010: Open beta with a sign-up brake
+# 016: Open beta with a sign-up brake
 
 Status: approved design, not built. Branch `beta/open-signups` (cut from `design/desk-feel`).
 
@@ -131,7 +131,7 @@ Client (`apps/web/src/main.ts`): after auth attaches, call `beta.enter` once (or
 
 - `docs/08-launch-and-beta-access.md`: how access works now, the admin screen, the production switch.
 - `docs/03-roadmap.md` "Where we are": open beta with a brake; Apple removed.
-- `docs/decisions/0006-open-beta-with-brake.md`: why open plus a brake instead of invite-only.
+- `docs/decisions/0009-open-beta-with-brake.md`: why open plus a brake instead of invite-only.
 - `docs/specs/006-privacy-inventory.md`, `CHANGELOG.md`.
 
 ## Not in this change
