@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- One paper, one voice (spec 011): a visual overhaul of every screen, same flows. Torn edges are soft round half-holes instead of sharp triangles, everywhere. One heading face at two widths instead of eleven, so the done ticket and the next round now match, and no number shows a slashed zero. Three kinds of action on every sheet: a stamp commits, a paper button ("Done for now") declines, a link is the quiet way out. The room is one roster, ledger tags are readable, desktop decisions rise from the bottom of the stage, and dark mode has lighter paper and a calmer green.
+- Clearer words across the app: "Needs more than one sitting?", "First sitting on History paper", "Take them from my next break. If I stop after this, I don't owe them.", "Keep going for 10 more minutes", "Just give me the 5 minutes", "Get a notification when a block ends" and more (the full list is in spec 011).
+- Screenshot scripts close every browser process they start, however they end.
 - One ticket, one sitting (spec 010, ADR 0007). A deal is now exactly what you stamped: your break, then one study block, then a done sheet that says "That was the deal." From there you can stamp another round (quick lengths step up 5 → 8 → 12 → 15 → 20, long ones repeat), say Done for now, or take 10 more minutes. Before, a deal quietly ran 2 or 3 blocks, the next break started on its own after 30 seconds, and the last block restarted instead of ending.
 - Borrowed minutes come off your next round's break, and are cleared if you're done for now.
 - The tape gets a green Done stub for a deal that ran its full time, dated when it finished even if you tap later.
