@@ -17,7 +17,9 @@ without asking Chris first.
 - Banned: indigo or purple with yellow, all-caps eyebrow labels, `·` separators, monospace data labels, identical rounded
   cards, sawtooth or triangle edges.
 - Torn paper shows round half-holes, never points.
-- Focus is a solid ring, a break is a hatched ring.
+- Focus is a solid ring, a break is a hatched ring. A running block is the dial alone on the desk: no card, no DEAL stamp, no label, one tick at 12, a small "min".
+- Green is wet ink: the desk is dull, the paper is the bright thing, green appears where a stamp lands or time is paid. At rest DEAL is a solid green die.
+- Dark mode: a near-black desk with pale paper and dark ink on tickets, sheets, the tape and cards.
 
 ## The deal
 
@@ -26,6 +28,8 @@ without asking Chris first.
 - Anything that commits you is a stamp (DEAL, Start reading, Save pieces). Declining is a paper button. A link is the
   quiet way out.
 - A deal is one sitting and ends on the done sheet (spec 010).
+- "Needs more than one sitting?" is a quiet line under the ticket, not on it. The clock answers in words, with no small wheel.
+- The screen stays on during every focus block; there is no switch.
 
 ## Choosing time
 

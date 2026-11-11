@@ -166,3 +166,19 @@ Chris: the reviewers felt like they were "making features in isolation", and the
 - The split's − and + steppers are removed: they were added only for WCAG 2.5.7 and undid round 7's ruling ("No plus and minus steppers"). The tear line's grip is back.
 - The council's accessibility reviewer is replaced by **the primary user**: a capable student who studies with Pomodeal nightly.
 - Reviewers now get `.claude/skills/design-council/settled.md`, Chris's decisions. Every proposed fix is checked against it, and against how the app already does the same job, before it is built. Anything that re-opens a decision goes to Chris as a question.
+
+### Benchmark against the competition (Chris: "improve taste dramatically… benchmark against known apps")
+
+The build loop's step 3, done properly: each reviewer saw App Store screenshots of nine competitors (Forest, Opal, Structured, Session, Flow, Tiimo, Things 3, one sec, Focus Friend; pulled with the iTunes Search API, kept out of the repo) beside Pomodeal, ranked the ten on taste and named what the top three do better. Reviewers: a designer and the primary user on Opus 5.5; an art director (critic) and, from round 2, a creative director who proposes exact changes, on Fable 5.2. All got `settled.md`. Top three every round: Things 3, Opal, Flow.
+
+| Round | Critic (Fable) | Designer | Primary user | Built after it (two or more agreed) |
+| --- | --- | --- | --- | --- |
+| b1 | 4th, 6.5 | 6th, 6 | 5th, 6.5 | poster dial; near-black dark desk; bigger sentence; inked tape tags; no stacked sheets; (Chris) no DEAL on the running ticket, screen always on |
+| b2 | 5th, 6.5 | 5th, 6 | 5th, 6.5 | "green is wet ink" (creative director): duller desk, whiter paper, inkier green; no "Make a deal" heading; 46cqw numeral on a thin rail; offers as faint impressions; tape as receipt print |
+| b3 | 5th, 6.5 | 6th, 6 | 6th, 6 | the dial alone on the paper (no card); tape bargains as green words; offers back to full ink; shoot.mjs waits for fonts |
+| b4 | 4th, 7 | 5th, 6 | 6th, 6 | DEAL as a solid die; no "minutes left", label or ticks but 12; offers as one coupon strip; Done struck big |
+| b5 | 4th, 7 | 5th, 6.5 | 5th, 6.5 | small "min"; the first offer gets the die; a paper notch, not a knob; no white sliver at the fold; the ask not echoed; no "Then you're done." |
+
+Chris then approved: delete the small clock wheel beside the clock's answer; pale paper with dark ink in dark mode; "Needs more than one sitting?" as a quiet line under the ticket.
+
+What they still say, every round: Things 3's restraint (fewer boxes per screen), Opal's light and depth, Flow's nerve (one element alone). Open for Chris: a desk-wide dark gradient or glow behind the dial (Opal); the "5 more minutes" sheet as one sentence with one stamp (designer, b4).
