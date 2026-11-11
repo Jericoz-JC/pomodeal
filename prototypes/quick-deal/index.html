@@ -1075,8 +1075,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 /* ---------- spec 012: tonight in a line ----------
    Tonight is written the way a deal is: one sentence on the ticket. What you type closes into underlined words at each
    comma; the open end of the sentence is where the next one goes. Printed, the sittings wait at the top of the tape. */
-.homehead { display: flex; align-items: baseline; justify-content: flex-end; gap: 12px; margin-bottom: -14px; }
-.homehead .textbtn { flex: none; margin-right: -12px; }
+.tickethead #plannight { flex: none; margin: -10px -12px -10px auto; }
 .ticket.night .sentence { font-size: 1.3125rem; line-height: 1.5; }
 .ticket.night .sentence .lead { color: var(--ink); font-size: 1.25em; font-weight: 800; }
 .ticket.night .sentence .tok { font-size: 1.2em; }
@@ -1103,7 +1102,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 .tocome li em { display: block; font-style: normal; font-size: .9375rem; line-height: 1.35; margin-top: 2px; }
 .tocome li.next { color: var(--ink); }
 .tocome li.next em { color: var(--soft); }
-.tocome .perf { height: 10px; margin: 8px 0 -6px; background: radial-gradient(circle, var(--edge) 1.5px, transparent 2px) 50% 50% / 10px 6px repeat-x; }
+.tocome .tcperf { height: 10px; margin: 8px 0 -6px; background: radial-gradient(circle, var(--edge) 1.5px, transparent 2px) 50% 50% / 10px 6px repeat-x; }
 .stub.perf .hint { margin-top: 6px; }
 
 /* ---------- the room on paper ----------
@@ -1740,7 +1739,7 @@ function ticket(peek) {
       : `${tokA(p)}. Straight into <span class="nowrap">${tokF(p)} of</span> ${named}.`;
     return `<div class="ticketwrap${peek ? " peek" : ""}"><section class="ticket" id="ticket" aria-label="Your deal on ${esc(fc.title)}">
     <div class="body">
-      <div class="tickethead"><span class="serial">No. ${serial}</span>${STAMPBOX}</div>
+      <div class="tickethead"><span class="serial">No. ${serial}</span>${STAMPBOX}${mode === "intercept" ? "" : nightLink()}</div>
       <p class="sentence">${s}</p>
       ${fc.startWith ? `<p class="startw"><span>Start with:</span> ${N(esc(moveText(fc.startWith)))}</p>` : ""}
       ${pk}
@@ -1772,7 +1771,7 @@ function ticket(peek) {
     </div>` : "";
   return `<div class="ticketwrap${peek ? " peek" : ""}"><section class="ticket${isBig ? " big" : ""}" id="ticket" aria-label="${isBig ? "Your first sitting" : "Your deal"}">
     <div class="body">
-      <div class="tickethead"><span class="serial">No. ${serial}</span>${STAMPBOX}</div>
+      <div class="tickethead"><span class="serial">No. ${serial}</span>${STAMPBOX}${mode === "intercept" ? "" : nightLink()}</div>
       <p class="sentence">${sentence}</p>
       ${pk}
       ${bigRows}
@@ -2005,7 +2004,8 @@ function nightRest() {
   const left = nightLeft(); if (!nightLoaded || left.length < 2) return "";
   const names = []; left.slice(1).forEach(s => { const n = s.name === left[0].name && !names.length ? `${s.name} again` : s.name; if (!names.includes(n) && !names.includes(`${s.name} again`)) names.push(n); });
   const said = names.length > 1 ? `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}` : names[0];
-  return `<p class="nightrest">${N(esc(`Then ${said}.`))}</p>`;
+  const focus = left.reduce((a, s) => a + s.min, 0), breaks = left.slice(0, -1).reduce((a, s) => a + breakBetween(s.min), 0) + (deal.act ? deal.breakMin : 0);
+  return `<p class="nightrest">${N(esc(`Then ${said}.`))} <span class="nowrap">${N(`Done around ${clockStr(Date.now() + (focus + breaks) * 60000)}.`)}</span></p>`;
 }
 const nightLink = () => nightOn || S ? "" : `<button class="textbtn" id="plannight">${nightLeft().length ? "Change tonight" : "Plan tonight"}</button>`;
 /* the unprinted top of the tape */
@@ -2014,7 +2014,7 @@ function toComeView() {
   const total = left.reduce((a, s) => a + s.min, 0);
   return `<section class="tocome" aria-labelledby="tocomeh"><h3 id="tocomeh">Still to come <span>${N(hm(total))}</span></h3><ol>${left.map((s, i) => {
     const sub = s.piece && s.k === 0 ? s.piece : s.of > 1 ? `${s.k + 1} of ${s.of}` : "";
-    return `<li${i === 0 ? ` class="next"` : ""}><b>${N(`${s.min} min`)}</b><span><span class="nm">${esc(s.name)}</span>${sub ? `<em>${N(esc(sub))}</em>` : ""}</span></li>`; }).join("")}</ol><div class="perf" aria-hidden="true"></div></section>`;
+    return `<li${i === 0 ? ` class="next"` : ""}><b>${N(`${s.min} min`)}</b><span><span class="nm">${esc(s.name)}</span>${sub ? `<em>${N(esc(sub))}</em>` : ""}</span></li>`; }).join("")}</ol><div class="tcperf" aria-hidden="true"></div></section>`;
 }
 function startView() {
   if (nightOn) return `<h1 class="home vh">Tonight</h1>${nightTicket()}
@@ -2022,7 +2022,7 @@ function startView() {
   const planned = nightLeft().length > 0;
   const door = !fromCard && !planned && shownCards().length > 0, folded = door && !quickOpen;
   const tk = door ? `${quickDoor(!folded)}<div id="quickdeal"${folded ? " hidden" : ""}>${ticket(true)}</div>` : ticket(true);
-  return `<div class="homehead"><h1 class="home vh">Make a deal</h1>${nightLink()}</div>${weekView()}${planned ? "" : cardsView()}${tk}${nightRest()}
+  return `<h1 class="home vh">Make a deal</h1>${weekView()}${planned ? "" : cardsView()}${tk}${nightRest()}
   ${deal.act && !folded ? `<button class="textbtn skip" id="skipbreak">Skip ${esc(deal.act)}, start ${esc(fromCard ? fromCard.title : big.on ? bigTitle() : shortTask())} now</button>` : ""}
   <section class="rows${folded ? "" : " anchor"}" aria-label="Your room">${presence()}</section>`;
 }
@@ -2166,7 +2166,7 @@ function sheetBody() {
         ${n ? `<div class="rest"><p id="dealcost">${serial}<b>${N(`${b.min} min of ${esc(card ? name : lower(name))}`)}</b></p>${notes}</div>`
           : `<p class="rest" id="dealcost">${serial}<b>${N(`${b.min} min of ${esc(card ? name : lower(name))}`)}</b></p>`}
       </div>
-      <p class="againq" id="againh">Another round?</p>
+      <p class="againq" id="againh">${nx && (nx.taskId ? nx.taskId !== S.taskId : nx.name !== title(S.blocks.find(x => x.type === "focus").label)) ? "Next up?" : "Another round?"}</p>
       <div class="terms" role="group" aria-labelledby="againh">${termTicket("button", ` id="again" aria-label="Deal another round: ${esc(line)}${owed ? ` ${esc(owed)}` : ""}"`, esc(line).replace(/(\d+) min\b/g, `<span class="nowrap">$1 min</span>`), esc(owed))}</div>
       <button class="secondary" id="donenow">Done for now</button>
       ${more}`;
