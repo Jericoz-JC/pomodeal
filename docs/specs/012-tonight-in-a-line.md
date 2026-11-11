@@ -117,11 +117,66 @@ At the local day's turn, rows still under Still to come leave the tape without a
 
 No line explains the UI: there is no "type commas", "tap a word", "drag to reorder".
 
-## Built for real (not in this change)
+## Building it for real: how it fits the existing app
 
-- `packages/core`, test-first: `parseNightItem(raw, knownNames)` (size and name matching), `sittingsOf(items)`, `nightFit(sittings, nowMs)` (total and finishing time), `NIGHT_SIZES`.
-- Convex: one `nights` row per user per local day key (`{ userId, dayKey, items: [{ title, taskId?, sittings, sittingMin }], printedAt, takenSittings }`), index `by_userId_and_dayKey`. Deleted after 2 days. The deal started from a sitting carries `taskId` as today.
-- `docs/specs/006-privacy-inventory.md` gains the `nights` table in the same change (item titles are coursework text, like big-one titles).
+Read against the code on this branch (November 10, 2026). The point of the design is that a night adds **one small record and no new kind of session**: every sitting starts through the two mutations that start deals today, so the timer, negotiation, ledger, done sheet, push and big-one bookkeeping all work unchanged.
+
+### What it reuses, unchanged
+
+| Piece | Where | How tonight uses it |
+| --- | --- | --- |
+| A deal and its session | `packages/core/src/session.ts` `buildSession`, `dealProblem`; `convex/sessions.ts` `start` | A plain sitting is a Quick Deal with `task` = the item's name and `focusMin` = the sitting's length. Every size on offer (15, 20, 30, 45) is already in `FOCUS_LENGTHS`, so `dealProblem` accepts it. |
+| A big one's sitting | `convex/tasks.ts` `startFromCard`; `cardsFor` in `bigOne.ts` | A sitting on a big one starts exactly as its card's Start stamp does, with `taskId`. Minutes worked, open terms, pieces, bookmarks and comebacks are untouched. |
+| The next round | `session.ts` `nextRound`, `breakBetween`, `repayDebt` | The done sheet's "Another round?" becomes the next sitting instead of `nextRound(s)`; the break between rounds and borrowed minutes come off it the same way. |
+| The tape | `convex/sessions.ts` `today`; ledger kinds (ADR 0006, 0007) | The printed part is unchanged: each sitting files `deal` and `done` or `end_early` as now. Still to come is drawn from the night, not from the ledger. |
+| Name matching | `tasks.open` (already subscribed in `apps/web/src/main.ts`), today's ledger | Names match against open big ones and today's deals, which the client already has. No new query. |
+| Local days | `packages/core/src/days.ts`, `dayKey()` in `apps/web/src/days.ts` | A night belongs to the local day key the client sends, as big ones' worked days do. |
+
+### What is new
+
+**`packages/core/src/night.ts`, test-first** (pure, no clock or zone):
+
+| Function | Does |
+| --- | --- |
+| `NIGHT_SIZES`, `NIGHT_MAX_ITEMS` (6) | the eight sizes as `[sittings, minutes]`, from `FOCUS_LENGTHS` |
+| `parseNightItem(raw, known)` | the trailing size (`45m`, `1h30`, `2h`, a bare `45` only when it's a size), snapped to `NIGHT_SIZES`; the name matched against `known` (every typed word starts a word of the name) |
+| `sittingsOf(items)` | the flat list in sentence order, each `{ title, taskId?, minutes, k, of, piece? }` |
+| `nightFit(sittings, nowMs)` | focus minutes and the finishing time, breaks from `breakBetween` |
+| `nightRound(session, sitting)` | the next round's `QuickDeal` for a sitting (the "Another round?" ticket) |
+| `nightProblem(input)` | validation for Convex: 1–6 items, titles 1–80 characters, sizes in `NIGHT_SIZES` |
+
+Tests first: "orgo set 4" keeps its 4; "history paper 1h" is 2 × 30; "bio ch 7" matches "BIO 180 ch. 7" and not "BIO 180 midterm"; "50" snaps to 45; seven items are refused; a 2 × 45 item is two 45-minute sittings with a quarter-length break between them in `nightFit`.
+
+**Convex** (read `convex/_generated/ai/guidelines.md` first):
+
+```ts
+// convex/schema.ts
+nights: defineTable({
+  userId: v.id("users"),
+  dayKey: v.string(),                       // local day, from the client
+  items: v.array(v.object({ title: v.string(), taskId: v.optional(v.id("tasks")), sittings: v.number(), minutes: v.number() })),
+  taken: v.number(),                        // sittings started so far
+  printedAt: v.number(),
+}).index("by_userId_and_dayKey", ["userId", "dayKey"]),
+```
+
+- `nights.print({ dayKey, items })`: `nightProblem`, checks each `taskId` is the caller's (`ownTask`), replaces the day's row (taken 0).
+- `nights.tonight({ dayKey })`: the caller's row for that day, or null.
+- `sessions.start` and `tasks.startFromCard` gain `fromNight: v.optional(v.boolean())`. When true, the same transaction bumps that day's `taken` by one, so a sitting can't be taken twice from two devices or a retry.
+- `crons.ts`: a daily sweep deletes nights more than 2 days old, so a night really does vanish (spec section 7).
+
+**The bridge, `apps/web/src/main.ts`:** `Backend` gains `printNight(items)`, and `start` / `startFromCard` pass `fromNight`. One more subscription, `nights.tonight` for today's key (re-subscribed at local midnight like the cards), pushed to the screen with `app.night(doc)`. The prototype keeps the night in memory (`night`, `loadNight`, `nightRound` in `prototypes/quick-deal/index.html`); built for real, those read `app.night`'s doc instead.
+
+**Privacy:** `docs/specs/006-privacy-inventory.md` gains the `nights` table in the same change: item titles are coursework text, like big-one titles; only the student reads them; deleted after 2 days; deleting a big one clears its `taskId` from any night that names it.
+
+**Events** (spec 008's table): `night_printed` with the item count, nothing typed.
+
+### Order of work
+
+1. `night.ts` and its tests (`npm test`).
+2. Schema, `nights.print` and `nights.tonight`, `fromNight`, the sweep; Convex tests in `convex/test`.
+3. Bridge and the prototype reading `app.night`; privacy inventory; event.
+4. Phone and laptop dogfooding on a dev deployment before anything reaches `main`.
 
 ## Out of scope
 
