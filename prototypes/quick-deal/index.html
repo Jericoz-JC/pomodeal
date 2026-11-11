@@ -306,16 +306,22 @@ p { margin: 0; }
 .swapline.last { background: none; min-height: 52px; gap: 26px; }
 .swapline .said { flex: 1; min-width: 0; font-family: var(--font-head); font-stretch: var(--wd-display); font-size: 1.1875rem; line-height: 1.2; color: var(--soft); }
 .swapline .said b { font-weight: 750; color: var(--ink); font-variant-numeric: tabular-nums; }
-.swapname { display: inline; min-height: 0; margin: 0; padding: 6px 0; border: none; background: none; color: var(--ink); text-align: left; overflow-wrap: anywhere;
-  font: inherit; font-weight: 750; text-decoration: underline solid color-mix(in srgb, var(--ink) 45%, transparent) 1px; text-underline-offset: 4px; text-decoration-skip-ink: none; }
+.swapname { align-self: stretch; margin: 0; padding: 6px 0; border: none; background: none; text-align: left; overflow-wrap: anywhere; }
+.swapline .said .nm { font-weight: 750; color: var(--ink); }
+@media (hover: hover) { .swapname:hover .nm { text-decoration: underline solid color-mix(in srgb, var(--ink) 45%, transparent) 1px; text-underline-offset: 4px; } }
+/* the big one's name on the ticket opens its jobs rather than changing a word: a dark-ink hairline, not the green rule */
+.sentence .tok.named { text-decoration: underline solid color-mix(in srgb, var(--ink) 70%, transparent) 1.5px; text-underline-offset: 7px; }
 .bitem .said { flex: 1; min-width: 0; font-family: var(--font-head); font-stretch: var(--wd-display); font-size: 1.1875rem; line-height: 1.2; color: var(--soft); }
 .bitem .said b, .bitem .said .btitle { font-weight: 750; color: var(--ink); font-size: inherit; }
 .bitem .ministub.go1, .swapline .ministub.go1 { flex: none; width: 76px; min-height: 40px; justify-content: center; align-items: center; padding: 6px 0 4px; }
 .bitem .ministub.go1 span, .swapline .ministub.go1 span { font-size: 1.0625rem; }
 /* green is wet ink: at rest the line's Start is DEAL's die before it is inked (double rule, square corners, a tilt) in
    dry ink; pressed, it lands green */
-.ministub.go1 { --tilt: -2deg; color: var(--ink); border-radius: 4px; }
-.ministub.go1::before { border: 3.5px double currentColor; border-radius: 4px; }
+.ministub.go1 { --tilt: -2.5deg; color: var(--ink); border-radius: 4px; }
+.ministub.go1::before { border: 3.5px double currentColor; border-radius: 4px; -webkit-mask: var(--noise) 0 0 / 120px 60px; mask: var(--noise) 0 0 / 120px 60px; }
+.ministub.go1 span { -webkit-mask: var(--noise) 30px 10px / 120px 60px; mask: var(--noise) 30px 10px / 120px 60px; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .ministub.go1:not(.pressed):not(:hover) { color: var(--soft); } }
+:root[data-theme="dark"] .ministub.go1:not(.pressed):not(:hover) { color: var(--soft); }
 .ministub.go1.pressed { color: var(--deal); }
 .ministub.go1.pressed::before { animation: slam .5s linear both; -webkit-mask: var(--noise) 0 0 / 120px 60px; mask: var(--noise) 0 0 / 120px 60px; background: color-mix(in srgb, var(--deal) 12%, transparent); }
 @media (hover: hover) { .ministub.go1:hover { color: var(--deal); } }
@@ -326,12 +332,15 @@ p { margin: 0; }
 @media (min-width: 820px) {
   /* the lines run the ticket's width, each Start under the DEAL stub so every stamp keeps one column; tight enough
      that the room row stays clear of the roll */
-  main > .swaps { margin: 0 0 -34px; }
-  .swapline { display: grid; grid-template-columns: minmax(0, 1fr) auto; min-height: 40px; }
+  main > .swaps { margin: -8px 0 -12px; }
+  .swapline { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; min-height: 48px; }
   .swapline .said { font-size: 1.375rem; }
-  .swapline .ministub.go1 { justify-self: end; }
-  .swapline.last { display: flex; min-height: 30px; }
-  .swapline .ministub.go1 { min-height: 34px; padding-block: 4px 2px; }
+  .swapline .ministub.go1 { justify-self: end; min-height: 34px; padding-block: 4px 2px; }
+  .swapline.last { display: flex; min-height: 0; padding-top: 6px; }
+  /* one gap (18 px) between the lines' block, the room row and the roll; the room comes from a home ticket a step
+     tighter, so the ticket keeps the tape's top line */
+  body:has(#roll:not([hidden])) main:has(> .swaps) { gap: 18px; }
+  main:has(> .swaps) > .ticketwrap .ticket .body { padding-block: 20px 22px; gap: 16px; }
 }
 /* what the card used to say, now notes on the ticket */
 .ticket .stillhere { font-size: 1.0625rem; line-height: 1.35; color: var(--ink); margin-bottom: 2px; }
@@ -2113,7 +2122,7 @@ function cardsView() {
   const shown = shownCards();
   shown.forEach(c => { if (c.comeback) noteComeback(c.id); });
   if (fromCard && fromCard.comeback) noteComeback(fromCard.id);
-  const lines = shown.map(c => `<li class="swapline"><p class="said"><b>${N(`${c.minutes} min`)}</b> of <button class="swapname" data-load="${esc(c.id)}" aria-label="${esc(c.title)}, put it on the ticket">${esc(c.title)}</button></p>${goStamp(c)}</li>`).join("");
+  const lines = shown.map(c => `<li class="swapline"><button class="said swapname" data-load="${esc(c.id)}" aria-label="${esc(c.title)}, put it on the ticket"><b>${N(`${c.minutes} min`)}</b> of <span class="nm">${esc(c.title)}</span></button>${goStamp(c)}</li>`).join("");
   const quick = fromCard ? `<button class="textbtn quickon" id="quickopen">Quick deal</button>` : "";
   return `<ul class="swaps${fromCard ? "" : " q"}" aria-label="Or instead">${lines}<li class="swapline last">${quick}${link}</li></ul>`;
 }
