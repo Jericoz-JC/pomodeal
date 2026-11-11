@@ -4,7 +4,13 @@ Each phase ends with a **gate**: a question answered with real usage before the 
 
 Changes from the original thesis: added **Phase 0** (concepts and spikes before code), pulled a **thin social slice** forward into the first beta (it's the phone's only enforcement), and moved YouTube scenes from core to delight.
 
-## Where we are (Nov 9, 2026)
+## Where we are (Nov 11, 2026)
+
+**Since Nov 9, merged:** ledger fix (PR #9, ADR 0006), one sitting per deal (PR #10, spec 010), the visual overhaul and design council (PR #11, spec 011), dark mode with the lamp off (PR #12, spec 013).
+
+**In review:** tonight in a line (spec 012) and the desk overhaul (spec 014), one PR. The planner runs in the screens with tonight kept in the open page; its storage (`nights` table, `nights.print`, `nights.tonight`, `fromNight` on the two start mutations) is the next backend step, in spec 012's "Building it for real". After that: the big-one cards screen in the paper language (the most-named gap in spec 014's benchmarks).
+
+*The rest of this section is as of Nov 9.*
 
 Phase 0's interview gate was skipped on purpose: we launched a closed beta to friends first. Phase 1 is partly live at https://pomodeal.app.
 

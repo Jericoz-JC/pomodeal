@@ -34,6 +34,11 @@ Phase 1 of the [roadmap](docs/03-roadmap.md), in a closed beta with friends.
 - Big ones: first payment, bookmark, day-2 and comeback cards, split and spread
 - A weekly one-tap check-in ("Did this week go better than usual?")
 - Synced across phone and laptop; installable as an app, with a Keep screen on option
+- Light and dark, with a dark mode that dims the paper instead of putting pale tickets on black
+
+**In review (not on `main` yet)**
+- Tonight in a line: plan several assignments as one sentence and take them one deal at a time. Tonight's plan lives in the open page until it's stored per day.
+- The desk: on a laptop, tonight lies along the front edge as a roll drawn to scale over a clock, which you can drag to reorder and which fills in green as you study
 
 **Built, still being checked**
 - Push notifications at the heads-up and block end. The code is shipped; it still needs to be tested on real iPhones and Android phones. On iPhone, push only works once the app is installed to the Home Screen.
@@ -42,7 +47,7 @@ Phase 1 of the [roadmap](docs/03-roadmap.md), in a closed beta with friends.
 **Not built yet**
 - **Blocking.** Nothing in Pomodeal blocks or dims apps or sites today. On desktop, that's the job of the planned [Chrome extension](docs/06-chrome-extension-roadmap.md), which hasn't been started. On a phone, a web app can't block other apps at all, so Pomodeal relies on reminders and, later, friends.
 - Rooms: small private rooms for friend groups, with live presence (who's focusing, who's on a break)
-- Presets, a block builder, and history beyond a single big one
+- Presets and history beyond a single night
 
 ## The research behind it
 
