@@ -305,31 +305,32 @@ p { margin: 0; }
 .swapline .said { flex: 1; min-width: 0; font-family: var(--font-head); font-stretch: var(--wd-display); font-size: 1.1875rem; line-height: 1.2; color: var(--soft); }
 .swapline .said b { font-weight: 750; color: var(--ink); font-variant-numeric: tabular-nums; }
 .swapname { display: inline; min-height: 0; margin: 0; padding: 6px 0; border: none; background: none; color: var(--ink); text-align: left; overflow-wrap: anywhere;
-  font: inherit; font-weight: 750; text-decoration: underline solid var(--deal) 1.5px; text-underline-offset: 4px; text-decoration-skip-ink: none; }
+  font: inherit; font-weight: 750; text-decoration: underline solid color-mix(in srgb, var(--ink) 45%, transparent) 1px; text-underline-offset: 4px; text-decoration-skip-ink: none; }
 .bitem .said { flex: 1; min-width: 0; font-family: var(--font-head); font-stretch: var(--wd-display); font-size: 1.1875rem; line-height: 1.2; color: var(--soft); }
 .bitem .said b, .bitem .said .btitle { font-weight: 750; color: var(--ink); font-size: inherit; }
 .bitem .ministub.go1, .swapline .ministub.go1 { flex: none; width: 76px; min-height: 40px; justify-content: center; align-items: center; padding: 6px 0 4px; }
 .bitem .ministub.go1 span, .swapline .ministub.go1 span { font-size: 1.0625rem; }
-/* green is wet ink: at rest the line's stamp is a dry impression in the paper's ink, one rule; pressed, it lands green */
-.ministub.go1 { color: var(--ink); --tilt: -1.5deg; }
-.ministub.go1::before { border: 1.5px solid currentColor; opacity: .55; }
+/* green is wet ink: at rest the line's Start is DEAL's die before it is inked (double rule, square corners, a tilt) in
+   dry ink; pressed, it lands green */
+.ministub.go1 { --tilt: -2deg; color: color-mix(in srgb, var(--ink) 62%, transparent); border-radius: 4px; }
+.ministub.go1::before { border: 3.5px double currentColor; border-radius: 4px; }
 .ministub.go1.pressed { color: var(--deal); }
-.ministub.go1.pressed::before { opacity: 1; border-width: 3px; border-style: double; animation: slam .5s linear both; -webkit-mask: var(--noise) 0 0 / 120px 60px; mask: var(--noise) 0 0 / 120px 60px; }
+.ministub.go1.pressed::before { animation: slam .5s linear both; -webkit-mask: var(--noise) 0 0 / 120px 60px; mask: var(--noise) 0 0 / 120px 60px; background: color-mix(in srgb, var(--deal) 12%, transparent); }
 @media (hover: hover) { .ministub.go1:hover { color: var(--deal); } }
 .swapline .quickon { margin-left: -12px; }
 .swapline .allbig { margin: 0 0 0 -12px; align-self: center; }
 .swapline .quickon + .allbig { margin-left: -26px; }
 /* a desk has a pointer and the roll below: the lines are tighter, so the room row stays above the roll */
 @media (min-width: 820px) {
-  /* the lines keep to the sentence's column; the quick deal and the list sit under the stub, beside them */
-  main > .swaps { display: grid; grid-template-columns: minmax(0, 1fr) clamp(250px, 34cqw, 300px); grid-auto-flow: row dense; margin-top: -4px; }
-  .swapline { grid-column: 1; min-height: 48px; }
-  .swapline.last { grid-column: 2; grid-row: 1 / span 3; align-self: start; flex-direction: column; align-items: flex-start; gap: 0; min-height: 0; padding: 4px 0 0 32px; }
-  .swapline.last > * { margin: 0 0 0 -12px; }
+  /* the lines keep to the sentence's column, tight enough that the room row stays clear of the roll */
+  main > .swaps { margin: -12px clamp(250px, 34cqw, 300px) -26px 0; }
+  .swapline { min-height: 42px; }
+  .swapline.last { min-height: 34px; }
   .swapline .ministub.go1 { min-height: 34px; padding-block: 4px 2px; }
 }
 /* what the card used to say, now notes on the ticket */
 .ticket .stillhere { font-size: 1.0625rem; line-height: 1.35; color: var(--ink); margin-bottom: 2px; }
+.ticket .startw .still { font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 700; color: var(--ink); }
 .ticket .stillhere b { font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 700; font-size: 1.125rem; }
 .ticket .notes { display: flex; flex-direction: column; gap: 4px; margin-top: -4px; }
 .ticket .notes .startw { margin-top: 0; }
@@ -528,8 +529,7 @@ html:has(.ticket.big) { scroll-padding-bottom: 260px; }
 .mv:focus-within { outline: 3px solid var(--deal); outline-offset: 0; }
 .spwhy { font-size: .9375rem; line-height: 1.4; color: var(--soft); }
 /* R60: a comeback card's fresh plan is its own small outlined button, apart from "Start with" */
-.ticket .respread { align-self: flex-start; min-height: 44px; margin: 6px 0 4px; padding: 8px 14px; border: 1.5px solid var(--edge); border-radius: 10px; background: none; color: var(--ink);
-  font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 700; font-size: 1rem; line-height: 1.2; letter-spacing: .01em; }
+.ticket .respread { align-self: flex-start; margin: -10px 0 -10px -12px; }
 /* R61: Delete sits apart from the rows that keep the big one */
 .menu .mrow.gone { border-top: 1px solid var(--rule); margin-top: 4px; }
 
@@ -1997,8 +1997,8 @@ function ticket(peek) {
     <div class="body">
       <div class="tickethead"><span class="serial">No. ${serial}</span>${STAMPBOX}${mode === "intercept" ? "" : nightLink()}</div>
       <p class="sentence">${s}</p>
-      ${live.startWith || prog || (home && live.comeback) ? `<div class="notes">${home && live.comeback ? `<p class="stillhere"><b>It’s still here.</b></p>` : ""}${live.startWith ? `<p class="startw"><span>Start with:</span> ${N(esc(moveText(live.startWith)))}</p>` : ""}${prog ? `<p class="prog">${N(prog)}</p>` : ""}</div>` : ""}
-      ${home && live.offerRespread ? `<button class="respread" data-respread="${esc(fc.id)}" aria-haspopup="dialog">Re-spread what’s left?</button>` : ""}
+      ${live.startWith || prog || (home && live.comeback) ? `<div class="notes">${home && live.comeback && !live.startWith ? `<p class="stillhere"><b>It’s still here.</b></p>` : ""}${live.startWith ? `<p class="startw">${home && live.comeback ? `<b class="still">It’s still here.</b> ` : ""}<span>Start with:</span> ${N(esc(moveText(live.startWith)))}</p>` : ""}${prog ? `<p class="prog">${N(prog)}</p>` : ""}</div>` : ""}
+      ${home && live.offerRespread ? `<button class="textbtn respread" data-respread="${esc(fc.id)}" aria-haspopup="dialog">Re-spread what’s left</button>` : ""}
       ${nightLoaded ? nightStrip(sittingsOf(night), night.taken, "onticket") : ""}
       ${pk}
       ${direct && p !== "act" ? `<button class="textbtn breakfirst" id="breakfirst">Take a break first</button>` : ""}
@@ -2081,7 +2081,7 @@ const DOTS = `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><c
 const goStamp = (c, attr = "data-card") => `<button class="ministub go1" ${attr}="${esc(c.id)}" aria-label="Start ${c.minutes} min on ${esc(c.title)}"><span>Start</span></button>`;
 const miniStub = (attr, id, m, t) => `<button class="ministub" ${attr}="${esc(id)}" aria-label="Start ${m} min on ${esc(t)}"><span>Start</span><b>${m}</b><span>min</span></button>`;
 /* the cards on screen: open big ones, less the one loaded onto the ticket */
-const shownCards = () => bigOneCards === null ? [] : cards().filter(c => !fromCard || c.id !== fromCard.id).slice(0, CARDS_SHOWN - 1);
+const shownCards = () => bigOneCards === null ? [] : cards().filter(c => !fromCard || c.id !== fromCard.id).slice(0, fromCard ? CARDS_SHOWN - 1 : 1);
 const PLUS = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>`;
 /* spec 015: home is the ticket. With a big one open and nothing planned for tonight, the ticket always carries one:
    the first, until another is swapped on or the quick deal is asked for. */
@@ -2765,9 +2765,9 @@ function panelBody() {
       <span class="pperf" aria-hidden="true"></span>
       <div class="menu" role="group" aria-labelledby="ph">
         <button class="mrow" id="m-split">Split into pieces${hasPieces ? "<small>Rename, resize, add or remove pieces.</small>" : ""}</button>
-        <button class="mrow" id="m-spread">Spread over the days left<small>${spreadable(pl) ? "A little each day up to the due day. Nothing is set until you sign." : "Split it first, then spread the pieces."}</small></button>
-        <button class="mrow" id="m-fresh">Start fresh on this one<small>Clears your next step and your size guess. Pieces stay.</small></button>
-        <button class="mrow" id="m-aside">Set aside</button>
+        <button class="mrow" id="m-spread">Spread over the days left<small>${spreadable(pl) ? "A little each day up to the due day." : "Split it first, then spread the pieces."}</small></button>
+        <button class="mrow" id="m-fresh">Start fresh on this one<small>Clears your next step and how big you guessed it was. Pieces stay.</small></button>
+        <button class="mrow" id="m-aside">Set aside<small>Waits in All big tasks.</small></button>
         <button class="mrow gone" id="m-del">Delete<small>Gone for good, notes and all.</small></button>
       </div>
       <button class="textbtn pclose" id="p-close">Close</button>`;
