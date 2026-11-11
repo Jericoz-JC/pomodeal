@@ -37,17 +37,20 @@ export function launchEdge({ port, prefix = "nc-edge", args = [] } = {}) {
   const proc = spawn(EDGE, ["--headless=new", `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, "--no-first-run",
     ...(process.platform === "linux" ? ["--no-sandbox"] : []), ...args, "about:blank"], { stdio: "ignore", windowsHide: true });
 
-  // the watchdog: once this script is gone, it sweeps the browser's processes and its profile, then exits. It must not
-  // be this script's child: stopping a job kills the script's whole process tree, and a child watchdog dies with it
-  // while Edge (which re-parents itself) survives. On Windows it is started through `start`, so its parent is a cmd
-  // that exits at once; elsewhere it gets its own session.
+  // the watchdog: once this script is gone, it sweeps the browser's processes and its profile, then exits. It must
+  // outlive this script however it is stopped, so it is never in this script's process tree or job.
   const dogFile = `${profile}.watchdog.cjs`;
   writeFileSync(dogFile, `${SWEEP}
     const parent = ${process.pid}, profile = ${JSON.stringify(profile)}, win = ${WIN};
     const alive = p => { try { process.kill(p, 0); return true; } catch { return false; } };
     setInterval(() => { if (alive(parent)) return; sweep(profile, win); try { require("node:fs").rmSync(__filename, { force: true }); } catch {} process.exit(0); }, 1000);`);
+  // On Windows a tool that stops this script may kill its whole job object, and every process started from here is in
+  // that job (Edge's browser process breaks away from it, so it survives). The watchdog is created by WMI instead,
+  // which puts it outside the job.
   const dog = WIN
-    ? spawn(process.env.ComSpec || "cmd.exe", ["/d", "/s", "/c", `"start "" /b "${process.execPath}" "${dogFile}""`], { windowsVerbatimArguments: true, detached: true, stdio: "ignore", windowsHide: true })
+    ? spawn("powershell.exe", ["-NoProfile", "-NonInteractive", "-EncodedCommand", Buffer.from(
+        `Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{ CommandLine = '"${process.execPath}" "${dogFile}"' } | Out-Null`, "utf16le").toString("base64")],
+        { detached: true, stdio: "ignore", windowsHide: true })
     : spawn(process.execPath, [dogFile], { detached: true, stdio: "ignore" });
   dog.unref();
 
