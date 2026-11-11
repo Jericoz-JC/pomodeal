@@ -11,6 +11,7 @@
 // - It runs on a normal exit, on an error, and on Ctrl+C or a terminate signal.
 // - A small detached watchdog does the same if this script is force-killed and none of that gets to run.
 import { spawn } from "node:child_process";
+import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
@@ -36,12 +37,18 @@ export function launchEdge({ port, prefix = "nc-edge", args = [] } = {}) {
   const proc = spawn(EDGE, ["--headless=new", `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, "--no-first-run",
     ...(process.platform === "linux" ? ["--no-sandbox"] : []), ...args, "about:blank"], { stdio: "ignore", windowsHide: true });
 
-  // the watchdog: once this script is gone, it sweeps the browser's processes and its profile, then exits
-  const dog = spawn(process.execPath, ["-e", `${SWEEP}
+  // the watchdog: once this script is gone, it sweeps the browser's processes and its profile, then exits. It must not
+  // be this script's child: stopping a job kills the script's whole process tree, and a child watchdog dies with it
+  // while Edge (which re-parents itself) survives. On Windows it is started through `start`, so its parent is a cmd
+  // that exits at once; elsewhere it gets its own session.
+  const dogFile = `${profile}.watchdog.cjs`;
+  writeFileSync(dogFile, `${SWEEP}
     const parent = ${process.pid}, profile = ${JSON.stringify(profile)}, win = ${WIN};
     const alive = p => { try { process.kill(p, 0); return true; } catch { return false; } };
-    setInterval(() => { if (alive(parent)) return; sweep(profile, win); process.exit(0); }, 1000);`],
-    { detached: true, stdio: "ignore", windowsHide: true });
+    setInterval(() => { if (alive(parent)) return; sweep(profile, win); try { require("node:fs").rmSync(__filename, { force: true }); } catch {} process.exit(0); }, 1000);`);
+  const dog = WIN
+    ? spawn(process.env.ComSpec || "cmd.exe", ["/d", "/s", "/c", `"start "" /b "${process.execPath}" "${dogFile}""`], { windowsVerbatimArguments: true, detached: true, stdio: "ignore", windowsHide: true })
+    : spawn(process.execPath, [dogFile], { detached: true, stdio: "ignore" });
   dog.unref();
 
   let closed = false;
