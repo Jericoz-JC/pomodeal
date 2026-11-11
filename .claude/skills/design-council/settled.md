@@ -19,7 +19,10 @@ without asking Chris first.
 - Torn paper shows round half-holes, never points.
 - Focus is a solid ring, a break is a hatched ring. A running block is the dial alone on the desk: no card, no DEAL stamp, no label, one tick at 12, a small "min".
 - Green is wet ink: the desk is dull, the paper is the bright thing, green appears where a stamp lands or time is paid. At rest DEAL is a solid green die.
-- Dark mode: a near-black desk with pale paper and dark ink on tickets, sheets, the tape and cards.
+- Dark mode (Chris, Nov 10, replacing pale paper on black, which "clashed"): the lamp is off. One polarity: light ink
+  everywhere, no pale islands. The ticket is the brightest surface by a small step (desk < stub < sheet < tape < paper),
+  and one dulled green (#63B48A) is the stamp and the time being paid; the die is its deeper fill with light letters.
+  No neon mint, no pure white text.
 
 ## The deal
 

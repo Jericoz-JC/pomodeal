@@ -86,34 +86,19 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --paper: #0F1412; --slot: #070A08; --slot-edge: rgba(230, 236, 231, .28); --btn: #2A8259; --on-btn: #F4FBF7; --card: #262C28; --stub: #1E2421; --chip: #2A302C; --ink: #E6ECE7; --soft: #A3B0A7; --rule: #33413A; --track: #2F3A35; --edge: #87968C; --edge-half: rgba(135, 150, 140, .6);
-    --sheet: #181E1B; --track-ink: 8%; --tape: var(--card); --scrim: rgba(4, 6, 5, .62); --hi: rgba(255, 255, 255, .05); --lift: rgba(0, 0, 0, .5);
-    --deal: #6FD39F; --on-deal: #0F1A14; --deal-tint: rgba(111, 211, 159, .08); --break-base: #A7B3AA; --break-stripe: rgba(24, 32, 28, .42); --wait: color-mix(in srgb, var(--ink) 60%, transparent); --wait-edge: color-mix(in srgb, var(--ink) 60%, transparent); --sel: #23352B; --sel-card: #2A3E33; --gone: #E0A08C; --deal-ink: #6FD39F; color-scheme: dark;
+    --paper: #111513; --slot: #070A08; --slot-edge: rgba(226, 231, 224, .22); --btn: #63B48A; --on-btn: #101613; --card: #343C36; --stub: #1E2420; --chip: #3A423D; --ink: #E2E7E0; --soft: #A4AFA6; --rule: #505B54; --track: #3A423D; --edge: #87938A; --edge-half: rgba(135, 147, 138, .6);
+    --sheet: #252B27; --track-ink: 10%; --tape: #262C28; --scrim: rgba(8, 10, 9, .72); --hi: rgba(226, 231, 224, .1); --lift: rgba(0, 0, 0, .55);
+    --deal: #63B48A; --die: #327C58; --on-die: #E2E7E0; --die-rule: #63B48A; --on-deal: #101613; --deal-tint: rgba(99, 180, 138, .08); --break-base: #8D9A91; --break-stripe: rgba(42, 48, 44, .5); --wait: color-mix(in srgb, var(--ink) 60%, transparent); --wait-edge: color-mix(in srgb, var(--ink) 60%, transparent); --sel: #2F4A3A; --sel-card: #34503F; --sel-ink: var(--ink); --term-edge: transparent; --weekask-fill: var(--sheet); --weekask-edge: transparent; --gone: #DE9480; --deal-ink: #78C59C; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --paper: #0F1412; --slot: #070A08; --slot-edge: rgba(230, 236, 231, .28); --btn: #2A8259; --on-btn: #F4FBF7; --card: #262C28; --stub: #1E2421; --chip: #2A302C; --ink: #E6ECE7; --soft: #A3B0A7; --rule: #33413A; --track: #2F3A35; --edge: #87968C; --edge-half: rgba(135, 150, 140, .6);
-  --sheet: #181E1B; --track-ink: 8%; --tape: var(--card); --scrim: rgba(4, 6, 5, .62); --hi: rgba(255, 255, 255, .05); --lift: rgba(0, 0, 0, .5);
-  --deal: #6FD39F; --on-deal: #0F1A14; --deal-tint: rgba(111, 211, 159, .08); --break-base: #A7B3AA; --break-stripe: rgba(24, 32, 28, .42); --wait: color-mix(in srgb, var(--ink) 60%, transparent); --wait-edge: color-mix(in srgb, var(--ink) 60%, transparent); --sel: #23352B; --sel-card: #2A3E33; --gone: #E0A08C; --deal-ink: #6FD39F; color-scheme: dark;
+  --paper: #111513; --slot: #070A08; --slot-edge: rgba(226, 231, 224, .22); --btn: #63B48A; --on-btn: #101613; --card: #343C36; --stub: #1E2420; --chip: #3A423D; --ink: #E2E7E0; --soft: #A4AFA6; --rule: #505B54; --track: #3A423D; --edge: #87938A; --edge-half: rgba(135, 147, 138, .6);
+  --sheet: #252B27; --track-ink: 10%; --tape: #262C28; --scrim: rgba(8, 10, 9, .72); --hi: rgba(226, 231, 224, .1); --lift: rgba(0, 0, 0, .55);
+  --deal: #63B48A; --die: #327C58; --on-die: #E2E7E0; --die-rule: #63B48A; --on-deal: #101613; --deal-tint: rgba(99, 180, 138, .08); --break-base: #8D9A91; --break-stripe: rgba(42, 48, 44, .5); --wait: color-mix(in srgb, var(--ink) 60%, transparent); --wait-edge: color-mix(in srgb, var(--ink) 60%, transparent); --sel: #2F4A3A; --sel-card: #34503F; --sel-ink: var(--ink); --term-edge: transparent; --weekask-fill: var(--sheet); --weekask-edge: transparent; --gone: #DE9480; --deal-ink: #78C59C; color-scheme: dark;
 }
-/* spec 011 (Chris): at night the desk goes black but the paper stays paper: tickets, sheets, the tape and the cards are
-   pale stock with dark ink, so the green is the same wet ink in both themes */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) :is(.ticket, .sheet, .tape, .bigones, .people, .weekask) { --card: #D7DDD3; --stub: #C9D0C5; --chip: #C3CBBE; --sheet: #CDD4C9; --tape: #DFE4DB; --ink: #161B18; --soft: #46504A;
-    --rule: #A8B2A5; --edge: #5E6961; --edge-half: rgba(94, 105, 97, .55); --hi: transparent; --deal: #0E7447; --deal-ink: #0B5C38; --on-deal: #FFFFFF;
-    --deal-tint: rgba(14, 116, 71, .07); --sel: #C2D3C5; --sel-card: #C9DACD; --gone: #84402E; --break-base: #5E6B62; --break-stripe: rgba(251, 252, 249, .30);
-    --wait: rgba(22, 27, 24, .58); --wait-edge: rgba(22, 27, 24, .58); --track-ink: 16%; --behind: var(--card);
-    --holes-x: radial-gradient(circle, #5E6961 1.5px, transparent 2px) 0 50% / 10px 6px repeat-x;
-    --holes-y: radial-gradient(circle, #5E6961 1.5px, transparent 2px) 50% 0 / 6px 10px repeat-y;
-    color: var(--ink); color-scheme: light; }
-}
-:root[data-theme="dark"] :is(.ticket, .sheet, .tape, .bigones, .people, .weekask) { --card: #D7DDD3; --stub: #C9D0C5; --chip: #C3CBBE; --sheet: #CDD4C9; --tape: #DFE4DB; --ink: #161B18; --soft: #46504A;
-    --rule: #A8B2A5; --edge: #5E6961; --edge-half: rgba(94, 105, 97, .55); --hi: transparent; --deal: #0E7447; --deal-ink: #0B5C38; --on-deal: #FFFFFF;
-    --deal-tint: rgba(14, 116, 71, .07); --sel: #C2D3C5; --sel-card: #C9DACD; --gone: #84402E; --break-base: #5E6B62; --break-stripe: rgba(251, 252, 249, .30);
-    --wait: rgba(22, 27, 24, .58); --wait-edge: rgba(22, 27, 24, .58); --track-ink: 16%; --behind: var(--card);
-    --holes-x: radial-gradient(circle, #5E6961 1.5px, transparent 2px) 0 50% / 10px 6px repeat-x;
-    --holes-y: radial-gradient(circle, #5E6961 1.5px, transparent 2px) 50% 0 / 6px 10px repeat-y;
-    color: var(--ink); color-scheme: light; }
+/* Chris, after spec 011: pale paper on a black desk glared. At night the lamp is off: the paper dims with the room and
+   stays the brightest surface by a small step (desk < stub < sheet < paper < tape), the ink turns light, and one dulled
+   green (the light theme's hue, lifted) is the stamp, the die and the time being paid. Spec 013. */
 .sheet { --behind: var(--sheet); }
 @property --p { syntax: "<number>"; inherits: true; initial-value: 1; }
 
@@ -196,7 +181,7 @@ p { margin: 0; }
 .chip { border: 1.5px solid var(--edge); background: none; border-radius: var(--r-choice); padding: 9px 14px; min-height: 44px;
   display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 700; font-size: 1.0625rem; line-height: 1.15; letter-spacing: .01em; }
 .chip svg { width: 14px; height: 14px; flex: none; }
-.chip:is([aria-pressed="true"], [aria-checked="true"]) { background: var(--sel); color: var(--deal); border: 4px double var(--deal); padding: 6.5px 11.5px; }
+.chip:is([aria-pressed="true"], [aria-checked="true"]) { background: var(--sel); color: var(--sel-ink, var(--deal)); border: 4px double var(--deal); padding: 6.5px 11.5px; }
 @media (hover: hover) { .chip:not([aria-pressed="true"], [aria-checked="true"]):hover { background: color-mix(in srgb, var(--ink) 5%, transparent); } }
 
 /* ---------- one ticket ---------- */
@@ -363,13 +348,14 @@ p { margin: 0; }
 .bitem .more:focus-visible { outline-offset: -4px; }
 /* R30: with a big one waiting, a new deal is one quiet line under the cards; it opens the full ticket */
 /* spec 008 weekly check-in: a plain note on the paper above Quick Deal, one question, three answers, an x */
-.weekask { border: 1.5px solid var(--edge); border-radius: 6px; padding: 4px 6px 14px 16px; margin-bottom: 14px; }
+.weekask { border: 1.5px solid var(--weekask-edge, var(--edge)); background: var(--weekask-fill, none); border-radius: 6px; padding: 4px 6px 14px 16px; margin-bottom: 14px; }
 .weekask .wkhead { display: flex; align-items: flex-start; gap: 4px; }
 .weekask h2 { flex: 1; min-width: 0; padding-top: 10px; font-stretch: var(--wd-display); font-weight: 750; font-size: 1.25rem; line-height: 1.2; text-wrap: balance; }
 .weekask .wkx { flex: none; width: 44px; height: 44px; border: none; background: none; color: var(--soft); display: grid; place-items: center; }
 .weekask .wkx svg { width: 20px; height: 20px; }
 .weekask .wkopts { display: flex; flex-wrap: wrap; gap: 8px; padding-right: 8px; margin-top: 6px; }
-.weekask .wkopts .chip { padding: 8px 12px; }
+.weekask .wkopts .chip { padding: 8px 11px; }
+@media (max-width: 420px) { .weekask .wkopts { gap: 6px; padding-right: 0; } .weekask .wkopts .chip { padding: 7px 9px; font-size: 1rem; } }
 .quickrow { display: flex; align-items: stretch; width: 100%; min-height: 60px; padding: 0; border: 1.5px dashed var(--edge); border-radius: 6px; background: none; color: var(--ink); text-align: left;
   font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 700; font-size: 1.1875rem; line-height: 1.2; letter-spacing: .01em; }
 .quickrow .plus { flex: none; width: 52px; display: grid; place-items: center; color: var(--soft); background: var(--holes-y); background-position: 100% 0; }
@@ -606,11 +592,11 @@ html:has(.ticket.big) { scroll-padding-bottom: 260px; }
 .terms .term:not(:first-child)::before { border-top-left-radius: 0; }
 .terms .term:not(:last-child)::before { border-bottom-left-radius: 0; }
 .terms .term + .term::after { content: ""; position: absolute; left: 0; right: 3px; top: -3px; height: 6px; background: var(--holes-x); pointer-events: none; }
-.terms .term:first-child:not(.stamped) .pad .stamp { background: var(--deal); color: var(--card); }
+.terms .term:first-child:not(.stamped) .pad .stamp { background: var(--die, var(--deal)); color: var(--on-die, var(--card)); }
 .terms .term:first-child:not(.stamped) .pad .stamp::before { inset: 3px; border: 2.5px double currentColor; border-radius: 5px; }
 .terms .term:nth-child(1) .pad .stamp { --tilt: -5deg; } .terms .term:nth-child(2) .pad .stamp { --tilt: 3deg; translate: 2px -3px; } .terms .term:nth-child(3) .pad .stamp { --tilt: -2deg; }
 /* the outline follows the paper's shape, holes and all: four 1 px shadows on the group, then the paper's lift */
-.terms { filter: drop-shadow(1px 0 0 var(--edge)) drop-shadow(-1px 0 0 var(--edge)) drop-shadow(0 1px 0 var(--edge)) drop-shadow(0 -1px 0 var(--edge)) drop-shadow(0 8px 12px var(--lift)); }
+.terms { filter: drop-shadow(1px 0 0 var(--term-edge, var(--edge))) drop-shadow(-1px 0 0 var(--term-edge, var(--edge))) drop-shadow(0 1px 0 var(--term-edge, var(--edge))) drop-shadow(0 -1px 0 var(--term-edge, var(--edge))) drop-shadow(0 8px 12px var(--lift)); }
 .term { position: relative; z-index: 0; width: 100%; padding: 0; border: none; background: none; color: var(--ink); text-align: left; font: inherit;
   display: grid; grid-template-columns: minmax(0, 1fr) 108px; align-items: stretch; min-height: 92px; }
 .term::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: 6px 0 0 6px; background: var(--card); box-shadow: inset 0 1px 0 var(--hi); -webkit-mask: var(--zig); mask: var(--zig); }
@@ -1072,8 +1058,8 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   font-size: 2.75rem; font-weight: 800; font-stretch: var(--wd-display); letter-spacing: .07em; text-transform: uppercase; line-height: 1; --tilt: -3deg; transform: rotate(var(--tilt)); transition: transform .12s ease-out; }
 .primary#shake::before { content: ""; position: absolute; inset: 0; border: 7px double currentColor; border-radius: 10px; }
 /* benchmark r4: at rest DEAL is the die itself, solid green, its letters and rule in the paper's colour */
-.primary#shake:not(:disabled) { background: var(--deal); color: var(--card); }
-.primary#shake:not(:disabled)::before { inset: 6px; border-width: 4px; border-radius: 6px; }
+.primary#shake:not(:disabled) { background: var(--die, var(--deal)); color: var(--on-die, var(--card)); }
+.primary#shake:not(:disabled)::before { inset: 6px; border-width: 4px; border-radius: 6px; border-color: var(--die-rule, currentColor); }
 .primary#shake:hover:not(:disabled) { transform: rotate(-3deg) scale(1.03); }
 .primary#shake:active:not(:disabled) { transform: rotate(-3deg) scale(.96); }
 .primary#shake:disabled:not(.pressed) { color: var(--soft); }
