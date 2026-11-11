@@ -277,7 +277,7 @@ export function landingHTML(o: LandingOptions): string {
           </div>
           <div class="ld-perf">
             <p class="ld-you" id="ld-you" hidden>“5 more minutes of Reels?”</p>
-            <div class="ld-say">${VOICE}<p id="ld-say" aria-live="polite">Pick what you’re on, then press DEAL.</p></div>
+            <div class="ld-say">${VOICE}<p id="ld-say" aria-live="polite">What are you on right now?</p></div>
             <div class="terms" id="ld-terms" role="group" aria-labelledby="ld-say" hidden>
               ${term("button", ` data-term="borrow"`, "Take them from my next break.", "It goes from 7 minutes to 2.")}
               ${term("button", ` data-term="trade"`, "Add them to my next reading block.", "It goes from 8 minutes to 13.")}

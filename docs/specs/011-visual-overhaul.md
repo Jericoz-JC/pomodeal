@@ -130,3 +130,19 @@ Three rounds, nine reviews. Phone went from about 6 to 7–8 in every reviewer's
 - **Cards.** The second big task is a bare row beside the first one's full ticket; two reviewers want both as tickets.
 - **Ledger tags "Deal" and "Done"** read as synonyms to a newcomer.
 - **Stamps vs plain buttons in the same slot.** "Start reading" (a stamp) and "Done for now" (a paper button) sit in the same place on sibling sheets; that is the rule (a stamp commits, a paper button declines), but two reviewers read it as two dialects.
+
+### After r3, with Chris
+
+Chris: "why are we not taking the review seriously, especially for desktop". The open items above were fixed instead of parked:
+
+- **Desktop.** The app is 1360 px wide (was 1200), the stage up to 860 px, and type is a step larger (17 px base) on desks 1200 px and up. The deal you are about to stamp is a landscape ticket at a desk: the sentence on the left, the DEAL stub on the right past a vertical perforation, the same build as the terms.
+- **Split** (WCAG 2.5.7): − and + beside each piece's minutes, 5 minutes a press, with the same limits as the keyboard. Dragging still works.
+- **Editable words vs links:** the words you can change on the deal have a dashed green underline; links keep a plain soft one.
+- **Cards:** every waiting big one is a ticket; the second and third are slim tickets under the first.
+- **Ledger:** the tag for a deal you made reads "Started", so it no longer reads as a synonym of "Done".
+
+Chris also ruled on instructions and key hints:
+
+- **No lines that explain basic UI.** Removed: "Tap an underlined word to change it, then press DEAL.", the split's "Slide a dotted line…", "One tap." on the room check-in, "Change any of them before you save." after suggested pieces, the empty list's "Tick “Needs more than one sitting?”…", and the landing's "Pick what you're on, then press DEAL." (now "What are you on right now?"). Kept: the iPhone install steps, which describe Safari's hidden menu, not this app.
+- **No key badges** on controls. The shortcuts still work and are announced through `aria-keyshortcuts`.
+- A try at printing the deal as two line items ("Your break / 10 min / Reels", "Then / 8 min / BIO 180 ch. 7") was rejected; the sentence stays.
