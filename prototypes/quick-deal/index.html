@@ -1054,21 +1054,51 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 /* ---------- the stamp is the action ----------
    You do not press a button under the deal, you stamp it. The Deal control is the stamp's face: outlined and clean while it
    waits, slammed and inked when you press. It then travels to the head of the running ticket. */
-.primary#shake { position: relative; display: block; width: auto; min-width: 220px; min-height: 100px; margin: 6px auto 4px; padding: 6px 34px 4px; background: none; box-shadow: none; color: var(--deal); border-radius: 10px;
+.primary:is(#shake, #print) { position: relative; display: block; width: auto; min-width: 220px; min-height: 100px; margin: 6px auto 4px; padding: 6px 34px 4px; background: none; box-shadow: none; color: var(--deal); border-radius: 10px;
   font-size: 2.75rem; font-weight: 800; font-stretch: var(--wd-display); letter-spacing: .07em; text-transform: uppercase; line-height: 1; --tilt: -3deg; transform: rotate(var(--tilt)); transition: transform .12s ease-out; }
-.primary#shake::before { content: ""; position: absolute; inset: 0; border: 7px double currentColor; border-radius: 10px; }
+.primary:is(#shake, #print)::before { content: ""; position: absolute; inset: 0; border: 7px double currentColor; border-radius: 10px; }
 /* benchmark r4: at rest DEAL is the die itself, solid green, its letters and rule in the paper's colour */
-.primary#shake:not(:disabled) { background: var(--die, var(--deal)); color: var(--on-die, var(--card)); }
-.primary#shake:not(:disabled)::before { inset: 6px; border-width: 4px; border-radius: 6px; border-color: var(--die-rule, currentColor); }
-.primary#shake:hover:not(:disabled) { transform: rotate(-3deg) scale(1.03); }
-.primary#shake:active:not(:disabled) { transform: rotate(-3deg) scale(.96); }
-.primary#shake:disabled:not(.pressed) { color: var(--soft); }
-.primary#shake.pressed { animation: slam .62s linear both; }
+.primary:is(#shake, #print):not(:disabled) { background: var(--die, var(--deal)); color: var(--on-die, var(--card)); }
+.primary:is(#shake, #print):not(:disabled)::before { inset: 6px; border-width: 4px; border-radius: 6px; border-color: var(--die-rule, currentColor); }
+.primary:is(#shake, #print):hover:not(:disabled) { transform: rotate(-3deg) scale(1.03); }
+.primary:is(#shake, #print):active:not(:disabled) { transform: rotate(-3deg) scale(.96); }
+.primary:is(#shake, #print):disabled:not(.pressed) { color: var(--soft); }
+.primary:is(#shake, #print).pressed { animation: slam .62s linear both; }
 /* on impact the face takes ink: a wash of the stamp's colour through the same texture */
-.primary#shake::after { content: ""; position: absolute; inset: 0; border-radius: 10px; background: currentColor; opacity: 0; -webkit-mask: var(--noise) 0 0 / 120px 60px; mask: var(--noise) 0 0 / 120px 60px; pointer-events: none; }
-.primary#shake.pressed::after { opacity: .14; animation: inked .3s .2s ease-out backwards; }
-.primary#shake.pressed::before { -webkit-mask: var(--noise) 0 0 / 120px 60px; mask: var(--noise) 0 0 / 120px 60px; }
+.primary:is(#shake, #print)::after { content: ""; position: absolute; inset: 0; border-radius: 10px; background: currentColor; opacity: 0; -webkit-mask: var(--noise) 0 0 / 120px 60px; mask: var(--noise) 0 0 / 120px 60px; pointer-events: none; }
+.primary:is(#shake, #print).pressed::after { opacity: .14; animation: inked .3s .2s ease-out backwards; }
+.primary:is(#shake, #print).pressed::before { -webkit-mask: var(--noise) 0 0 / 120px 60px; mask: var(--noise) 0 0 / 120px 60px; }
 #ticket .stampbox { display: none; }
+/* Print waits like any stamp that can't be pressed yet: dashed, in ink */
+.primary#print:disabled:not(.pressed)::before { border: 2px dashed var(--wait-edge); }
+
+/* ---------- spec 012: tonight in a line ----------
+   Tonight is written the way a deal is: one sentence on the ticket. What you type closes into underlined words at each
+   comma; the open end of the sentence is where the next one goes. Printed, the sittings wait at the top of the tape. */
+.homehead { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.homehead .textbtn { flex: none; margin-right: -12px; }
+.ticket.night .sentence { font-size: 1.3125rem; line-height: 1.5; }
+.ticket.night .sentence .lead { color: var(--ink); font-size: 1.25em; font-weight: 800; }
+.ticket.night .sentence .tok { font-size: 1.2em; }
+.nightin { font: inherit; font-size: 1.2em; font-weight: 700; line-height: 1.2; color: var(--ink); background: none; border: none; border-radius: 0; padding: 0 2px; margin: 0; max-width: 100%; min-width: 2ch; outline: none; caret-color: var(--deal); vertical-align: baseline; }
+.nightin::placeholder { color: color-mix(in srgb, var(--ink) 42%, transparent); font-weight: 500; }
+.nightin:focus-visible { outline: none; }
+.ticket.night .nightfit { padding-top: 12px; border-top: 1px solid var(--rule); font-size: 1.0625rem; color: var(--soft); }
+.nightfit b { font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 1.375rem; color: var(--ink); margin-right: 4px; }
+.nightname { flex: 1 1 220px; }
+.ticket.night .onedeal { align-self: flex-start; margin: -8px 0 -8px -12px; }
+/* the unprinted top of the tape: tonight's sittings, lengths where the times go, one faint ink but the next one */
+.tocome { display: flex; flex-direction: column; }
+.tocome h3 { margin: 0 0 4px; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 750; font-size: 1.1875rem; }
+.tocome h3 span { font-stretch: var(--wd-act); font-weight: 600; font-size: .9375rem; color: var(--soft); }
+.tocome ol { list-style: none; margin: 0; padding: 0; }
+.tocome li { display: grid; grid-template-columns: 5.25em 1fr; padding: 11px 0 10px; border-top: 1.5px dashed var(--edge-half); color: color-mix(in srgb, var(--ink) 50%, transparent); }
+.tocome li b { font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 600; font-size: 1.0625rem; line-height: 1.2; }
+.tocome li .nm { font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 750; font-size: 1.25rem; line-height: 1.15; }
+.tocome li em { display: block; font-style: normal; font-size: .9375rem; line-height: 1.35; margin-top: 2px; }
+.tocome li.next { color: var(--ink); }
+.tocome li.next em { color: var(--soft); }
+.tocome .perf { height: 10px; margin: 8px 0 -6px; background: var(--holes-x); }
 .stub.perf .hint { margin-top: 6px; }
 
 /* ---------- the room on paper ----------
@@ -1114,7 +1144,8 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   .ticket .stub, .ticket .stub.perf { padding: 26px 26px 22px 30px; justify-content: center; align-items: center; text-align: center; background: radial-gradient(circle, var(--edge) 1.5px, transparent 2px) 0 0 / 6px 10px repeat-y; }
   .ticket .stub.perf::before { top: -7px; left: -4px; clip-path: inset(50% 0 0 0); }
   .ticket.big .stub { position: relative; bottom: auto; background: radial-gradient(circle, var(--edge) 1.5px, transparent 2px) 0 0 / 6px 10px repeat-y, var(--card); }
-  .ticket .stub .primary#shake { font-size: 3.25rem; }
+  .ticket .stub .primary:is(#shake, #print) { font-size: 3.25rem; }
+  .ticket.night .sentence { font-size: 1.625rem; line-height: 1.5; }
   main:not(:has(> .runwrap)) { min-height: calc(100dvh - 60px); justify-content: center; padding-bottom: 96px; }
   /* above the stage, which is pulled up under it: the floating-wheel control up here has to take clicks */
   .deskhead { position: relative; z-index: 2; display: flex; align-items: baseline; gap: 14px; padding-top: 30px; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 1.25rem; line-height: 1; color: var(--soft); }
@@ -1375,7 +1406,7 @@ const TYPE_PHRASE = { writing: "writing", problems: "problems & code", exam: "ex
 const newBig = () => ({ on: false, type: null, gut: null, move: "", edited: false, pay: 15, namedAt: null });
 /* the big one is named exactly as typed (commas kept), cut to 80 characters counted as the core counts them */
 const bigTitle = () => [...String(deal.task).trim()].slice(0, 80).join("");
-function fresh() { nudged = false; deal = { act: "Reels", breakMin: 10, task: "Reading, BIO 180 ch. 7", focusMin: 8 }; big = newBig(); ledger = []; S = null; sheet = null; picker = null; toast = null; unseen = 0; studied = 0; fromCard = null; panel = null; lastRepay = null; quickOpen = false; }
+function fresh() { nudged = false; deal = { act: "Reels", breakMin: 10, task: "Reading, BIO 180 ch. 7", focusMin: 8 }; big = newBig(); ledger = []; S = null; sheet = null; picker = null; toast = null; unseen = 0; studied = 0; fromCard = null; panel = null; lastRepay = null; quickOpen = false; night = null; nightOn = false; nightPick = null; nightLoaded = false; }
 /* mirrors packages/core/src/session.ts. Spec 010: a deal is one sitting, exactly its ticket: the break you chose (if
    any), then one focus block. The next round is a fresh ticket: quick lengths step up one notch, long ones repeat,
    with the break between rounds (5 min, or a quarter of a long block) of the same activity. */
@@ -1417,7 +1448,8 @@ const cur = () => S.blocks[S.idx];
 const remaining = () => Math.max(0, S.startedAt + S.durMs - vnow);
 const minsLeft = () => Math.ceil(remaining() / 60000);
 /* the prototype tells one late-night story: its wall clock starts at 10:41pm */
-let DEMO_SHIFT = (() => { const d = new Date(); d.setHours(22, 41, 0, 0); return d.getTime() - Date.now(); })();
+const shiftTo = (h, m) => { const d = new Date(); d.setHours(h, m, 0, 0); return d.getTime() - Date.now(); };
+let DEMO_SHIFT = shiftTo(22, 41);
 function clockStr(ms) { const d = new Date((ms ?? Date.now()) + DEMO_SHIFT); return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }).replace(/\s?([AP])M/i, (m, a) => a.toLowerCase() + "m"); }
 function shortTask() { return deal.task.split(",")[0].toLowerCase(); }
 /* a block named the way a sentence says it: "reading" of "Reading, BIO 180 ch. 7" */
@@ -1480,13 +1512,18 @@ function stopNow() {
   if (S && remaining() <= 0) offerInstall();
   if (BE) BE.end();
   if (S) fileStop();
-  bankFocus(); S = null; sheet = null; render();
+  bankFocus(); S = null; sheet = null;
+  if (nightLeft().length) loadNight();
+  render();
 }
 /* spec 010: the next round, stamped from the done sheet. An ordinary new deal on the same task (or big one); the
    borrowed minutes come off its break, which the server works out again from the session it replaces. */
 function goAgain() {
   sendNotes();
-  const d0 = nextRound(S), { deal: d, forgiven } = repayDebt(d0, S.debt), taskId = S.taskId, card = taskId ? cardById(taskId) : null, move = S.firstMove;
+  /* spec 012: with tonight printed, the next round is its next sitting */
+  const nx = nightNext(), d0 = nx ? nightRound(S, nx) : nextRound(S), { deal: d, forgiven } = repayDebt(d0, S.debt);
+  const taskId = nx ? nx.taskId : S.taskId, card = taskId ? cardById(taskId) : null, move = nx ? nx.piece : S.firstMove;
+  if (nx) night.taken++;
   if (BE) { if (taskId) BE.startFromCard(taskId, d0); else BE.start(d0); }
   fileStop(forgiven); bankFocus();
   S = buildSession(d); S.justStarted = true; S.serial = String(412 + ledger.length).padStart(4, "0");
@@ -1825,10 +1862,154 @@ function closeWeek(msg, to) {
   nextFocus = to || "#view h1"; render();
   return key;
 }
+/* ---------- spec 012: tonight in a line ----------
+   Tonight is one sentence: the assignments typed with commas between, each closing into a size and a name you can
+   change. Printed, its sittings wait at the top of the tape and each deal takes the next one. Every sitting is an
+   ordinary deal; a sitting on a big one is that big one's next sitting. Demo only: kept in memory (spec 012 "Built for real"). */
+/* sizes on offer, as [sittings, minutes each]: the deal's quick lengths, then cut into sittings with a break between */
+const NIGHT_SIZES = [[1, 15], [1, 20], [1, 30], [1, 45], [2, 30], [2, 45], [3, 30], [3, 45]], NIGHT_MAX = 6;
+/* { items: [{ name, n, min, taskId, piece }], draft, printed, taken } */
+let night = null;
+/* tonight's ticket is on the home screen; which word's choices are open; the deal ticket holds the next sitting */
+let nightOn = false, nightPick = null, nightLoaded = false;
+const newNight = () => ({ items: [], draft: "", printed: false, taken: 0 });
+const sittingsOf = nt => nt ? nt.items.flatMap(it => Array.from({ length: it.n }, (_, k) => ({ name: it.name, min: it.min, taskId: it.taskId, piece: it.piece, k, of: it.n }))) : [];
+const nightLeft = () => night && night.printed ? sittingsOf(night).slice(night.taken) : [];
+const nightNext = () => nightLeft()[0] || null;
+const sizeText = it => it.n > 1 ? `${it.n} × ${it.min} min` : `${it.min} min`;
+const snapSize = m => NIGHT_SIZES.reduce((a, s) => Math.abs(s[0] * s[1] - m) < Math.abs(a[0] * a[1] - m) ? s : a);
+/* the night said in one line under the sentence: focus minutes, and when it ends with the breaks between sittings */
+function nightFit(list) {
+  if (!list.length) return "";
+  const focus = list.reduce((a, s) => a + s.min, 0), breaks = list.slice(0, -1).reduce((a, s) => a + breakBetween(s.min), 0);
+  return `<b>${hm(focus)}</b> of focus. Done around ${clockStr(Date.now() + (focus + breaks) * 60000)}.`;
+}
+/* names you already use: open big ones first (with their next piece), then today's deals on the tape */
+function knownNames() {
+  const out = [];
+  cards().forEach(c => { const pl = planOf(c.id), nxt = pl && pl.pieces ? pl.pieces.find(p => p.stampedAt == null) : null;
+    out.push({ name: c.title, taskId: c.id, min: nxt ? nxt.minutes : c.minutes, piece: nxt ? nxt.title : "" }); });
+  [...ledger].reverse().forEach(e => { if (e.kind === "deal" || e.kind === "done") { const nm = tailOf(String(e.text)); if (!out.some(o => o.name.toLowerCase() === nm.toLowerCase())) out.push({ name: nm }); } });
+  return out;
+}
+/* every typed word starts a word of the name ("orgo set 4" is Orgo problem set 4, "bio ch 7" is BIO 180 ch. 7) */
+const words = s => s.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, " ").split(/\s+/).filter(Boolean);
+const matchName = raw => { const w = words(raw); return w.length ? knownNames().find(k => { const kw = words(k.name); return w.every(x => kw.some(y => y.startsWith(x))); }) : null; };
+/* one closed item: a size at the end if there is one ("45m", "45 min", "1h", "1h30", "2h"), then the name. A bare number
+   is a size only when it is one ("45", "90"), so "orgo set 4" and "bio ch 7" keep their numbers. */
+const BARE = [15, 20, 30, 45, 60, 90, 120];
+function parseItem(raw) {
+  let s = raw.replace(/\s+/g, " ").trim(), mins = null;
+  const m = s.match(/\s(\d+(?:\.\d+)?)\s*(h|hr|hrs|hours?)\s*(\d+)?\s*(m|min|mins)?$/i) || s.match(/\s(\d+)\s*(m|min|mins|minutes)$/i) || s.match(/\s(\d+)$/);
+  if (m && (m[2] || BARE.includes(+m[1]))) { mins = /^h/i.test(m[2] || "") ? Math.round(parseFloat(m[1]) * 60 + (+m[3] || 0)) : +m[1]; s = s.slice(0, m.index).trim(); }
+  if (!s) return null;
+  const k = matchName(s), name = [...(k ? k.name : s)].slice(0, 80).join("");
+  const [n, min] = mins ? snapSize(mins) : snapSize(k && k.min ? k.min : 20);
+  return { name: k ? name : name.replace(/^./, c => c.toUpperCase()), n, min, taskId: k && k.taskId || null, piece: k && k.piece || "" };
+}
+function closeDraft(text) {
+  const parts = text.split(","), last = parts.pop();
+  parts.forEach(p => { const it = night.items.length < NIGHT_MAX && parseItem(p); if (it) night.items.push(it); });
+  night.draft = night.items.length < NIGHT_MAX ? last.replace(/^\s+/, "") : "";
+  return parts.length > 0;
+}
+/* the sentence: "Tonight, 2 × 30 min on History paper, 45 min of Orgo problem set 4, then 20 min of BIO 180 ch. 7." */
+function nightTicket() {
+  const its = night.items, p = nightPick, open = its.length < NIGHT_MAX;
+  /* each item holds together: "then" stays with its size, the comma or full stop with its name */
+  const typing = !!night.draft;
+  const phrase = (it, i) => `<span class="nowrap">${i && i === its.length - 1 && !typing ? "then " : ""}<button class="tok" data-nsize="${i}" aria-expanded="${!!p && p.i === i && p.kind === "size"}" aria-controls="night-picker" aria-label="${esc(sizeText(it))}, length, change">${N(esc(sizeText(it)))}</button> ${it.n > 1 ? "on" : "of"}</span> <span class="nowrap"><button class="tok" data-nname="${i}" aria-expanded="${!!p && p.i === i && p.kind === "name"}" aria-controls="night-picker" aria-label="${esc(it.name)}, change">${esc(it.name)}</button>${i < its.length - 1 || typing ? "," : "."}</span>`;
+  const body = its.map(phrase).join(" ");
+  const field = open ? `<label class="vh" for="nightin">Tonight</label><input class="nightin" id="nightin" value="${esc(night.draft)}" size="${Math.max(2, night.draft.length + 1)}" maxlength="120" autocomplete="off" enterkeyhint="done"${its.length ? "" : ` placeholder="history paper 1h, orgo set 4"`}>` : "";
+  const it = p ? its[p.i] : null;
+  const pk = !it ? "" : p.kind === "size"
+    ? `<div class="picker" id="night-picker" role="radiogroup" aria-label="Length of ${esc(it.name)}">${NIGHT_SIZES.filter(s => s[0] === 1).map(s => sizeChip(it, s)).join("")}<div class="longrow">${NIGHT_SIZES.filter(s => s[0] > 1).map(s => sizeChip(it, s)).join("")}</div></div>`
+    : `<div class="picker" id="night-picker"><label class="vh" for="nname">Name</label><input class="nightname" id="nname" value="${esc(it.name)}" maxlength="80" autocomplete="off" enterkeyhint="done"><button class="chip" id="nnamedone">Done</button><button class="textbtn" id="nout">Take it out</button></div>`;
+  const fit = nightFit(sittingsOf(night));
+  return `<div class="ticketwrap peek"><section class="ticket night" id="ticket" aria-label="Tonight">
+    <div class="body">
+      <div class="tickethead"><span class="serial">No. ${String(412 + ledger.length).padStart(4, "0")}<br>${new Date(Date.now() + (BE ? 0 : DEMO_SHIFT)).toLocaleDateString([], { weekday: "long" })}</span></div>
+      <p class="sentence"><span class="lead">Tonight,</span> ${body} ${field}</p>
+      ${pk}
+      ${fit ? `<p class="nightfit">${N(fit)}</p>` : ""}
+      <button class="textbtn onedeal" id="onedeal">Just one deal</button>
+    </div>
+    <div class="stub perf"><button class="primary" id="print"${its.length || parseItem(night.draft) ? "" : " disabled"}>Print</button></div>
+  </section></div>`;
+}
+const sizeChip = (it, s) => { const on = it.n === s[0] && it.min === s[1]; return `<button class="chip" role="radio" data-nsizeset="${s[0]}:${s[1]}" aria-checked="${on}">${on ? CHECK : ""}${N(sizeText({ n: s[0], min: s[1] }))}</button>`; };
+/* the next sitting goes on the deal ticket: a big one's as if loaded from its card, anything else as a plain deal */
+function loadNight() {
+  const s = nightNext(); nightLoaded = !!s; if (!s) return;
+  const c = s.taskId ? cardById(s.taskId) : null;
+  if (c) fromCard = { id: c.id, title: c.title, startWith: s.piece || c.startWith || "", minutes: s.min, comeback: false, prevFocus: fromCard ? fromCard.prevFocus : deal.focusMin };
+  else { if (fromCard) deal.focusMin = fromCard.prevFocus; fromCard = null; deal.task = s.name; }
+  deal.focusMin = s.min; big = newBig(); picker = null;
+}
+function printNight() {
+  if (night.draft.trim()) closeDraft(night.draft + ",");
+  if (!night.items.length) return;
+  night.printed = true; night.taken = 0; nightOn = false; nightPick = null; loadNight();
+  nextFocus = "#shake"; render(); say(`Tonight is on the tape: ${sittingsOf(night).length} sittings. ${nightNext().name} is on the ticket.`);
+}
+/* what's left goes back into the sentence */
+function reopenNight() {
+  const left = nightLeft(), items = [];
+  left.forEach(s => { const last = items[items.length - 1]; if (last && last.name === s.name && last.min === s.min && s.k > 0) last.n++; else items.push({ name: s.name, n: 1, min: s.min, taskId: s.taskId, piece: s.piece }); });
+  night = { ...newNight(), items };
+  if (nightLoaded && fromCard) { deal.focusMin = fromCard.prevFocus; fromCard = null; }
+  nightLoaded = false;
+}
+/* spec 012: the next round on the done sheet is tonight's next sitting, with the break between rounds */
+function nightRound(s, nx) {
+  const focus = s.blocks.find(b => b.type === "focus") || s.blocks[0], first = s.blocks[0], c = nx.taskId ? cardById(nx.taskId) : null;
+  return { act: first.type === "break" ? first.label : "Your pick", breakMin: breakBetween(focus.min - (focus.added || 0)), task: c ? c.title : nx.name, focusMin: nx.min };
+}
+function bindNight() {
+  const inp = $("#nightin");
+  if (inp) {
+    inp.oninput = () => {
+      if (inp.value.includes(",")) { closeDraft(inp.value); nextFocus = "#nightin"; render(); return; }
+      night.draft = inp.value; inp.size = Math.max(2, inp.value.length + 1);
+      const pr = $("#print"); if (pr) pr.disabled = !(night.items.length || parseItem(night.draft));
+    };
+    inp.onkeydown = e => {
+      if (e.key === "Enter") { e.preventDefault(); if (inp.value.trim()) { closeDraft(inp.value + ","); nextFocus = "#nightin"; render(); } else { const pr = $("#print"); if (pr && !pr.disabled) pr.focus(); } }
+      else if (e.key === "Backspace" && !inp.value && night.items.length) { e.preventDefault(); const it = night.items.pop(); night.draft = it.name; nightPick = null; nextFocus = "#nightin"; render(); }
+    };
+  }
+  document.querySelectorAll("[data-nsize]").forEach(b => b.onclick = () => { const i = +b.dataset.nsize; nightPick = nightPick && nightPick.i === i && nightPick.kind === "size" ? null : { i, kind: "size" }; render(); });
+  document.querySelectorAll("[data-nname]").forEach(b => b.onclick = () => { const i = +b.dataset.nname; nightPick = nightPick && nightPick.i === i && nightPick.kind === "name" ? null : { i, kind: "name" }; nextFocus = nightPick ? "#nname" : `[data-nname="${i}"]`; render(); });
+  document.querySelectorAll("[data-nsizeset]").forEach(b => b.onclick = () => { const it = night.items[nightPick.i], [n, m] = b.dataset.nsizeset.split(":").map(Number); it.n = n; it.min = m; nextFocus = `[data-nsize="${nightPick.i}"]`; nightPick = null; render(); });
+  const nn = $("#nname"); if (nn) {
+    const done = () => { const it = night.items[nightPick.i], v = nn.value.trim(); if (v && v !== it.name) { const k = matchName(v); it.name = [...(k ? k.name : v)].slice(0, 80).join(""); it.taskId = k && k.taskId || null; it.piece = k && k.piece || ""; } nextFocus = `[data-nname="${nightPick.i}"]`; nightPick = null; render(); };
+    nn.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); done(); } };
+    on("#nnamedone", done);
+  }
+  on("#nout", () => { const it = night.items.splice(nightPick.i, 1)[0]; nightPick = null; nextFocus = "#nightin"; render(); say(`${it.name} is out of tonight.`); });
+  on("#print", () => printNight());
+  on("#onedeal", () => { nightOn = false; nightPick = null; nextFocus = "#plannight"; render(); });
+  on("#plannight", () => {
+    if (night && night.printed && nightLeft().length) reopenNight(); else if (!night || night.printed) night = newNight();
+    nightOn = true; nightPick = null; nextFocus = "#nightin"; render();
+  });
+}
+const nightLink = () => nightOn || S ? "" : `<button class="textbtn" id="plannight">${nightLeft().length ? "Change tonight" : "Plan tonight"}</button>`;
+/* the unprinted top of the tape */
+function toComeView() {
+  const left = nightLeft(); if (!left.length) return "";
+  const total = left.reduce((a, s) => a + s.min, 0);
+  return `<section class="tocome" aria-labelledby="tocomeh"><h3 id="tocomeh">Still to come <span>${N(hm(total))}</span></h3><ol>${left.map((s, i) => {
+    const sub = s.piece && s.k === 0 ? s.piece : s.of > 1 ? `${s.k + 1} of ${s.of}` : "";
+    return `<li${i === 0 ? ` class="next"` : ""}><b>${N(`${s.min} min`)}</b><span><span class="nm">${esc(s.name)}</span>${sub ? `<em>${N(esc(sub))}</em>` : ""}</span></li>`; }).join("")}</ol><div class="perf" aria-hidden="true"></div></section>`;
+}
 function startView() {
-  const door = !fromCard && shownCards().length > 0, folded = door && !quickOpen;
+  if (nightOn) return `<h1 class="home vh">Tonight</h1>${nightTicket()}
+  <section class="rows anchor" aria-label="Your room">${presence()}</section>`;
+  const planned = nightLeft().length > 0;
+  const door = !fromCard && !planned && shownCards().length > 0, folded = door && !quickOpen;
   const tk = door ? `${quickDoor(!folded)}<div id="quickdeal"${folded ? " hidden" : ""}>${ticket(true)}</div>` : ticket(true);
-  return `<h1 class="home vh">Make a deal</h1>${weekView()}${cardsView()}${tk}
+  return `<div class="homehead"><h1 class="home vh">Make a deal</h1>${nightLink()}</div>${weekView()}${planned ? "" : cardsView()}${tk}
   ${deal.act && !folded ? `<button class="textbtn skip" id="skipbreak">Skip ${esc(deal.act)}, start ${esc(fromCard ? fromCard.title : big.on ? bigTitle() : shortTask())} now</button>` : ""}
   <section class="rows${folded ? "" : " anchor"}" aria-label="Your room">${presence()}</section>`;
 }
@@ -1855,7 +2036,8 @@ function runningView() {
   const f = face(r, m);
   /* while a sheet is open it does the talking: the dial keeps only its number and ring */
   const quiet = !!(sheet && tab === "now");
-  const then = nxt ? `<span class="swatch ${nxt.type}" aria-hidden="true"></span>Then ${esc(longName(nxt))} for ${nxt.min} min.` : "";
+  /* spec 012: with tonight printed, the next sitting is said the way the tape says it */
+  const nn = nightNext(), then = nxt ? `<span class="swatch ${nxt.type}" aria-hidden="true"></span>Then ${esc(longName(nxt))} for ${nxt.min} min.` : nn ? `Then ${esc(nn.name)}${nn.of > 1 ? `, ${nn.k + 1} of ${nn.of}` : ""}.` : "";
   /* the next step always sits under the dial, in every state, so the dial never moves */
   const note = quiet ? `<p class="note"></p>` : toast ? `<p class="note go" role="status">${N(esc(toast))}</p>` : `<p class="note">${N(then)}</p>`;
   /* on focus blocks of 45+, a reserved slot under the next step: silent, 3 minutes at the midpoint, then empty again */
@@ -1961,7 +2143,7 @@ function sheetBody() {
           <div class="chips">${DONE_CHOICES.map(([k]) => doneChip(k, n.done === (k === "yes"))).join("")}</div>
         </div>
       </div>` : "";
-    const { deal: d, repaid } = repayDebt(nextRound(S), S.debt), line = dealLine(d);
+    const nx = nightNext(), { deal: d, repaid } = repayDebt(nx ? nightRound(S, nx) : nextRound(S), S.debt), line = dealLine(d);
     const owed = repaid ? `${repaid} borrowed ${repaid === 1 ? "minute comes" : "minutes come"} off this break.` : "";
     const more = canBonus() && !movedOn() ? `<button class="textbtn" id="more10">${N("Keep going for 10 more minutes")}</button>` : "";
     body = `<span class="grab" aria-hidden="true"></span>
@@ -2595,7 +2777,8 @@ function ledgerView() {
   const deals = dealCount();
   const any = ledger.length || studied;
   return `<div class="tapehead"><h2 id="tapeh" tabindex="-1">Today's deals</h2><span class="tapeval" id="tapeval"></span></div>
-  ${!any ? `<p class="soft">Nothing yet. Every deal you make lands here, with its terms.</p>` : ""}
+  ${toComeView()}
+  ${!any && !nightLeft().length ? `<p class="soft">Nothing yet. Every deal you make lands here, with its terms.</p>` : ""}
   ${ledger.length || S ? `<ul class="stubs" aria-label="Deals, newest first">${S ? `<li class="stubcard live"><span class="t"><b>now</b><span class="stamp plain">Running</span></span><span class="what"><span class="row"><span class="title">${esc(title(cur().label))}</span></span><em>${S.serial ? `<span class="num">No. ${S.serial}</span>, ` : ""}${cur().type === "focus" ? "focus" : "your break"}</em></span></li>` : ""}${ledger.map((e, i) => `<li class="stubcard${freshStub(e)}">${stubInner(e, i)}</li>`).reverse().join("")}</ul>` : ""}
   ${any ? `<dl class="totals">
     <div class="go"><dt>Studied</dt><dd>${N(studied)} min</dd></div>
@@ -2668,7 +2851,7 @@ function bind() {
   document.querySelectorAll("[data-act]").forEach(b => b.onclick = () => { deal.act = b.dataset.act || null; if (!arrowing) { picker = null; nextFocus = '[data-pick="act"]'; } render(); });
   document.querySelectorAll("[data-pick]").forEach(b => b.onclick = () => { picker = picker === b.dataset.pick ? null : b.dataset.pick; render(); const t = $("#task"); if (t) t.focus(); });
   document.querySelectorAll("[data-set]").forEach(b => b.onclick = () => { const [k, n] = b.dataset.set.split(":"); deal[k] = +n; if (!arrowing) { picker = null; nextFocus = `[data-pick="${k === "focusMin" ? "focus" : "break"}"]`; } render(); });
-  const task = $("#task"); if (task) { task.oninput = e => { deal.task = e.target.value || "Studying"; }; task.onkeydown = e => { if (e.key === "Enter") { picker = null; render(); } }; }
+  const task = $("#task"); if (task) { task.oninput = e => { deal.task = e.target.value || "Studying"; nightLoaded = false; }; task.onkeydown = e => { if (e.key === "Enter") { picker = null; render(); } }; }
   on("#taskdone", () => { picker = null; render(); });
   on("#skipbreak", () => { deal.act = null; picker = null; render(); const s = $("#shake"); if (s) { s.focus(); s.click(); } });
   /* spec 008: the big one. Ticking the box keeps the time of the first tick (server clock in live mode). */
@@ -2699,6 +2882,7 @@ function bind() {
   document.querySelectorAll("[data-card]").forEach(b => b.onclick = () => { const c = cardById(b.dataset.card); if (c) startCard(c, { act: null, breakMin: deal.breakMin, task: c.title, focusMin: c.minutes }); });
   document.querySelectorAll("[data-menu]").forEach(b => b.onclick = () => openPanel({ kind: "menu", id: b.dataset.menu }, `[data-menu="${b.dataset.menu}"]`));
   on("#allbig", () => openList());
+  bindNight();
   /* spec 008 weekly check-in: an answer is sent once; the x hides the question until next week (this device only) */
   document.querySelectorAll("[data-wk]").forEach(b => b.onclick = () => { const k = closeWeek("Thanks."); if (BE && k) BE.answerCheckIn(k, b.dataset.wk); });
   on("#wkskip", () => { const k = closeWeek("Skipped until next week."); if (k) { try { localStorage.setItem(SKIP_KEY, k); } catch (e) {} } });
@@ -2707,7 +2891,7 @@ function bind() {
   /* R30: the folded Quick Deal opens in place and stays open for this visit; focus goes to its first part */
   on("#quickopen", () => { quickOpen = !quickOpen; if (!quickOpen) picker = null; nextFocus = "#quickopen"; render(); });
   /* the card goes back above the ticket; focus returns to its ⋯, where "Take a break first" was */
-  on("#notcard", () => { const id = fromCard.id; deal.focusMin = fromCard.prevFocus; fromCard = null; picker = null; nextFocus = `[data-menu="${id}"]`; render(); say("Back to a new deal."); });
+  on("#notcard", () => { nightLoaded = false; const id = fromCard.id; deal.focusMin = fromCard.prevFocus; fromCard = null; picker = null; nextFocus = `[data-menu="${id}"]`; render(); say("Back to a new deal."); });
   on("#keepon", () => {
     wakeOn = !wakeOn; try { localStorage.setItem(WAKE_KEY, wakeOn ? "on" : "off"); } catch (e) {}
     const k = $("#keepon"); k.setAttribute("aria-checked", wakeOn); syncWake();
@@ -2753,6 +2937,8 @@ function bind() {
       /* the deal itself goes on the tape (signed in, the server files it) */
       file(stubOf({ kind: "deal", blockLabel: fc ? fc.title : bg ? bigTitle() : d.task, minutes: d.focusMin, taskId: S.taskId }));
       if (bg) big = newBig();
+      /* spec 012: the sitting on the ticket is taken; the next one waits on the tape */
+      if (nightLoaded) { night.taken++; nightLoaded = false; }
       const first = S.blocks[0];
       toast = first.type === "break" ? `Deal. ${fc ? fc.title : cap(shortTask())} starts at ${clockStr(Date.now() + first.min * 60000)}.` : "Deal. Go.";
       setTimeout(() => { toast = null; if (S) S.justStarted = false; lastSig = ""; }, 3500);
@@ -3135,7 +3321,7 @@ function demoPlanData() {
 }
 function fromHash() {
   const h = location.hash.slice(1);
-  fresh(); mode = "start"; setTab("now"); weekAsk = null; bigOneCards = []; demoAside = []; wakeOn = readWake(); pushAsk = null; demoPlans = demoPlanData();
+  fresh(); if (!BE) DEMO_SHIFT = shiftTo(22, 41); mode = "start"; setTab("now"); weekAsk = null; bigOneCards = []; demoAside = []; wakeOn = readWake(); pushAsk = null; demoPlans = demoPlanData();
   let after = null;
   const run = (left, ask) => { S = buildSession(deal); S.serial = "0412"; S.startedAt = vnow - (S.durMs - left); S.askCount = ask || 0; };
   if (h === "intercept") mode = "intercept";
@@ -3218,6 +3404,26 @@ function fromHash() {
   else if (h === "checkin" || h === "checkin-cards") {
     weekAsk = { key: "2026-11-08" };
     if (h === "checkin-cards") bigOneCards = demoCards(DEMO_CARDS.slice(0, 2));
+  }
+  /* spec 012, tonight in a line: an evening at 7:52pm with two big ones open and a reading deal already done.
+     The ticket empty, then mid-line, then whole, then a length's choices open; printed; its first sitting running; done */
+  else if (h.startsWith("tonight")) {
+    DEMO_SHIFT = shiftTo(19, 52);
+    bigOneCards = demoCards(DEMO_CARDS.slice(0, 2));
+    ledger = [stubOf({ kind: "freebie", blockLabel: "Reels", minutes: 5 }, "7:18pm"), stubOf({ kind: "deal", blockLabel: "Reading, BIO 180 ch. 7", minutes: 12 }, "7:19pm"), stubOf({ kind: "done", blockLabel: "Reading, BIO 180 ch. 7", minutes: 12 }, "7:31pm")];
+    studied = 12; night = newNight();
+    if (h !== "tonight-empty") closeDraft(h === "tonight-typing" ? "history paper 1h, orgo set 4, bio ch 7" : "history paper 1h, orgo set 4, bio ch 7,");
+    if (h === "tonight-size") nightPick = { i: 0, kind: "size" };
+    if (["tonight", "tonight-running", "tonight-done"].includes(h)) {
+      night.printed = true; loadNight();
+      if (h !== "tonight") {
+        S = buildSession({ act: null, breakMin: 10, task: "History paper", focusMin: 30 }); S.serial = "0415"; S.taskId = "paper"; S.firstMove = "Claim for paragraph 2";
+        night.taken = 1; nightLoaded = false; deal.focusMin = fromCard ? fromCard.prevFocus : deal.focusMin; fromCard = null;
+        S.startedAt = h === "tonight-done" ? vnow - S.durMs : vnow - 8 * 60000;
+        ledger.push(stubOf({ kind: "deal", blockLabel: "History paper", minutes: 30, taskId: "paper" }, "7:53pm"));
+        if (h === "tonight-done") sheet = { kind: "done", focusMe: true, notes: newNotes() };
+      }
+    } else nightOn = true;
   }
   else if (h === "ledger") { seedLedger(); requestAnimationFrame(() => requestAnimationFrame(() => { const t = $("#side-ledger"); if (t) t.scrollIntoView({ block: "start" }); })); }
   else if (h === "room") setTab("room");
