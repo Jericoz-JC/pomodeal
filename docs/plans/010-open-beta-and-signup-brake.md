@@ -41,7 +41,7 @@
 - Temporary (deleted in Step 6): `convex/debugIdentity.ts`
 
 **Interfaces:**
-- Produces: `hashEmail(email: string): Promise<string>` (64-char lowercase hex). `emailHashOf(identity: UserIdentity)` (type from `convex/server`: Promise<string | null>`: the hash when `identity.email` is set, else null (verification is checked by callers).
+- Produces: `hashEmail(email: string): Promise<string>` (64-char lowercase hex). `emailHashOf(identity: UserIdentity): Promise<string | null>` (`UserIdentity` from `convex/server`): the hash when `identity.email` is set, else null (verification is checked by callers).
 
 - [ ] **Step 1: Write the failing tests**
 
