@@ -8,7 +8,7 @@ Changes from the original thesis: added **Phase 0** (concepts and spikes before 
 
 **Since Nov 9, merged:** ledger fix (PR #9, ADR 0006), one sitting per deal (PR #10, spec 010), the visual overhaul and design council (PR #11, spec 011), dark mode with the lamp off (PR #12, spec 013).
 
-**In review:** tonight in a line (spec 012) and the desk overhaul (spec 014), one PR. The planner runs in the screens with tonight kept in the open page; its storage (`nights` table, `nights.print`, `nights.tonight`, `fromNight` on the two start mutations) is the next backend step, in spec 012's "Building it for real". After that: the big-one cards screen in the paper language (the most-named gap in spec 014's benchmarks).
+**In review:** tonight in a line (spec 012) and the desk overhaul (spec 014), one PR. The planner runs in the screens with tonight kept in the open page; its storage (`nights` table, `nights.print`, `nights.tonight`, `fromNight` on the two start mutations) is the next backend step, in spec 012's "Building it for real". The big-one cards screen in the paper language is spec 015, the standing ticket (in review).
 
 *The rest of this section is as of Nov 9.*
 
