@@ -22,6 +22,20 @@ Who can see, in every table: the signed-in student sees their own rows through t
 | inviteAllowance | How many invites they may still make | Limit invite growth | The student, Chris | While the account exists | Chris on request |
 | joinedAt | When they joined | Ordering and support | Chris | While the account exists | Chris on request |
 | lastRepay | borrow or trade, the last repayment pick (spec 008) | Pre-select it on the next ask (ADR 0005) | The student, Chris | While the account exists | Chris on request |
+| emailHash | SHA-256 of the sign-in email (spec 010), never the address itself | Match the account when WorkOS moves from staging to production, where the sign-in identity changes | Chris | While the account exists | Chris on request |
+
+### waitlist
+
+Spec 010. Someone who signs in while sign-ups are closed and has no invite.
+
+| Field | What it holds | Why | Who can see | Retention | Deleted by |
+| --- | --- | --- | --- | --- | --- |
+| tokenIdentifier | The WorkOS sign-in identity string | Count who is waiting and let them in when sign-ups reopen | Chris (as a count on the admin screen) | Until they join | Joining deletes it; Chris on request |
+| firstSeenAt | When they first arrived | Ordering and support | Chris | Until they join | Joining deletes it; Chris on request |
+
+### settings
+
+Spec 010. One row holding the sign-up mode, the brake's limits and when it last paused. No personal data.
 
 ### invites
 

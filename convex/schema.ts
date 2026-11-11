@@ -67,9 +67,34 @@ export default defineSchema({
     inviteAllowance: v.number(),
     joinedAt: v.number(),
     lastRepay: v.optional(v.union(v.literal("borrow"), v.literal("trade"))), // ADR 0005 pre-selection
+    // Spec 010: SHA-256 of the sign-in email, to carry the account across WorkOS environments. Never the address.
+    emailHash: v.optional(v.string()),
   }).index("by_tokenIdentifier", ["tokenIdentifier"])
     // who joined on a ticket, for the inviter's "Maya joined" line
-    .index("by_inviteId", ["inviteId"]),
+    .index("by_inviteId", ["inviteId"])
+    .index("by_emailHash", ["emailHash"])
+    .index("by_joinedAt", ["joinedAt"])
+    .index("by_role", ["role"]),
+
+  // Spec 010: sign-up mode and the brake's limits. One row per key; only "beta" today.
+  settings: defineTable({
+    key: v.literal("beta"),
+    signups: v.union(v.literal("open"), v.literal("inviteOnly")),
+    memberCap: v.number(),
+    dayLimit: v.number(),
+    windowStart: v.optional(v.number()),
+    paused: v.optional(v.object({
+      at: v.number(),
+      reason: v.union(v.literal("dayLimit"), v.literal("memberCap"), v.literal("manual")),
+      count: v.number(),
+    })),
+  }).index("by_key", ["key"]),
+
+  // Spec 010: signed-in people who arrived while sign-ups were closed. Deleted when they join.
+  waitlist: defineTable({
+    tokenIdentifier: v.string(),
+    firstSeenAt: v.number(),
+  }).index("by_tokenIdentifier", ["tokenIdentifier"]),
 
   // Invite tickets. createdBy is null for founder invites made from the CLI.
   invites: defineTable({
@@ -93,7 +118,8 @@ export default defineSchema({
     notedIdx: v.optional(v.number()), // last focus block whose block-end notes were handled
   })
     .index("by_userId_and_status", ["userId", "status"])
-    .index("by_taskId", ["taskId"]),
+    .index("by_taskId", ["taskId"])
+    .index("by_createdAt", ["createdAt"]), // spec 010: members active in the last 7 days
 
   ledger: defineTable({
     userId: v.id("users"),
