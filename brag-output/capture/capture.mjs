@@ -12,8 +12,8 @@ import { CLIPS } from "./clips.mjs";
 const here = dirname(fileURLToPath(import.meta.url)), repo = resolve(here, "../..");
 const { chromium } = createRequire(import.meta.url)("playwright");
 const want = process.argv[2] || "all", SHEET = process.argv.includes("--sheet");
-const FPS = 60, OUT = resolve(here, "../composition/assets/clips"), SHEETS = resolve(here, "sheets");
-mkdirSync(OUT, { recursive: true }); mkdirSync(SHEETS, { recursive: true });
+const FPS = 60, OUT = name => resolve(here, name.startsWith("desk") ? "../desk-ad/assets/clips" : "../phone-ad/assets/clips"), SHEETS = resolve(here, "sheets");
+mkdirSync(SHEETS, { recursive: true });
 
 // the prototype has no charset tag: serve it as UTF-8 so its "×" and quotes come through
 const TYPES = { ".html": "text/html; charset=utf-8", ".js": "text/javascript", ".svg": "image/svg+xml", ".png": "image/png", ".css": "text/css" };
@@ -77,7 +77,7 @@ async function record(browser, clip) {
 
   const total = Math.round(clip.dur * FPS / 1000), every = SHEET ? 15 : 1;
   const tmp = join(SHEETS, `.${clip.name}`); rmSync(tmp, { recursive: true, force: true }); mkdirSync(tmp, { recursive: true });
-  const file = join(OUT, `${clip.name}.mp4`);
+  mkdirSync(OUT(clip.name), { recursive: true }); const file = join(OUT(clip.name), `${clip.name}.mp4`);
   const ff = SHEET ? null : spawn("ffmpeg", ["-loglevel", "error", "-y", "-f", "image2pipe", "-framerate", String(FPS), "-c:v", "png", "-i", "-",
     "-vf", "scale=trunc(iw/2)*2:trunc(ih/2)*2", "-c:v", "libx264", "-preset", "slow", "-crf", "8", "-pix_fmt", "yuv420p", "-g", "30", "-movflags", "+faststart", file], { stdio: ["pipe", "inherit", "inherit"] });
   let si = 0, shots = 0;
@@ -90,7 +90,7 @@ async function record(browser, clip) {
       if (cur.from.held) await page.mouse.move(cur.x, cur.y);
       if (k >= 1 && !cur.from.held) cur.from = null;
     }
-    cur.on += ((cur.show ? 1 : 0) - cur.on) * .3;
+    cur.on += ((cur.show && !clip.touch ? 1 : 0) - cur.on) * .3; // no finger drawn on the phone: the app's own stamps and sheets show each press
     await page.evaluate(([dt, x, y, on, down]) => {
       __advance(dt);
       const c = document.getElementById("__cur"); if (c) { c.style.transform = `translate(${x}px, ${y}px) scale(${down ? .8 : 1})`; c.style.opacity = on.toFixed(3); }
