@@ -96,6 +96,25 @@
   --sheet: #181E1B; --track-ink: 8%; --tape: var(--card); --scrim: rgba(4, 6, 5, .62); --hi: rgba(255, 255, 255, .05); --lift: rgba(0, 0, 0, .5);
   --deal: #6FD39F; --on-deal: #0F1A14; --deal-tint: rgba(111, 211, 159, .08); --break-base: #A7B3AA; --break-stripe: rgba(24, 32, 28, .42); --wait: color-mix(in srgb, var(--ink) 60%, transparent); --wait-edge: color-mix(in srgb, var(--ink) 60%, transparent); --sel: #23352B; --sel-card: #2A3E33; --gone: #E0A08C; --deal-ink: #6FD39F; color-scheme: dark;
 }
+/* spec 011 (Chris): at night the desk goes black but the paper stays paper: tickets, sheets, the tape and the cards are
+   pale stock with dark ink, so the green is the same wet ink in both themes */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) :is(.ticket, .sheet, .tape, .bigones, .people, .weekask) { --card: #D7DDD3; --stub: #C9D0C5; --chip: #C3CBBE; --sheet: #CDD4C9; --tape: #DFE4DB; --ink: #161B18; --soft: #46504A;
+    --rule: #A8B2A5; --edge: #5E6961; --edge-half: rgba(94, 105, 97, .55); --hi: transparent; --deal: #0E7447; --deal-ink: #0B5C38; --on-deal: #FFFFFF;
+    --deal-tint: rgba(14, 116, 71, .07); --sel: #C2D3C5; --sel-card: #C9DACD; --gone: #84402E; --break-base: #5E6B62; --break-stripe: rgba(251, 252, 249, .30);
+    --wait: rgba(22, 27, 24, .58); --wait-edge: rgba(22, 27, 24, .58); --track-ink: 16%; --behind: var(--card);
+    --holes-x: radial-gradient(circle, #5E6961 1.5px, transparent 2px) 0 50% / 10px 6px repeat-x;
+    --holes-y: radial-gradient(circle, #5E6961 1.5px, transparent 2px) 50% 0 / 6px 10px repeat-y;
+    color: var(--ink); color-scheme: light; }
+}
+:root[data-theme="dark"] :is(.ticket, .sheet, .tape, .bigones, .people, .weekask) { --card: #D7DDD3; --stub: #C9D0C5; --chip: #C3CBBE; --sheet: #CDD4C9; --tape: #DFE4DB; --ink: #161B18; --soft: #46504A;
+    --rule: #A8B2A5; --edge: #5E6961; --edge-half: rgba(94, 105, 97, .55); --hi: transparent; --deal: #0E7447; --deal-ink: #0B5C38; --on-deal: #FFFFFF;
+    --deal-tint: rgba(14, 116, 71, .07); --sel: #C2D3C5; --sel-card: #C9DACD; --gone: #84402E; --break-base: #5E6B62; --break-stripe: rgba(251, 252, 249, .30);
+    --wait: rgba(22, 27, 24, .58); --wait-edge: rgba(22, 27, 24, .58); --track-ink: 16%; --behind: var(--card);
+    --holes-x: radial-gradient(circle, #5E6961 1.5px, transparent 2px) 0 50% / 10px 6px repeat-x;
+    --holes-y: radial-gradient(circle, #5E6961 1.5px, transparent 2px) 50% 0 / 6px 10px repeat-y;
+    color: var(--ink); color-scheme: light; }
+.sheet { --behind: var(--sheet); }
 @property --p { syntax: "<number>"; inherits: true; initial-value: 1; }
 
 html, body { height: 100%; }
@@ -124,7 +143,7 @@ body.live .proto { display: none; }
 .deskhead { display: none; }
 main { flex: 1; display: flex; flex-direction: column; gap: 20px; padding-block: 24px 26px; min-width: 0; }
 /* a phone screen ends on the top edge of the tape: the rest of it is below the fold */
-.desk > main { flex: none; }
+.desk > main { flex: none; min-height: calc(100svh - 16px); }
 .tapeside { flex: none; margin-bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
 h1, h2 { font-family: var(--font-head); margin: 0; text-wrap: balance; }
 h1 { font-size: 2.125rem; line-height: 1.02; font-weight: 800; font-stretch: var(--wd-display); letter-spacing: -0.005em; }
@@ -233,6 +252,9 @@ p { margin: 0; }
 :is([aria-pressed="true"], [aria-checked="true"]) > .cbox { border: 3px double var(--deal); background: var(--sel); }
 :is([aria-pressed="true"], [aria-checked="true"]) > .cbox svg { visibility: visible; }
 .bigchip[aria-pressed="true"] { color: var(--deal); }
+/* spec 011 (Chris): off the ticket, a quiet line under it */
+.ticketwrap + .bigchip { align-self: center; margin: -6px auto -10px; font-family: var(--font-body); font-stretch: normal; font-weight: 400; font-size: 1rem; color: var(--soft); }
+.ticketwrap + .bigchip .cbox { width: 18px; height: 18px; }
 /* both rows are one tap and skippable; nothing is picked until you pick it. They read as the rest of the sentence:
    "About 2h", "Mostly writing". The connecting word recedes like the sentence's own. */
 .phrases { display: flex; flex-direction: column; gap: 2px; margin-block: -6px -2px; }
@@ -565,6 +587,8 @@ html:has(.ticket.big) { scroll-padding-bottom: 260px; }
    Pressing the ticket is pressing the stamp: it lifts, slams down, inks, and the ticket and sheet take the hit. */
 .sheet h2.you { align-self: flex-end; max-width: 84%; font-family: var(--font-body); font-stretch: normal; font-weight: 400; font-size: 1.0625rem; line-height: 1.35; color: var(--soft); text-align: right; text-wrap: balance; }
 .sheet h2.you .num { font: 480 1.04em var(--font-head); font-stretch: var(--wd-act); }
+/* benchmark r5: the ask is not echoed back on screen (you just made it); it stays as the sheet's heading for screen readers */
+.sheet h2.you { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .answer { display: flex; align-items: center; gap: 14px; margin-bottom: 2px; }
 .voice { flex: none; width: 60px; height: 60px; overflow: visible; }
 .voice .bed { fill: none; stroke: color-mix(in srgb, var(--ink) 22%, var(--sheet)); stroke-width: 12; }
@@ -582,6 +606,8 @@ html:has(.ticket.big) { scroll-padding-bottom: 260px; }
 .terms .term:not(:first-child)::before { border-top-left-radius: 0; }
 .terms .term:not(:last-child)::before { border-bottom-left-radius: 0; }
 .terms .term + .term::after { content: ""; position: absolute; left: 0; right: 3px; top: -3px; height: 6px; background: var(--holes-x); pointer-events: none; }
+.terms .term:first-child:not(.stamped) .pad .stamp { background: var(--deal); color: var(--card); }
+.terms .term:first-child:not(.stamped) .pad .stamp::before { inset: 3px; border: 2.5px double currentColor; border-radius: 5px; }
 .terms .term:nth-child(1) .pad .stamp { --tilt: -5deg; } .terms .term:nth-child(2) .pad .stamp { --tilt: 3deg; translate: 2px -3px; } .terms .term:nth-child(3) .pad .stamp { --tilt: -2deg; }
 /* the outline follows the paper's shape, holes and all: four 1 px shadows on the group, then the paper's lift */
 .terms { filter: drop-shadow(1px 0 0 var(--edge)) drop-shadow(-1px 0 0 var(--edge)) drop-shadow(0 1px 0 var(--edge)) drop-shadow(0 -1px 0 var(--edge)) drop-shadow(0 8px 12px var(--lift)); }
@@ -689,7 +715,7 @@ button.term:focus-visible { outline-offset: 3px; }
 .fill.break .arc { stroke: url(#brk-hatch); }
 #brk-hatch rect { fill: var(--break-base); } #brk-hatch path { stroke: var(--break-stripe); stroke-width: .9; }
 .dial .edge { border-radius: 0; transform: rotate(calc(var(--p) * 1turn)); }
-.dial .edge::before { content: ""; position: absolute; left: 50%; top: 9.25%; width: 5.4cqw; height: 5.4cqw; min-width: 14px; min-height: 14px; transform: translate(-50%, -50%); border-radius: 50%; background: var(--ink); box-shadow: 0 0 0 .9cqw var(--behind), 0 1px 3px 1cqw var(--lift); }
+.dial .edge::before { content: ""; position: absolute; left: 50%; top: 9.25%; width: 3.2cqw; height: 5.4cqw; min-width: 8px; min-height: 14px; transform: translate(-50%, -50%); border-radius: 4px; background: var(--behind); box-shadow: 0 0 0 .9cqw var(--behind), 0 1px 3px 1cqw var(--lift); }
 .dial.sweep { animation: sweep .7s ease-out; }
 /* the running block is the ticket you stamped: its serial and stamp at the head, the clock printed on it as its seal,
    and what comes next on the stub under the perforation */
@@ -719,7 +745,7 @@ main .runticket .scale :is(.mn, .mj) { display: none; }
 .dial .face { inset: 20%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
 .face .big { font-family: var(--font-head); font-size: 150px; font-size: 46cqw; font-weight: 800; font-stretch: var(--wd-display); line-height: .9; }
 .face .big.mmss { font-size: 99px; font-size: 30cqw; }
-.face .unit { font-size: .9375rem; color: var(--soft); }
+.face .unit { font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 600; font-size: 1rem; color: var(--soft); }
 .now { display: flex; flex-direction: column; gap: 4px; }
 .nowhead { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 36px; }
 .sub { font-size: 1.0625rem; color: var(--ink); margin-top: 4px; text-wrap: balance; }
@@ -1532,7 +1558,7 @@ function syncVoice() {
   a.style.strokeDasharray = g.now; v.querySelector(".kn").setAttribute("transform", `rotate(${g.at})`);
   const m = v.querySelector(".more"); m.style.strokeDasharray = g.more; m.setAttribute("transform", `rotate(${-90 + +g.at})`);
 }
-const clockAnswers = (html, id) => `<div class="answer">${VOICE_SLOT}<p class="says" id="${id}" tabindex="-1">${N(html)}</p></div>`;
+const clockAnswers = (html, id) => `<div class="answer"><p class="says" id="${id}" tabindex="-1">${N(html)}</p></div>`;
 const clockSays = (html, id) => `<div class="clockline tick">${clockMark()}<p class="bubble"${id ? ` id="${id}" tabindex="-1"` : ""}>${N(html)}</p></div>`;
 const CHEV = `<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 5l5 5-5 5"/></svg>`;
 /* a phone with a tap on each side: the push, drawn as what it feels like */
@@ -1580,7 +1606,7 @@ function face(r, m) {
   if (r <= 0) return { big: "0", cls: "", unit: `${title(cur().label).split(" ")[0]} is up` };
   if (r <= 30000) { const s = Math.ceil(r / 1000); return { big: String(s), cls: "", unit: s === 1 ? "second left" : "seconds left" }; }
   if (r <= headsUpMs()) return { big: String(m), cls: "", unit: "min to wrap up" };
-  return { big: String(m), cls: "", unit: "" };
+  return { big: String(m), cls: "", unit: "min" };
 }
 
 const ROOM = [
@@ -1721,13 +1747,12 @@ function ticket(peek) {
       <div class="tickethead"><span class="serial">No. ${serial}</span>${STAMPBOX}</div>
       <p class="sentence">${sentence}</p>
       ${pk}
-      ${bigChip}
       ${bigRows}
     </div>
     <div class="stub perf">
       <button class="primary" id="shake">Deal</button>
     </div>
-  </section></div>`;
+  </section></div>${bigChip}`;
 }
 /* a ledger stub: the same torn ticket everywhere a deal is shown after the fact */
 const TILTS = [-2, 1.5, -1, 2.5, -3, 1];
@@ -1844,7 +1869,7 @@ function runningView() {
   const f = face(r, m);
   /* while a sheet is open it does the talking: the dial keeps only its number and ring */
   const quiet = !!(sheet && tab === "now");
-  const then = nxt ? `<span class="swatch ${nxt.type}" aria-hidden="true"></span>Then ${esc(longName(nxt))} for ${nxt.min} min.` : "Then you're done.";
+  const then = nxt ? `<span class="swatch ${nxt.type}" aria-hidden="true"></span>Then ${esc(longName(nxt))} for ${nxt.min} min.` : "";
   /* the next step always sits under the dial, in every state, so the dial never moves */
   const note = quiet ? `<p class="note"></p>` : toast ? `<p class="note go" role="status">${N(esc(toast))}</p>` : `<p class="note">${N(then)}</p>`;
   /* on focus blocks of 45+, a reserved slot under the next step: silent, 3 minutes at the midpoint, then empty again */
