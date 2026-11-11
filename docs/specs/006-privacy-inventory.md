@@ -83,11 +83,25 @@ Who can see, in every table: the signed-in student sees their own rows through t
 | workedDays | Local date keys with a block on it, newest 30 | Comeback rule | The student, Chris | Until deleted | Deleting the big one |
 | createdAt | When it was made | Ordering | The student, Chris | Until deleted | Deleting the big one |
 
-Deleting a big one deletes the row and unlinks its sessions and ledger entries (their `taskId` is cleared); the sessions and ledger entries stay as ordinary history, including a ledger entry's `blockLabel`, which may hold the big one's title.
+Deleting a big one deletes the row and unlinks its sessions, ledger entries and nights (their `taskId` is cleared); the sessions and ledger entries stay as ordinary history, including a ledger entry's `blockLabel`, which may hold the big one's title, and a night keeps the item by its title until the night is deleted.
+
+### nights
+
+Tonight's plan (spec 012, "Tonight in a line"): one row per member per local day, replaced each time the student prints tonight. It vanishes on its own: the daily cleanup deletes a night once its day is more than 2 days old.
+
+| Field | What it holds | Why | Who can see | Retention | Deleted by |
+| --- | --- | --- | --- | --- | --- |
+| userId | Owner | Scope to the student | The student, Chris | At most about 3 days | The daily cleanup, once its day is more than 2 days old; a new print the same day replaces the row |
+| dayKey | Local date key of the night, from the client (indexed for the cleanup) | One night per day | The student, Chris | Same | Same |
+| items[].title | Up to 6 item names, 1 to 80 characters each (coursework text, like a big one's title) | Print the night and name each sitting | The student, Chris; never sent to AI or a push | Same | Same |
+| items[].taskId | The big one an item names, optional | Start its sittings on that big one | The student, Chris | Same | Deleting the big one clears it; the cleanup |
+| items[].sittings, items[].minutes | The item's size: 1 to 3 sittings of 15, 20, 30 or 45 minutes | Lay out the night | The student, Chris | Same | Same |
+| taken | How many sittings have been started | Know which sitting is next on every device | The student, Chris | Same | Same |
+| printedAt | When it was last printed | Ordering and support | Chris | Same | Same |
 
 ### events
 
-Events hold no titles, bookmarks or any typed text. Kinds: big_one_named, first_payment_started (with ms from naming), comeback_shown, comeback_started, bookmark_written, split_saved, spread_signed, ai_requested, ai_accepted, install_done, push_enabled, push_sent, push_failed.
+Events hold no titles, bookmarks or any typed text. Kinds: big_one_named, first_payment_started (with ms from naming), comeback_shown, comeback_started, bookmark_written, split_saved, spread_signed, ai_requested, ai_accepted, install_done, push_enabled, push_sent, push_failed, night_printed (with how many items, never what they are).
 
 | Field | What it holds | Why | Who can see | Retention | Deleted by |
 | --- | --- | --- | --- | --- | --- |
@@ -95,6 +109,7 @@ Events hold no titles, bookmarks or any typed text. Kinds: big_one_named, first_
 | kind | One of the kinds above | Measure the success numbers | Chris | Deleted at the end of the beta | End-of-beta cleanup |
 | taskId | Which big one, optional (an id only; it stays after the big one is deleted) | Join to timings | Chris | Deleted at the end of the beta | End-of-beta cleanup |
 | ms | A duration, optional | Time to first payment | Chris | Deleted at the end of the beta | End-of-beta cleanup |
+| count | A count, optional: on night_printed, how many items tonight has | See whether nights get used | Chris | Deleted at the end of the beta | End-of-beta cleanup |
 | at | When it happened | Bound queries to the beta window | Chris | Deleted at the end of the beta | End-of-beta cleanup |
 
 ### pushSubscriptions

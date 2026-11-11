@@ -8,6 +8,7 @@ import {
 } from "../packages/core/src";
 import { currentMember, requireMember } from "./lib/members";
 import { cancelPushes, reschedule } from "./lib/pushSchedule";
+import { takeSitting } from "./lib/nights";
 import { checkDayKey, ownTask } from "./lib/tasks";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -167,13 +168,14 @@ export const today = query({
 /** Quick Deal: ends any running session (forgiving its debt) and starts a new one. Lengths must be on offer (spec 007).
  *  `serverNow` lets the client render time from the server's clock. */
 export const start = mutation({
-  args: { deal: quickDeal, taskId: v.optional(v.id("tasks")), dayKey: v.optional(v.string()) },
-  handler: async (ctx, { deal, taskId, dayKey }) => {
+  args: { deal: quickDeal, taskId: v.optional(v.id("tasks")), dayKey: v.optional(v.string()), fromNight: v.optional(v.number()) },
+  handler: async (ctx, { deal, taskId, dayKey, fromNight }) => {
     const user = await requireMember(ctx);
     checkDayKey(dayKey);
     if (taskId) await ownTask(ctx, user, taskId);
     const now = Date.now();
     const sessionId = await startSession(ctx, user, deal, now, taskId, dayKey);
+    if (fromNight !== undefined) await takeSitting(ctx, user, dayKey, fromNight);
     return { sessionId, serverNow: now };
   },
 });

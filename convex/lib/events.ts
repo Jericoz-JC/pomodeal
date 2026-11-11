@@ -10,13 +10,14 @@ export async function logEvent(
   ctx: MutationCtx,
   userId: Id<"users">,
   kind: EventKind,
-  extra?: { taskId?: Id<"tasks">; ms?: number },
+  extra?: { taskId?: Id<"tasks">; ms?: number; count?: number },
 ): Promise<void> {
   await ctx.db.insert("events", {
     userId,
     kind,
     ...(extra?.taskId ? { taskId: extra.taskId } : {}),
     ...(extra?.ms !== undefined ? { ms: extra.ms } : {}),
+    ...(extra?.count !== undefined ? { count: extra.count } : {}),
     at: Date.now(),
   });
 }

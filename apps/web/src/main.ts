@@ -121,11 +121,15 @@ interface LiveApp {
   bigOnes(cards: BigOneCardRow[]): void;
   /** The Sunday's day key while the weekly question is due (and not skipped on this device), else null. */
   weekCheckin(weekKey: string | null): void;
+  /** spec 012: tonight's stored night for today's local day, or null */
+  night(doc: { items: NightRow[]; taken: number } | null): void;
   /** What this device can do: Web Push in this tab, opened from the Home Screen, an iPhone Safari tab; and whether the
    *  server offers "Suggest pieces" (api.ai.enabled, so it is sent again whenever that changes). */
   env(e: { pushSupported: boolean; installed: boolean; iosSafari: boolean; aiSuggest: boolean }): void;
 }
 interface DealArgs { act: string | null; breakMin: number; task: string; focusMin: number }
+/** spec 012: one item of tonight, as nights.print stores it */
+interface NightRow { title: string; taskId?: string; sittings: number; minutes: number }
 /** What the split and spread sheets need about one big one, read from the open-tasks subscription (no refetch). */
 interface PlanTask { taskType?: TaskType; gutMin?: number; openTermsMin: number | null; pieces: Piece[]; dueDay?: string; spreadSignedAt?: number; slots: string[] }
 /** The result of a save or a signature: the server's own words when it refused. */
@@ -140,7 +144,8 @@ interface SuggestHandle {
   dismiss(): void;
 }
 interface Backend {
-  start(deal: DealArgs): void;
+  /** `fromNight`: the index of tonight's sitting this deal takes (spec 012) */
+  start(deal: DealArgs, fromNight?: number): void;
   ask(pick: number | "override", intention?: string): void;
   /** early: the student ended the block before its time, which files a `skip` on the ledger. */
   next(fromIdx: number, early?: boolean): void;
@@ -148,7 +153,9 @@ interface Backend {
   end(): void;
   /** namedAt: client time plus clock offset when the student first tapped "Bigger than one block?" */
   startBigOne(d: { title: string; taskType?: TaskType; gutMin?: number; firstMove: string; deal: DealArgs; namedAt?: number }): void;
-  startFromCard(taskId: string, deal: DealArgs): void;
+  startFromCard(taskId: string, deal: DealArgs, fromNight?: number): void;
+  /** spec 012: stores tonight for today's local day; `keepTaken` for a reorder of what is left */
+  printNight(items: NightRow[], keepTaken?: boolean): void;
   blockNotes(fromIdx: number, bookmark: string | undefined, done: boolean): void;
   taskMenu(taskId: string, action: "startFresh" | "setAside" | "reopen" | "remove"): void;
   logEvent(kind: "comeback_shown" | "comeback_started" | "install_done" | "push_enabled", taskId?: string): void;
@@ -201,10 +208,10 @@ function goLive(convex: ConvexClient) {
   const sendEnv = () => app.env({ pushSupported: pushConfigured() && pushSupported(), installed: standalone, iosSafari: pushConfigured() && isIOS, aiSuggest: aiOn });
   const toDeal = (d: DealArgs) => ({ activity: d.act ?? null, breakMin: d.breakMin, task: d.task, focusMin: d.focusMin });
   const be: Backend = {
-    start: (d) => {
+    start: (d, fromNight) => {
       const sentAt = Date.now();
-      // dayKey: a running big one this deal replaces gets its minutes credited to today
-      void convex.mutation(api.sessions.start, { deal: toDeal(d), dayKey: dayKey() })
+      // dayKey: a running big one this deal replaces gets its minutes credited to today, and tonight is today's
+      void convex.mutation(api.sessions.start, { deal: toDeal(d), dayKey: dayKey(), ...(fromNight !== undefined ? { fromNight } : {}) })
         .then((r) => syncClock(sentAt, r.serverNow))
         .catch(report("start"));
     },
@@ -221,11 +228,18 @@ function goLive(convex: ConvexClient) {
         firstMove: d.firstMove, deal: toDeal(d.deal), dayKey: dayKey(), ...(d.namedAt !== undefined ? { namedAt: d.namedAt } : {}),
       }).then((r) => syncClock(sentAt, r.serverNow)).catch(report("startBigOne"));
     },
-    startFromCard: (taskId, deal) => {
+    startFromCard: (taskId, deal, fromNight) => {
       const sentAt = Date.now();
-      void convex.mutation(api.tasks.startFromCard, { taskId: taskId as Id<"tasks">, deal: toDeal(deal), dayKey: dayKey() })
+      void convex.mutation(api.tasks.startFromCard, {
+        taskId: taskId as Id<"tasks">, deal: toDeal(deal), dayKey: dayKey(), ...(fromNight !== undefined ? { fromNight } : {}),
+      })
         .then((r) => syncClock(sentAt, r.serverNow))
         .catch(report("startFromCard"));
+    },
+    printNight: (items, keepTaken) => {
+      // only the stored fields; a refused print (changed on another device) leaves the subscription's copy on screen
+      const rows = items.map((it) => ({ title: it.title, sittings: it.sittings, minutes: it.minutes, ...(it.taskId ? { taskId: it.taskId as Id<"tasks"> } : {}) }));
+      void convex.mutation(api.nights.print, { dayKey: dayKey(), items: rows, ...(keepTaken ? { keepTaken: true } : {}) }).catch(report("printNight"));
     },
     blockNotes: (fromIdx, bookmark, done) => {
       if (sessionId) void convex.mutation(api.tasks.blockNotes, { sessionId, fromIdx, ...(bookmark ? { bookmark } : {}), done, dayKey: dayKey() }).catch(report("blockNotes"));
@@ -344,7 +358,14 @@ function goLive(convex: ConvexClient) {
   };
   convex.onUpdate(api.checkIns.joinedAt, {}, (j) => { joinedAt = j; pushWeek(); });
   convex.onUpdate(api.checkIns.lastWeekKey, {}, (k) => { lastWeek = k; pushWeek(); });
-  const armMidnight = () => setTimeout(() => { pushCards(); pushWeek(); armMidnight(); }, msToLocalMidnight(Date.now()));
+  // Tonight (spec 012): the night stored for today's local day, subscribed again at local midnight.
+  let dropNight: (() => void) | null = null;
+  const watchNight = () => {
+    dropNight?.();
+    dropNight = convex.onUpdate(api.nights.tonight, { dayKey: dayKey() }, (doc) => app.night(doc ? { items: doc.items, taken: doc.taken } : null));
+  };
+  watchNight();
+  const armMidnight = () => setTimeout(() => { pushCards(); pushWeek(); watchNight(); armMidnight(); }, msToLocalMidnight(Date.now()));
   armMidnight();
 }
 
