@@ -578,7 +578,11 @@ html:has(.ticket.big) { scroll-padding-bottom: 260px; }
 .answer .says:focus { outline: none; }
 .answer .says .tok { font-size: 1em; font-weight: 750; padding-block: 1px; }
 
-.terms { display: flex; flex-direction: column; gap: 10px; }
+.terms { display: flex; flex-direction: column; gap: 0; }
+.terms .term:not(:first-child)::before { border-top-left-radius: 0; }
+.terms .term:not(:last-child)::before { border-bottom-left-radius: 0; }
+.terms .term + .term::after { content: ""; position: absolute; left: 0; right: 3px; top: -3px; height: 6px; background: var(--holes-x); pointer-events: none; }
+.terms .term:nth-child(1) .pad .stamp { --tilt: -5deg; } .terms .term:nth-child(2) .pad .stamp { --tilt: 3deg; translate: 2px -3px; } .terms .term:nth-child(3) .pad .stamp { --tilt: -2deg; }
 /* the outline follows the paper's shape, holes and all: four 1 px shadows on the group, then the paper's lift */
 .terms { filter: drop-shadow(1px 0 0 var(--edge)) drop-shadow(-1px 0 0 var(--edge)) drop-shadow(0 1px 0 var(--edge)) drop-shadow(0 -1px 0 var(--edge)) drop-shadow(0 8px 12px var(--lift)); }
 .term { position: relative; z-index: 0; width: 100%; padding: 0; border: none; background: none; color: var(--ink); text-align: left; font: inherit;
@@ -602,9 +606,9 @@ button.term:focus-visible { outline-offset: 3px; }
 .term.pre::before { box-shadow: inset 0 0 0 2px var(--deal), inset 0 2px 0 var(--hi); }
 /* the stub you stamp: a perforation down its left edge, the stamp's face in the middle */
 .term .pad { position: relative; display: grid; place-items: center; padding: 10px 18px 10px 8px; background: radial-gradient(circle, var(--edge) 1.5px, transparent 2px) 0 0 / 6px 10px repeat-y; }
-.term .pad .stamp { --tilt: -4deg; font-size: 1.25rem; letter-spacing: .07em; padding: 9px 10px 7px 11px; transition: transform .14s ease-out, filter .14s ease-out; }
+.term .pad .stamp { --tilt: -4deg; font-size: 1.0625rem; letter-spacing: .07em; padding: 9px 10px 7px 11px; transition: transform .14s ease-out, filter .14s ease-out; }
 /* at rest the face is clean rubber: a crisp double rule. The ink texture only exists once it has hit the paper. */
-.term .pad .stamp::before { border-width: 4.5px; border-radius: 7px; -webkit-mask: none; mask: none; }
+.term .pad .stamp::before { border-width: 3px; border-radius: 7px; -webkit-mask: none; mask: none; }
 .term .pad .stamp::after { content: ""; position: absolute; inset: 0; border-radius: 7px; background: var(--deal); opacity: 0; -webkit-mask: var(--noise) 0 0 / 120px 60px; mask: var(--noise) 0 0 / 120px 60px; }
 /* a ticket that only shows what you would get (Deal is pressed below it) has an empty impression on its stub */
 .term .pad.empty .stamp { opacity: .22; filter: grayscale(1); }
@@ -647,6 +651,7 @@ button.term:focus-visible { outline-offset: 3px; }
 .againq { margin: 12px 0 -2px; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 760; font-size: 1.375rem; line-height: 1.15; }
 /* a deal kept is not a used-up break: its stub is printed at full ink, holding just its minutes and the Done stamp */
 .tearrow.kept .used { background: var(--card); color: var(--ink); }
+.tearrow.kept .usedwrap .stamp { --tilt: -8deg; font-size: 2rem; padding: 4px 10px 2px; left: 8px; bottom: 10px; z-index: 1; }
 .tearrow .rest > p { display: flex; flex-direction: column; gap: 4px; }
 .tearrow .rest .nperf { flex: none; height: 6px; margin: 4px -26px 0 -20px; background: radial-gradient(circle, var(--edge) 1.5px, transparent 2px) 4px 50% / 10px 6px repeat-x; }
 .tearrow .rest .notes { padding: 0; }
@@ -704,6 +709,8 @@ button.term:focus-visible { outline-offset: 3px; }
 main .runwrap { filter: none; margin-right: 0; }
 main .runticket { --behind: var(--paper); --track: color-mix(in srgb, var(--deal) 8%, color-mix(in srgb, var(--ink) var(--track-ink), var(--paper))); background: none; box-shadow: none; -webkit-mask: none; mask: none; padding-left: 0; padding-right: 0; min-height: 0; }
 main .runticket .note { margin: 10px 0 0; padding: 0; background: none; text-align: center; font-size: 1rem; color: var(--soft); }
+main .runticket .nowhead .kind { display: none; }
+main .runticket .scale :is(.mn, .mj) { display: none; }
 .runticket .note:empty { background: none; }
 .runticket .aside:not(:empty) { margin-bottom: 12px; }
 .act .keepon, .act .pushask { align-self: center; margin-top: 0; }
@@ -1038,6 +1045,9 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 .primary#shake { position: relative; display: block; width: auto; min-width: 220px; min-height: 100px; margin: 6px auto 4px; padding: 6px 34px 4px; background: none; box-shadow: none; color: var(--deal); border-radius: 10px;
   font-size: 2.75rem; font-weight: 800; font-stretch: var(--wd-display); letter-spacing: .07em; text-transform: uppercase; line-height: 1; --tilt: -3deg; transform: rotate(var(--tilt)); transition: transform .12s ease-out; }
 .primary#shake::before { content: ""; position: absolute; inset: 0; border: 7px double currentColor; border-radius: 10px; }
+/* benchmark r4: at rest DEAL is the die itself, solid green, its letters and rule in the paper's colour */
+.primary#shake:not(:disabled) { background: var(--deal); color: var(--card); }
+.primary#shake:not(:disabled)::before { inset: 6px; border-width: 4px; border-radius: 6px; }
 .primary#shake:hover:not(:disabled) { transform: rotate(-3deg) scale(1.03); }
 .primary#shake:active:not(:disabled) { transform: rotate(-3deg) scale(.96); }
 .primary#shake:disabled:not(.pressed) { color: var(--soft); }
@@ -1570,7 +1580,7 @@ function face(r, m) {
   if (r <= 0) return { big: "0", cls: "", unit: `${title(cur().label).split(" ")[0]} is up` };
   if (r <= 30000) { const s = Math.ceil(r / 1000); return { big: String(s), cls: "", unit: s === 1 ? "second left" : "seconds left" }; }
   if (r <= headsUpMs()) return { big: String(m), cls: "", unit: "min to wrap up" };
-  return { big: String(m), cls: "", unit: "minutes left" };
+  return { big: String(m), cls: "", unit: "" };
 }
 
 const ROOM = [
