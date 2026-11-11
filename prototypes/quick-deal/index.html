@@ -1246,6 +1246,8 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   main:has(> .runwrap) > :is(.runwrap, p) { grid-column: 1 / -1; }
   main:has(> .runwrap) > .act { flex-direction: row; align-items: center; gap: 14px; }
   main:has(> .runwrap) > .act .primary { margin: 0; }
+  .runticket .now #endearly { align-self: flex-start; margin: 10px 0 0 -12px; }
+  main:has(> .runwrap) > .rows { grid-column: 1 / -1; justify-self: start; width: min(100%, 776px); }
   main:has(> .runwrap) > .act > .textbtn:first-child { margin-left: -12px; }
   main:has(> .runwrap) > .act .secondary { width: auto; padding-inline: 26px; }
   main:has(> .runwrap) > .rows { justify-self: end; min-width: 0; }
@@ -2562,12 +2564,15 @@ function runningView() {
   /* spec 008: the permission step. The browser's prompt only comes after this tap. */
   const askPush = pushAsk && !quiet ? `<button class="pushask" id="pushask"${pushAsk === "asking" ? ` aria-disabled="true"` : ""}>${TAPS}Get a notification when a block ends</button>` : "";
   const nowLag = tn ?? dn;
+  /* spec 014, desk: the quiet way out sits under the name, and the room row keeps the left edge it has everywhere else */
+  const deskStop = WIDE.matches && !isB;
   return `<div class="runwrap"><section class="runticket" aria-label="Your deal, running"><div class="now${tn != null ? " turn" : dn != null ? " dealin" : ""}"${nowLag != null ? ` style="${lagVar(nowLag)}"` : ""}>
     <div class="nowhead">
       <span class="kind"><span class="swatch ${isB ? "break" : "focus"}" aria-hidden="true"></span>${isB ? "Your break" : "Focus"}</span>
     </div>
     <h1>${tn != null && turnFrom && turnFrom.label ? `<span class="isname">${esc(title(b.label))}</span><span class="wasname" aria-hidden="true">${esc(turnFrom.label)}</span>` : esc(title(b.label))}</h1>
     ${sw ? `<p class="sub startw"><span>Start with:</span> ${N(esc(moveText(sw)))}</p>` : ""}
+    ${deskStop ? `<button class="textbtn" id="endearly">Stop for now</button>` : ""}
   </div>
   <div class="timerwrap">
     <div class="dial${S.justStarted ? " sweep" : ""}${r <= 0 ? " done" : ""}${heads ? " heads" : ""}${tn != null ? " turn" : wd != null ? " wind" : ""}" style="--p:${r <= 0 ? 0 : (r / S.durMs).toFixed(4)};${dialTicks(S.durMs / 60000)}${dl != null ? ";" + lagVar(dl) : ""}" role="img" aria-label="${r <= 0 ? (dealDone() ? "Deal done" : "Time is up") : m + " minutes left" + (half ? ", halfway" : "")}">
@@ -2576,12 +2581,12 @@ function runningView() {
     </div>
     ${note}${aside}
   </div></section></div>
-  <div class="stack act${hu != null ? " fresh" : ""}"${hu != null ? ` style="${lagVar(hu)}"` : ""}>
+  ${deskStop && !keepOn && !askPush ? "" : `<div class="stack act${hu != null ? " fresh" : ""}"${hu != null ? ` style="${lagVar(hu)}"` : ""}>
     ${isB
       ? (heads ? `<button class="primary" id="startnow">Start ${esc(nameOf(nxt))} now</button>` : `<button class="secondary" id="startnow">Start ${esc(nameOf(nxt))} early</button>`)
-      : `<button class="textbtn" id="endearly">Stop for now</button>`}
+      : deskStop ? "" : `<button class="textbtn" id="endearly">Stop for now</button>`}
     ${keepOn}${askPush}
-  </div>
+  </div>`}
   <section class="rows" aria-label="Your room">
     ${presence(!isB)}
   </section>
