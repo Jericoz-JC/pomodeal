@@ -7,17 +7,16 @@
 //   WIDTH=1440 HEIGHT=900 records a desk instead of a phone (each moment's dcrop, or the whole window)
 // No new dependencies: Edge over CDP (like shoot.mjs), Page.startScreencast for frames, the browser's own
 // MediaRecorder for the clip. "landing" starts Vite in-process (apps/web, production env) to render the signed-out page.
-import { spawn } from "node:child_process";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { resolve, dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { tmpdir } from "node:os";
+import { launchEdge } from "../scripts/headless-edge.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const out = resolve(process.argv[2] || join(here, "quick-deal/shots/motion"));
 const only = process.argv.slice(3);
 const app = pathToFileURL(resolve(here, "quick-deal/index.html")).href;
-const EDGE = "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe";
 const W = Number(process.env.WIDTH) || 375, H = Number(process.env.HEIGHT) || 812, STEP = 60;
 /* a desk: not a touch device, one pixel per CSS pixel, and the clip drawn at half size so three fit side by side */
 const DESK = W >= 820, DPR = DESK ? 1 : 2, CS = DESK ? .5 : 1;
@@ -66,11 +65,11 @@ async function landingUrl() {
   return vite.url;
 }
 
-const PORT = 9333 + Math.floor(Math.random() * 500);
-const proc = spawn(EDGE, ["--headless=new", `--remote-debugging-port=${PORT}`, `--user-data-dir=${join(tmpdir(), `nc-motion-${Date.now()}`)}`, "--hide-scrollbars", "--autoplay-policy=no-user-gesture-required", "about:blank"], { stdio: "ignore" });
+// one browser, closed with everything it started however this script ends (scripts/headless-edge.mjs)
+const { port: PORT, close: closeEdge } = launchEdge({ prefix: "nc-motion", args: ["--hide-scrollbars", "--autoplay-policy=no-user-gesture-required"] });
 let up = false;
 for (let i = 0; i < 50 && !up; i++) { try { await fetch(`http://127.0.0.1:${PORT}/json/version`); up = true; } catch { await wait(200); } }
-if (!up) { console.error("Edge did not start"); proc.kill(); process.exit(1); }
+if (!up) { console.error("Edge did not start"); process.exit(1); }
 
 /* one CDP connection per tab. Every recording gets a fresh tab: a screencast does not restart cleanly in a reused one. */
 const errors = [];
@@ -136,6 +135,7 @@ async function record(m, v) {
 let rv = null; // the tab that renders strips and clips
 /* review pages go through a temp file: large pages are too slow to push through Runtime.evaluate */
 const pages = join(tmpdir(), `nc-motion-pages-${Date.now()}`); mkdirSync(pages, { recursive: true });
+process.once("exit", () => { try { rmSync(pages, { recursive: true, force: true }); } catch {} });
 let pageN = 0;
 async function openPage(html) {
   const f = join(pages, `p${++pageN}.html`); writeFileSync(f, html);
@@ -217,7 +217,7 @@ try {
   }
 } finally {
   if (errors.length) console.error("Page errors:\n" + [...new Set(errors)].join("\n"));
-  proc.kill();
+  closeEdge();
   if (vite) await vite.server.close();
 }
 console.log(`Wrote motion strips and clips to ${out}`);

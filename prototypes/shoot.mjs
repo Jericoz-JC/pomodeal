@@ -1,11 +1,10 @@
 // Screenshot every prototype state at true phone size, light and dark.
 // Usage: node prototypes/shoot.mjs <out-dir> [page=quick-deal/index.html]
 // No dependencies: launches Edge with remote debugging and drives it over CDP (Node 22 has WebSocket built in).
-import { spawn } from "node:child_process";
-import { mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve, dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { tmpdir } from "node:os";
+import { launchEdge, pageSocketUrl } from "../scripts/headless-edge.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const out = resolve(process.argv[2] || join(here, "shots"));
@@ -29,27 +28,20 @@ const only = process.env.ONLY ? process.env.ONLY.split(",") : null;
 const WIDTH = Number(process.env.WIDTH) || 390;
 const HEIGHT = Number(process.env.HEIGHT) || 844;
 // BROWSER=/path/to/chromium runs this on Linux or macOS
-const EDGE = process.env.BROWSER || "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe";
-const PORT = 9333 + Math.floor(Math.random() * 500);
-const profile = join(tmpdir(), `nc-shoot-${Date.now()}`);
 
 mkdirSync(out, { recursive: true });
 
-const proc = spawn(EDGE, ["--headless=new", `--remote-debugging-port=${PORT}`, `--user-data-dir=${profile}`, "--disable-gpu", ...(process.platform === "linux" ? ["--no-sandbox"] : []), "--hide-scrollbars", "about:blank"], { stdio: "ignore" });
+// one browser, closed with everything it started however this script ends (scripts/headless-edge.mjs)
+const edge = launchEdge({ prefix: "nc-shoot", args: ["--disable-gpu", "--hide-scrollbars"] });
 const wait = ms => new Promise(r => setTimeout(r, ms));
 
-let wsUrl;
-for (let i = 0; i < 50 && !wsUrl; i++) {
-  try { const list = await (await fetch(`http://127.0.0.1:${PORT}/json/list`)).json(); wsUrl = list.find(t => t.type === "page")?.webSocketDebuggerUrl; } catch {}
-  if (!wsUrl) await wait(200);
-}
-if (!wsUrl) { console.error("Edge did not start"); proc.kill(); process.exit(1); }
-
+const wsUrl = await pageSocketUrl(edge.port);
 const ws = new WebSocket(wsUrl);
 await new Promise(r => ws.addEventListener("open", r, { once: true }));
 let id = 0; const pending = new Map();
 ws.addEventListener("message", e => { const m = JSON.parse(e.data); if (m.id && pending.has(m.id)) { pending.get(m.id)(m); pending.delete(m.id); } });
-const send = (method, params = {}) => new Promise(r => { const i = ++id; pending.set(i, r); ws.send(JSON.stringify({ id: i, method, params })); });
+// a call the browser never answers fails after 30 s instead of hanging with the browser open
+const send = (method, params = {}) => new Promise((r, j) => { const i = ++id; const t = setTimeout(() => j(new Error(`${method} timed out`)), 30000); pending.set(i, m => { clearTimeout(t); r(m); }); ws.send(JSON.stringify({ id: i, method, params })); });
 
 await send("Page.enable");
 await send("Emulation.setDeviceMetricsOverride", { width: WIDTH, height: HEIGHT, deviceScaleFactor: Number(process.env.SCALE) || 2, mobile: WIDTH < 820 });
@@ -64,5 +56,5 @@ for (const scheme of ["light", "dark"]) {
     writeFileSync(join(out, `${s}-${scheme}.png`), Buffer.from(shot.result.data, "base64"));
   }
 }
-await send("Browser.close").catch(() => {}); ws.close(); proc.kill();
+await send("Browser.close").catch(() => {}); ws.close(); edge.close();
 console.log(`Wrote screenshots to ${out}`);
