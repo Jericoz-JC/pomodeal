@@ -668,8 +668,9 @@ button.term:focus-visible { outline-offset: 3px; }
 .tearrow.kept .used { background: var(--card); color: var(--ink); }
 .tearrow.kept .usedwrap .stamp { --tilt: -8deg; font-size: 2rem; padding: 4px 10px 2px; left: 8px; bottom: 10px; z-index: 1; }
 /* stacked and kept (the done sheet): the stamp lands at the stub's right, clear of its minutes, not stretched across them */
-.tearrow.kept.stacked .usedwrap .stamp { left: auto; right: 12px; top: auto; bottom: 6px; }
-.tearrow.kept.stacked .used { padding-right: 120px; }
+.tearrow.kept.stacked .usedwrap { width: min(100%, 300px); }
+.tearrow.kept.stacked .usedwrap .stamp { left: auto; right: 22px; top: auto; bottom: 10px; }
+.tearrow.kept.stacked .used { padding-right: 150px; }
 .tearrow .rest > p { display: flex; flex-direction: column; gap: 4px; }
 .tearrow .rest .nperf { flex: none; height: 6px; margin: 4px -26px 0 -20px; background: radial-gradient(circle, var(--edge) 1.5px, transparent 2px) 4px 50% / 10px 6px repeat-x; }
 .tearrow .rest .notes { padding: 0; }
@@ -1100,9 +1101,12 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 .nightfit b { flex: none; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 2.75rem; line-height: .82; letter-spacing: -.01em; color: var(--ink); font-variant-numeric: tabular-nums; }
 .nightfit b small { font-size: .42em; font-weight: 700; margin-left: 2px; letter-spacing: 0; }
 .nightname { flex: 1 1 220px; }
-#night-picker[role="radiogroup"] { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-#night-picker[role="radiogroup"] .longrow { grid-column: 1 / -1; display: grid; grid-template-columns: inherit; gap: 8px; margin: 0; padding-top: 0; border-top: none; }
-#night-picker[role="radiogroup"] .chip { justify-content: center; white-space: nowrap; }
+#night-picker[role="radiogroup"] { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 18px; }
+#night-picker[role="radiogroup"] .longrow { display: contents; }
+#night-picker[role="radiogroup"] .chip { display: inline-block; min-height: 40px; padding: 4px 0; border: none; border-radius: 0; background: none; white-space: nowrap; font-stretch: var(--wd-display); font-weight: 750; font-size: 1.1875rem; color: var(--soft); }
+#night-picker[role="radiogroup"] .chip[aria-checked="true"] { padding: 4px 0; border: none; background: none; color: var(--deal-ink, var(--deal)); text-decoration: underline; text-decoration-thickness: .1em; text-underline-offset: .2em; text-decoration-skip-ink: none; }
+#night-picker[role="radiogroup"] .chip .num { font: inherit; }
+@media (hover: hover) { #night-picker[role="radiogroup"] .chip:not([aria-checked="true"]):hover { background: none; color: var(--ink); } }
 .ticketwrap + .onedeal { align-self: center; margin: -6px auto -10px; }
 /* the rest of tonight, said under the ticket where the quiet line goes */
 .nightrest { align-self: stretch; margin: -6px 0 6px; padding-left: 2px; font-size: 1rem; line-height: 1.4; color: var(--soft); text-wrap: pretty; }
@@ -1277,7 +1281,8 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 }
 .roll { display: none; }
 /* spec 014, phone too: names you already use, as choices under tonight's sentence; one tap adds one at its known length */
-.nightadd { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 20px; margin-top: -4px; }
+.nightadd { display: block; margin-top: -4px; text-wrap: balance; line-height: 2; }
+.nightadd .add { margin-right: 20px; }
 .nightadd[hidden] { display: none; }
 .nightadd .add { display: inline; padding: 6px 0; background: none; border: none; border-radius: 0; cursor: pointer; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 750; font-size: 1.125rem; line-height: 1.2; color: color-mix(in srgb, var(--ink) 74%, transparent); text-decoration: underline solid color-mix(in srgb, var(--ink) 34%, transparent); text-decoration-skip-ink: none; text-decoration-thickness: 1px; text-underline-offset: .24em; }
 .nightadd .add .num { font: inherit; }
@@ -1303,6 +1308,10 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   /* what's to come lies on the desk now; the tape is only what has printed */
   .tape .tocome, .nightmap, .ticket.night .nightfit, .ticket.night .nightstrip, .nightstrip.onticket { display: none; }
 
+  /* the quiet lines under the ticket start on its text edge, one edge instead of a centred column */
+  :is(.ticketwrap + .bigchip, .ticketwrap + .onedeal, main > .skip) { align-self: flex-start; margin-left: 24px; text-align: left; }
+  /* while a length is being picked the way back steps aside; the choice is the moment */
+  .ticketwrap:has(#night-picker) + .onedeal { visibility: hidden; }
   /* the hero: a ticket at desk scale, lying on the pad it was torn from */
   .ticket .body { padding: 30px 30px 36px 36px; gap: 20px; }
   .ticketwrap { filter: drop-shadow(0 1px 0 var(--rule)) drop-shadow(0 2px 1px color-mix(in srgb, var(--ink) 8%, transparent)) drop-shadow(0 22px 30px var(--lift)); }
@@ -1313,8 +1322,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
     .ticket .stub .primary:is(#shake, #print) { font-size: 3.5rem; }
     .ticket .startw { font-size: 1.125rem; }
   }
-  #night-picker[role="radiogroup"] { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  #night-picker[role="radiogroup"] .chip { padding-inline: 4px; gap: 5px; }
+  #night-picker[role="radiogroup"] .chip { font-size: 1.375rem; }
 
   /* a sheet does the talking: the roll waits under it */
   /* a small desk (a laptop split, a tablet on its side): the stub narrows so the sentence keeps its measure */
@@ -1325,8 +1333,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
     .ticket .stub .primary:is(#shake, #print) { font-size: 2.25rem; min-width: 0; width: 100%; min-height: 86px; padding-inline: 10px; }
     .sentence { font-size: 1.875rem; }
     .ticket.night .sentence { font-size: 1.375rem; line-height: 1.42; }
-    #night-picker[role="radiogroup"] .chip { font-size: .8125rem; min-height: 40px; padding-inline: 2px; word-spacing: -2px; letter-spacing: -.01em; }
-    #night-picker[role="radiogroup"] .longrow .chip { font-size: .75rem; word-spacing: -3px; }
+    #night-picker[role="radiogroup"] .chip { font-size: 1.125rem; }
     #night-picker[role="radiogroup"] .chip svg { display: none; }
     .nightadd .add { font-size: 1.0625rem; }
   }
@@ -1365,10 +1372,10 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   .rs.b { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--ink) 26%, transparent) 0 1.5px, transparent 1.5px 6px), var(--stub); }
   .rs.b.paid { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--deal) 60%, transparent) 0 1.5px, transparent 1.5px 6px), var(--stub); }
   /* the stamp's place waits bottom right, as on the deal ticket; landed, it is the green Done */
-  .rs .landed { position: absolute; right: 14px; top: 12px; width: 62px; height: 27px; transform: rotate(-4deg); }
+  .rs .landed { position: absolute; right: 14px; bottom: 18px; width: 62px; height: 27px; transform: rotate(-4deg); }
   .rs .landed .stamp { position: absolute; inset: -2px -3px; font-size: 1.0625rem; letter-spacing: .04em; --tilt: 0deg; }
   .rs.paid .nm { color: var(--soft); }
-  @container (max-width: 190px) { .rs .landed { right: 10px; top: 9px; width: 50px; height: 22px; } .rs .landed .stamp { font-size: .8125rem; } }
+  @container (max-width: 190px) { .rs .landed { right: 10px; bottom: 15px; width: 50px; height: 22px; } .rs .landed .stamp { font-size: .8125rem; } }
   @container (max-width: 96px) { .rs .landed, .rs em { display: none; } .rs .nm { font-size: .875rem; white-space: normal; margin: -4px -6px 0 -8px; } }
   /* time being paid is wet ink: a solid green foot runs along the sitting as the dial pays it; a paid sitting keeps it */
   .rs .ink { position: absolute; left: 0; right: 0; bottom: 0; height: 9px; background: var(--deal); transform-origin: 0 50%; transform: scaleX(var(--paid, 1)); will-change: transform; pointer-events: none; }
@@ -1383,13 +1390,10 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   .rs.f:is(.draft, .pend) + .rs.f:is(.draft, .pend) { margin-left: -1.5px; }
   .rs.b:is(.draft, .pend) { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--ink) 30%, transparent) 0 1.5px, transparent 1.5px 6px); }
   /* home: names you already use, one continuous length in hairline, perforated between them */
-  .rlead { flex: none; background: none; border: none; padding: 0; margin-bottom: -4px; color: var(--ink); cursor: pointer; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 1.25rem; line-height: 1; }
-  @media (hover: hover) { .rlead:hover { text-decoration: underline; text-decoration-thickness: .08em; text-underline-offset: .15em; } }
+  .rlead { background: none; border: none; padding: 0; color: var(--ink); cursor: pointer; font: inherit; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .2em; }
+  @media (hover: hover) { .rlead:hover { color: var(--deal-ink); } }
   .rband.loose { box-shadow: none; }
   .rband.offer .rs.f { cursor: pointer; }
-  body:has(#roll .offer) .desk { grid-template-rows: auto auto; align-content: start; }
-  body:has(#roll .offer) .roll { position: relative; padding-top: 18px; }
-  body:has(#roll .offer) main:not(:has(> .runwrap)) { padding-bottom: 8px; }
   @media (hover: hover) { .rband.offer .rs.f:hover { background: var(--rollp); outline-color: var(--wait-edge); } }
   /* a break with a name (the deal's own: Reels, TikTok) says it on a scrap of desk */
   .rs.b .bl { position: absolute; top: 10px; left: 6px; max-width: calc(100% - 12px); padding: 3px 6px 4px; background: var(--paper); border-radius: 2px; font-family: var(--font-head); font-stretch: var(--wd-act); font-size: .875rem; line-height: 1.15; color: var(--soft); overflow: hidden; }
@@ -1420,8 +1424,6 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   /* a decision lands over the desk but ends above the roll, which stays lit: the Done stamp lands on it */
   body:has(#roll:not([hidden])) .scrim { align-items: flex-start; padding-top: var(--sheettop, 130px); padding-bottom: var(--sheetfoot, calc(var(--rollall) - 38px)); }
   /* under a sheet the roll keeps its place and scale but lies lower and quieter: no clock, a shorter band */
-  body.sheeted .roll .rrule { visibility: hidden; }
-  body.sheeted .roll .rband { height: 76px; }
   /* the done sheet over the roll: Done for now and the bonus share one row, so the sheet fits between the tape's line and the roll */
   body:has(#roll:not([hidden])) .sheet:has(#donenow) { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 20px; }
   body:has(#roll:not([hidden])) .sheet:has(#donenow) > * { grid-column: 1 / -1; }
@@ -2377,7 +2379,7 @@ function rollPieces() {
     ticks.push(`<i class="${mi ? mi % 15 ? "" : "q" : "hr"}" style="left:${pct((t - now) / 60000)}%">${mi ? "" : `<b>${h % 12 || 12}</b>${h < 12 ? "am" : "pm"}`}</i>`);
   }
   const ends = clockStr(now - (BE ? 0 : DEMO_SHIFT) + total * 60000).replace(/([ap]m)$/, "<small>$1</small>");
-  return `<p class="rhead"><span class="rh" style="flex:1"><button class="rlead" id="rollplan">Tonight,</button><span class="at">Done around <b>${ends}</b></span></span></p><div class="rband draft offer" role="group" aria-label="Tonight">${segs.map(x => x.b ? `<i class="rs b draft" style="flex:${x.b}"></i>` : `<button class="rs f draft" style="flex:${x.n * x.min}" data-nadd="${x.i}"><b class="nm">${N(esc(x.k.name))}</b><em>${N(x.size)}</em></button>`).join("")}</div><div class="rrule" aria-hidden="true">${ticks.join("")}</div>`;
+  return `<p class="rhead"><span class="rh" style="flex:1"><span><button class="rlead" id="rollplan">Tonight,</button> ${N(`${hm(pieces.reduce((t, p) => t + p.n * p.min, 0))} of focus`)}</span><span class="at">Done around <b>${ends}</b></span></span></p><div class="rband draft offer" role="group" aria-label="Tonight">${segs.map(x => x.b ? `<i class="rs b draft" style="flex:${x.b}"></i>` : `<button class="rs f draft" style="flex:${x.n * x.min}" data-nadd="${x.i}"><b class="nm">${N(esc(x.k.name))}</b><em>${N(x.size)}</em></button>`).join("")}</div><div class="rrule" aria-hidden="true">${ticks.join("")}</div>`;
 }
 function rollView() {
   const m = rollModel(), pct = v => (100 * v / m.span).toFixed(3);
