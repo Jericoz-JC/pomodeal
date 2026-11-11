@@ -14,7 +14,7 @@ const STATES = ["start", "intercept", "running", "focus", "heads-up", "boundary"
   "picker-focus", "picker-60", "start-60", "long-running", "long-halfway", "long-heads-up",
   // spec 008: big ones
   "bigone-chip", "bigone-ticket", "bigone-ticket-typed", "bigone-boundary", "bigone-boundary-piece",
-  "cards", "cards-comeback", "cards-more", "cards-menu", "cards-delete", "cards-all", "cards-breakfirst", "running-wakelock", "offer-terms-repay",
+  "cards", "cards-comeback", "cards-more", "cards-menu", "cards-delete", "cards-all", "cards-breakfirst", "cards-quick", "running-wakelock", "offer-terms-repay",
   // spec 008: push permission button, iPhone install sheet
   "push-ask", "install-ios",
   // spec 008: planning on the card

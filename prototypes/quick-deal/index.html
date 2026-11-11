@@ -295,37 +295,49 @@ p { margin: 0; }
 
 /* spec 008, day 2: a big one waiting on the home screen is a stub kept for later. Same torn ticket as a deal; its
    left tab is the length you'll pay, inked green and perforated where it tears off. Tapping the tab starts it. */
-/* R29: the big one to do now is the one stub at full size; up to two more are plain rows under it */
-.bigones { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
-/* spec 011: every big one waiting is a ticket. The first is full size; the others are slim tickets under it (council r3:
-   a bare row beside a ticket read as two different objects). One shadow for the stack follows each ticket's torn edge. */
-.bigones { filter: var(--paper-shadow); }
-.bigones > .cardwrap { margin-bottom: 4px; }
-.bigones > .bitem { margin-top: 6px; padding: 6px 16px 6px 10px; gap: 16px; background: var(--card); border-radius: 6px 0 0 6px; -webkit-mask: var(--zig); mask: var(--zig); }
-.bigones > .bitem .ministub { background-color: var(--paper); }
-.bigcard { position: relative; display: grid; grid-template-columns: 70px minmax(0, 1fr); background: var(--card); border-radius: 6px 0 0 6px; box-shadow: inset 0 1px 0 var(--hi); -webkit-mask: var(--zig); mask: var(--zig); }
-.bigcard .go { border: none; margin: 0; padding: 12px 4px; border-radius: 6px 0 0 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
-  background: radial-gradient(circle, var(--card) 1.3px, transparent 1.8px) 100% 2px / 6px 10px repeat-y, var(--deal); color: var(--on-deal); font-family: var(--font-head); }
-.bigcard .go b { font-stretch: var(--wd-display); font-weight: 800; font-size: 2.125rem; line-height: .85; font-variant-numeric: tabular-nums; }
-.bigcard .go span { font-stretch: var(--wd-act); font-weight: 700; font-size: 1rem; line-height: 1; }
-.bigcard .go span:first-child { margin-bottom: 2px; }
-/* the card's own edge would clip an outside ring: the ring sits inside the tab */
-.bigcard .go:focus-visible { outline: 3px solid var(--deal); outline-offset: -5px; }
-/* one action language: the card's start tab is a stamp too, the minutes inside its double rule on the card's paper */
-.bigcard .go { --tilt: -4deg; position: relative; background: radial-gradient(circle, var(--edge) 1.5px, transparent 2px) 100% 2px / 6px 10px repeat-y; color: var(--deal); }
-.bigcard .go::before { content: ""; position: absolute; left: 7px; right: 10px; top: 50%; height: 104px; margin-top: -52px; border: 4px double currentColor; border-radius: 7px; transform: rotate(var(--tilt)); pointer-events: none; }
-.bigcard .go > * { transform: rotate(var(--tilt)); }
-@media (hover: hover) { .bigcard .go:hover::before { transform: translateY(-2px) rotate(calc(var(--tilt) - 2deg)) scale(1.04); } }
-.bigcard .go.pressed::before { animation: slam .62s linear both; -webkit-mask: var(--noise) 0 0 / 120px 60px; mask: var(--noise) 0 0 / 120px 60px; background: color-mix(in srgb, var(--deal) 12%, transparent); }
-.bigcard .what { min-width: 0; padding: 6px 20px 8px 14px; display: flex; flex-direction: column; gap: 3px; }
-.bigcard .row { display: flex; align-items: flex-start; gap: 2px; }
-.bigcard .ttl { flex: 1; min-width: 0; padding-top: 8px; font-stretch: var(--wd-display); font-weight: 750; font-size: 1.375rem; line-height: 1.1; overflow-wrap: anywhere; }
-.bigcard .more { flex: none; width: 44px; height: 44px; margin: 0 -12px 0 0; border: none; background: none; color: var(--soft); display: grid; place-items: center; }
-.bigcard .more svg { width: 22px; height: 22px; }
-.bigcard .more:focus-visible { outline-offset: -4px; }
-.bigcard .ask { font-size: 1rem; line-height: 1.35; color: var(--ink); }
-.bigcard .prog { font-size: .9375rem; color: var(--soft); padding-block: 2px 8px; }
-.bigcard .startw:last-child { padding-bottom: 8px; }
+/* spec 015 (direction B, "the standing ticket"): home is one object. The deal ticket is always open with the next big one
+   written into it; its name is an underlined word like the others (it opens that big one's jobs). The other big ones
+   are lines under the ticket that carry the sentence on: "or Orgo problem set 4", each a word you swap onto the ticket,
+   with one small imprint that starts it as it stands. */
+.swaps { list-style: none; margin: -2px 0 0; padding: 0 2px; display: flex; flex-direction: column; }
+.swapline { display: flex; align-items: center; gap: 14px; min-height: 56px; background: radial-gradient(circle, var(--edge) 1px, transparent 1.5px) 0 100% / 8px 3px repeat-x; }
+.swapline.last { background: none; min-height: 52px; gap: 26px; }
+.swapline .said { flex: 1; min-width: 0; font-family: var(--font-head); font-stretch: var(--wd-display); font-size: 1.1875rem; line-height: 1.2; color: var(--soft); }
+.swapline .said b { font-weight: 750; color: var(--ink); font-variant-numeric: tabular-nums; }
+.swapname { display: inline; min-height: 0; margin: 0; padding: 6px 0; border: none; background: none; color: var(--ink); text-align: left; overflow-wrap: anywhere;
+  font: inherit; font-weight: 750; text-decoration: underline solid var(--deal) 1.5px; text-underline-offset: 4px; text-decoration-skip-ink: none; }
+.bitem .said { flex: 1; min-width: 0; font-family: var(--font-head); font-stretch: var(--wd-display); font-size: 1.1875rem; line-height: 1.2; color: var(--soft); }
+.bitem .said b, .bitem .said .btitle { font-weight: 750; color: var(--ink); font-size: inherit; }
+.bitem .ministub.go1, .swapline .ministub.go1 { flex: none; width: 76px; min-height: 40px; justify-content: center; align-items: center; padding: 6px 0 4px; }
+.bitem .ministub.go1 span, .swapline .ministub.go1 span { font-size: 1.0625rem; }
+/* green is wet ink: at rest the line's stamp is a dry impression in the paper's ink, one rule; pressed, it lands green */
+.ministub.go1 { color: var(--ink); --tilt: -1.5deg; }
+.ministub.go1::before { border: 1.5px solid currentColor; opacity: .55; }
+.ministub.go1.pressed { color: var(--deal); }
+.ministub.go1.pressed::before { opacity: 1; border-width: 3px; border-style: double; animation: slam .5s linear both; -webkit-mask: var(--noise) 0 0 / 120px 60px; mask: var(--noise) 0 0 / 120px 60px; }
+@media (hover: hover) { .ministub.go1:hover { color: var(--deal); } }
+.swapline .quickon { margin-left: -12px; }
+.swapline .allbig { margin: 0 0 0 -12px; align-self: center; }
+.swapline .quickon + .allbig { margin-left: -26px; }
+/* a desk has a pointer and the roll below: the lines are tighter, so the room row stays above the roll */
+@media (min-width: 820px) {
+  /* the lines keep to the sentence's column; the quick deal and the list sit under the stub, beside them */
+  main > .swaps { display: grid; grid-template-columns: minmax(0, 1fr) clamp(250px, 34cqw, 300px); grid-auto-flow: row dense; margin-top: -4px; }
+  .swapline { grid-column: 1; min-height: 48px; }
+  .swapline.last { grid-column: 2; grid-row: 1 / span 3; align-self: start; flex-direction: column; align-items: flex-start; gap: 0; min-height: 0; padding: 4px 0 0 32px; }
+  .swapline.last > * { margin: 0 0 0 -12px; }
+  .swapline .ministub.go1 { min-height: 34px; padding-block: 4px 2px; }
+}
+/* what the card used to say, now notes on the ticket */
+.ticket .stillhere { font-size: 1.0625rem; line-height: 1.35; color: var(--ink); margin-bottom: 2px; }
+.ticket .stillhere b { font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 700; font-size: 1.125rem; }
+.ticket .notes { display: flex; flex-direction: column; gap: 4px; margin-top: -4px; }
+.ticket .notes .startw { margin-top: 0; }
+.ticket .notes .prog { font-size: .9375rem; line-height: 1.35; color: var(--soft); }
+.ticket .breakfirst { align-self: flex-start; margin: -10px 0 -10px -12px; }
+/* a long name wraps inside its own word; the full stop stays on its last line */
+.sentence .tok.named { text-wrap: balance; }
+.sentence .tok.named .dot { display: inline-block; font-size: calc(1em / 1.15); font-weight: 400; color: var(--soft); }
 .allbig { align-self: flex-start; margin: -12px 0 -6px -12px; }
 /* a row: the title, then "Start 20 min" in the deal's green. No pill: the words are the button. */
 .bitem { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 4px 0 4px 2px; }
@@ -339,11 +351,11 @@ p { margin: 0; }
   -webkit-mask: var(--zig); mask: var(--zig); font-family: var(--font-head); font-variant-numeric: tabular-nums; }
 .ministub b { font-stretch: var(--wd-display); font-weight: 800; font-size: 1.625rem; line-height: 1; }
 /* spec 011 (council c4): a small stamp, the same rubber as the full card's Start tab */
-.ministub { --tilt: -1.5deg; position: relative; flex-direction: column; align-items: center; gap: 1px; min-width: 52px; min-height: 44px; padding: 5px 8px 4px; background: none !important; box-shadow: none; -webkit-mask: none; mask: none; border-radius: 6px; transform: rotate(var(--tilt)); }
-.ministub::before { content: ""; position: absolute; inset: 0; border: 3.5px double currentColor; border-radius: 6px; pointer-events: none; }
+.ministub { --tilt: -2deg; position: relative; flex-direction: row; align-items: baseline; gap: 4px; min-width: 0; min-height: 36px; padding: 8px 10px 6px; white-space: nowrap; background: none !important; box-shadow: none; -webkit-mask: none; mask: none; border-radius: 6px; transform: rotate(var(--tilt)); }
+.ministub::before { content: ""; position: absolute; inset: 0; border: 3px double currentColor; border-radius: 6px; pointer-events: none; }
 @media (hover: hover) { .ministub:hover { transform: translateY(-1px) rotate(calc(var(--tilt) - 1deg)); } }
 .ministub span { font-stretch: var(--wd-act); font-weight: 700; font-size: .875rem; line-height: 1; }
-.ministub b { font-size: 1.375rem !important; }
+.ministub b { font-size: 1.125rem !important; }
 .ministub:focus-visible { outline-offset: -7px; }
 .sheet.paper .ministub { background-color: var(--paper); }
 .bitem .more { flex: none; width: 44px; height: 44px; margin-right: -10px; border: none; background: none; color: var(--soft); display: grid; place-items: center; }
@@ -359,17 +371,6 @@ p { margin: 0; }
 .weekask .wkopts { display: flex; flex-wrap: wrap; gap: 8px; padding-right: 8px; margin-top: 6px; }
 .weekask .wkopts .chip { padding: 8px 11px; }
 @media (max-width: 420px) { .weekask .wkopts { gap: 6px; padding-right: 0; } .weekask .wkopts .chip { padding: 7px 9px; font-size: 1rem; } }
-.quickrow { display: flex; align-items: stretch; width: 100%; min-height: 60px; padding: 0; border: 1.5px dashed var(--edge); border-radius: 6px; background: none; color: var(--ink); text-align: left;
-  font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 700; font-size: 1.1875rem; line-height: 1.2; letter-spacing: .01em; }
-.quickrow .plus { flex: none; width: 52px; display: grid; place-items: center; color: var(--soft); background: var(--holes-y); background-position: 100% 0; }
-.quickrow .plus svg { width: 22px; height: 22px; }
-.quickrow .qt { flex: 1; align-self: center; padding: 12px 14px 12px 16px; }
-.quickrow .chev { flex: none; align-self: center; width: 20px; height: 20px; margin-right: 16px; color: var(--soft); transform: rotate(90deg); }
-/* open, the same button stays in place as the ticket's header */
-.quickrow[aria-expanded="true"] { min-height: 48px; border-color: transparent; margin-bottom: -10px; }
-.quickrow[aria-expanded="true"] .plus { display: none; }
-.quickrow[aria-expanded="true"] .qt { padding-left: 2px; }
-.quickrow[aria-expanded="true"] .chev { transform: rotate(-90deg); margin-right: 4px; }
 
 /* R48: on a narrow screen (or zoomed in) a row's title gets its own line and the card's tab narrows */
 @media (max-width: 359px) {
@@ -377,10 +378,7 @@ p { margin: 0; }
   .bitem .btitle { flex: 1 0 100%; padding-top: 6px; }
   .bitem .ministub { margin-right: auto; }
   .bitem .reopen { margin: 0 auto 0 -12px; }
-  .bigcard { grid-template-columns: 58px minmax(0, 1fr); }
-  .bigcard .go b { font-size: 1.75rem; }
-  .bigcard .what { padding-right: 14px; padding-left: 12px; }
-  .quickrow .plus { width: 44px; }
+  .swapname { font-size: 1.25rem; }
 }
 
 /* R39: the card's ⋯ menu and the full list are a sheet of ticket paper torn from the pad: a torn top edge, the title
@@ -530,7 +528,7 @@ html:has(.ticket.big) { scroll-padding-bottom: 260px; }
 .mv:focus-within { outline: 3px solid var(--deal); outline-offset: 0; }
 .spwhy { font-size: .9375rem; line-height: 1.4; color: var(--soft); }
 /* R60: a comeback card's fresh plan is its own small outlined button, apart from "Start with" */
-.bigcard .respread { align-self: flex-start; min-height: 44px; margin: 6px 0 10px; padding: 8px 14px; border: 1.5px solid var(--edge); border-radius: 10px; background: none; color: var(--ink);
+.ticket .respread { align-self: flex-start; min-height: 44px; margin: 6px 0 4px; padding: 8px 14px; border: 1.5px solid var(--edge); border-radius: 10px; background: none; color: var(--ink);
   font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 700; font-size: 1rem; line-height: 1.2; letter-spacing: .01em; }
 /* R61: Delete sits apart from the rows that keep the big one */
 .menu .mrow.gone { border-top: 1px solid var(--rule); margin-top: 4px; }
@@ -1926,7 +1924,7 @@ function deskHead() {
 function focusKey(el) {
   if (!el || el === document.body) return null;
   if (el.id && el.id !== "sh") return "#" + el.id;
-  for (const a of ["data-act", "data-set", "data-sug", "data-ci", "data-pick", "data-term", "data-type", "data-gut", "data-done", "data-card", "data-menu", "data-lstart", "data-reopen", "data-respread"]) if (el.hasAttribute(a)) return `[${a}="${el.getAttribute(a)}"]`;
+  for (const a of ["data-act", "data-set", "data-sug", "data-ci", "data-pick", "data-term", "data-type", "data-gut", "data-done", "data-card", "data-load", "data-menu", "data-lstart", "data-reopen", "data-respread"]) if (el.hasAttribute(a)) return `[${a}="${el.getAttribute(a)}"]`;
   return null;
 }
 let nextFocus = null;
@@ -1940,6 +1938,8 @@ function render() {
   const wide = WIDE.matches && mode !== "intercept", roomOut = false;
   /* the sample ledger is on the tape from the start, the way a real night's would be */
   if (!BE && !ledger.length && location.hash !== "#empty") seedLedger();
+  /* spec 015: before drawing home, the ticket carries the next big one (state settles here, never while drawing) */
+  if (!S && tab !== "room" && mode !== "intercept") seatHome();
   v.innerHTML = tab === "room" ? roomView() : mode === "intercept" ? interceptView() : !S ? startView() : runningView();
   const sl = $("#side-ledger"), sr = $("#side-room"), tapeOn = (tab === "now" || wide) && mode !== "intercept";
   sl.hidden = !tapeOn; sr.hidden = !roomOut; $(".desk").classList.toggle("noroom", wide && !roomOut);
@@ -1986,18 +1986,23 @@ function ticket(peek) {
      the break and length still yours to change. Deal starts it from the card, so it isn't a new big one. */
   const fc = mode !== "intercept" ? fromCard : null;
   if (fc) {
-    const named = `<span class="fixed">${esc(fc.title)}</span>`;
-    const s = deal.act
-      ? `<span class="nowrap">${tokB(p)} of ${tokA(p)},</span> then <span class="nowrap">${tokF(p)} of</span> ${named}.`
-      : `${tokA(p)}. Straight into <span class="nowrap">${tokF(p)} of</span> ${named}.`;
+    /* spec 015: at home the name is a word you can press (its jobs), and without a break the sentence is just the sitting */
+    const home = swapHome(), direct = fcDirect(), live = (home && cardById(fc.id)) || fc;
+    const named = home ? `<button class="tok named" data-menu="${esc(fc.id)}" aria-haspopup="dialog" aria-label="${esc(fc.title)}, more for this big one">${esc(fc.title)}<span class="dot" aria-hidden="true">.</span></button>` : `<span class="fixed">${esc(fc.title)}</span>.`;
+    const prog = home && !live.comeback ? progressText(live.progress) : "";
+    const s = direct ? `<span class="nowrap">${tokF(p)} of</span> ${named}` : deal.act
+      ? `<span class="nowrap">${tokB(p)} of ${tokA(p)},</span> then <span class="nowrap">${tokF(p)} of</span> ${named}`
+      : `${tokA(p)}. Straight into <span class="nowrap">${tokF(p)} of</span> ${named}`;
     return `<div class="ticketwrap${peek ? " peek" : ""}"><section class="ticket" id="ticket" aria-label="Your deal on ${esc(fc.title)}">
     <div class="body">
       <div class="tickethead"><span class="serial">No. ${serial}</span>${STAMPBOX}${mode === "intercept" ? "" : nightLink()}</div>
       <p class="sentence">${s}</p>
-      ${fc.startWith ? `<p class="startw"><span>Start with:</span> ${N(esc(moveText(fc.startWith)))}</p>` : ""}
+      ${live.startWith || prog || (home && live.comeback) ? `<div class="notes">${home && live.comeback ? `<p class="stillhere"><b>It’s still here.</b></p>` : ""}${live.startWith ? `<p class="startw"><span>Start with:</span> ${N(esc(moveText(live.startWith)))}</p>` : ""}${prog ? `<p class="prog">${N(prog)}</p>` : ""}</div>` : ""}
+      ${home && live.offerRespread ? `<button class="respread" data-respread="${esc(fc.id)}" aria-haspopup="dialog">Re-spread what’s left?</button>` : ""}
       ${nightLoaded ? nightStrip(sittingsOf(night), night.taken, "onticket") : ""}
       ${pk}
-      ${nightLoaded ? "" : `<button class="textbtn notcard" id="notcard">Make a quick deal instead</button>`}
+      ${direct && p !== "act" ? `<button class="textbtn breakfirst" id="breakfirst">Take a break first</button>` : ""}
+      ${nightLoaded || home ? "" : `<button class="textbtn notcard" id="notcard">Make a quick deal instead</button>`}
     </div>
     <div class="stub perf">
       <button class="primary" id="shake">Deal</button>
@@ -2070,42 +2075,43 @@ const SHORT = { deal: "a deal", done: "done", freebie: "on the house", borrow: "
 const DOTS = `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>`;
 /* spec 008 "Day 2 and later": a card per open big one, above the ticket. A comeback card says what to do now and
    nothing about the time between. */
-/* the top card: one stub, its green tab the one button ("Start 30 min"). A break first lives in the ⋯ menu (R31). */
-function bigCard(c) {
-  const t = esc(c.title), prog = c.comeback ? "" : progressText(c.progress);
-  return `<li class="cardwrap"><div class="bigcard${c.comeback ? " comeback" : ""}">
-    <button class="go" data-card="${esc(c.id)}" aria-label="Start ${c.minutes} min, ${t}"><span>Start</span><b>${c.minutes}</b><span>min</span></button>
-    <div class="what">
-      <div class="row"><h2 class="ttl">${c.comeback ? `${t}’s still here.` : t}</h2><button class="more" data-menu="${esc(c.id)}" aria-haspopup="dialog" aria-label="More for ${t}">${DOTS}</button></div>
-      ${c.comeback ? `<p class="ask">Smaller first move today?</p>` : ""}
-      ${c.startWith ? `<p class="startw"><span>Start with:</span> ${N(esc(moveText(c.startWith)))}</p>` : ""}
-      ${c.offerRespread ? `<button class="respread" data-respread="${esc(c.id)}" aria-haspopup="dialog">Re-spread what’s left?</button>` : ""}
-      ${prog ? `<p class="prog">${N(prog)}</p>` : ""}
-    </div>
-  </div></li>`;
-}
 /* the next ones: a plain row each, the title and "Start 20 min", with the same ⋯ menu */
 /* R45: the title, a small stub with the minutes (the start button), the menu */
+/* spec 015: under the ticket every big one has the same stamp; its length is in the words beside it */
+const goStamp = (c, attr = "data-card") => `<button class="ministub go1" ${attr}="${esc(c.id)}" aria-label="Start ${c.minutes} min on ${esc(c.title)}"><span>Start</span></button>`;
 const miniStub = (attr, id, m, t) => `<button class="ministub" ${attr}="${esc(id)}" aria-label="Start ${m} min on ${esc(t)}"><span>Start</span><b>${m}</b><span>min</span></button>`;
-const bigRow = c => `<li class="bitem">${miniStub("data-card", c.id, c.minutes, c.title)}<span class="btitle">${esc(c.title)}</span><button class="more" data-menu="${esc(c.id)}" aria-haspopup="dialog" aria-label="More for ${esc(c.title)}">${DOTS}</button></li>`;
 /* the cards on screen: open big ones, less the one loaded onto the ticket */
-const shownCards = () => bigOneCards === null ? [] : cards().filter(c => !fromCard || c.id !== fromCard.id).slice(0, CARDS_SHOWN);
-function cardsView() {
-  /* the card loaded into the ticket is on the ticket now, not above it */
-  if (bigOneCards === null) return "";
-  const shown = shownCards();
-  const link = `<button class="textbtn allbig" id="allbig" aria-haspopup="dialog">All big tasks</button>`;
-  /* R28: the list also holds the ones set aside, so it stays reachable whenever a card is shown or one is set aside */
-  if (!shown.length) return asideKnown() ? link : "";
-  shown.forEach(c => { if (c.comeback) noteComeback(c.id); });
-  return `<ul class="bigones" aria-label="Your big ones">${bigCard(shown[0])}${shown.slice(1).map(bigRow).join("")}</ul>
-  ${link}`;
-}
-/* R30, R42: while a card leads, the Quick Deal sits behind a second door: a dashed, empty ticket stub. It is one
-   disclosure button that stays in place (open, it heads the ticket), so it can be closed again. A card loaded with
-   a break first needs the ticket, so then there is no door. */
+const shownCards = () => bigOneCards === null ? [] : cards().filter(c => !fromCard || c.id !== fromCard.id).slice(0, CARDS_SHOWN - 1);
 const PLUS = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>`;
-const quickDoor = open => `<button class="quickrow" id="quickopen" aria-expanded="${open}" aria-controls="quickdeal"><span class="plus">${PLUS}</span><span class="qt">Or make a quick deal</span><span class="chev" aria-hidden="true">${CHEV}</span></button>`;
+/* spec 015: home is the ticket. With a big one open and nothing planned for tonight, the ticket always carries one:
+   the first, until another is swapped on or the quick deal is asked for. */
+const swapHome = () => !nightOn && !nightLeft().length && cards().length > 0 && mode !== "intercept";
+/* on the ticket without a break: the sitting alone ("30 min of History paper."), started by Deal as the card's stamp did */
+const fcDirect = () => !!fromCard && !nightLoaded && swapHome() && (fromCard.direct || !deal.act);
+function seat(c) {
+  fromCard = { id: c.id, title: c.title, startWith: c.startWith || "", minutes: c.minutes, comeback: !!c.comeback, prevFocus: fromCard ? fromCard.prevFocus : deal.focusMin, direct: true, seated: true };
+  deal.focusMin = c.minutes;
+}
+/* a swap answers on the ticket: the sentence is written again */
+function reink() { const t = document.querySelector("#ticket .sentence"); if (t && t.animate && !reduce) t.animate([{ opacity: .2, transform: "translateY(5px)" }, { opacity: 1, transform: "none" }], { duration: 200, easing: "ease-out" }); }
+function seatHome() {
+  /* a big one home put on the ticket comes off when it is gone, or when home is no longer this (tonight planned) */
+  if (fromCard && !nightLoaded && ((bigOneCards !== null && !cardById(fromCard.id)) || (fromCard.seated && !swapHome()))) { deal.focusMin = fromCard.prevFocus; fromCard = null; }
+  if (swapHome() && !fromCard && !quickOpen) seat(cards()[0]);
+}
+/* the others, and the ordinary deal: lines that go on with the ticket's sentence. The name swaps it onto the ticket;
+   the small imprint starts it as it stands. */
+function cardsView() {
+  if (bigOneCards === null) return "";
+  const link = `<button class="textbtn allbig" id="allbig" aria-haspopup="dialog">All big tasks</button>`;
+  if (!swapHome()) return asideKnown() ? link : "";
+  const shown = shownCards();
+  shown.forEach(c => { if (c.comeback) noteComeback(c.id); });
+  if (fromCard && fromCard.comeback) noteComeback(fromCard.id);
+  const lines = shown.map(c => `<li class="swapline"><p class="said"><b>${N(`${c.minutes} min`)}</b> of <button class="swapname" data-load="${esc(c.id)}" aria-label="${esc(c.title)}, put it on the ticket">${esc(c.title)}</button></p>${goStamp(c)}</li>`).join("");
+  const quick = fromCard ? `<button class="textbtn quickon" id="quickopen">Quick deal</button>` : "";
+  return `<ul class="swaps" aria-label="Or instead">${lines}<li class="swapline last">${quick}${link}</li></ul>`;
+}
 /* spec 008 "Weekly check-in": { key } while the question is up (the Sunday's day key), else null. Core decides when
    (shouldAskCheckIn); the shell sends it here. Answering or the x hides it for the week. */
 let weekAsk = null;
@@ -2519,10 +2525,10 @@ function startView() {
   if (nightOn) return `<h1 class="home vh">Tonight</h1>${nightTicket()}
   <section class="rows anchor" aria-label="Your room">${presence()}</section>`;
   const planned = nightLeft().length > 0;
-  const door = !fromCard && !planned && shownCards().length > 0, folded = door && !quickOpen;
-  const tk = door ? `${quickDoor(!folded)}<div id="quickdeal"${folded ? " hidden" : ""}>${ticket(true)}</div>` : ticket(true);
-  return `<h1 class="home vh">Make a deal</h1>${weekView()}${planned ? "" : cardsView()}${tk}${planned && nightLoaded ? nightMap() : ""}${nightRest()}
-  ${deal.act && !folded ? `<button class="textbtn skip" id="skipbreak">Skip ${esc(deal.act)}, start ${esc(fromCard ? fromCard.title : big.on ? bigTitle() : shortTask())} now</button>` : ""}
+  const folded = false, tk = ticket(true);
+  return `<h1 class="home vh">Make a deal</h1>${weekView()}${tk}${planned && nightLoaded ? nightMap() : ""}${nightRest()}
+  ${deal.act && !fcDirect() ? `<button class="textbtn skip" id="skipbreak">Skip ${esc(deal.act)}, start ${esc(fromCard ? fromCard.title : big.on ? bigTitle() : shortTask())} now</button>` : ""}
+  ${planned ? "" : cardsView()}
   <section class="rows${folded ? "" : " anchor"}" aria-label="Your room">${presence()}</section>`;
 }
 function interceptView() {
@@ -2758,11 +2764,10 @@ function panelBody() {
     return `<h2 id="ph" tabindex="-1">${t}</h2>
       <span class="pperf" aria-hidden="true"></span>
       <div class="menu" role="group" aria-labelledby="ph">
-        <button class="mrow" id="m-break">Take a break first<small>${N(`A break, then ${c.minutes} min on this.`)}</small></button>
-        <button class="mrow" id="m-split">Split into pieces<small>${hasPieces ? "Rename, resize, add or remove pieces." : "Name the parts and guess the minutes for each."}</small></button>
+        <button class="mrow" id="m-split">Split into pieces${hasPieces ? "<small>Rename, resize, add or remove pieces.</small>" : ""}</button>
         <button class="mrow" id="m-spread">Spread over the days left<small>${spreadable(pl) ? "A little each day up to the due day. Nothing is set until you sign." : "Split it first, then spread the pieces."}</small></button>
         <button class="mrow" id="m-fresh">Start fresh on this one<small>Clears your next step and your size guess. Pieces stay.</small></button>
-        <button class="mrow" id="m-aside">Set aside<small>Off this screen. It waits in All big tasks.</small></button>
+        <button class="mrow" id="m-aside">Set aside</button>
         <button class="mrow gone" id="m-del">Delete<small>Gone for good, notes and all.</small></button>
       </div>
       <button class="textbtn pclose" id="p-close">Close</button>`;
@@ -2773,7 +2778,7 @@ function panelBody() {
   /* R38, R45: open ones read like the rows under the card, each with its minutes stub; "Bring it back" is a quiet link */
   const row = it => it.status === "set_aside"
     ? `<li class="bitem setaside"><span class="btitle">${esc(it.title)}</span><button class="textbtn reopen" data-reopen="${esc(it.id)}" aria-label="Bring it back, ${esc(it.title)}">Bring it back</button></li>`
-    : `<li class="bitem"><span class="btitle">${esc(it.title)}</span>${miniStub("data-lstart", it.id, (cardById(it.id) || {}).minutes || 15, it.title)}</li>`;
+    : (m => `<li class="bitem"><p class="said"><b>${N(`${m} min`)}</b> of <span class="btitle">${esc(it.title)}</span></p>${goStamp({ id: it.id, title: it.title, minutes: m }, "data-lstart")}</li>`)((cardById(it.id) || {}).minutes || 15);
   const open = (items || []).filter(i => i.status !== "set_aside"), aside = (items || []).filter(i => i.status === "set_aside");
   const list = panel.error ? `<p>Your big ones didn't load.</p><button class="secondary" id="l-retry">Try again</button>`
     : !items ? `<p class="soft" role="status">Getting your big ones…</p>`
@@ -3259,7 +3264,6 @@ function bindPanel() {
   on("#p-close", () => closePanel());
   on("#i-later", () => closePanel());
   /* R31: "Break first?" moved here: the card goes onto the Quick Deal ticket so a break can be planned before it */
-  on("#m-break", () => { const id = panel.id; panel = null; loadCard(id); });
   on("#m-split", () => { const id = panel.id; openSplit(id, `[data-menu="${id}"]`); });
   on("#m-spread", () => { const id = panel.id; openSpread(id, `[data-menu="${id}"]`); });
   bindPlanning();
@@ -3407,7 +3411,10 @@ function bind() {
   /* spec 008: a comeback card's re-spread opens the spread sheet with a fresh proposal over the days left */
   document.querySelectorAll("[data-respread]").forEach(b => b.onclick = () => openSpread(b.dataset.respread, `[data-respread="${b.dataset.respread}"]`, true));
   /* R30: the folded Quick Deal opens in place and stays open for this visit; focus goes to its first part */
-  on("#quickopen", () => { quickOpen = !quickOpen; if (!quickOpen) picker = null; nextFocus = "#quickopen"; render(); });
+  on("#quickopen", () => { quickOpen = true; if (fromCard) { deal.focusMin = fromCard.prevFocus; fromCard = null; } picker = null; nextFocus = '[data-pick="act"]'; render(); reink(); say("A quick deal is on the ticket."); });
+  /* spec 015: a line's name swaps that big one onto the ticket; the quick deal closes by swapping one back */
+  document.querySelectorAll("[data-load]").forEach(b => b.onclick = () => { const c = cardById(b.dataset.load); if (!c) return; quickOpen = false; picker = null; seat(c); nextFocus = "#shake"; render(); reink(); say(`${c.title} is on the ticket.`); });
+  on("#breakfirst", () => { fromCard.direct = false; picker = deal.act ? null : "act"; nextFocus = deal.act ? '[data-pick="break"]' : '[data-pick="act"]'; render(); });
   /* the card goes back above the ticket; focus returns to its ⋯, where "Take a break first" was */
   on("#notcard", () => { nightLoaded = false; const id = fromCard.id; deal.focusMin = fromCard.prevFocus; fromCard = null; picker = null; nextFocus = `[data-menu="${id}"]`; render(); say("Back to a new deal."); });
   on("#keepon", () => {
@@ -3438,10 +3445,13 @@ function bind() {
     const fc = mode !== "intercept" ? fromCard : null;
     const bg = !fc && mode !== "intercept" && big.on ? { ...big } : null;
     const d = fc ? { ...deal, task: fc.title } : bg ? { ...deal, focusMin: bg.pay } : { ...deal };
+    const direct = fc && fcDirect();
     const go = () => {
       stamping = false;
+      if (direct) return void startCard(cardById(fc.id) || fc, { act: null, breakMin: deal.breakMin, task: fc.title, focusMin: deal.focusMin });
       S = buildSession(d); S.justStarted = true; S.serial = serial; mode = "start"; picker = null; offerPush();
       /* the Quick Deal's own length comes back once the card's deal is made */
+      quickOpen = false;
       if (fc) { deal.focusMin = fc.prevFocus; fromCard = null; S.taskId = fc.id; S.firstMove = fc.startWith || ""; }
       if (bg) S.firstMove = bg.move.trim();
       if (BE) {
@@ -3540,7 +3550,7 @@ function on(sel, fn) { const el = $(sel); if (el) el.onclick = fn; }
 /* stamp buttons: a press slams the stamp first and the button does its job once it has landed (about 280 ms), so you
    see what you agreed to. DEAL runs its own longer sequence. With reduced motion the stamp is just inked, at once. */
 document.addEventListener("click", e => {
-  const b = e.target.closest && e.target.closest("button.primary:not(#shake), .bigcard button.go");
+  const b = e.target.closest && e.target.closest("button.primary:not(#shake), button.ministub.go1");
   if (!b || b.disabled || b.dataset.inked) return;
   e.stopImmediatePropagation(); e.preventDefault();
   b.classList.add("pressed"); buzz(14, reduce ? 0 : 200);
@@ -3552,7 +3562,7 @@ let stamping = false;
 function startCard(c, d) {
   /* a ticket loaded from another card goes back to the plain Quick Deal, with its own length */
   if (fromCard) { deal.focusMin = fromCard.prevFocus; fromCard = null; }
-  panel = null; picker = null; mode = "start";
+  panel = null; picker = null; mode = "start"; quickOpen = false;
   S = buildSession(d); S.justStarted = true; S.serial = String(412 + ledger.length).padStart(4, "0"); S.taskId = c.id; S.firstMove = c.startWith || ""; offerPush();
   if (BE) { BE.startFromCard(c.id, d); if (c.comeback) BE.logEvent("comeback_started", c.id); }
   toast = "Deal. Go.";
@@ -3885,6 +3895,8 @@ function fromHash() {
     if (h === "cards-menu" || h === "cards-delete") after = () => { openPanel({ kind: "menu", id: "paper", confirm: h === "cards-delete" }, '[data-menu="paper"]'); };
     else if (h === "cards-all") after = () => openList();
     else if (h === "cards-breakfirst") after = () => loadCard("paper");
+    /* spec 015: the quick deal swapped onto the ticket in place of the big one */
+    else if (h === "cards-quick") after = () => { const q = $("#quickopen"); if (q) q.click(); };
   }
   /* spec 008 planning on the card: Split (writing with a gut size; exam without one), Spread (pieces with a due day;
      exam topics; no due day yet), and the comeback's re-spread */
