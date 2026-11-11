@@ -1089,13 +1089,15 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 #night-picker[role="radiogroup"] { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 #night-picker[role="radiogroup"] .longrow { grid-column: 1 / -1; display: grid; grid-template-columns: inherit; gap: 8px; margin: 2px 0 0; padding-top: 10px; }
 #night-picker[role="radiogroup"] .chip { justify-content: center; white-space: nowrap; }
-.ticket.night .onedeal { align-self: flex-start; margin: -8px 0 -8px -12px; }
+.ticketwrap + .onedeal { align-self: center; margin: -6px auto -10px; }
+/* the rest of tonight, said under the ticket where the quiet line goes */
+.nightrest { align-self: center; max-width: 34em; margin: -6px auto 6px; text-align: center; font-size: .9375rem; line-height: 1.35; color: color-mix(in srgb, var(--soft) 85%, transparent); text-wrap: balance; }
 /* the unprinted top of the tape: tonight's sittings, lengths where the times go, one faint ink but the next one */
 .tocome { display: flex; flex-direction: column; }
 .tocome h3 { margin: 0 0 4px; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 750; font-size: 1.1875rem; }
 .tocome h3 span { font-stretch: var(--wd-act); font-weight: 600; font-size: .9375rem; color: var(--soft); }
 .tocome ol { list-style: none; margin: 0; padding: 0; }
-.tocome li { display: grid; grid-template-columns: 5.25em 1fr; padding: 11px 0 10px; border-top: 1.5px dashed var(--edge-half); color: color-mix(in srgb, var(--ink) 50%, transparent); }
+.tocome li { display: grid; grid-template-columns: 5.25em 1fr; padding: 11px 0 10px; border-top: 1.5px dashed var(--edge-half); color: color-mix(in srgb, var(--ink) 64%, transparent); }
 .tocome li b { font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 600; font-size: 1.0625rem; line-height: 1.2; }
 .tocome li .nm { font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 750; font-size: 1.25rem; line-height: 1.15; }
 .tocome li em { display: block; font-style: normal; font-size: .9375rem; line-height: 1.35; margin-top: 2px; }
@@ -1760,7 +1762,7 @@ function ticket(peek) {
     : deal.act
       ? `<span class="nowrap">${tokB(p)} of ${tokA(p)},</span> then <span class="nowrap">${tokF(p)} of</span> <span class="nowrap">${tokT(p)}.</span>`
       : `${tokA(p)}. Straight into <span class="nowrap">${tokF(p)} of</span> <span class="nowrap">${tokT(p)}.</span>`;
-  const bigChip = offerBig ? `<button class="bigchip" id="bigchip" aria-pressed="${big.on}"><span class="cbox" aria-hidden="true">${CHECK}</span>Needs more than one sitting?</button>` : "";
+  const bigChip = offerBig && !nightLoaded ? `<button class="bigchip" id="bigchip" aria-pressed="${big.on}"><span class="cbox" aria-hidden="true">${CHECK}</span>Needs more than one sitting?</button>` : "";
   /* R32: the two optional rows are phrases on the ticket, "About 2h" and "Mostly writing", with printed boxes to ink.
      Each name starts with what's printed ("2h, about 2 hours"), so voice control and screen readers agree. */
   const bigRows = isBig ? `<div class="firstmove"><label for="firstmove">When I sit down, I'll first:</label><textarea id="firstmove" rows="1" maxlength="140" enterkeyhint="done" placeholder="Open the doc and write one line">${esc(big.move)}</textarea></div>
@@ -1922,24 +1924,23 @@ function nightTicket() {
   const its = night.items, p = nightPick, open = its.length < NIGHT_MAX;
   /* each item holds together: "then" stays with its size, the comma or full stop with its name */
   const typing = !!night.draft;
-  const phrase = (it, i) => `<span class="nowrap">${i && i === its.length - 1 && !typing ? "then " : ""}<button class="tok" data-nsize="${i}" aria-expanded="${!!p && p.i === i && p.kind === "size"}" aria-controls="night-picker" aria-label="${esc(sizeText(it))}, length, change">${N(esc(sizeText(it)))}</button> ${it.n > 1 ? "on" : "of"}</span> <span class="nowrap"><button class="tok" data-nname="${i}" aria-expanded="${!!p && p.i === i && p.kind === "name"}" aria-controls="night-picker" aria-label="${esc(it.name)}, change">${esc(it.name)}</button>${i < its.length - 1 || typing ? "," : "."}</span>`;
+  const phrase = (it, i) => `<span class="nowrap">${i && i === its.length - 1 && !typing ? "then " : ""}<button class="tok" data-nsize="${i}" aria-expanded="${!!p && p.i === i && p.kind === "size"}" aria-controls="night-picker" aria-label="${esc(sizeText(it))}, length, change">${N(esc(sizeText(it)))}</button></span> <span class="nowrap">of <button class="tok" data-nname="${i}" aria-expanded="${!!p && p.i === i && p.kind === "name"}" aria-controls="night-picker" aria-label="${esc(it.name)}, change">${esc(it.name)}</button>${i < its.length - 1 || typing ? "," : "."}</span>`;
   const body = its.map(phrase).join(" ");
   const field = open ? `<label class="vh" for="nightin">Tonight</label><input class="nightin" id="nightin" value="${esc(night.draft)}" size="${Math.max(2, night.draft.length + 1)}" maxlength="120" autocomplete="off" enterkeyhint="done"${its.length ? "" : ` placeholder="history paper 1h, orgo set 4"`}>` : "";
   const it = p ? its[p.i] : null;
   const pk = !it ? "" : p.kind === "size"
     ? `<div class="picker" id="night-picker" role="radiogroup" aria-label="Length of ${esc(it.name)}">${NIGHT_SIZES.filter(s => s[0] === 1).map(s => sizeChip(it, s)).join("")}<div class="longrow">${NIGHT_SIZES.filter(s => s[0] > 1).map(s => sizeChip(it, s)).join("")}</div></div>`
-    : `<div class="picker" id="night-picker"><label class="vh" for="nname">Name</label><input class="nightname" id="nname" value="${esc(it.name)}" maxlength="80" autocomplete="off" enterkeyhint="done"><button class="chip" id="nnamedone">Done</button><button class="textbtn" id="nout">Take it out</button></div>`;
+    : `<div class="picker" id="night-picker"><label class="vh" for="nname">Name</label><input class="nightname" id="nname" value="${esc(it.name)}" maxlength="80" autocomplete="off" enterkeyhint="done"><button class="chip" id="nnamedone">Done</button>${p.i > 0 ? `<button class="textbtn" id="nfirst">Do this first</button>` : ""}<button class="textbtn" id="nout">Take it out</button></div>`;
   const fit = nightFit(sittingsOf(night));
   return `<div class="ticketwrap peek"><section class="ticket night" id="ticket" aria-label="Tonight">
     <div class="body">
-      <div class="tickethead"><span class="serial">No. ${String(412 + ledger.length).padStart(4, "0")}<br>${new Date(Date.now() + (BE ? 0 : DEMO_SHIFT)).toLocaleDateString([], { weekday: "long" })}</span></div>
+      <div class="tickethead"><span class="serial">No. ${String(412 + ledger.length).padStart(4, "0")}</span></div>
       <p class="sentence"><span class="lead">Tonight,</span> ${body} ${field}</p>
       ${pk}
       ${fit ? `<p class="nightfit">${N(fit)}</p>` : ""}
-      <button class="textbtn onedeal" id="onedeal">Just one deal</button>
     </div>
     <div class="stub perf"><button class="primary" id="print"${its.length || parseItem(night.draft) ? "" : " disabled"}>Print</button></div>
-  </section></div>`;
+  </section></div><button class="textbtn onedeal" id="onedeal">Just one deal</button>`;
 }
 const sizeChip = (it, s) => { const on = it.n === s[0] && it.min === s[1]; return `<button class="chip" role="radio" data-nsizeset="${s[0]}:${s[1]}" aria-checked="${on}">${on ? CHECK : ""}${N(sizeText({ n: s[0], min: s[1] }))}</button>`; };
 /* the next sitting goes on the deal ticket: a big one's as if loaded from its card, anything else as a plain deal */
@@ -1990,6 +1991,7 @@ function bindNight() {
     nn.onkeydown = e => { if (e.key === "Enter") { e.preventDefault(); done(); } };
     on("#nnamedone", done);
   }
+  on("#nfirst", () => { const it = night.items.splice(nightPick.i, 1)[0]; night.items.unshift(it); nightPick = null; nextFocus = '[data-nname="0"]'; render(); say(`${it.name} is first tonight.`); });
   on("#nout", () => { const it = night.items.splice(nightPick.i, 1)[0]; nightPick = null; nextFocus = "#nightin"; render(); say(`${it.name} is out of tonight.`); });
   on("#print", () => printNight());
   on("#onedeal", () => { nightOn = false; nightPick = null; nextFocus = "#plannight"; render(); });
@@ -1997,6 +1999,13 @@ function bindNight() {
     if (night && night.printed && nightLeft().length) reopenNight(); else if (!night || night.printed) night = newNight();
     nightOn = true; nightPick = null; nextFocus = "#nightin"; render();
   });
+}
+/* "Then History paper again, Orgo problem set 4 and BIO 180 ch. 7.": what's left after the loaded sitting */
+function nightRest() {
+  const left = nightLeft(); if (!nightLoaded || left.length < 2) return "";
+  const names = []; left.slice(1).forEach(s => { const n = s.name === left[0].name && !names.length ? `${s.name} again` : s.name; if (!names.includes(n) && !names.includes(`${s.name} again`)) names.push(n); });
+  const said = names.length > 1 ? `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}` : names[0];
+  return `<p class="nightrest">${N(esc(`Then ${said}.`))}</p>`;
 }
 const nightLink = () => nightOn || S ? "" : `<button class="textbtn" id="plannight">${nightLeft().length ? "Change tonight" : "Plan tonight"}</button>`;
 /* the unprinted top of the tape */
@@ -2013,7 +2022,7 @@ function startView() {
   const planned = nightLeft().length > 0;
   const door = !fromCard && !planned && shownCards().length > 0, folded = door && !quickOpen;
   const tk = door ? `${quickDoor(!folded)}<div id="quickdeal"${folded ? " hidden" : ""}>${ticket(true)}</div>` : ticket(true);
-  return `<div class="homehead"><h1 class="home vh">Make a deal</h1>${nightLink()}</div>${weekView()}${planned ? "" : cardsView()}${tk}
+  return `<div class="homehead"><h1 class="home vh">Make a deal</h1>${nightLink()}</div>${weekView()}${planned ? "" : cardsView()}${tk}${nightRest()}
   ${deal.act && !folded ? `<button class="textbtn skip" id="skipbreak">Skip ${esc(deal.act)}, start ${esc(fromCard ? fromCard.title : big.on ? bigTitle() : shortTask())} now</button>` : ""}
   <section class="rows${folded ? "" : " anchor"}" aria-label="Your room">${presence()}</section>`;
 }

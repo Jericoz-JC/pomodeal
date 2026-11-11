@@ -16,7 +16,7 @@ You write tonight as one sentence on a ticket, the way you write a deal. Type th
 
 and the ticket turns them into a sentence of things you can change:
 
-> **Tonight,** <u>2 × 30 min</u> on <u>History paper</u>, <u>45 min</u> of <u>Orgo problem set 4</u>, then <u>20 min</u> of <u>BIO 180 ch. 7</u>.
+> **Tonight,** <u>2 × 30 min</u> of <u>History paper</u>, <u>45 min</u> of <u>Orgo problem set 4</u>, then <u>20 min</u> of <u>BIO 180 ch. 7</u>.
 
 Stamp **Print**. Tonight's sittings print on the tape, unprinted, under "Still to come". The deal ticket now holds the first one, and each deal you make takes the next one off the list. Nothing new to manage: every sitting is an ordinary deal, a sitting on a big one is that big one's next sitting, and the tape is still the record of the night.
 
@@ -37,7 +37,7 @@ Never: "schedule", "agenda", "to-do", "plan" as a noun on screen, "overdue", "mi
 
 ### 1. Open it
 
-On the home screen, beside "Make a deal", a link: **Plan tonight**. It turns the deal ticket into tonight's ticket. The ticket's head keeps its serial and the date ("No. 0425, Tuesday"). Under the ticket, the quiet way back: **Just one deal**.
+On the home screen, at the top right of the ticket, a link: **Plan tonight**. It turns the deal ticket into tonight's ticket, which keeps its serial. Under the ticket, where a deal keeps its quiet line, the way back: **Just one deal**.
 
 ### 2. Type the line
 
@@ -52,8 +52,8 @@ What a closed item understands, and nothing else (no symbols to learn):
 
 Every underlined word is a button, as on the deal ticket:
 
-- **A size** opens the size choices, the deal's length picker in the same printed boxes: **15 min, 20 min, 30 min, 45 min**, then past a hairline **2 × 30 min, 2 × 45 min, 3 × 30 min, 3 × 45 min**. Picking a two- or three-sitting size cuts the item into sittings with a break between them, and the sentence says so: "2 × 30 min on History paper". No − and +, no number field.
-- **A name** opens a one-line field to rename it, with **Take it out** as a link.
+- **A size** opens the size choices, the deal's length picker in the same printed boxes: **15 min, 20 min, 30 min, 45 min**, then past a hairline **2 × 30 min, 2 × 45 min, 3 × 30 min, 3 × 45 min**. Picking a two- or three-sitting size cuts the item into sittings with a break between them, and the sentence says so: "2 × 30 min of History paper". No − and +, no number field.
+- **A name** opens a one-line field to rename it, with **Do this first** (moves it to the front; not on the first item) and **Take it out** as links. Typing the line in another order does the same.
 
 Under the sentence, one line said calmly, after a rule: **"2h 15 min of focus. Done around 11:15pm."** The finishing time counts the breaks between sittings (spec 010's break between rounds: 5 min after a quick length, a quarter of a long one) from now. If it runs past midnight it still just says the time.
 
@@ -65,7 +65,7 @@ The stub's stamp is **Print**, the size of DEAL. It's dashed and quiet until the
 - puts the first sitting on the deal ticket: "10 min of Reels, then 30 min of History paper." with its "Start with:" line when it's a big one. The break is yours to pick as on any deal;
 - swaps the home link to **Change tonight**, which opens tonight's ticket again with what's left.
 
-While a night is printed, the big-one cards step back (they are in the night already; "All big tasks" stays as the way to the rest), so the home screen has one ticket and one stamp.
+While a night is printed, the big-one cards step back (they are in the night already; Change tonight, then Just one deal, brings them back), so the home screen has one ticket and one stamp. Under the ticket, in the place of "Needs more than one sitting?", one quiet line says the rest of the night: **"Then History paper again, Orgo problem set 4 and BIO 180 ch. 7."** On a phone the tape is below the fold, so this line is how the night stays in view.
 
 ### 5. The tape
 
@@ -106,7 +106,9 @@ At the local day's turn, rows still under Still to come leave the tape without a
 | Home link (no night) | Plan tonight |
 | Home link (night printed) | Change tonight |
 | Sentence opener | Tonight, |
-| Multi-sitting size | 2 × 30 min on History paper |
+| Multi-sitting size | 2 × 30 min of History paper |
+| The rest of tonight, under the ticket | Then History paper again, Orgo problem set 4 and BIO 180 ch. 7. |
+| Reorder link | Do this first |
 | Fit line | 2h 15 min of focus. Done around 11:15pm. |
 | Stamp | Print |
 | Back to a single deal | Just one deal |
@@ -180,7 +182,7 @@ nights: defineTable({
 
 ## Out of scope
 
-- Reordering sittings by dragging rows on the tape (the primary user asked for it in round 0; typing the line in another order does it today). For Chris.
+- Reordering by dragging rows on the tape (the primary user asked in rounds 0 and 2). "Do this first" in a name's choices covers the common case; dragging is for Chris.
 - Clock start times for sittings, a calendar, or anything that reshuffles on its own.
 - Planning another day than tonight (spreading a big one stays spec 008's Spread).
 - Planning breaks in the line; each sitting's break is picked on its deal as today.
@@ -210,3 +212,50 @@ All three picked the line: "the deal sentence I already use", "three assignments
 Fixes taken into this spec (two or more reviewers): no line saying which names matched (the name snaps to the big one's exact title instead); "50 min of History paper in 2 sittings" read as total or each, so the size says "2 × 30 min"; the stamp as large as DEAL and the sentence set so the ticket isn't crowded; one faint ink for Still to come with only the next row in full; the tape in the sentence's order; the phone footer and long sentence. Kept from the reviewers' praise: "Done around 10:30pm" and "Just one deal".
 
 Not taken: dragging tape rows to reorder (one reviewer; a new interaction, for Chris); one item per line on the ticket (would turn the sentence into line items, which `settled.md` rules out).
+
+### Round 1: the built screens
+
+On the overhaul's base (rebased onto `d7c340f`: the hidden home heading, the DEAL die, the dial alone). Desk 1440 by 900 and phone 375, light and dark.
+
+| Round | Designer | Primary user | Taste | Fixed after it (two or more agreed) |
+| --- | --- | --- | --- | --- |
+| 1 | 7.5/10 | 8/10 | 7.5/10 | No "Make a deal" heading over tonight's ticket; "Then History paper, 2 of 2." under the dial; no "Make a quick deal instead" on a sitting loaded from tonight; the size choices in a two-column grid; the fit line one sentence with both numbers in Archivo, never broken before the time. One reviewer each, cheap: no "finished?" while more sittings of the same big one wait tonight; "bio ch 7" matches the deal's own task ("BIO 180 ch. 7", not "Reading BIO 180 ch. 7"); the tape's perforation starts and ends on a hole |
+
+Not taken: thinner underlines on names than on sizes (taste only; `settled.md` says the words you can change are underlined, all alike); one row per sitting on the tape while it runs (designer only; the tape's running row is spec 009's, outside this change); dragging tape rows to reorder (for Chris, as in round 0).
+
+Shots: `012-shots/after-desk-light.png`, `after-desk-dark.png`, `after-phone-light.png`, `after-phone-dark.png`.
+
+### Round 2: benchmark, with and without the planner
+
+Each reviewer ranked twelve apps on taste from App Store screenshots (the council's nine: Forest, Opal, Structured, Session, Flow, Tiimo, Things 3, one sec, Focus Friend; plus Sunsama and Notion from this research) against Pomodeal's home and start screens at 1440 by 900 and 375, light and dark: once without the planner, once with it.
+
+| Reviewer | Without the planner | With the planner | The planner itself (vs Structured, Tiimo, Things 3, Sunsama) |
+| --- | --- | --- | --- |
+| Designer | 4th, 7.5/10 | 3rd, 8/10 | 7.5/10 |
+| Primary user | 6th, 7.5/10 | 3rd, 8.5/10 | 7.5/10 |
+| Taste | 4th, 7.5/10 | 3rd, 8/10 | 7.5/10 |
+
+Above Pomodeal with the planner: Things 3 and Opal (designer, taste), Structured and Things 3 (primary user). What they do better: Things 3's one calm measure and its quiet "This Evening"; Opal's single hero figure and depth; Structured's whole night as a shape; Session's intention and dial on one screen. Why the planner itself stops at 7.5: no reordering, and on a phone the night disappears below the fold once printed.
+
+Fixed after it: the rest of the night as a quiet line under the ticket (designer, primary user); "of" for every size, not "on" for multi-sitting ones (taste, primary user); Still to come's faint rows one step darker (taste, primary user); "Just one deal" under the ticket (designer); no day name on tonight's ticket, the desk header says it (taste); "Do this first" in a name's choices (primary user, and round 0).
+
+Not taken, for Chris: the tape card's "Try it tonight" beside "Change tonight" (demo-only sample insight; two reviewers); Still to come above "Today's deals" rather than under its heading (designer); the tonight sentence at the deal's full size with a narrower Print stub (taste); naming the sitting on "Another round?" ("…then History paper, 2 of 2", primary user).
+
+### Round 3
+
+| Round | Designer | Primary user | Taste | After it |
+| --- | --- | --- | --- | --- |
+| 3 | 8/10 | 8/10 | 8/10 | Stopped: all three at 8, and the council's three-round cap. Made, as all three asked: the "Then…" line a step smaller and fainter, with a gap before the Skip link; "of" kept with the name it belongs to, so no line ends on "of" (taste) |
+
+### Open, for Chris
+
+- **"Change tonight" floats** above the ticket's corner, and the ticket moves down about 40 px when Print lands (all three in round 3). Set it on the ticket's serial row, opposite "No. 0415", in both states.
+- **"Another round?" when the next sitting is a different task** (History into Orgo) isn't another round; "Next up?" was suggested (primary user, designer).
+- **Done around 10:24pm after Print** lives only on the tape; the primary user wants it on the "Then…" line too.
+- **Done for now with sittings left:** the night stays printed (section 6); the designer wants that said in the spec only, as it now is.
+- **The tape's perforation** under Still to come shows a small notch at its left end (designer, taste).
+- **Reordering by dragging** tape rows, beyond "Do this first".
+
+### Ranking, in short
+
+Without the planner Pomodeal ranked 4th, 6th and 4th of twelve on taste (7.5 from each reviewer); with it, 3rd from all three (8, 8.5, 8). The planner itself ended at 8, 8, 8. Shots: `012-shots/after-*.png`. The competitor App Store screenshots stayed out of the repo.
