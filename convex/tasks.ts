@@ -6,6 +6,7 @@ import type { Doc } from "./_generated/dataModel";
 import { bigOneProblem, cleanLine, dealProblem, isDayKey, openTerms, spreadProblem, type Piece } from "../packages/core/src";
 import { logEvent } from "./lib/events";
 import { currentMember, requireMember } from "./lib/members";
+import { takeSitting, unlinkFromNights } from "./lib/nights";
 import { clearSuggestions } from "./lib/suggestions";
 import { badBigOne, checkDayKey, ownTask } from "./lib/tasks";
 import { piece, taskType } from "./schema";
@@ -112,14 +113,15 @@ export const create = mutation({
 
 /** Day 2 and later: the card's one button. Starting a set-aside or done big one opens it again. */
 export const startFromCard = mutation({
-  args: { taskId: v.id("tasks"), deal: quickDeal, dayKey: v.string() },
-  handler: async (ctx, { taskId, deal, dayKey }) => {
+  args: { taskId: v.id("tasks"), deal: quickDeal, dayKey: v.string(), fromNight: v.optional(v.number()) },
+  handler: async (ctx, { taskId, deal, dayKey, fromNight }) => {
     const user = await requireMember(ctx);
     checkDayKey(dayKey);
     const task = await ownTask(ctx, user, taskId);
     if (task.status !== "open") await ctx.db.patch(taskId, { status: "open" });
     const now = Date.now();
     const sessionId = await startSession(ctx, user, deal, now, taskId, dayKey);
+    if (fromNight !== undefined) await takeSitting(ctx, user, dayKey, fromNight);
     return { sessionId, serverNow: now };
   },
 });
@@ -244,7 +246,7 @@ export const reopen = mutation({
   },
 });
 
-/** Deletes the big one and unlinks its sessions and ledger rows; they (and a running session) stay as ordinary history. */
+/** Deletes the big one and unlinks its sessions, ledger rows and nights; they (and a running session) stay as ordinary history. */
 export const remove = mutation({
   args: { taskId: v.id("tasks") },
   handler: async (ctx, { taskId }) => {
@@ -257,6 +259,7 @@ export const remove = mutation({
       await ctx.db.patch(row._id, { taskId: undefined });
     }
     await clearSuggestions(ctx, taskId);
+    await unlinkFromNights(ctx, user._id, taskId);
     await ctx.db.delete(taskId);
   },
 });

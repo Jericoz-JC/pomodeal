@@ -1779,8 +1779,9 @@ function goAgain() {
   /* spec 012: with tonight printed, the next round is its next sitting */
   const nx = nightNext(), d0 = nx ? nightRound(S, nx) : nextRound(S), { deal: d, forgiven } = repayDebt(d0, S.debt);
   const taskId = nx ? nx.taskId : S.taskId, card = taskId ? cardById(taskId) : null, move = nx ? nx.piece : S.firstMove;
+  const at = nx ? night.taken : undefined;
   if (nx) night.taken++;
-  if (BE) { if (taskId) BE.startFromCard(taskId, d0); else BE.start(d0); }
+  if (BE) { if (taskId) BE.startFromCard(taskId, d0, at); else BE.start(d0, at); }
   fileStop(forgiven); bankFocus();
   S = buildSession(d); S.justStarted = true; S.serial = String(412 + ledger.length).padStart(4, "0");
   /* a big one starts its next round where the bookmark just left it */
@@ -2135,6 +2136,10 @@ const newNight = () => ({ items: [], draft: "", printed: false, taken: 0 });
 const sittingsOf = nt => nt ? nt.items.flatMap(it => Array.from({ length: it.n }, (_, k) => ({ name: it.name, min: it.min, taskId: it.taskId, piece: it.piece, k, of: it.n }))) : [];
 const nightLeft = () => night && night.printed ? sittingsOf(night).slice(night.taken) : [];
 const nightNext = () => nightLeft()[0] || null;
+/* live mode: the index of the sitting on the deal ticket, which the deal takes on the server (spec 012) */
+const nightAt = () => nightLoaded && night ? night.taken : undefined;
+/* tonight as the server stores it (nights.print) */
+const nightItems = () => night.items.map(it => ({ title: it.name, ...(it.taskId ? { taskId: it.taskId } : {}), sittings: it.n, minutes: it.min }));
 const sizeText = it => it.n > 1 ? `${it.n} × ${it.min} min` : `${it.min} min`;
 const snapSize = m => NIGHT_SIZES.reduce((a, s) => Math.abs(s[0] * s[1] - m) < Math.abs(a[0] * a[1] - m) ? s : a);
 /* the night said in one line under the sentence: focus minutes, and when it ends with the breaks between sittings */
@@ -2228,6 +2233,7 @@ function printNight() {
   if (night.draft.trim()) closeDraft(night.draft + ",");
   if (!night.items.length) return;
   night.printed = true; night.taken = 0; nightOn = false; nightPick = null; loadNight();
+  if (BE) BE.printNight(nightItems());
   nextFocus = "#shake"; render(); say(`Tonight is on the tape: ${sittingsOf(night).length} sittings. ${nightNext().name} is on the ticket.`);
 }
 /* what's left goes back into the sentence */
@@ -2237,6 +2243,25 @@ function reopenNight() {
   night = { ...newNight(), items };
   if (nightLoaded && fromCard) { deal.focusMin = fromCard.prevFocus; fromCard = null; }
   nightLoaded = false;
+}
+/* live mode (spec 012 "Building it for real"): tonight is the server's, one per local day (pomodealApp.night).
+   nightDoc is its last copy. A sentence being written stays until it is printed or put away. */
+let nightDoc = null, nightSeen = false;
+function applyNight() {
+  if (nightOn) return;
+  const d = nightDoc, first = !nightSeen; nightSeen = true;
+  if (!d) {
+    if (night && night.printed) { if (nightLoaded && fromCard) { deal.focusMin = fromCard.prevFocus; fromCard = null; } nightLoaded = false; night = null; }
+    return;
+  }
+  const known = knownNames();
+  night = { ...newNight(), printed: true, taken: d.taken, items: d.items.map(it => {
+    const k = it.taskId ? known.find(x => x.taskId === it.taskId) : null;
+    return { name: it.title, n: it.sittings, min: it.minutes, taskId: it.taskId || null, piece: k ? k.piece : "" };
+  }) };
+  /* the deal ticket holds the next sitting: on opening the app, and whenever the one it held was taken elsewhere */
+  if (!S && nightLeft().length && (nightLoaded || first)) loadNight();
+  else if (nightLoaded && !nightLeft().length) { if (fromCard) { deal.focusMin = fromCard.prevFocus; fromCard = null; } nightLoaded = false; }
 }
 /* spec 012: the next round on the done sheet is tonight's next sitting, with the break between rounds */
 function nightRound(s, nx) {
@@ -2286,7 +2311,7 @@ function bindNight() {
   on("#nout", () => { const it = night.items.splice(nightPick.i, 1)[0]; nightPick = null; nextFocus = "#nightin"; render(); say(`${it.name} is out of tonight.`); });
   document.querySelectorAll("[data-nadd]").forEach(b => b.onclick = () => addKnown(addable()[+b.dataset.nadd]));
   on("#print", () => printNight());
-  on("#onedeal", () => { nightOn = false; nightPick = null; nextFocus = "#plannight"; render(); });
+  on("#onedeal", () => { nightOn = false; nightPick = null; if (BE) applyNight(); nextFocus = "#plannight"; render(); });
   on("#plannight", () => {
     if (night && night.printed && nightLeft().length) reopenNight(); else if (!night || night.printed) night = newNight();
     nightOn = true; nightPick = null; nextFocus = "#nightin"; render();
@@ -2483,6 +2508,7 @@ function moveNightItem(kind, from, to) {
     const all = sittingsOf(night), done = groupSittings(all.slice(0, night.taken)).items, left = groupSittings(all.slice(night.taken)).items;
     it = left.splice(from, 1)[0]; left.splice(to, 0, it); night.items = done.concat(left);
     if (nightLoaded && !S) loadNight();
+    if (BE && night.printed) BE.printNight(nightItems(), true);
   }
   render(); say(`${it.name} is ${to === 0 ? "first" : "moved"}.`);
 }
@@ -3446,9 +3472,9 @@ function bind() {
       if (bg) S.firstMove = bg.move.trim();
       if (BE) {
         saveDeal();
-        if (fc) { BE.startFromCard(fc.id, d); if (fc.comeback) BE.logEvent("comeback_started", fc.id); }
+        if (fc) { BE.startFromCard(fc.id, d, nightAt()); if (fc.comeback) BE.logEvent("comeback_started", fc.id); }
         else if (bg) BE.startBigOne({ title: bigTitle(), ...(bg.type ? { taskType: bg.type } : {}), ...(bg.gut ? { gutMin: bg.gut } : {}), firstMove: bg.move.trim(), deal: d, namedAt: bg.namedAt ?? Date.now() + clockOffset });
-        else BE.start(d);
+        else BE.start(d, nightAt());
       }
       /* the demo has no server: its big one is a sample card, so the block-end notes have something to ask about */
       if (bg && !BE) { S.taskId = "demo"; bigOneCards = [{ id: "demo", title: bigTitle(), startWith: bg.move.trim(), progress: null, minutes: bg.pay, comeback: false, offerRespread: false, ...(bg.type ? { taskType: bg.type } : {}) }, ...cards().filter(c => c.id !== "demo")]; }
@@ -4026,6 +4052,16 @@ window.pomodealApp = {
     /* the done sheet belongs to its deal: another round started elsewhere, or 10 more minutes taken there, closes it */
     if (sheet && sheet.kind === "done" && (sheet.sid !== S.id || remaining() > 0)) { sheet = null; lastSig = ""; render(); return; }
     lastSig = ""; if (!sheet) render();
+  },
+  /** spec 012: tonight's night from the server (nights.tonight for today's key), or null */
+  night(doc) {
+    if (!BE) return;
+    const next = doc ? { items: doc.items, taken: doc.taken } : null;
+    if (nightSeen && JSON.stringify(next) === JSON.stringify(nightDoc)) return;
+    nightDoc = next; applyNight();
+    const a = document.activeElement;
+    if (tab !== "now" || stamping || nightOn || (a && a.matches("#view input, #view textarea"))) return;
+    lastSig = ""; render();
   },
   /** today's ledger from the server, newest first */
   ledger(entries) {

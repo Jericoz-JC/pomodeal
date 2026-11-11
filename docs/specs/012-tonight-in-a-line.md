@@ -164,14 +164,17 @@ nights: defineTable({
 
 - `nights.print({ dayKey, items })`: `nightProblem`, checks each `taskId` is the caller's (`ownTask`), replaces the day's row (taken 0).
 - `nights.tonight({ dayKey })`: the caller's row for that day, or null.
-- `sessions.start` and `tasks.startFromCard` gain `fromNight: v.optional(v.boolean())`. When true, the same transaction bumps that day's `taken` by one, so a sitting can't be taken twice from two devices or a retry.
+- `sessions.start` and `tasks.startFromCard` gain `fromNight: v.optional(v.number())`, the index of the sitting the deal takes. The same transaction sets that day's `taken` to at least index + 1, so a sitting can't be taken twice from two devices or a retry. (Built as an index rather than the boolean first written here: a bare "bump by one" would count the same sitting twice.)
+- `nights.print` also takes `keepTaken`, for a reorder of what is left on the roll: the sittings already taken stay taken, and must still lead the night unchanged, or the print is refused (`NIGHT_CHANGED`, changed on another device). A reorder logs no `night_printed`.
 - `crons.ts`: a daily sweep deletes nights more than 2 days old, so a night really does vanish (spec section 7).
 
 **The bridge, `apps/web/src/main.ts`:** `Backend` gains `printNight(items)`, and `start` / `startFromCard` pass `fromNight`. One more subscription, `nights.tonight` for today's key (re-subscribed at local midnight like the cards), pushed to the screen with `app.night(doc)`. The prototype keeps the night in memory (`night`, `loadNight`, `nightRound` in `prototypes/quick-deal/index.html`); built for real, those read `app.night`'s doc instead.
 
 **Privacy:** `docs/specs/006-privacy-inventory.md` gains the `nights` table in the same change: item titles are coursework text, like big-one titles; only the student reads them; deleted after 2 days; deleting a big one clears its `taskId` from any night that names it.
 
-**Events** (spec 008's table): `night_printed` with the item count, nothing typed.
+**Events** (spec 008's table): `night_printed` with the item count (`events.count`), nothing typed.
+
+**Built** (issue #19): `packages/core/src/night.ts`, `convex/nights.ts`, `convex/lib/nights.ts`, the bridge in `apps/web/src/main.ts` (`app.night`, `printNight`, `fromNight`). The prototype keeps its own copy of the parsing for the demo; in live mode the night it shows is the server's. As in the prototype, a bare trailing number is a size only when it is one (15, 20, 30, 45, 60, 90, 120), so "reading 50" is a name; "50m" snaps to 45.
 
 ### Order of work
 
