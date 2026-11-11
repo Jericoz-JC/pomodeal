@@ -1,6 +1,6 @@
 # 016: Open beta with a sign-up brake
 
-Status: approved design, not built. Branch `beta/open-signups` (cut from `design/desk-feel`).
+Status: built on branch `beta/open-signups`, not merged. Renumbered from 010 (main already had a spec 010).
 
 ## Why
 
