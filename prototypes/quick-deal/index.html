@@ -1227,6 +1227,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   main:has(> .runwrap) > :is(.runwrap, p) { grid-column: 1 / -1; }
   main:has(> .runwrap) > .act { flex-direction: row; align-items: center; gap: 14px; }
   main:has(> .runwrap) > .act .primary { margin: 0; }
+  main:has(> .runwrap) > .act > .textbtn:first-child { margin-left: -12px; }
   main:has(> .runwrap) > .act .secondary { width: auto; padding-inline: 26px; }
   main:has(> .runwrap) > .rows { justify-self: end; min-width: 0; }
   .runticket { position: relative; min-height: calc(100vh - 262px); min-height: calc(100dvh - 262px); padding: 24px 40px 0 34px; gap: 0; }
@@ -1320,12 +1321,13 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   .roll[hidden] { display: none; }
   .rhead { display: flex; min-height: 2rem; align-items: flex-end; margin: 0 0 10px; font-size: 1rem; line-height: 1; color: var(--soft); }
   .rhead .rh { display: flex; justify-content: space-between; align-items: baseline; gap: 20px; min-width: min(100%, 25rem); white-space: nowrap; }
-  .rhead .at b { font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 2.5rem; line-height: .8; color: var(--ink); margin-left: 6px; font-variant-numeric: tabular-nums; }
-  .rhead .at b small { font-size: .42em; font-weight: 700; margin-left: 2px; }
+  .rhead .at b { font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 1.75rem; line-height: .8; color: var(--ink); margin-left: 6px; font-variant-numeric: tabular-nums; }
+  .rhead .at b small { font-size: .55em; font-weight: 700; margin-left: 2px; }
   /* printed, the roll is paper a step under the ticket: the ticket stays the brightest thing on the desk */
   .roll { --rollp: color-mix(in srgb, var(--tape) 55%, var(--paper)); }
-  :root[data-theme="dark"] .roll { --rollp: color-mix(in srgb, var(--tape) 80%, var(--paper)); }
-  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .roll { --rollp: color-mix(in srgb, var(--tape) 80%, var(--paper)); } }
+  /* dark: printed paper a clear step above the desk, the next sitting a step above that (under the ticket) */
+  :root[data-theme="dark"] .roll { --rollp: var(--tape); --rollnext: color-mix(in srgb, var(--card) 60%, var(--tape)); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .roll { --rollp: var(--tape); --rollnext: color-mix(in srgb, var(--card) 60%, var(--tape)); } }
   /* a decision sheet does the talking: the clock it ends steps off the desk instead of peeking over the paper */
   body.sheet-done #view .runticket { visibility: hidden; }
   .rband { display: flex; align-items: stretch; height: var(--rollh); border-radius: 3px; box-shadow: 0 1px 0 var(--rule), 0 9px 16px -6px var(--lift); }
@@ -1334,7 +1336,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   .rs.f { display: flex; flex-direction: column; justify-content: flex-start; align-items: stretch; container-type: inline-size; overflow: hidden; padding: 14px 14px 0 18px; background: var(--rollp); color: var(--ink); }
   .rs.f em { color: var(--soft); }
   /* the next sitting, and the one being paid, are the full sheet */
-  .rs.f:is(.next, .run) { background: var(--tape); }
+  .rs.f:is(.next, .run) { background: var(--rollnext, var(--tape)); }
   /* torn between sittings: a perforation at the head of each panel */
   .rs.f::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 6px; background: radial-gradient(circle, var(--edge) 1.2px, transparent 1.7px) -3px 0 / 6px 9px repeat-y; opacity: .7; }
   .rs.f:first-child::before { display: none; }
@@ -1362,9 +1364,21 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   .rs.f:is(.draft, .pend)::before { display: none; }
   .rs.f:is(.draft, .pend) + .rs.f:is(.draft, .pend) { margin-left: -1.5px; }
   .rs.b:is(.draft, .pend) { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--ink) 30%, transparent) 0 1.5px, transparent 1.5px 6px); }
-  .rhead .lead { font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 1.75rem; line-height: .9; color: var(--ink); }
-  .rband.loose { gap: 12px; box-shadow: none; }
-  .rband.loose .rs.f { border-radius: 3px; }
+  /* home: names you already use, one continuous length in hairline, perforated between them */
+  .rloose { display: flex; align-items: flex-start; gap: 22px; }
+  .rlead { flex: none; padding-top: 34px; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 1.75rem; line-height: 1; }
+  .rcol { flex: 1; min-width: 0; }
+  .rband.loose { box-shadow: none; }
+  .rs.f.sug { background: none; outline: 1.5px solid color-mix(in srgb, var(--ink) 34%, transparent); outline-offset: -1.5px; cursor: pointer; }
+  .rs.f.sug + .rs.f.sug { margin-left: -1.5px; }
+  .rs.f.sug::before { opacity: 1; }
+  @media (hover: hover) { .rs.f.sug:hover { background: var(--rollp); } }
+  /* a break with a name (the deal's own: Reels, TikTok) says it on a scrap of desk */
+  .rs.b .bl { position: absolute; top: 10px; left: 6px; max-width: calc(100% - 12px); padding: 3px 6px 4px; background: var(--paper); border-radius: 2px; font-family: var(--font-head); font-stretch: var(--wd-act); font-size: .875rem; line-height: 1.15; color: var(--soft); overflow: hidden; }
+  .rs.b .bl :is(b, em) { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-style: normal; }
+  .rs.b .bl b { font-stretch: var(--wd-display); font-weight: 750; font-size: 1.0625rem; color: var(--ink); }
+  /* the roll's far end is torn at round half-holes, like every paper end on the desk */
+  .rs.end:not(.draft, .pend, .sug) { -webkit-mask: var(--zig); mask: var(--zig); }
   /* room for more: the rest of the span, left as bare desk */
   .rband .rest { min-width: 0; }
   button.rs.f.draft { cursor: pointer; }
@@ -1377,10 +1391,13 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   .rrule i.hr { height: 12px; border-left-color: color-mix(in srgb, var(--ink) 62%, transparent); padding: 14px 0 0; font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 700; font-size: 1rem; line-height: 1; color: var(--soft); white-space: nowrap; text-indent: -.45em; }
 
   /* running: the dial is the one big number; the roll already says what comes next */
-  body:has(#view > .runwrap) .rhead .at b { font-size: 1.375rem; line-height: 1; }
   body:has(#roll:not([hidden])) .runticket .note:not(.go) { display: none; }
   /* a decision lands over the desk but ends above the roll, which stays lit: the Done stamp lands on it */
-  body:has(#roll:not([hidden])) .scrim { padding-bottom: calc(var(--rollall) - 8px); }
+  body:has(#roll:not([hidden])) .scrim { padding-top: 124px; padding-bottom: calc(var(--rollall) - 52px); }
+  body:has(#roll:not([hidden])) .sheet { padding-block: 22px 12px; }
+  /* a short window: the decision needs the height, so the roll steps away under a sheet */
+  @media (max-height: 800px) { body.sheeted .roll { visibility: hidden; } body.sheeted:has(#roll:not([hidden])) .scrim { padding-top: 24px; padding-bottom: 0; } body.sheeted:has(#roll:not([hidden])) .sheet { padding-block: 34px 30px; } }
+  body.sheeted .rhead { visibility: hidden; }
   body.sheeted .roll { z-index: 21; background: none; }
   .nightstrip.onsheet { display: none; }
   /* running: the dial alone on the desk, its name beside it at the same height, the roll under both */
@@ -2253,7 +2270,7 @@ function rollModel() {
   const segs = [], sum = () => segs.reduce((a, s) => a + s.min, 0);
   const sits = nt => nt.items.flatMap((it, i) => Array.from({ length: it.n }, (_, k) => ({ name: it.name, min: it.min, k, of: it.n, i })));
   const F = (s, st) => segs.push({ t: "f", min: s.min, name: s.name, k: s.k || 0, of: s.of || 1, i: s.i, st });
-  const B = (min, st) => { if (min > 0) segs.push({ t: "b", min, st }); };
+  const B = (min, st, name) => { if (min > 0) segs.push({ t: "b", min, st, name }); };
   /* sittings one after another, the break between rounds between them */
   const chain = (list, st0, st) => list.forEach((s, j) => { if (segs.length && segs[segs.length - 1].t === "f") B(breakBetween(segs[segs.length - 1].min), st); F(s, j ? st : st0); });
   let nowAt = 0, draft = false, show = false;
@@ -2261,7 +2278,7 @@ function rollModel() {
     draft = true;
     const all = sits(night), pend = night.items.length < NIGHT_MAX ? parseItem(night.draft) : null;
     show = !!(all.length || pend);
-    if (deal.act && show) B(deal.breakMin, "draft");
+    if (deal.act && show) B(deal.breakMin, "draft", deal.act);
     chain(all, "draft", "draft");
     if (pend) chain(Array.from({ length: pend.n }, (_, k) => ({ name: pend.name, min: pend.min, k, of: pend.n })), "pend", "pend");
   } else if (night && night.printed) {
@@ -2278,18 +2295,18 @@ function rollModel() {
         if (j === S.idx) nowAt = sum() + (1 - remaining() / S.durMs) * min;
         /* the block's time is up: its Done stamp lands on the roll while the done sheet is open */
         const st2 = j === S.idx && remaining() <= 0 ? "paid" : st;
-        if (st2 !== st) { if (b.type === "break") B(min, st2); else F({ min, name: isNight ? mine.name : tailOf(String(b.label)), k: isNight ? mine.k : 0, of: isNight ? mine.of : 1 }, st2); return; }
-        if (b.type === "break") B(min, st); else F({ min, name: isNight ? mine.name : tailOf(String(b.label)), k: isNight ? mine.k : 0, of: isNight ? mine.of : 1 }, st);
+        if (st2 !== st) { if (b.type === "break") B(min, st2, j === 0 ? b.label : ""); else F({ min, name: isNight ? mine.name : tailOf(String(b.label)), k: isNight ? mine.k : 0, of: isNight ? mine.of : 1 }, st2); return; }
+        if (b.type === "break") B(min, st, j === 0 ? b.label : ""); else F({ min, name: isNight ? mine.name : tailOf(String(b.label)), k: isNight ? mine.k : 0, of: isNight ? mine.of : 1 }, st);
       });
       chain(left, "", "");
     } else if (left.length) {
       show = true;
       chain(all.slice(0, night.taken), "paid", "paid");
       nowAt = sum();
-      if (nightLoaded) { if (deal.act) B(deal.breakMin, ""); left.forEach((s, j) => { if (j) B(breakBetween(left[j - 1].min), ""); F(s, j ? "" : "next"); }); }
+      if (nightLoaded) { if (deal.act) B(deal.breakMin, "", deal.act); left.forEach((s, j) => { if (j) B(breakBetween(left[j - 1].min), ""); F(s, j ? "" : "next"); }); }
       else if (tab === "now") {
         /* a plain deal on the ticket in front of tonight, not stamped yet */
-        if (deal.act) B(deal.breakMin, "draft");
+        if (deal.act) B(deal.breakMin, "draft", deal.act);
         F({ min: deal.focusMin, name: fromCard ? fromCard.title : big.on ? bigTitle() : taskTail() }, "draft");
         chain(left, "", "");
       } else chain(left, "next", "");
@@ -2307,20 +2324,22 @@ function rollPieces() {
   const list = addable().slice(0, 4); if (!list.length) return "";
   const pieces = list.map((k, i) => { const [n, min] = snapSize(k.min || 20); return { k, i, n, min, size: sizeText({ n, min }) }; });
   const total = pieces.reduce((a, p) => a + p.n * p.min, 0);
-  return `<p class="rhead"><span class="lead">Tonight,</span></p><div class="rband loose" role="group" aria-label="Tonight">${pieces.map(p => `<button class="rs f draft" style="flex:${p.n * p.min}" data-nadd="${p.i}"><b class="nm">${N(esc(p.k.name))}</b><em>${N(p.size)}</em></button>`).join("")}${total < ROLL_SPAN ? `<span class="rest" style="flex:${ROLL_SPAN - total}"></span>` : ""}</div>`;
+  const ticks = []; for (let t = 5; t <= ROLL_SPAN; t += 5) ticks.push(`<i class="${t % 60 ? t % 15 ? "" : "q" : "hr"}" style="left:${(100 * t / ROLL_SPAN).toFixed(3)}%">${t % 60 ? "" : `${t / 60}h`}</i>`);
+  return `<div class="rloose"><span class="rlead">Tonight,</span><div class="rcol"><div class="rband loose" role="group" aria-label="Tonight">${pieces.map((p, j) => `<button class="rs f sug${j === pieces.length - 1 ? " end" : ""}" style="flex:${p.n * p.min}" data-nadd="${p.i}"><b class="nm">${N(esc(p.k.name))}</b><em>${N(p.size)}</em></button>`).join("")}${total < ROLL_SPAN ? `<span class="rest" style="flex:${ROLL_SPAN - total}"></span>` : ""}</div><div class="rrule" aria-hidden="true">${ticks.join("")}</div></div></div>`;
 }
 function rollView() {
   const m = rollModel(), pct = v => (100 * v / m.span).toFixed(3);
   if (!m.show || !m.total) return rollPieces();
   const seg = s => {
-    if (s.t === "b") return `<i class="rs b ${s.st}" style="flex:${s.min}"></i>`;
+    const end = s === m.segs[m.segs.length - 1] ? " end" : "";
+    if (s.t === "b") return `<i class="rs b ${s.st}${end}" style="flex:${s.min}">${s.name ? `<span class="bl"><b>${esc(s.name)}</b><em>${N(`${Math.round(s.min)} min`)}</em></span>` : ""}</i>`;
     const size = `${Math.round(s.min)} min${s.of > 1 ? `, ${s.k + 1} of ${s.of}` : ""}`;
     /* nothing waits for the stamp: a sitting carries Done once it is paid, inked */
     const mark = s.st === "paid" ? `<span class="landed"><span class="stamp">Done</span></span>` : "";
     const inner = `<b class="nm">${N(esc(s.name))}</b><em>${N(size)}</em>${mark}${s.st === "paid" || s.st === "run" ? `<i class="ink"${s.st === "run" ? ` id="rollink"` : ""}></i>` : ""}`;
     return m.draft && s.st === "draft" && s.i != null
-      ? `<button class="rs f draft" style="flex:${s.min}" data-nsize="${s.i}" aria-label="${esc(s.name)}, ${esc(size)}, change length">${inner}</button>`
-      : `<div class="rs f ${s.st}" style="flex:${s.min}">${inner}</div>`;
+      ? `<button class="rs f draft${end}" style="flex:${s.min}" data-nsize="${s.i}" aria-label="${esc(s.name)}, ${esc(size)}, change length">${inner}</button>`
+      : `<div class="rs f ${s.st}${end}" style="flex:${s.min}">${inner}</div>`;
   };
   /* the scale: a tick every 5 minutes from now, longer every 15, each hour from now counted */
   const ticks = [];
