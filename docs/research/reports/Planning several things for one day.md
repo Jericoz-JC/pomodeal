@@ -1,6 +1,6 @@
 # Planning several things for one day
 
-Research for [spec 012](../../specs/012-tonights-line.md). November 10, 2026. Two researchers on Claude Fable 5.2 read help docs, product pages, changelogs and current App Store screenshots (iTunes Search API, `screenshotUrls`) for nine apps; a third on Claude Opus 5.5 checked the claims that mattered. Nothing was installed or signed into, so how things feel comes from docs and screenshots, not use. Screenshots were kept out of the repo.
+Research for [spec 012](../../specs/012-tonight-in-a-line.md). November 10, 2026. Two researchers on Claude Fable 5.2 read help docs, product pages, changelogs and current App Store screenshots (iTunes Search API, `screenshotUrls`) for nine apps; a third on Claude Opus 5.5 checked the claims that mattered. Nothing was installed or signed into, so how things feel comes from docs and screenshots, not use. Screenshots were kept out of the repo.
 
 The question: when a student has two or three assignments tonight, how do these apps let them add several things at once, give each a length, cut a long one into blocks, and show the night?
 

@@ -1,6 +1,6 @@
 # 0008: No pause; stepping out is something you ask for
 
-Date: 2026-11-11 · Status: draft, for Chris to decide. Nothing is built and no rule has changed.
+Date: 2026-11-11 · Status: accepted by Chris, Nov 11 (answers below). Nothing is built and no rule has changed yet.
 
 ## Context
 
@@ -14,11 +14,11 @@ One gap is real. If you drift for 5 minutes in a 20 minute focus block, the tape
 
 - **No pause button, in a break or a focus block, and no setting for one.** The clock never stops.
 - **A break is not paused.** More break is "Ask for 5 more", as now.
-- **In a focus block, stepping out is a new ask**, priced with the terms spec 001 already has:
-  - Add it back: the block ends 5 minutes later (a trade, under the same caps).
+- **In a focus block, stepping out is a new ask**, priced with the terms spec 001 already has. The block's end never moves (Chris):
   - Take it from my break: the next break is 5 shorter, floor 2 (a borrow).
   - I need this: nothing owed (the override).
-- **No free first step-out.**
+- **No free first step-out, and nothing punishes you either.** "I need this" always costs nothing but a line on the tape. The reserve research (Sharif and Shu 2017, 2021) found slack with a small cost keeps people going better than free slack or none, and helps them carry on after a slip; here the cost is only the honest record, never a debt or a lecture.
+- **A step-out is 5 minutes, no other length** (Chris).
 - **A step-out lasts its 5 minutes and ends by itself.** A session can never sit paused.
 - **Every step-out prints on the tape, and "Studied" leaves those minutes out**, along with the minutes credited to a big one.
 - **Nothing detects off-task time.** A step-out is only ever something the student asked for.
@@ -26,7 +26,6 @@ One gap is real. If you drift for 5 minutes in a 20 minute focus block, the tape
 ## Consequences
 
 - Spec 001 gains a "step out" ask and its test cases; `packages/core` changes test-first: `Ask` and `LedgerKind` gain `step_out`, the session records minutes stepped out, `focusMinutesDone` is net of them, and `canOfferBonus` gets a real "stepped out in the last 5 minutes".
-- "Add it back" moves a block's end, so the heads-up and block-end pushes are rescheduled, as after a trade.
 - The server has to total studied minutes before the tape can show a net figure (ADR 0006 left that on the device).
 - Privacy inventory: a `step_out` ledger kind and the stepped-out minutes on the session, both self-reported, in the same change. Rooms don't show step-outs.
 - The tape line, its words and where "Step out" sits on a running block are user-visible, so they go to the design council against `settled.md`.
@@ -38,9 +37,9 @@ One gap is real. If you drift for 5 minutes in a 20 minute focus block, the tape
 - **Log it only** (a "Step out" and "Back" switch, or one choice on the done sheet). Small and moves no boundary. It depends on tapping before drifting, or on a guess afterwards, and does nothing for the first want. The fallback if this decision is too big: the done-sheet choice.
 - **A setting for free pausing.** What people arriving from other timers expect. There is no settings screen, it splits behaviour between people who will share rooms, and it gives the override a second, unlogged door.
 
-## Open, for Chris
+## Decided, Nov 11 (Chris)
 
-- Should the block's end ever move? If not, drop "add it back": stepping out is then always paid from the break or overridden.
-- One free step-out a night, or none?
-- 5 minutes only, or a choice of lengths?
-- Ask two or three students what they last paused a timer for before building (added to the first-run test for issue #17).
+- The block's end never moves: no "add it back". Stepping out is paid from the next break or overridden.
+- No free step-out; the research says the cost is what makes slack work, and the override keeps it from punishing anyone.
+- 5 minutes only.
+- Still to do before building: ask two or three students what they last paused a timer for (part of the first-run test for issue #17).
