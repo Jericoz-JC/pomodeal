@@ -259,3 +259,19 @@ Not taken, for Chris: the tape card's "Try it tonight" beside "Change tonight" (
 ### Ranking, in short
 
 Without the planner Pomodeal ranked 4th, 6th and 4th of twelve on taste (7.5 from each reviewer); with it, 3rd from all three (8, 8.5, 8). The planner itself ended at 8, 8, 8. Shots: `012-shots/after-*.png`. The competitor App Store screenshots stayed out of the repo.
+
+### Benchmarks b1 to b3 (after PR #11 and #12 merged)
+
+Goal (Chris): "consistently beat out the competitors… a novel approach to adding multiple items, while it looks good in mobile and desktop view." Each round: a designer and the primary user on Claude Opus 5.5, a critic and a creative director on Claude Fable 5.2, fresh each round, ranking twelve apps on taste from App Store screenshots (kept out of the repo) against these planner screens at 375 and 1440 by 900.
+
+| Round | Designer | Primary user | Critic | Creative director |
+| --- | --- | --- | --- | --- |
+| b1 | phone 4th 7.5, desk 3rd 8.5 | phone 2nd 8.4, desk 4th 7.3 | phone 3rd 8, desk 3rd 8.5 | phone 3rd 8.5, desk 4th 7.5 |
+| b2 | phone 2nd 8.5, desk 3rd 8 | phone 2nd 8.2, desk 3rd 7.3 | phone 3rd 7.5, desk 4th 6.5 | phone 3rd 8, desk 3rd 7.5 |
+| b3 | phone 2nd 8.3, desk 3rd 7.6 | phone 2nd 8, desk 3rd 7 | phone 2nd 8.5, desk 3rd 8 | phone 3rd 8.5, desk 4th 8 |
+
+Things 3 ranked first in every review; on a desk Sunsama and Opal also sat above Pomodeal.
+
+Built after b1: tonight's sentence a size up with items kept whole (lines break after commas); the finishing time the ticket's one figure, counting the first break; names whole in the rest-of-night line; on a desk the tape says the night once. After b2: every item starts its own line; underlines scale with the type; one figure per line. Own moves (Chris asked the main session to take more ownership): **the night strip**, the night to scale in the dial's language (solid sittings, hatched breaks, paid ones green), on tonight's ticket, on the printed ticket (phone), as a labelled map under it (desk) and on the done sheet with the sitting just paid; **Still to come printed above Today's deals**, previewed faintly while you type and inked on Print; **planned rows wait with a faint tilted Done stamp** where it will land, the deal ticket's empty-stamp-box pattern (Chris asked for a way to tell planned from done that fits the design); **desk home screens hang from the top**, so the ticket keeps its place between states (Chris approved).
+
+The desk is the open problem: a phone ticket on an empty desk. It continues in its own session (spec 014, branch from this one).
