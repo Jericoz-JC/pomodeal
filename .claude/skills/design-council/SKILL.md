@@ -37,6 +37,22 @@ never into the repo, and make one sheet. The set: Forest, Opal, Structured, Sess
 Focus Friend. For a taste round, ask each reviewer to rank Pomodeal among them and name the specific thing each of the
 top three does better; the goal is to rank first on taste, not to clear a score.
 
+## How big a loop (learned in spec 014)
+
+Pick the size by the change, not by habit:
+
+- **Small fix** (a layout bug, copy, one control): fix it, shoot before and after, one council round. No benchmark.
+- **A screen's feel** (a screen that reads generic, a flow that confuses): council rounds plus a benchmark against the
+  App Store set, ranking on "novel design feel and polish" for desk and phone separately. Up to three rounds.
+- **A redesign** (a new layout or a screen nobody likes): first two designers on Claude Fable 5.2 build competing
+  directions in their own scratchpad copies of the prototype (real screenshots, not descriptions), a checker on Claude
+  Opus 5.5 reads both against `settled.md` and cost, the council picks one, then benchmark rounds. This is what moved
+  the desk from 3rd–4th to 2nd in spec 014; one designer with no comparison never did.
+
+In benchmark rounds: fresh reviewers every round; build only what two or more name and that passes `settled.md`; stop
+when reviewers start trading the same complaints back and forth (they did by round 10 of spec 014), not at a fixed
+score. Watch the phone when changing a shared part: a desk fix that reaches the phone can cost a rank there.
+
 ## A round
 
 Start the three reviewers in parallel, each fresh, read-only, with no target score. Give each:
