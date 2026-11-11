@@ -18,3 +18,10 @@ export async function requireMember(ctx: QueryCtx | MutationCtx): Promise<Doc<"u
   if (!user) throw new ConvexError({ code: "NOT_A_MEMBER", message: "Sign in with an invite to use Pomodeal." });
   return user;
 }
+
+/** Throws unless the caller is a signed-in admin (spec 010: the sign-ups screen). */
+export async function requireAdmin(ctx: QueryCtx | MutationCtx): Promise<Doc<"users">> {
+  const user = await requireMember(ctx);
+  if (user.role !== "admin") throw new ConvexError({ code: "NOT_ADMIN", message: "Only admins can do that." });
+  return user;
+}
