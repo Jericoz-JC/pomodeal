@@ -2,56 +2,54 @@
 // when the script ends, however it ends.
 //
 // Why: on Windows `proc.kill()` ends only Edge's main process; its renderer, GPU and utility processes keep running.
-// A script killed mid-run (Ctrl+C, a timeout, a task manager) leaves the whole browser behind. Leftovers from screenshot
+// A script killed mid-run (Ctrl+C, a timeout, a task manager) leaves the whole browser behind, and if Edge's main process
+// dies first its children are orphaned, so even killing "the tree" from its PID finds nothing. Leftovers from screenshot
 // runs once piled up to about 400 processes and froze the machine.
 //
-// How:
-// - teardown kills the whole process tree (taskkill /T /F on Windows, the process group elsewhere) and deletes the
-//   temporary profile;
-// - it runs on a normal exit, on an error, and on Ctrl+C or a terminate signal;
-// - a small detached watchdog process does the same if this script is force-killed and none of that gets to run.
-import { spawn, spawnSync } from "node:child_process";
-import { rmSync } from "node:fs";
+// How: every process of this browser carries its own temporary --user-data-dir on its command line, so teardown kills
+// every browser process whose command line names that profile, whoever its parent is, then deletes the profile.
+// - It runs on a normal exit, on an error, and on Ctrl+C or a terminate signal.
+// - A small detached watchdog does the same if this script is force-killed and none of that gets to run.
+import { spawn } from "node:child_process";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
 const WIN = process.platform === "win32";
 export const EDGE = process.env.BROWSER || "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe";
 
-function killTree(pid) {
-  if (!pid) return;
-  if (WIN) spawnSync("taskkill", ["/PID", String(pid), "/T", "/F"], { stdio: "ignore", windowsHide: true });
-  else { try { process.kill(-pid, "SIGKILL"); } catch {} try { process.kill(pid, "SIGKILL"); } catch {} }
-}
+/* kills every process whose command line names the profile folder; the same code runs in the watchdog */
+const SWEEP = `function sweep(profile, win) {
+  const { spawnSync } = require("node:child_process");
+  const tag = require("node:path").basename(profile);
+  if (win) spawnSync("powershell.exe", ["-NoProfile", "-NonInteractive", "-Command",
+    "Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like '*" + tag + "*' -and $_.ProcessId -ne $PID -and $_.Name -ne 'node.exe' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }"],
+    { stdio: "ignore", windowsHide: true });
+  else spawnSync("pkill", ["-9", "-f", tag], { stdio: "ignore" });
+  for (let i = 0; i < 10; i++) { try { require("node:fs").rmSync(profile, { recursive: true, force: true }); break; } catch { Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 200); } }
+}`;
+const sweep = new Function("require", `${SWEEP}; return sweep;`)(await import("node:module").then(m => m.createRequire(import.meta.url)));
 
 /** Start a headless browser with remote debugging on `port`. Returns { proc, port, profile, close }. */
 export function launchEdge({ port, prefix = "nc-edge", args = [] } = {}) {
   port ??= 9333 + Math.floor(Math.random() * 600);
-  const profile = join(tmpdir(), `${prefix}-${Date.now()}`);
+  const profile = join(tmpdir(), `${prefix}-${Date.now()}-${process.pid}`);
   const proc = spawn(EDGE, ["--headless=new", `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, "--no-first-run",
-    ...(process.platform === "linux" ? ["--no-sandbox"] : []), ...args, "about:blank"], { stdio: "ignore", detached: !WIN, windowsHide: true });
+    ...(process.platform === "linux" ? ["--no-sandbox"] : []), ...args, "about:blank"], { stdio: "ignore", windowsHide: true });
 
-  // the watchdog: if this script dies without cleaning up, it kills the browser's tree and removes the profile
-  const dog = spawn(process.execPath, ["-e", `
-    const { spawnSync } = require("node:child_process"); const { rmSync } = require("node:fs");
-    const [parent, pid, profile, win] = [${process.pid}, ${proc.pid}, ${JSON.stringify(profile)}, ${WIN}];
+  // the watchdog: once this script is gone, it sweeps the browser's processes and its profile, then exits
+  const dog = spawn(process.execPath, ["-e", `${SWEEP}
+    const parent = ${process.pid}, profile = ${JSON.stringify(profile)}, win = ${WIN};
     const alive = p => { try { process.kill(p, 0); return true; } catch { return false; } };
-    setInterval(() => {
-      if (!alive(pid)) process.exit(0);
-      if (alive(parent)) return;
-      if (win) spawnSync("taskkill", ["/PID", String(pid), "/T", "/F"], { stdio: "ignore", windowsHide: true });
-      else { try { process.kill(-pid, "SIGKILL"); } catch {} try { process.kill(pid, "SIGKILL"); } catch {} }
-      setTimeout(() => { try { rmSync(profile, { recursive: true, force: true }); } catch {} process.exit(0); }, 1500);
-    }, 1000);`], { detached: true, stdio: "ignore", windowsHide: true });
+    setInterval(() => { if (alive(parent)) return; sweep(profile, win); process.exit(0); }, 1000);`],
+    { detached: true, stdio: "ignore", windowsHide: true });
   dog.unref();
 
   let closed = false;
   const close = () => {
     if (closed) return; closed = true;
-    killTree(proc.pid);
     try { dog.kill(); } catch {}
-    // the profile can stay locked for a moment after the kill
-    for (let i = 0; i < 5; i++) { try { rmSync(profile, { recursive: true, force: true }); break; } catch { Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 200); } }
+    try { proc.kill(); } catch {}
+    sweep(profile, WIN);
   };
   process.once("exit", close);
   for (const sig of ["SIGINT", "SIGTERM", "SIGHUP", "SIGBREAK"]) process.once(sig, () => { close(); process.exit(130); });
