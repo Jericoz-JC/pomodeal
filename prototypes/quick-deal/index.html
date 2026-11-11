@@ -184,6 +184,7 @@ p { margin: 0; }
 /* spec 014: in a picker the chosen box is its green double rule; no check glyph (it read as a form kit) */
 .picker .chip svg { display: none; }
 .chip:is([aria-pressed="true"], [aria-checked="true"]) { background: var(--sel); color: var(--sel-ink, var(--deal)); border: 4px double var(--deal); padding: 6.5px 11.5px; }
+.picker .chip:is([aria-pressed="true"], [aria-checked="true"]) { background: none; color: var(--deal-ink, var(--deal)); }
 @media (hover: hover) { .chip:not([aria-pressed="true"], [aria-checked="true"]):hover { background: color-mix(in srgb, var(--ink) 5%, transparent); } }
 
 /* ---------- one ticket ---------- */
@@ -1278,7 +1279,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 /* spec 014, phone too: names you already use, as choices under tonight's sentence; one tap adds one at its known length */
 .nightadd { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 20px; margin-top: -4px; }
 .nightadd[hidden] { display: none; }
-.nightadd .add { display: inline; padding: 6px 0; background: none; border: none; border-radius: 0; cursor: pointer; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 750; font-size: 1.125rem; line-height: 1.2; color: color-mix(in srgb, var(--ink) 66%, transparent); text-decoration: underline solid color-mix(in srgb, var(--ink) 30%, transparent); text-decoration-skip-ink: none; text-decoration-thickness: 1px; text-underline-offset: .24em; }
+.nightadd .add { display: inline; padding: 6px 0; background: none; border: none; border-radius: 0; cursor: pointer; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 750; font-size: 1.125rem; line-height: 1.2; color: color-mix(in srgb, var(--ink) 74%, transparent); text-decoration: underline solid color-mix(in srgb, var(--ink) 34%, transparent); text-decoration-skip-ink: none; text-decoration-thickness: 1px; text-underline-offset: .24em; }
 .nightadd .add .num { font: inherit; }
 .nightadd .add .sz { margin-left: .35em; font-stretch: var(--wd-act); font-weight: 500; font-size: .875em; }
 @media (hover: hover) { .nightadd .add:hover { color: var(--ink); text-decoration-color: var(--deal); } }
@@ -1364,13 +1365,13 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   .rs.b { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--ink) 26%, transparent) 0 1.5px, transparent 1.5px 6px), var(--stub); }
   .rs.b.paid { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--deal) 60%, transparent) 0 1.5px, transparent 1.5px 6px), var(--stub); }
   /* the stamp's place waits bottom right, as on the deal ticket; landed, it is the green Done */
-  .rs .landed { position: absolute; right: 14px; bottom: 12px; width: 62px; height: 27px; transform: rotate(-4deg); }
+  .rs .landed { position: absolute; right: 14px; top: 12px; width: 62px; height: 27px; transform: rotate(-4deg); }
   .rs .landed .stamp { position: absolute; inset: -2px -3px; font-size: 1.0625rem; letter-spacing: .04em; --tilt: 0deg; }
   .rs.paid .nm { color: var(--soft); }
-  @container (max-width: 190px) { .rs .landed { right: 10px; bottom: 9px; width: 50px; height: 22px; } .rs .landed .stamp { font-size: .8125rem; } }
+  @container (max-width: 190px) { .rs .landed { right: 10px; top: 9px; width: 50px; height: 22px; } .rs .landed .stamp { font-size: .8125rem; } }
   @container (max-width: 96px) { .rs .landed, .rs em { display: none; } .rs .nm { font-size: .875rem; white-space: normal; margin: -4px -6px 0 -8px; } }
   /* time being paid is wet ink: a solid green foot runs along the sitting as the dial pays it; a paid sitting keeps it */
-  .rs .ink { position: absolute; left: 0; right: 0; bottom: 0; height: 7px; background: var(--deal); transform-origin: 0 50%; transform: scaleX(var(--paid, 1)); will-change: transform; pointer-events: none; }
+  .rs .ink { position: absolute; left: 0; right: 0; bottom: 0; height: 9px; background: var(--deal); transform-origin: 0 50%; transform: scaleX(var(--paid, 1)); will-change: transform; pointer-events: none; }
   .rs.paid .ink { will-change: auto; }
   .rs.b.run { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--ink) 55%, transparent) 0 1.5px, transparent 1.5px 6px), var(--stub); }
   /* not printed yet (tonight's line as you write it, or the deal before its stamp): an outline of where the paper will be */
@@ -1386,6 +1387,9 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   @media (hover: hover) { .rlead:hover { text-decoration: underline; text-decoration-thickness: .08em; text-underline-offset: .15em; } }
   .rband.loose { box-shadow: none; }
   .rband.offer .rs.f { cursor: pointer; }
+  body:has(#roll .offer) .desk { grid-template-rows: auto auto; align-content: start; }
+  body:has(#roll .offer) .roll { position: relative; padding-top: 18px; }
+  body:has(#roll .offer) main:not(:has(> .runwrap)) { padding-bottom: 8px; }
   @media (hover: hover) { .rband.offer .rs.f:hover { background: var(--rollp); outline-color: var(--wait-edge); } }
   /* a break with a name (the deal's own: Reels, TikTok) says it on a scrap of desk */
   .rs.b .bl { position: absolute; top: 10px; left: 6px; max-width: calc(100% - 12px); padding: 3px 6px 4px; background: var(--paper); border-radius: 2px; font-family: var(--font-head); font-stretch: var(--wd-act); font-size: .875rem; line-height: 1.15; color: var(--soft); overflow: hidden; }
@@ -2294,7 +2298,7 @@ function addable() {
 }
 function nightAdd() {
   const list = addable(); if (!list.length) return "";
-  return `<div class="nightadd"${night.draft.trim() ? " hidden" : ""} role="group" aria-label="Names you already use">${list.map((k, i) => { const [n, min] = snapSize(k.min || 20); return `<button class="add" data-nadd="${i}">${N(esc(k.name))}<span class="sz">${N(sizeText({ n, min }))}</span></button>`; }).join("")}</div>`;
+  return `<div class="nightadd"${night.draft.trim() ? " hidden" : ""} role="group" aria-label="Names you already use">${list.map((k, i) => { const [n, min] = snapSize(k.min || 20); return `<button class="add" data-nadd="${i}">${N(esc(k.name))}</button>`; }).join("")}</div>`;
 }
 function addKnown(k) {
   if (!k || (night && nightOn && night.items.length >= NIGHT_MAX)) return;
@@ -2363,15 +2367,17 @@ function rollPieces() {
   if (S || nightOn || mode !== "start" || tab !== "now" || nightLeft().length) return "";
   const list = addable().slice(0, 4); if (!list.length) return "";
   const pieces = list.map((k, i) => { const [n, min] = snapSize(k.min || 20); return { k, i, n, min, size: sizeText({ n, min }) }; });
-  const total = pieces.reduce((t, p) => t + p.n * p.min, 0), span = Math.max(total, ROLL_SPAN), pct = v => (100 * v / span).toFixed(3);
+  /* drawn as tonight would be if you took them all: lengths and the breaks between them, filling the front edge */
+  const segs = []; pieces.forEach((p, j) => { if (j) segs.push({ b: breakBetween(pieces[j - 1].min) }); segs.push(p); });
+  const total = segs.reduce((t, x) => t + (x.b || x.n * x.min), 0), span = total, pct = v => (100 * v / span).toFixed(3);
   const ticks = [], now = Date.now() + (BE ? 0 : DEMO_SHIFT), d0 = new Date(now);
   d0.setSeconds(0, 0); d0.setMinutes(Math.floor(d0.getMinutes() / 5 + 1) * 5);
-  const stop = new Date(now + total * 60000); stop.setMinutes(60, 0, 0);
-  for (let t = d0.getTime(); (t - now) / 60000 <= span && t <= stop.getTime(); t += 300000) {
+  for (let t = d0.getTime(); (t - now) / 60000 <= span; t += 300000) {
     const d = new Date(t), mi = d.getMinutes(), h = d.getHours();
     ticks.push(`<i class="${mi ? mi % 15 ? "" : "q" : "hr"}" style="left:${pct((t - now) / 60000)}%">${mi ? "" : `<b>${h % 12 || 12}</b>${h < 12 ? "am" : "pm"}`}</i>`);
   }
-  return `<p class="rhead"><button class="rlead" id="rollplan">Tonight,</button></p><div class="rband draft offer" role="group" aria-label="Tonight">${pieces.map(p => `<button class="rs f draft" style="flex:${p.n * p.min}" data-nadd="${p.i}"><b class="nm">${N(esc(p.k.name))}</b><em>${N(p.size)}</em></button>`).join("")}${total < span ? `<span class="rest" style="flex:${span - total}"></span>` : ""}</div><div class="rrule" aria-hidden="true">${ticks.join("")}</div>`;
+  const ends = clockStr(now - (BE ? 0 : DEMO_SHIFT) + total * 60000).replace(/([ap]m)$/, "<small>$1</small>");
+  return `<p class="rhead"><span class="rh" style="flex:1"><button class="rlead" id="rollplan">Tonight,</button><span class="at">Done around <b>${ends}</b></span></span></p><div class="rband draft offer" role="group" aria-label="Tonight">${segs.map(x => x.b ? `<i class="rs b draft" style="flex:${x.b}"></i>` : `<button class="rs f draft" style="flex:${x.n * x.min}" data-nadd="${x.i}"><b class="nm">${N(esc(x.k.name))}</b><em>${N(x.size)}</em></button>`).join("")}</div><div class="rrule" aria-hidden="true">${ticks.join("")}</div>`;
 }
 function rollView() {
   const m = rollModel(), pct = v => (100 * v / m.span).toFixed(3);
