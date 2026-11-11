@@ -1076,21 +1076,25 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
    Tonight is written the way a deal is: one sentence on the ticket. What you type closes into underlined words at each
    comma; the open end of the sentence is where the next one goes. Printed, the sittings wait at the top of the tape. */
 .tickethead #plannight { flex: none; margin: -10px -12px -10px auto; }
-.ticket.night .sentence { font-size: 1.3125rem; line-height: 1.5; }
+.ticket.night .sentence { font-size: 1.375rem; line-height: 1.45; text-wrap: pretty; }
+.ticket.night .sentence .nsz { white-space: nowrap; }
 .ticket.night .sentence .lead { color: var(--ink); font-size: 1.25em; font-weight: 800; }
 .ticket.night .sentence .tok { font-size: 1.2em; }
+.nightin[size="1"] { min-width: 0; width: .6ch; padding: 0; }
 .nightin { font: inherit; font-size: 1.2em; font-weight: 700; line-height: 1.2; color: var(--ink); background: none; border: none; border-radius: 0; padding: 0 2px; margin: 0; max-width: 100%; min-width: 2ch; outline: none; caret-color: var(--deal); vertical-align: baseline; }
+.nightin[size="1"]:focus { width: 3ch; }
 .nightin::placeholder { color: color-mix(in srgb, var(--ink) 42%, transparent); font-weight: 500; }
 .nightin:focus-visible { outline: none; }
 .ticket.night .nightfit { padding-top: 12px; border-top: 1px solid var(--rule); font-size: 1.0625rem; color: var(--soft); }
-.nightfit b { font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 700; font-size: 1.125em; color: var(--ink); }
+.nightfit b { font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 1.75em; line-height: 1; color: var(--ink); vertical-align: -.08em; margin-left: 2px; }
 .nightname { flex: 1 1 220px; }
 #night-picker[role="radiogroup"] { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 #night-picker[role="radiogroup"] .longrow { grid-column: 1 / -1; display: grid; grid-template-columns: inherit; gap: 8px; margin: 2px 0 0; padding-top: 10px; }
 #night-picker[role="radiogroup"] .chip { justify-content: center; white-space: nowrap; }
 .ticketwrap + .onedeal { align-self: center; margin: -6px auto -10px; }
 /* the rest of tonight, said under the ticket where the quiet line goes */
-.nightrest { align-self: center; max-width: 34em; margin: -6px auto 6px; text-align: center; font-size: .9375rem; line-height: 1.35; color: color-mix(in srgb, var(--soft) 85%, transparent); text-wrap: balance; }
+.nightrest { align-self: stretch; margin: -6px 0 6px; padding-left: 2px; font-size: 1rem; line-height: 1.4; color: var(--soft); text-wrap: pretty; }
+.nightrest b { font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 700; font-size: 1.125em; color: var(--ink); white-space: nowrap; }
 /* the unprinted top of the tape: tonight's sittings, lengths where the times go, one faint ink but the next one */
 .tocome { display: flex; flex-direction: column; }
 .tocome h3 { margin: 0 0 4px; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 750; font-size: 1.1875rem; }
@@ -1149,7 +1153,9 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   .ticket .stub.perf::before { top: -7px; left: -4px; clip-path: inset(50% 0 0 0); }
   .ticket.big .stub { position: relative; bottom: auto; background: radial-gradient(circle, var(--edge) 1.5px, transparent 2px) 0 0 / 6px 10px repeat-y, var(--card); }
   .ticket .stub .primary:is(#shake, #print) { font-size: 3.25rem; }
-  .ticket.night .sentence { font-size: 1.625rem; line-height: 1.5; }
+  .ticket.night .sentence { font-size: 1.75rem; line-height: 1.4; }
+  /* on a desk the tape beside the ticket already says the rest of the night */
+  .nightrest { display: none; }
   main:not(:has(> .runwrap)) { min-height: calc(100dvh - 60px); justify-content: center; padding-bottom: 96px; }
   /* above the stage, which is pulled up under it: the floating-wheel control up here has to take clicks */
   .deskhead { position: relative; z-index: 2; display: flex; align-items: baseline; gap: 14px; padding-top: 30px; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 1.25rem; line-height: 1; color: var(--soft); }
@@ -1885,8 +1891,8 @@ const snapSize = m => NIGHT_SIZES.reduce((a, s) => Math.abs(s[0] * s[1] - m) < M
 /* the night said in one line under the sentence: focus minutes, and when it ends with the breaks between sittings */
 function nightFit(list) {
   if (!list.length) return "";
-  const focus = list.reduce((a, s) => a + s.min, 0), breaks = list.slice(0, -1).reduce((a, s) => a + breakBetween(s.min), 0);
-  return `<b>${hm(focus)}</b> of focus. <span class="nowrap">Done around <b>${clockStr(Date.now() + (focus + breaks) * 60000)}</b>.</span>`;
+  const focus = list.reduce((a, s) => a + s.min, 0), breaks = list.slice(0, -1).reduce((a, s) => a + breakBetween(s.min), 0) + (deal.act ? deal.breakMin : 0);
+  return `${hm(focus)} of focus. <span class="nowrap">Done around <b>${clockStr(Date.now() + (focus + breaks) * 60000)}</b>.</span>`;
 }
 /* names you already use: open big ones first (with their next piece), then today's deals on the tape */
 function knownNames() {
@@ -1923,9 +1929,9 @@ function nightTicket() {
   const its = night.items, p = nightPick, open = its.length < NIGHT_MAX;
   /* each item holds together: "then" stays with its size, the comma or full stop with its name */
   const typing = !!night.draft;
-  const phrase = (it, i) => `<span class="nowrap">${i && i === its.length - 1 && !typing ? "then " : ""}<button class="tok" data-nsize="${i}" aria-expanded="${!!p && p.i === i && p.kind === "size"}" aria-controls="night-picker" aria-label="${esc(sizeText(it))}, length, change">${N(esc(sizeText(it)))}</button></span> <span class="nowrap">of <button class="tok" data-nname="${i}" aria-expanded="${!!p && p.i === i && p.kind === "name"}" aria-controls="night-picker" aria-label="${esc(it.name)}, change">${esc(it.name)}</button>${i < its.length - 1 || typing ? "," : "."}</span>`;
+  const phrase = (it, i) => `<span class="nowrap item"><span class="nowrap">${i && i === its.length - 1 && !typing ? "then " : ""}<button class="tok nsz" data-nsize="${i}" aria-expanded="${!!p && p.i === i && p.kind === "size"}" aria-controls="night-picker" aria-label="${esc(sizeText(it))}, length, change">${N(esc(sizeText(it)))}</button></span> <span class="nowrap">of <button class="tok" data-nname="${i}" aria-expanded="${!!p && p.i === i && p.kind === "name"}" aria-controls="night-picker" aria-label="${esc(it.name)}, change">${esc(it.name)}</button>${i < its.length - 1 || typing ? "," : "."}</span></span>`;
   const body = its.map(phrase).join(" ");
-  const field = open ? `<label class="vh" for="nightin">Tonight</label><input class="nightin" id="nightin" value="${esc(night.draft)}" size="${Math.max(2, night.draft.length + 1)}" maxlength="120" autocomplete="off" enterkeyhint="done"${its.length ? "" : ` placeholder="history paper 1h, orgo set 4"`}>` : "";
+  const field = open ? `<label class="vh" for="nightin">Tonight</label><input class="nightin" id="nightin" value="${esc(night.draft)}" size="${night.draft ? night.draft.length + 1 : its.length ? 1 : 2}" maxlength="120" autocomplete="off" enterkeyhint="done"${its.length ? "" : ` placeholder="history paper 1h, orgo set 4"`}>` : "";
   const it = p ? its[p.i] : null;
   const pk = !it ? "" : p.kind === "size"
     ? `<div class="picker" id="night-picker" role="radiogroup" aria-label="Length of ${esc(it.name)}">${NIGHT_SIZES.filter(s => s[0] === 1).map(s => sizeChip(it, s)).join("")}<div class="longrow">${NIGHT_SIZES.filter(s => s[0] > 1).map(s => sizeChip(it, s)).join("")}</div></div>`
@@ -1934,7 +1940,7 @@ function nightTicket() {
   return `<div class="ticketwrap peek"><section class="ticket night" id="ticket" aria-label="Tonight">
     <div class="body">
       <div class="tickethead"><span class="serial">No. ${String(412 + ledger.length).padStart(4, "0")}</span></div>
-      <p class="sentence"><span class="lead">Tonight,</span> ${body} ${field}</p>
+      <p class="sentence"><span class="lead">Tonight,</span> ${typing || !its.length ? `${body} ${field}` : body.replace(/<\/span><\/span>$/, `${field}</span></span>`)}</p>
       ${pk}
       ${fit ? `<p class="nightfit">${N(fit)}</p>` : ""}
     </div>
@@ -1969,8 +1975,17 @@ function nightRound(s, nx) {
   const focus = s.blocks.find(b => b.type === "focus") || s.blocks[0], first = s.blocks[0], c = nx.taskId ? cardById(nx.taskId) : null;
   return { act: first.type === "break" ? first.label : "Your pick", breakMin: breakBetween(focus.min - (focus.added || 0)), task: c ? c.title : nx.name, focusMin: nx.min };
 }
+/* an item holds together on one line; one wider than the ticket (a long name on a phone) wraps like any sentence */
+function fitNight() {
+  const sen = $(".ticket.night .sentence"); if (!sen) return;
+  const w = sen.clientWidth;
+  sen.querySelectorAll(".item").forEach(el => { el.classList.add("nowrap"); if (el.getBoundingClientRect().width > w) el.classList.remove("nowrap"); });
+}
 function bindNight() {
+  fitNight(); if (document.fonts) document.fonts.ready.then(fitNight);
   const inp = $("#nightin");
+  /* the sentence's open end is wherever you click that isn't a word */
+  const sen = $(".ticket.night .sentence"); if (sen && inp) sen.onclick = e => { if (!e.target.closest("button, input")) inp.focus(); };
   if (inp) {
     inp.oninput = () => {
       if (inp.value.includes(",")) { closeDraft(inp.value); nextFocus = "#nightin"; render(); return; }
@@ -2003,16 +2018,18 @@ function bindNight() {
 function nightRest() {
   const left = nightLeft(); if (!nightLoaded || left.length < 2) return "";
   const names = []; left.slice(1).forEach(s => { const n = s.name === left[0].name && !names.length ? `${s.name} again` : s.name; if (!names.includes(n) && !names.includes(`${s.name} again`)) names.push(n); });
-  const said = names.length > 1 ? `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}` : names[0];
+  const nm = n => `<b>${N(esc(n.replace(/ again$/, "")))}</b>${/ again$/.test(n) ? " again" : ""}`;
+  const said = names.length > 1 ? `${names.slice(0, -1).map(nm).join(", ")} and ${nm(names[names.length - 1])}` : nm(names[0]);
   const focus = left.reduce((a, s) => a + s.min, 0), breaks = left.slice(0, -1).reduce((a, s) => a + breakBetween(s.min), 0) + (deal.act ? deal.breakMin : 0);
-  return `<p class="nightrest">${N(esc(`Then ${said}.`))} <span class="nowrap">${N(`Done around ${clockStr(Date.now() + (focus + breaks) * 60000)}.`)}</span></p>`;
+  return `<p class="nightrest">Then ${said}. <span class="nowrap">Done around <b>${clockStr(Date.now() + (focus + breaks) * 60000)}</b>.</span></p>`;
 }
 const nightLink = () => nightOn || S ? "" : `<button class="textbtn" id="plannight">${nightLeft().length ? "Change tonight" : "Plan tonight"}</button>`;
 /* the unprinted top of the tape */
 function toComeView() {
   const left = nightLeft(); if (!left.length) return "";
   const total = left.reduce((a, s) => a + s.min, 0);
-  return `<section class="tocome" aria-labelledby="tocomeh"><h3 id="tocomeh">Still to come <span>${N(hm(total))}</span></h3><ol>${left.map((s, i) => {
+  const ends = clockStr(Date.now() + (total + left.slice(0, -1).reduce((a, s) => a + breakBetween(s.min), 0) + (nightLoaded && deal.act ? deal.breakMin : 0)) * 60000);
+  return `<section class="tocome" aria-labelledby="tocomeh"><h3 id="tocomeh">Still to come <span>${N(`${hm(total)}, done ${ends}`)}</span></h3><ol>${left.map((s, i) => {
     const sub = s.piece && s.k === 0 ? s.piece : s.of > 1 ? `${s.k + 1} of ${s.of}` : "";
     return `<li${i === 0 ? ` class="next"` : ""}><b>${N(`${s.min} min`)}</b><span><span class="nm">${esc(s.name)}</span>${sub ? `<em>${N(esc(sub))}</em>` : ""}</span></li>`; }).join("")}</ol><div class="tcperf" aria-hidden="true"></div></section>`;
 }
