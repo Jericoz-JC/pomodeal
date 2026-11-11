@@ -1267,19 +1267,26 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   @keyframes sheet-out { to { transform: translateY(12px); opacity: 0; } }
 }
 .roll { display: none; }
-.nightadd .sz { display: none; }
+/* spec 014, phone too: names you already use, as choices under tonight's sentence; one tap adds one at its known length */
+.nightadd { margin-top: 2px; gap: 8px; }
+.nightadd[hidden] { display: none; }
+.nightadd .chip { gap: 6px; padding-inline: 10px; font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 650; font-size: .9375rem; }
+.nightadd .sz { font-weight: 500; color: var(--soft); }
 /* ---------- spec 014: the desk is three objects ----------
    The ticket (the hero, at the top of the stage), the tape (hanging at the right), and the roll along the front edge:
    what's still to come, to scale, across the whole desk. Nothing in this block reaches a phone. */
 @media (min-width: 820px) {
   /* the roll is on the desk only while tonight is being written or is printed; the rest of the desk makes room for it */
-  :root { --rollh: 104px; --rollall: 0px; }
+  /* one line across the desk: the ticket and the tape start at the same height (--tapetop) */
+  :root { --rollh: 104px; --rollall: 0px; --tapetop: calc(50px + var(--stagetop) + clamp(8px, 3.5vh, 40px)); }
   body:has(#roll:not([hidden])) { --rollall: calc(var(--rollh) + 112px); }
   .desk { grid-template-areas: "stage tape" "roll roll"; grid-template-rows: 1fr auto; }
-  main:not(:has(> .runwrap)) { min-height: 0; padding-top: calc(50px + var(--stagetop) + clamp(8px, 3.5vh, 40px)); padding-bottom: 36px; }
+  main:not(:has(> .runwrap)) { min-height: 0; padding-top: var(--tapetop); padding-bottom: 36px; }
+  .tapeside { margin-top: var(--tapetop); max-height: calc(100vh - var(--tapetop) - 80px); max-height: calc(100dvh - var(--tapetop) - 80px); }
+  body.live .tapeside { margin-top: max(56px, var(--tapetop)); max-height: calc(100dvh - max(56px, var(--tapetop)) - 40px); }
   /* the tape ends above the roll, torn where it ends */
-  body:has(#roll:not([hidden])) .tapeside { max-height: calc(100vh - var(--rollall) - 84px); max-height: calc(100dvh - var(--rollall) - 84px); }
-  body.live:has(#roll:not([hidden])) .tapeside { max-height: calc(100dvh - 96px - var(--rollall)); }
+  body:has(#roll:not([hidden])) .tapeside { max-height: calc(100vh - var(--rollall) - var(--tapetop) - 84px); max-height: calc(100dvh - var(--rollall) - var(--tapetop) - 84px); }
+  body.live:has(#roll:not([hidden])) .tapeside { max-height: calc(100dvh - var(--rollall) - max(56px, var(--tapetop)) - 60px); }
   /* what's to come lies on the desk now; the tape is only what has printed */
   .tape .tocome, .nightmap, .ticket.night .nightfit, .ticket.night .nightstrip, .nightstrip.onticket { display: none; }
 
@@ -1310,11 +1317,9 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
     #night-picker[role="radiogroup"] .chip svg { display: none; }
     .nightadd .chip { font-size: .9375rem; }
   }
-  .nightadd { margin-top: 2px; gap: 10px; }
-  .nightadd[hidden] { display: none; }
+  .nightadd { gap: 10px; }
   .nightin:placeholder-shown { min-width: 14.5em; }
-  .nightadd .chip { gap: 10px; font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 650; font-size: 1.0625rem; }
-  .nightadd .sz { display: inline; font-weight: 500; color: var(--soft); }
+  .nightadd .chip { gap: 10px; font-size: 1.0625rem; }
 
   /* the roll */
   .roll { grid-area: roll; display: block; position: sticky; bottom: 0; z-index: 3; margin-inline: -8px; padding: 26px 8px 16px; background: linear-gradient(transparent, var(--paper) 26px); }
@@ -1364,6 +1369,10 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   .rs.f:is(.draft, .pend)::before { display: none; }
   .rs.f:is(.draft, .pend) + .rs.f:is(.draft, .pend) { margin-left: -1.5px; }
   .rs.b:is(.draft, .pend) { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--ink) 30%, transparent) 0 1.5px, transparent 1.5px 6px); }
+  /* home: the names on offer lie under the ticket's column; the tape keeps its full height beside them */
+  body:has(#roll .rloose) { --rollall: 0px; }
+  body:has(#roll .rloose) .roll { grid-column: 1; }
+  body:has(#roll .rloose) .tapeside { grid-row: 1 / span 2; max-height: calc(100dvh - var(--tapetop) - 80px); }
   /* home: names you already use, one continuous length in hairline, perforated between them */
   .rloose { display: flex; align-items: flex-end; gap: 22px; }
   .rlead { flex: none; background: none; border: none; padding: 0 0 14px; color: var(--ink); cursor: pointer; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 1.75rem; line-height: 1; }
@@ -1384,11 +1393,18 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   .rband .rest { min-width: 0; }
   button.rs.f.draft { cursor: pointer; }
   button.rs.f.draft:hover { color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--wait-edge); }
-  /* the scale under the roll, in the dial's language: a tick every 5 minutes from now, longer every 15, and each hour
-     from now counted (a measure, not a clock: the night's one clock time is "Done around") */
+  /* dragging a length along the roll: it lifts off the desk, a green mark shows where it lands */
+  .rband { position: relative; }
+  .rband [data-mv] { cursor: grab; touch-action: pan-y; }
+  .rband.dragging, .rband.dragging [data-mv] { cursor: grabbing; }
+  .rs.lift { z-index: 5; box-shadow: 0 14px 22px -8px var(--lift), 0 0 0 1.5px var(--edge-half); }
+  .rmark { position: absolute; top: -8px; bottom: -8px; width: 3px; margin-left: -1.5px; border-radius: 2px; background: var(--deal); z-index: 6; pointer-events: none; }
+  /* the clock under the roll, in the dial's ticks: every 5 minutes, longer each quarter, the hour named (Chris, Nov 11:
+     where each sitting falls) */
   .rrule { position: relative; height: 30px; margin-top: 7px; }
   .rrule i { position: absolute; top: 0; width: 0; height: 4px; border-left: 1.5px solid color-mix(in srgb, var(--ink) 22%, transparent); font-style: normal; }
   .rrule i.q { height: 8px; border-left-color: color-mix(in srgb, var(--ink) 36%, transparent); }
+  .rrule i.hr b { font-weight: 750; font-size: 1.0625rem; color: var(--ink); margin-right: 1px; }
   .rrule i.hr { height: 12px; border-left-color: color-mix(in srgb, var(--ink) 62%, transparent); padding: 14px 0 0; font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 700; font-size: 1rem; line-height: 1; color: var(--soft); white-space: nowrap; text-indent: -.45em; }
 
   /* running: the dial is the one big number; the roll already says what comes next */
@@ -1414,7 +1430,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   @media (max-width: 1100px) { .rs .nm { font-size: 1.125rem; } .rs.f { padding: 11px 10px 0 13px; } .rhead .at b { font-size: 2rem; } }
   /* a short window: everything a step smaller so the ways out stay above the roll */
   @media (max-height: 800px) { :root { --rollh: 78px; --rollall: calc(var(--rollh) + 100px); } .roll { padding-top: 16px; } .rhead .at b { font-size: 2rem; } .rs.f { padding-top: 10px; } .nightadd .chip { min-height: 38px; padding-block: 6px; } .tickethead { min-height: 34px; }
-    main:not(:has(> .runwrap)) { padding-top: calc(50px + var(--stagetop)); padding-bottom: 20px; gap: 16px; } }
+    :root { --tapetop: calc(50px + var(--stagetop)); } main:not(:has(> .runwrap)) { padding-bottom: 20px; gap: 16px; } }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1508,7 +1524,7 @@ function stubOf(e, t = clockStr(e.at)) {
     : e.kind === "forgiven" ? `Cleared ${m} borrowed min`
     : e.kind === "bonus" ? `${m} more min of ${title(label).split(" ")[0].toLowerCase()}`
     : `${m} more min of ${label}`;
-  const sub = e.kind === "deal" ? (big ? `Big one, ${m} min of focus` : `${m} min of focus`)
+  const sub = e.kind === "deal" ? `${m} min of focus`
     : e.kind === "done" ? (big ? `${m} min on this big one` : `${m} min of focus`)
     : e.kind === "end_early" ? (m ? (big ? `${m} min done on this big one` : `${m} min of focus done`) : TERMS.end_early)
     : e.kind === "skip" ? (m ? `After ${m} min` : "Right at the start")
@@ -1871,7 +1887,7 @@ function paintTitle() { const t = S ? `${remaining() <= 0 ? "Time's up" : `${min
 function deskHead() {
   const d = new Date(Date.now() + (BE ? 0 : DEMO_SHIFT));
   /* while a block runs, the desk's own control sits up here: floating the wheel over your other windows */
-  const pip = PIP_OK && S && tab === "now" ? `<button class="textbtn pipbtn" id="pipbtn" aria-pressed="${!!pipWin}">${pipWin ? "Timer is on top" : "Keep the timer on top"}</button>` : "";
+  const pip = PIP_OK && S && tab === "now" && !sheet ? `<button class="textbtn pipbtn" id="pipbtn" aria-pressed="${!!pipWin}">${pipWin ? "Timer is on top" : "Keep the timer on top"}</button>` : "";
   return `<span class="mark">Pomodeal</span><span class="day">${N(`${d.toLocaleDateString([], { weekday: "long" })}, ${clockStr()}`)}</span>${pip}`;
 }
 
@@ -2143,7 +2159,7 @@ function nightTicket() {
     <div class="body">
       <div class="tickethead"><span class="serial">No. ${String(412 + ledger.length).padStart(4, "0")}</span></div>
       <p class="sentence"><span class="lead">Tonight,</span> ${typing || !its.length ? `${body} ${field}` : body.replace(/<\/span><\/span>$/, `${field}</span></span>`)}</p>
-      ${pk}${!p && open && WIDE.matches ? nightAdd() : ""}
+      ${pk}${!p && open ? nightAdd() : ""}
       ${fit ? `${nightStrip(sittingsOf(night), -1)}<p class="nightfit">${N(fit)}</p>` : ""}
     </div>
     <div class="stub perf"><button class="primary" id="print"${its.length || parseItem(night.draft) ? "" : " disabled"}>Print</button></div>
@@ -2211,7 +2227,15 @@ function bindNight() {
       if (inp.value.includes(",")) { closeDraft(inp.value); nextFocus = "#nightin"; render(); return; }
       night.draft = inp.value; inp.size = Math.max(2, inp.value.length + 1);
       const pr = $("#print"); if (pr) pr.disabled = !(night.items.length || parseItem(night.draft));
-      if (WIDE.matches) { const na = $(".nightadd"); if (na) na.hidden = !!inp.value.trim(); paintRoll(true); }
+      const na = $(".nightadd"); if (na) na.hidden = !!inp.value.trim();
+      if (WIDE.matches) paintRoll(true);
+    };
+    /* a list copied from notes (one per line, bullets or numbers) lands as the sentence */
+    inp.onpaste = e => {
+      const t = (e.clipboardData || window.clipboardData).getData("text"); if (!/[\n;]/.test(t.trim())) return;
+      e.preventDefault();
+      const list = t.split(/[\n;]+/).map(l => l.replace(/^\s*(?:[-*•–—]|\d+[.)]|\[[ xX]?\])+\s*/, "").replace(/,/g, " ").trim()).filter(Boolean);
+      if (list.length) { closeDraft(inp.value + list.join(",") + ","); nextFocus = "#nightin"; render(); }
     };
     inp.onkeydown = e => {
       if (e.key === "Enter") { e.preventDefault(); if (inp.value.trim()) { closeDraft(inp.value + ","); nextFocus = "#nightin"; render(); } else { const pr = $("#print"); if (pr && !pr.disabled) pr.focus(); } }
@@ -2271,7 +2295,7 @@ function addKnown(k) {
 function rollModel() {
   const segs = [], sum = () => segs.reduce((a, s) => a + s.min, 0);
   const sits = nt => nt.items.flatMap((it, i) => Array.from({ length: it.n }, (_, k) => ({ name: it.name, min: it.min, k, of: it.n, i })));
-  const F = (s, st) => segs.push({ t: "f", min: s.min, name: s.name, k: s.k || 0, of: s.of || 1, i: s.i, st });
+  const F = (s, st) => segs.push({ t: "f", min: s.min, name: s.name, k: s.k || 0, of: s.of || 1, i: s.i, mv: s.mv, st });
   const B = (min, st, name) => { if (min > 0) segs.push({ t: "b", min, st, name }); };
   /* sittings one after another, the break between rounds between them */
   const chain = (list, st0, st) => list.forEach((s, j) => { if (segs.length && segs[segs.length - 1].t === "f") B(breakBetween(segs[segs.length - 1].min), st); F(s, j ? st : st0); });
@@ -2285,6 +2309,8 @@ function rollModel() {
     if (pend) chain(Array.from({ length: pend.n }, (_, k) => ({ name: pend.name, min: pend.min, k, of: pend.n })), "pend", "pend");
   } else if (night && night.printed) {
     const all = sittingsOf(night), left = all.slice(night.taken);
+    /* what's left can be moved: each sitting carries the index of the item it belongs to */
+    const lg = groupSittings(left); left.forEach((x, j) => { x.mv = lg.idx[j]; });
     if (S) {
       /* the block running is tonight's when it is the sitting last taken (the same big one, or the same name) */
       const fb = S.blocks.find(b => b.type === "focus"), mine = night.taken > 0 ? all[night.taken - 1] : null;
@@ -2325,8 +2351,7 @@ function rollPieces() {
   if (S || nightOn || mode !== "start" || tab !== "now" || nightLeft().length) return "";
   const list = addable().slice(0, 4); if (!list.length) return "";
   const pieces = list.map((k, i) => { const [n, min] = snapSize(k.min || 20); return { k, i, n, min, size: sizeText({ n, min }) }; });
-  const total = pieces.reduce((a, p) => a + p.n * p.min, 0);
-  return `<div class="rloose"><button class="rlead" id="rollplan">Tonight,</button><div class="rband loose" role="group" aria-label="Tonight">${pieces.map(p => `<button class="rs f sug" style="flex:${p.n * p.min}" data-nadd="${p.i}"><b class="nm">${N(esc(p.k.name))}</b><em>${N(p.size)}</em></button>`).join("")}${total < ROLL_SPAN ? `<span class="rest" style="flex:${ROLL_SPAN - total}"></span>` : ""}</div></div>`;
+  return `<div class="rloose"><button class="rlead" id="rollplan">Tonight,</button><div class="rband loose" role="group" aria-label="Tonight">${pieces.map(p => `<button class="rs f sug" style="flex:${p.n * p.min}" data-nadd="${p.i}"><b class="nm">${N(esc(p.k.name))}</b><em>${N(p.size)}</em></button>`).join("")}</div></div>`;
 }
 function rollView() {
   const m = rollModel(), pct = v => (100 * v / m.span).toFixed(3);
@@ -2339,12 +2364,16 @@ function rollView() {
     const mark = s.st === "paid" ? `<span class="landed"><span class="stamp">Done</span></span>` : "";
     const inner = `<b class="nm">${N(esc(s.name))}</b><em>${N(size)}</em>${mark}${s.st === "paid" || s.st === "run" ? `<i class="ink"${s.st === "run" ? ` id="rollink"` : ""}></i>` : ""}`;
     return m.draft && s.st === "draft" && s.i != null
-      ? `<button class="rs f draft${end}" style="flex:${s.min}" data-nsize="${s.i}" aria-label="${esc(s.name)}, ${esc(size)}, change length">${inner}</button>`
-      : `<div class="rs f ${s.st}${end}" style="flex:${s.min}">${inner}</div>`;
+      ? `<button class="rs f draft${end}" style="flex:${s.min}" data-nsize="${s.i}" data-mv="d:${s.i}" aria-label="${esc(s.name)}, ${esc(size)}, change length">${inner}</button>`
+      : `<div class="rs f ${s.st}${end}" style="flex:${s.min}"${s.mv != null && /^(next)?$/.test(s.st) ? ` data-mv="l:${s.mv}"` : ""}>${inner}</div>`;
   };
-  /* the scale: a tick every 5 minutes from now, longer every 15, each hour from now counted */
-  const ticks = [];
-  for (let t = 5; m.nowAt + t <= m.span + .01; t += 5) ticks.push(`<i class="${t % 60 ? t % 15 ? "" : "q" : "hr"}" style="left:${pct(m.nowAt + t)}%">${t % 60 ? "" : `${t / 60}h`}</i>`);
+  /* the clock printed on the desk under the roll, in the dial's ticks: every 5 minutes, longer each quarter, the hour named */
+  const ticks = [], now = Date.now() + (BE ? 0 : DEMO_SHIFT), d0 = new Date(now);
+  d0.setSeconds(0, 0); d0.setMinutes(Math.floor(d0.getMinutes() / 5 + 1) * 5);
+  for (let t = d0.getTime(); (t - now) / 60000 <= m.span - m.nowAt; t += 300000) {
+    const d = new Date(t), mi = d.getMinutes(), h = d.getHours();
+    ticks.push(`<i class="${mi ? mi % 15 ? "" : "q" : "hr"}" style="left:${pct(m.nowAt + (t - now) / 60000)}%">${mi ? "" : `<b>${h % 12 || 12}</b>${h < 12 ? "am" : "pm"}`}</i>`);
+  }
   const head = `<p class="rhead"><span class="rh" style="flex:${m.total}"><span>${N(`${hm(m.focus)} of focus`)}</span><span class="at">Done around <b>${clockStr(Date.now() + m.endIn).replace(/([ap]m)$/, "<small>$1</small>")}</b></span></span>${m.span > m.total ? `<i style="flex:${m.span - m.total}"></i>` : ""}</p>`;
   return `${head}<div class="rband${m.draft ? " draft" : ""}">${m.segs.map(seg).join("")}${m.span > m.total ? `<span class="rest" style="flex:${m.span - m.total}"></span>` : ""}</div><div class="rrule" aria-hidden="true">${ticks.join("")}</div>`;
 }
@@ -2355,9 +2384,57 @@ function paintRoll(wide) {
   if (rl.dataset.sig !== html) {
     rl.innerHTML = html; rl.dataset.sig = html;
     rl.querySelectorAll("[data-nsize]").forEach(b => b.onclick = () => { const i = +b.dataset.nsize; nightPick = nightPick && nightPick.i === i && nightPick.kind === "size" ? null : { i, kind: "size" }; render(); });
+    bindRollDrag(rl);
   }
   const rp = document.getElementById("rollplan"); if (rp) rp.onclick = () => { if (!night || night.printed) night = newNight(); nightOn = true; nightPick = null; nextFocus = "#nightin"; render(); };
   inkRoll(); snapTape();
+}
+/* items in the order the sittings run: a big one's sittings, or one name's, one after another, are one item */
+function groupSittings(list) {
+  const items = [], idx = [];
+  list.forEach(x => { const last = items[items.length - 1]; if (last && last.name === x.name && last.min === x.min && x.k > 0) last.n++; else items.push({ name: x.name, n: 1, min: x.min, taskId: x.taskId || null, piece: x.piece || "" }); idx.push(items.length - 1); });
+  return { items, idx };
+}
+/* desk: drag a length along the roll to change tonight's order (Chris, Nov 11). While writing, any item; printed,
+   anything not yet started. A press without a drag does what it did. */
+let rollSwallow = false;
+function bindRollDrag(rl) {
+  const band = rl.querySelector(".rband"); if (!band || !band.querySelector("[data-mv]")) return;
+  band.addEventListener("click", e => { if (rollSwallow) { e.stopPropagation(); e.preventDefault(); } }, true);
+  band.querySelectorAll("[data-mv]").forEach(el => el.onpointerdown = e => {
+    if (e.button !== 0) return;
+    const key = el.dataset.mv, kind = key[0], from = +key.slice(2), x0 = e.clientX, br = band.getBoundingClientRect();
+    const mine = [...band.querySelectorAll(`[data-mv="${key}"]`)], spans = new Map();
+    band.querySelectorAll(`[data-mv^="${kind}:"]`).forEach(o => { if (o.dataset.mv === key) return; const r = o.getBoundingClientRect(), v = +o.dataset.mv.slice(2), was = spans.get(v);
+      spans.set(v, was ? { l: Math.min(was.l, r.left), r: Math.max(was.r, r.right) } : { l: r.left, r: r.right }); });
+    const order = [...spans.keys()].sort((a, b) => a - b);
+    let moved = false, to = from, mark = null;
+    try { el.setPointerCapture(e.pointerId); } catch (err) {}
+    el.onpointermove = ev => {
+      const dx = ev.clientX - x0; if (!moved && Math.abs(dx) < 6) return;
+      if (!moved) { moved = true; band.classList.add("dragging"); mine.forEach(p => p.classList.add("lift")); mark = document.createElement("i"); mark.className = "rmark"; band.appendChild(mark); }
+      mine.forEach(p => { p.style.transform = `translateX(${dx}px)`; });
+      const before = order.filter(v => (spans.get(v).l + spans.get(v).r) / 2 < ev.clientX); to = before.length;
+      const xm = before.length ? spans.get(before[before.length - 1]).r : order.length ? spans.get(order[0]).l : br.left;
+      mark.style.left = `${xm - br.left}px`;
+    };
+    el.onpointerup = el.onpointercancel = ev => {
+      el.onpointermove = el.onpointerup = el.onpointercancel = null; if (!moved) return;
+      rollSwallow = true; setTimeout(() => { rollSwallow = false; }, 0);
+      band.classList.remove("dragging"); mine.forEach(p => { p.classList.remove("lift"); p.style.transform = ""; }); if (mark) mark.remove();
+      if (ev.type === "pointerup" && to !== from) moveNightItem(kind, from, to);
+    };
+  });
+}
+function moveNightItem(kind, from, to) {
+  let it;
+  if (kind === "d") { it = night.items.splice(from, 1)[0]; night.items.splice(to, 0, it); nightPick = null; }
+  else {
+    const all = sittingsOf(night), done = groupSittings(all.slice(0, night.taken)).items, left = groupSittings(all.slice(night.taken)).items;
+    it = left.splice(from, 1)[0]; left.splice(to, 0, it); night.items = done.concat(left);
+    if (nightLoaded && !S) loadNight();
+  }
+  render(); say(`${it.name} is ${to === 0 ? "first" : "moved"}.`);
 }
 /* the tape scrolls inside its column; with the roll on the desk the column is shorter, so it ends on a whole row
    (a deal, the totals, the week's note) instead of tearing through one */
@@ -3166,7 +3243,7 @@ function ledgerView() {
   const any = ledger.length || studied;
   return `${toComeView()}<div class="tapehead"><h2 id="tapeh" tabindex="-1">Today's deals</h2><span class="tapeval" id="tapeval"></span></div>
   ${!any && !nightLeft().length ? `<p class="soft">Nothing yet. Every deal you make lands here, with its terms.</p>` : ""}
-  ${ledger.length || S ? `<ul class="stubs" aria-label="Deals, newest first">${S ? `<li class="stubcard live"><span class="t"><b>now</b><span class="stamp plain">Running</span></span><span class="what"><span class="row"><span class="title">${esc(title(cur().label))}</span></span><em>${S.serial ? `<span class="num">No. ${S.serial}</span>, ` : ""}${cur().type === "focus" ? "focus" : "your break"}</em></span></li>` : ""}${ledger.map((e, i) => `<li class="stubcard${freshStub(e)}">${stubInner(e, i)}</li>`).reverse().join("")}</ul>` : ""}
+  ${ledger.length || S ? `<ul class="stubs" aria-label="Deals, newest first">${S ? `<li class="stubcard live"><span class="t"><b>now</b><span class="stamp plain">${remaining() <= 0 ? "Time's up" : "Running"}</span></span><span class="what"><span class="row"><span class="title">${esc(title(cur().label))}</span></span><em>${N(cur().type === "focus" ? `${cur().min} min of focus` : `${cur().min} min break`)}</em></span></li>` : ""}${ledger.map((e, i) => `<li class="stubcard${freshStub(e)}">${stubInner(e, i)}</li>`).reverse().join("")}</ul>` : ""}
   ${any ? `<dl class="totals">
     <div class="go"><dt>Studied</dt><dd>${N(studied)} min</dd></div>
     <div><dt>Deals made</dt><dd>${deals}</dd></div>
