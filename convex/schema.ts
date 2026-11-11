@@ -30,6 +30,14 @@ export const piece = v.object({
   stampedAt: v.optional(v.number()),
 });
 
+/** Spec 012: one item of tonight's sentence. The title is coursework text, like a big one's. */
+export const nightItem = v.object({
+  title: v.string(),
+  taskId: v.optional(v.id("tasks")), // the big one it names; cleared when that is deleted
+  sittings: v.number(),
+  minutes: v.number(),
+});
+
 /** Spec 008 "events.kind". Events never hold typed text. */
 export const eventKind = v.union(
   v.literal("big_one_named"),
@@ -45,6 +53,7 @@ export const eventKind = v.union(
   v.literal("push_enabled"),
   v.literal("push_sent"),
   v.literal("push_failed"),
+  v.literal("night_printed"),
 );
 
 export default defineSchema({
@@ -163,12 +172,24 @@ export default defineSchema({
     .index("by_userId_and_weekKey", ["userId", "weekKey"])
     .index("by_at", ["at"]),
 
+  // Spec 012: tonight's plan, one row per member per local day, swept 2 days later.
+  nights: defineTable({
+    userId: v.id("users"),
+    dayKey: v.string(), // local day, from the client
+    items: v.array(nightItem),
+    taken: v.number(), // sittings started so far
+    printedAt: v.number(),
+  })
+    .index("by_userId_and_dayKey", ["userId", "dayKey"])
+    .index("by_dayKey", ["dayKey"]),
+
   // Beta metrics. Kinds and timings only, never titles, bookmarks or any typed text.
   events: defineTable({
     userId: v.id("users"),
     kind: eventKind,
     taskId: v.optional(v.id("tasks")),
     ms: v.optional(v.number()),
+    count: v.optional(v.number()), // night_printed: how many items, never what they are
     at: v.number(),
   }).index("by_kind_and_at", ["kind", "at"]),
 });

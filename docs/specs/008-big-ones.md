@@ -173,7 +173,7 @@ events: defineTable({ userId, kind, taskId?, ms?, at }).index("by_kind_and_at", 
 
 **Task-scoped history** is a bounded query over `sessions` by `taskId` plus their ledger entries; no new store. General history beyond 24 hours stays out of this phase.
 
-`events.kind` values: `big_one_named`, `first_payment_started` (with `ms` from naming), `comeback_shown`, `comeback_started`, `bookmark_written`, `split_saved`, `spread_signed`, `ai_requested`, `ai_accepted`, `install_done`, `push_enabled`, `push_sent`, `push_failed`. Events never hold titles, bookmarks or any typed text.
+`events.kind` values: `big_one_named`, `first_payment_started` (with `ms` from naming), `comeback_shown`, `comeback_started`, `bookmark_written`, `split_saved`, `spread_signed`, `ai_requested`, `ai_accepted`, `install_done`, `push_enabled`, `push_sent`, `push_failed`, and from spec 012 `night_printed` (with `count`, the number of items). Events never hold titles, bookmarks or any typed text.
 
 ## Still a PWA in any browser
 

@@ -24,7 +24,7 @@ const STATES = ["start", "intercept", "running", "focus", "heads-up", "boundary"
   // spec 008: weekly check-in
   "checkin", "checkin-cards",
   // spec 012: tonight in a line
-  "tonight-empty", "tonight-typing", "tonight-line", "tonight-size", "tonight", "tonight-running", "tonight-done"];
+  "tonight-empty", "tonight-typing", "tonight-line", "tonight-size", "tonight", "tonight-running", "tonight-done", "tonight-lectures", "tonight-tape", "tonight-running-tape", "tonight-line-tape"];
 // ONLY=a,b limits a run to some states (quick review loops); WIDTH=375 checks the narrowest phone; HEIGHT=1400 sees a long screen whole
 const only = process.env.ONLY ? process.env.ONLY.split(",") : null;
 const WIDTH = Number(process.env.WIDTH) || 390;

@@ -18,7 +18,7 @@ and the ticket turns them into a sentence of things you can change:
 
 > **Tonight,** <u>2 × 30 min</u> of <u>History paper</u>, <u>45 min</u> of <u>Orgo problem set 4</u>, then <u>20 min</u> of <u>BIO 180 ch. 7</u>.
 
-Stamp **Print**. Tonight's sittings print on the tape, unprinted, under "Still to come". The deal ticket now holds the first one, and each deal you make takes the next one off the list. Nothing new to manage: every sitting is an ordinary deal, a sitting on a big one is that big one's next sitting, and the tape is still the record of the night.
+Stamp **Print**. Tonight's sittings print on the tape, unprinted, above a "now" line. The deal ticket now holds the first one, and each deal you make takes the next one off the list. Nothing new to manage: every sitting is an ordinary deal, a sitting on a big one is that big one's next sitting, and the tape is still the record of the night.
 
 Nobody in the research does this: the apps that take several things at once split on new lines (Things, Todoist) or hand the job to an AI (Structured, Tiimo, Todoist, Sunsama). Splitting one typed line on commas, and showing what was understood as the sentence itself, is open ground.
 
@@ -29,7 +29,7 @@ Nobody in the research does this: the apps that take several things at once spli
 | The plan for tonight | **tonight** ("Plan tonight", "Change tonight") | `night` |
 | One item in the sentence | (its name) | `night.items[i]` |
 | One deal-sized part of an item | **sitting** ("2 × 30 min") | a sitting, from `sittingsOf(night)` |
-| The unprinted part of the tape | **Still to come** | `.tocome` |
+| The unprinted part of the tape | (above the **now** line; "Still to come" to screen readers) | `.tocome` |
 
 Never: "schedule", "agenda", "to-do", "plan" as a noun on screen, "overdue", "missed", "behind".
 
@@ -45,8 +45,8 @@ The sentence starts **"Tonight,"** with the cursor after it. You type names and,
 
 What a closed item understands, and nothing else (no symbols to learn):
 
-- **A size at the end:** `45`, `45m`, `45 min`, `1h`, `1h30`, `90`, `2h`. Snapped to the nearest size on offer (below). No size: a big one's usual length, otherwise 20 min.
-- **A name you already use:** if every word typed starts a word of an open big one's title, or of a deal on today's tape ("orgo set 4" → "Orgo problem set 4", "bio ch 7" → "BIO 180 ch. 7"), the item takes that exact name. That is the only sign of the match; nothing says "matched". A big one with pieces brings its next piece along ("Problems 5 to 8").
+- **A size at the end:** `45`, `45m`, `45 min`, `1h`, `1h30`, `90`, `2h`. Snapped to the nearest size on offer (below). No size: a big one's usual length, otherwise 20 min. A bare number right after a word that numbers coursework (lecture, ch, chapter, unit, week, lab, set, hw, problem, quiz, module, section, part, lesson, page, question, topic and a few more) stays in the name: "lecture 15" is Lecture 15 for 20 min, "lecture 15 30" or "lecture 15 30m" is 30 min of it (issue #14).
+- **A name you already use:** if every word typed starts a word of an open big one's title, or of a deal on today's tape ("orgo set 4" → "Orgo problem set 4", "bio ch 7" → "BIO 180 ch. 7"), the item takes that exact name. A typed number only matches the same number ("lecture 1" is not Lecture 13). Two items in one line typed differently never take the same name: if "lecture 13" and "lecture 14" would both become "Lecture 13 and 14", each keeps what was typed (issue #14). That is the only sign of the match; nothing says "matched". A big one with pieces brings its next piece along ("Problems 5 to 8").
 
 ### 3. Change anything by tapping it
 
@@ -61,7 +61,7 @@ Under the sentence, one line said calmly, after a rule: **"2h 15 min of focus. D
 
 The stub's stamp is **Print**, the size of DEAL. It's dashed and quiet until the line has an item. Pressing it:
 
-- prints tonight's sittings to the tape, in the sentence's order (an item's sittings one after another), under **Still to come**, with the total beside the heading;
+- prints tonight's sittings to the tape, in the sentence's order (an item's sittings one after another), above the "now" line (section 5);
 - puts the first sitting on the deal ticket: "10 min of Reels, then 30 min of History paper." with its "Start with:" line when it's a big one. The break is yours to pick as on any deal;
 - swaps the home link to **Change tonight**, which opens tonight's ticket again with what's left.
 
@@ -69,11 +69,11 @@ While a night is printed, the big-one cards step back (they are in the night alr
 
 ### 5. The tape
 
-The top of the tape, above its first printed deal, is the unprinted part: **Still to come**, then one row per sitting with its length in the time column ("30 min" where a printed row has "9:52pm") and its name; a second line only when there is something to add ("Problems 5 to 8", "1 of 2"). Every row is in one faint ink except the next one, in full ink. A perforation separates them from the printed deals below.
+The tape is one list under **Today's deals**, read as one timeline with the newest at the top (issue #16: a "Still to come" heading right above "Today's deals" confused a tester). The unprinted items sit at the top, one row per item with its own length in the time column ("30 min", or "1h" over "in 2 parts" for an item in two sittings, where a printed row has "9:52pm") and its name; a second line only when there is something to add ("Problems 5 to 8", "in 2 parts", "part 2 of 2" once part 1 is done). The next item is nearest the line, in full ink, with the faint tilted Done box where its stamp will land; the later ones are above it in one faint ink, with no box. Under them a solid **now** line with what's left at its right ("2h 5 min, done around 10:34pm"), then the printed deals. While a block runs, the rule stays (with what's left) and the running row under it says "now", with its part when it is one ("30 min, part 1 of 2").
 
 ### 6. Through the night
 
-- **DEAL** on the loaded ticket starts that sitting; its row leaves Still to come and the deal prints below as usual.
+- **DEAL** on the loaded ticket starts that sitting; its row leaves the top of the tape and the deal prints under the now line as usual.
 - **The done sheet** ("That was the deal.") offers the next sitting as "Another round?": "5 min of Reels, then 45 min of Orgo problem set 4." One stamp, the same ticket as today. **Done for now** and **Keep going for 10 more minutes** work as they do.
 - **While a block runs**, the line under the dial names what's next: "Then Orgo problem set 4." instead of "Then you're done.", when there's a next sitting.
 - **Anything else is still allowed.** A quick deal on something not in the line leaves the line alone. Changing the loaded ticket's task (tapping its name) makes it a plain deal; the sitting stays on the list.
@@ -81,7 +81,7 @@ The top of the tape, above its first printed deal, is the unprinted part: **Stil
 
 ### 7. When the night runs out
 
-At the local day's turn, rows still under Still to come leave the tape without a word. A big one's sittings were never more than its next sittings: its card is still there tomorrow with its open terms. A plain item is simply gone. Nothing anywhere says what was planned and not done.
+At the local day's turn, rows still above the now line leave the tape without a word. A big one's sittings were never more than its next sittings: its card is still there tomorrow with its open terms. A plain item is simply gone. Nothing anywhere says what was planned and not done.
 
 ## Edge cases
 
@@ -113,8 +113,8 @@ At the local day's turn, rows still under Still to come leave the tape without a
 | Stamp | Print |
 | Back to a single deal | Just one deal |
 | Name field link | Take it out |
-| Tape section | Still to come |
-| Tape row second line | Problems 5 to 8 / 1 of 2 |
+| Tape line between planned and printed | now ……… 2h 5 min, done around 10:34pm |
+| Tape row second line | Problems 5 to 8 / in 2 parts / part 2 of 2 |
 | Under the dial | Then Orgo problem set 4. |
 
 No line explains the UI: there is no "type commas", "tap a word", "drag to reorder".
@@ -141,13 +141,13 @@ Read against the code on this branch (November 10, 2026). The point of the desig
 | Function | Does |
 | --- | --- |
 | `NIGHT_SIZES`, `NIGHT_MAX_ITEMS` (6) | the eight sizes as `[sittings, minutes]`, from `FOCUS_LENGTHS` |
-| `parseNightItem(raw, known)` | the trailing size (`45m`, `1h30`, `2h`, a bare `45` only when it's a size), snapped to `NIGHT_SIZES`; the name matched against `known` (every typed word starts a word of the name) |
+| `parseNightItem(raw, known, taken)` | the trailing size (`45m`, `1h30`, `2h`, a bare `45` only when it's a size and doesn't follow a numbering word), snapped to `NIGHT_SIZES`; the name matched against `known` (every typed word starts a word of the name, numbers match whole), never a name `taken` by an item typed differently |
 | `sittingsOf(items)` | the flat list in sentence order, each `{ title, taskId?, minutes, k, of, piece? }` |
 | `nightFit(sittings, nowMs)` | focus minutes and the finishing time, breaks from `breakBetween` |
 | `nightRound(session, sitting)` | the next round's `QuickDeal` for a sitting (the "Another round?" ticket) |
 | `nightProblem(input)` | validation for Convex: 1–6 items, titles 1–80 characters, sizes in `NIGHT_SIZES` |
 
-Tests first: "orgo set 4" keeps its 4; "history paper 1h" is 2 × 30; "bio ch 7" matches "BIO 180 ch. 7" and not "BIO 180 midterm"; "50" snaps to 45; seven items are refused; a 2 × 45 item is two 45-minute sittings with a quarter-length break between them in `nightFit`.
+Tests first: "orgo set 4" keeps its 4; "lecture 15" is Lecture 15 at 20 min and "lecture 15 30m" is 30 min of it; "lecture 1" doesn't match "Lecture 13"; "lecture 13, lecture 14" against a known "Lecture 13 and 14" stays two names; "history paper 1h" is 2 × 30; "bio ch 7" matches "BIO 180 ch. 7" and not "BIO 180 midterm"; "50" snaps to 45; seven items are refused; a 2 × 45 item is two 45-minute sittings with a quarter-length break between them in `nightFit`.
 
 **Convex** (read `convex/_generated/ai/guidelines.md` first):
 
@@ -164,14 +164,17 @@ nights: defineTable({
 
 - `nights.print({ dayKey, items })`: `nightProblem`, checks each `taskId` is the caller's (`ownTask`), replaces the day's row (taken 0).
 - `nights.tonight({ dayKey })`: the caller's row for that day, or null.
-- `sessions.start` and `tasks.startFromCard` gain `fromNight: v.optional(v.boolean())`. When true, the same transaction bumps that day's `taken` by one, so a sitting can't be taken twice from two devices or a retry.
+- `sessions.start` and `tasks.startFromCard` gain `fromNight: v.optional(v.number())`, the index of the sitting the deal takes. The same transaction sets that day's `taken` to at least index + 1, so a sitting can't be taken twice from two devices or a retry. (Built as an index rather than the boolean first written here: a bare "bump by one" would count the same sitting twice.)
+- `nights.print` also takes `keepTaken`, for a reorder of what is left on the roll: the sittings already taken stay taken, and must still lead the night unchanged, or the print is refused (`NIGHT_CHANGED`, changed on another device). A reorder logs no `night_printed`.
 - `crons.ts`: a daily sweep deletes nights more than 2 days old, so a night really does vanish (spec section 7).
 
 **The bridge, `apps/web/src/main.ts`:** `Backend` gains `printNight(items)`, and `start` / `startFromCard` pass `fromNight`. One more subscription, `nights.tonight` for today's key (re-subscribed at local midnight like the cards), pushed to the screen with `app.night(doc)`. The prototype keeps the night in memory (`night`, `loadNight`, `nightRound` in `prototypes/quick-deal/index.html`); built for real, those read `app.night`'s doc instead.
 
 **Privacy:** `docs/specs/006-privacy-inventory.md` gains the `nights` table in the same change: item titles are coursework text, like big-one titles; only the student reads them; deleted after 2 days; deleting a big one clears its `taskId` from any night that names it.
 
-**Events** (spec 008's table): `night_printed` with the item count, nothing typed.
+**Events** (spec 008's table): `night_printed` with the item count (`events.count`), nothing typed.
+
+**Built** (issue #19): `packages/core/src/night.ts`, `convex/nights.ts`, `convex/lib/nights.ts`, the bridge in `apps/web/src/main.ts` (`app.night`, `printNight`, `fromNight`). The prototype keeps its own copy of the parsing for the demo; in live mode the night it shows is the server's. As in the prototype, a bare trailing number is a size only when it is one (15, 20, 30, 45, 60, 90, 120), so "reading 50" is a name; "50m" snaps to 45.
 
 ### Order of work
 
@@ -275,3 +278,17 @@ Things 3 ranked first in every review; on a desk Sunsama and Opal also sat above
 Built after b1: tonight's sentence a size up with items kept whole (lines break after commas); the finishing time the ticket's one figure, counting the first break; names whole in the rest-of-night line; on a desk the tape says the night once. After b2: every item starts its own line; underlines scale with the type; one figure per line. Own moves (Chris asked the main session to take more ownership): **the night strip**, the night to scale in the dial's language (solid sittings, hatched breaks, paid ones green), on tonight's ticket, on the printed ticket (phone), as a labelled map under it (desk) and on the done sheet with the sitting just paid; **Still to come printed above Today's deals**, previewed faintly while you type and inked on Print; **planned rows wait with a faint tilted Done stamp** where it will land, the deal ticket's empty-stamp-box pattern (Chris asked for a way to tell planned from done that fits the design); **desk home screens hang from the top**, so the ticket keeps its place between states (Chris approved).
 
 The desk is the open problem: a phone ticket on an empty desk. It continues in its own session (spec 014, branch from this one).
+
+### Issues #14 and #16 (beta feedback, Nov 11)
+
+A tester typed "lecture 13, lecture 14" and read one thing with a combined total (#14), and found "Still to come" sitting right on top of "Today's deals" confusing (#16). Reproduced in the prototype: "lecture 15" became "15 min of Lecture" (a bare size swallowed the lecture's number), so "lecture 15, lecture 20" was two items both named "Lecture"; "lecture 1" could match a known "Lecture 13"; two typed items could both snap to one known name; "1 of 2" under a sitting read as a count of items. Fixed in the parser (section 2) and on the tape (section 5); parts say "part 1 of 2" on the tape, the roll and under the dial. A small fix by the council's sizing: no benchmark, three rounds, phone 375 and desk 1440 by 900, light and dark.
+
+| Round | Designer | Primary user | Taste | Built after it (two or more agreed) |
+| --- | --- | --- | --- | --- |
+| 1 | 7/10 | 8/10 | 7.5/10 | the Done box only on the next row; the same solid rule while a block runs; no "Running" under "now"; the finishing time back on the tape; one row per item, so part 2 never sits above part 1; the hairline under the heading; a softer rule in dark |
+| 2 | 7.5/10 | 8/10 | 8/10 | "done around" with a small pm; the running row says its part; the desk tape's hairline back (a regression from round 1) |
+| 3 | 7.5/10 | 8/10 | 8/10 | Stopped at the three-round cap. Made, cheap and asked by two: what's left back on the rule ("2h 5 min, done around"); the next row's Done box darker; "in 2 parts" under an item instead of "2 × 30 min" |
+
+Not taken, for Chris: projected start times in the planned rows' time column with the length moved to the subline (designer, rounds 1 and 3; spec 012 ruled out clock times for sittings and only the roll got clock hours); "now" kept in one place in both states (designer and primary user suggested opposite fixes); the running "now" in green (taste only); one name column across the rule (taste only, the planned rows sit about 16 px left); "Today's deals" heading rows that are not deals yet (all three noted it, none asked to change it); the printed 7:53pm row and the running row for the same block read as a double print (spec 009's live row, outside this change).
+
+Shots: `012-shots/issue14-desk-before.png`, `issue14-desk-after.png`, `issue16-tape-before.png`, `issue16-tape-after.png`, `issue16-tape-running-dark.png`.

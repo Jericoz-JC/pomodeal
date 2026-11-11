@@ -1131,7 +1131,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 .nightrest .at { font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 700; color: var(--ink); }
 /* the unprinted top of the tape: tonight's sittings, lengths where the times go, one faint ink but the next one */
 .tocome { display: flex; flex-direction: column; }
-.tocome.draft li, .tocome.draft h3 span b { color: color-mix(in srgb, var(--ink) 38%, transparent); }
+.tocome.draft li { color: color-mix(in srgb, var(--ink) 38%, transparent); }
 .tocome.draft .nightstrip { opacity: .5; }
 .nightstrip { display: flex; gap: 0; height: 14px; margin: 2px 0 6px; -webkit-mask: var(--zig2); mask: var(--zig2); }
 .nightstrip .ns { display: block; min-width: 4px; border-radius: 0; }
@@ -1163,9 +1163,6 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   .nightstrip.named .ns.b { height: 12px; align-self: flex-end; }
 }
 .tocome .nightstrip { height: 7px; margin: 4px 0 8px; }
-.tocome h3 { margin: 0 0 4px; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 1.5rem; }
-.tocome h3 span { font-stretch: var(--wd-act); font-weight: 600; font-size: .9375rem; color: var(--soft); }
-.tocome h3 span b { font-stretch: var(--wd-display); font-weight: 800; font-size: 1.375rem; color: var(--ink); font-variant-numeric: tabular-nums; }
 .tocome ol { list-style: none; margin: 0; padding: 0; }
 .tocome li { display: grid; grid-template-columns: 5.25em 1fr; padding: 11px 0 10px; border-top: 1.5px dashed var(--edge-half); color: color-mix(in srgb, var(--ink) 52%, transparent); }
 .tocome li b { font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 600; font-size: 1.0625rem; line-height: 1.2; }
@@ -1176,12 +1173,21 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 .tocome li .wait .stamp { position: absolute; inset: 0; font-size: .9375rem; opacity: .16; filter: grayscale(1); --tilt: 0deg; }
 .tocome li .wait .stamp::before { display: none; }
 .tocome li.next .wait { border-color: var(--wait-edge); }
+.tocome li.next .wait .stamp { opacity: .34; }
 .tocome.draft li .wait { opacity: .6; }
 .tocome li .nm { font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 750; font-size: 1.25rem; line-height: 1.15; }
 .tocome li em { display: block; font-style: normal; font-size: .9375rem; line-height: 1.35; margin-top: 2px; }
 .tocome li.next { color: var(--ink); }
 .tocome li.next em { color: var(--soft); }
-.tocome .tcperf { height: 10px; margin: 8px 0 -6px; background: radial-gradient(circle, var(--edge) 1.5px, transparent 2px) 50% 50% / 10px 6px repeat-x; }
+/* the "now" line: a solid rule with "now" in the time column, where the next sitting meets what has printed */
+.tocome .nowline { margin: 4px 0 -16px; display: flex; align-items: center; gap: 10px; }
+.tocome .nowline > b { order: 0; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 750; font-size: 1.25rem; line-height: 1; }
+.tocome .nowline::after { content: ""; order: 1; flex: 1; height: 2px; background: color-mix(in srgb, var(--ink) 78%, transparent); }
+.tocome .nowline span { order: 2; font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 600; font-size: .9375rem; color: var(--soft); }
+.tocome .nowline span b { font-stretch: var(--wd-display); font-weight: 750; font-size: 1.0625rem; color: var(--ink); font-variant-numeric: tabular-nums; }
+.tocome li:first-child { border-top: 1px solid var(--edge-half); }
+@media (max-width: 819.98px) { .tocome + .stubs > li:first-child { border-top: none; } }
+.tocome .nowline span b small { font-family: var(--font-body); font-weight: 400; font-stretch: normal; font-size: .8125rem; margin-left: 1px; }
 .stub.perf .hint { margin-top: 6px; }
 
 /* ---------- the room on paper ----------
@@ -1792,8 +1798,9 @@ function goAgain() {
   /* spec 012: with tonight printed, the next round is its next sitting */
   const nx = nightNext(), d0 = nx ? nightRound(S, nx) : nextRound(S), { deal: d, forgiven } = repayDebt(d0, S.debt);
   const taskId = nx ? nx.taskId : S.taskId, card = taskId ? cardById(taskId) : null, move = nx ? nx.piece : S.firstMove;
+  const at = nx ? night.taken : undefined;
   if (nx) night.taken++;
-  if (BE) { if (taskId) BE.startFromCard(taskId, d0); else BE.start(d0); }
+  if (BE) { if (taskId) BE.startFromCard(taskId, d0, at); else BE.start(d0, at); }
   fileStop(forgiven); bankFocus();
   S = buildSession(d); S.justStarted = true; S.serial = String(412 + ledger.length).padStart(4, "0");
   /* a big one starts its next round where the bookmark just left it */
@@ -2155,6 +2162,10 @@ const newNight = () => ({ items: [], draft: "", printed: false, taken: 0 });
 const sittingsOf = nt => nt ? nt.items.flatMap(it => Array.from({ length: it.n }, (_, k) => ({ name: it.name, min: it.min, taskId: it.taskId, piece: it.piece, k, of: it.n }))) : [];
 const nightLeft = () => night && night.printed ? sittingsOf(night).slice(night.taken) : [];
 const nightNext = () => nightLeft()[0] || null;
+/* live mode: the index of the sitting on the deal ticket, which the deal takes on the server (spec 012) */
+const nightAt = () => nightLoaded && night ? night.taken : undefined;
+/* tonight as the server stores it (nights.print) */
+const nightItems = () => night.items.map(it => ({ title: it.name, ...(it.taskId ? { taskId: it.taskId } : {}), sittings: it.n, minutes: it.min }));
 const sizeText = it => it.n > 1 ? `${it.n} × ${it.min} min` : `${it.min} min`;
 const snapSize = m => NIGHT_SIZES.reduce((a, s) => Math.abs(s[0] * s[1] - m) < Math.abs(a[0] * a[1] - m) ? s : a);
 /* the night said in one line under the sentence: focus minutes, and when it ends with the breaks between sittings */
@@ -2173,24 +2184,35 @@ function knownNames() {
   [...ledger].reverse().forEach(e => { if (e.kind === "deal" || e.kind === "done") { const nm = tailOf(String(e.text)); if (!out.some(o => o.name.toLowerCase() === nm.toLowerCase())) out.push({ name: nm }); } });
   return out;
 }
-/* every typed word starts a word of the name ("orgo set 4" is Orgo problem set 4, "bio ch 7" is BIO 180 ch. 7) */
+/* every typed word starts a word of the name ("orgo set 4" is Orgo problem set 4, "bio ch 7" is BIO 180 ch. 7); a
+   number only matches the same number, so "lecture 1" is not Lecture 13 (issue #14). A name another item in the line
+   already took, typed differently, isn't offered again: "lecture 13, lecture 14" stay two things. */
 const words = s => s.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, " ").split(/\s+/).filter(Boolean);
-const matchName = raw => { const w = words(raw); return w.length ? knownNames().find(k => { const kw = words(k.name); return w.every(x => kw.some(y => y.startsWith(x))); }) : null; };
+const wordFits = (x, y) => /^\d+$/.test(x) ? x === y : y.startsWith(x);
+const matchName = (raw, taken = []) => { const w = words(raw); return w.length ? knownNames().find(k => {
+  const kw = words(k.name), t = taken.find(o => o.name === k.name);
+  return (!t || !t.typed || t.typed.toLowerCase() === raw.toLowerCase()) && w.every(x => kw.some(y => wordFits(x, y))); }) : null; };
 /* one closed item: a size at the end if there is one ("45m", "45 min", "1h", "1h30", "2h"), then the name. A bare number
-   is a size only when it is one ("45", "90"), so "orgo set 4" and "bio ch 7" keep their numbers. */
+   is a size only when it is one ("45", "90") and it doesn't number the word before it: "orgo set 4", "bio ch 7" and
+   "lecture 15" keep their numbers (issue #14); "lecture 15 30" or "lecture 15 30m" is 30 min of Lecture 15. */
 const BARE = [15, 20, 30, 45, 60, 90, 120];
-function parseItem(raw) {
+const NUMBERED = /(^|\s)(lecture|lec|chapter|ch|chap|unit|week|wk|lab|set|pset|ps|hw|homework|problem|problems|prob|quiz|module|mod|section|sec|part|lesson|page|pages|pg|pp|p|no|ex|exercise|exercises|question|questions|q|topic|act|scene|vol|volume|#)\.?$/i;
+function parseItem(raw, taken = []) {
   let s = raw.replace(/\s+/g, " ").trim(), mins = null;
   const m = s.match(/\s(\d+(?:\.\d+)?)\s*(h|hr|hrs|hours?)\s*(\d+)?\s*(m|min|mins)?$/i) || s.match(/\s(\d+)\s*(m|min|mins|minutes)$/i) || s.match(/\s(\d+)$/);
-  if (m && (m[2] || BARE.includes(+m[1]))) { mins = /^h/i.test(m[2] || "") ? Math.round(parseFloat(m[1]) * 60 + (+m[3] || 0)) : +m[1]; s = s.slice(0, m.index).trim(); }
+  if (m && (m[2] || BARE.includes(+m[1]) && !NUMBERED.test(s.slice(0, m.index)))) { mins = /^h/i.test(m[2] || "") ? Math.round(parseFloat(m[1]) * 60 + (+m[3] || 0)) : +m[1]; s = s.slice(0, m.index).trim(); }
   if (!s) return null;
-  const k = matchName(s), name = [...(k ? k.name : s)].slice(0, 80).join("");
+  const k = matchName(s, taken), name = [...(k ? k.name : s)].slice(0, 80).join("");
   const [n, min] = mins ? snapSize(mins) : snapSize(k && k.min ? k.min : 20);
-  return { name: k ? name : name.replace(/^./, c => c.toUpperCase()), n, min, taskId: k && k.taskId || null, piece: k && k.piece || "" };
+  return { name: k ? name : name.replace(/^./, c => c.toUpperCase()), n, min, taskId: k && k.taskId || null, piece: k && k.piece || "", typed: s };
 }
 function closeDraft(text) {
   const parts = text.split(","), last = parts.pop();
-  parts.forEach(p => { const it = night.items.length < NIGHT_MAX && parseItem(p); if (it) night.items.push(it); });
+  parts.forEach(p => { const it = night.items.length < NIGHT_MAX && parseItem(p, night.items); if (!it) return;
+    /* typed differently but read as the same known name: neither takes it, each keeps what was typed */
+    const k = matchName(it.typed), was = k && k.name !== it.name && night.items.find(o => o.name === k.name && o.typed && o.typed.toLowerCase() !== it.typed.toLowerCase());
+    if (was) Object.assign(was, { name: [...was.typed].slice(0, 80).join("").replace(/^./, c => c.toUpperCase()), taskId: null, piece: "" });
+    night.items.push(it); });
   night.draft = night.items.length < NIGHT_MAX ? last.replace(/^\s+/, "") : "";
   return parts.length > 0;
 }
@@ -2225,7 +2247,7 @@ function nightStrip(list, taken, cls, labels) {
   list.forEach((s, i) => {
     if (i) parts.push(`<i class="ns b" style="flex:${breakBetween(list[i - 1].min)}"></i>`);
     const st = i < taken ? " paid" : i === taken && taken >= 0 ? " next" : "";
-    parts.push(labels ? `<span class="ns f${st}" style="flex:${s.min}"><b>${esc(s.name)}</b><em>${N(s.of > 1 ? `${s.min} min, ${s.k + 1} of ${s.of}` : `${s.min} min`)}</em></span>` : `<i class="ns f${st}" style="flex:${s.min}"></i>`);
+    parts.push(labels ? `<span class="ns f${st}" style="flex:${s.min}"><b>${esc(s.name)}</b><em>${N(s.of > 1 ? `${s.min} min, ${partOf(s)}` : `${s.min} min`)}</em></span>` : `<i class="ns f${st}" style="flex:${s.min}"></i>`);
   });
   return `<div class="nightstrip${cls ? " " + cls : ""}${labels ? " named" : ""}" aria-hidden="true">${parts.join("")}</div>`;
 }
@@ -2248,6 +2270,7 @@ function printNight() {
   if (night.draft.trim()) closeDraft(night.draft + ",");
   if (!night.items.length) return;
   night.printed = true; night.taken = 0; nightOn = false; nightPick = null; loadNight();
+  if (BE) BE.printNight(nightItems());
   nextFocus = "#shake"; render(); say(`Tonight is on the tape: ${sittingsOf(night).length} sittings. ${nightNext().name} is on the ticket.`);
 }
 /* what's left goes back into the sentence */
@@ -2257,6 +2280,25 @@ function reopenNight() {
   night = { ...newNight(), items };
   if (nightLoaded && fromCard) { deal.focusMin = fromCard.prevFocus; fromCard = null; }
   nightLoaded = false;
+}
+/* live mode (spec 012 "Building it for real"): tonight is the server's, one per local day (pomodealApp.night).
+   nightDoc is its last copy. A sentence being written stays until it is printed or put away. */
+let nightDoc = null, nightSeen = false;
+function applyNight() {
+  if (nightOn) return;
+  const d = nightDoc, first = !nightSeen; nightSeen = true;
+  if (!d) {
+    if (night && night.printed) { if (nightLoaded && fromCard) { deal.focusMin = fromCard.prevFocus; fromCard = null; } nightLoaded = false; night = null; }
+    return;
+  }
+  const known = knownNames();
+  night = { ...newNight(), printed: true, taken: d.taken, items: d.items.map(it => {
+    const k = it.taskId ? known.find(x => x.taskId === it.taskId) : null;
+    return { name: it.title, n: it.sittings, min: it.minutes, taskId: it.taskId || null, piece: k ? k.piece : "" };
+  }) };
+  /* the deal ticket holds the next sitting: on opening the app, and whenever the one it held was taken elsewhere */
+  if (!S && nightLeft().length && (nightLoaded || first)) loadNight();
+  else if (nightLoaded && !nightLeft().length) { if (fromCard) { deal.focusMin = fromCard.prevFocus; fromCard = null; } nightLoaded = false; }
 }
 /* spec 012: the next round on the done sheet is tonight's next sitting, with the break between rounds */
 function nightRound(s, nx) {
@@ -2306,7 +2348,7 @@ function bindNight() {
   on("#nout", () => { const it = night.items.splice(nightPick.i, 1)[0]; nightPick = null; nextFocus = "#nightin"; render(); say(`${it.name} is out of tonight.`); });
   document.querySelectorAll("[data-nadd]").forEach(b => b.onclick = () => addKnown(addable()[+b.dataset.nadd]));
   on("#print", () => printNight());
-  on("#onedeal", () => { nightOn = false; nightPick = null; nextFocus = "#plannight"; render(); });
+  on("#onedeal", () => { nightOn = false; nightPick = null; if (BE) applyNight(); nextFocus = "#plannight"; render(); });
   on("#plannight", () => {
     if (night && night.printed && nightLeft().length) reopenNight(); else if (!night || night.printed) night = newNight();
     nightOn = true; nightPick = null; nextFocus = "#nightin"; render();
@@ -2422,7 +2464,7 @@ function rollView() {
   const seg = s => {
     const end = s === m.segs[m.segs.length - 1] ? " end" : "";
     if (s.t === "b") return `<i class="rs b ${s.st}${end}" style="flex:${s.min}">${s.name ? `` : ""}</i>`;
-    const size = `${Math.round(s.min)} min${s.of > 1 ? `, ${s.k + 1} of ${s.of}` : ""}`;
+    const size = `${Math.round(s.min)} min${s.of > 1 ? `, ${partOf(s)}` : ""}`;
     /* nothing waits for the stamp: a sitting carries Done once it is paid, inked */
     const mark = s.st === "paid" ? `<span class="landed"><span class="stamp">Done</span></span>` : "";
     const inner = `<b class="nm">${N(esc(s.name))}</b><em>${N(size)}</em>${mark}${s.st === "paid" || s.st === "run" ? `<i class="ink"${s.st === "run" ? ` id="rollink"` : ""}></i>` : ""}`;
@@ -2503,6 +2545,7 @@ function moveNightItem(kind, from, to) {
     const all = sittingsOf(night), done = groupSittings(all.slice(0, night.taken)).items, left = groupSittings(all.slice(night.taken)).items;
     it = left.splice(from, 1)[0]; left.splice(to, 0, it); night.items = done.concat(left);
     if (nightLoaded && !S) loadNight();
+    if (BE && night.printed) BE.printNight(nightItems(), true);
   }
   render(); say(`${it.name} is ${to === 0 ? "first" : "moved"}.`);
 }
@@ -2524,16 +2567,24 @@ function inkRoll() { const k = document.getElementById("rollink"); if (k && S) k
 
 /* on a desk, with names on offer at the front edge, "Tonight," there is the way in */
 const nightLink = () => nightOn || S || (WIDE.matches && mode === "start" && !nightLeft().length && addable().length) ? "" : `<button class="textbtn" id="plannight">${nightLeft().length ? "Change tonight" : "Plan tonight"}</button>`;
-/* the unprinted top of the tape */
+/* the unprinted part of the tape (issue #16): one list with the printed deals, read as one timeline, newest at the
+   top. What's to come sits above a "now" line, the next sitting nearest it; what has printed runs on below. While a
+   block runs, its own "now" row is the line. */
+const partOf = s => s.of > 1 ? `part ${s.k + 1} of ${s.of}` : "";
 function toComeView() {
   /* typing tonight's line: the rows it would print, faint and unprinted */
   const draft = nightOn && night && night.items.length > 0;
   const left = draft ? sittingsOf(night) : nightLeft(); if (!left.length) return "";
-  const total = left.reduce((a, s) => a + s.min, 0);
-  const ends = clockStr(Date.now() + (total + left.slice(0, -1).reduce((a, s) => a + breakBetween(s.min), 0) + ((nightLoaded || draft) && deal.act ? deal.breakMin : 0)) * 60000);
-  return `<section class="tocome${draft ? " draft" : ""}" aria-labelledby="tocomeh"><h3 id="tocomeh">Still to come <span>${N(hm(total))}, done <b>${ends}</b></span></h3><ol>${left.map((s, i) => {
-    const sub = s.piece && s.k === 0 ? s.piece : s.of > 1 ? `${s.k + 1} of ${s.of}` : "";
-    return `<li${i === 0 && !draft ? ` class="next"` : ""}><b>${N(`${s.min} min`)}</b><span><span class="nm">${esc(s.name)}</span>${sub ? `<em>${N(esc(sub))}</em>` : ""}</span><span class="wait" aria-hidden="true"><span class="stamp">Done</span></span></li>`; }).join("")}</ol><div class="tcperf" aria-hidden="true"></div></section>`;
+  /* one row per item, with its own length (issue #14): an item's parts are one row, "1h" over "2 × 30 min" */
+  const rows = [];
+  left.forEach(s => { const r = rows[rows.length - 1]; if (r && s.k > 0 && r.name === s.name && r.min === s.min) r.parts.push(s); else rows.push({ name: s.name, min: s.min, piece: s.piece, parts: [s] }); });
+  const focus = left.reduce((a, s) => a + s.min, 0);
+  const ends = clockStr(Date.now() + (focus + left.slice(0, -1).reduce((a, s) => a + breakBetween(s.min), 0) + ((nightLoaded || draft) && deal.act ? deal.breakMin : 0)) * 60000);
+  return `<section class="tocome${draft ? " draft" : ""}" aria-label="Still to come"><ol reversed>${rows.map((r, i) => {
+    const n = r.parts.length, first = r.parts[0];
+    const sub = [r.piece && first.k === 0 ? r.piece : "", n > 1 ? `in ${n} parts` : first.of > 1 ? partOf(first) : ""].filter(Boolean).join(", ");
+    const next = i === 0 && !draft;
+    return `<li${next ? ` class="next"` : ""}><b>${N(n > 1 ? hm(n * r.min) : `${r.min} min`)}</b><span><span class="nm">${esc(r.name)}</span>${sub ? `<em>${N(esc(sub))}</em>` : ""}</span>${next ? `<span class="wait" aria-hidden="true"><span class="stamp">Done</span></span>` : ""}</li>`; }).reverse().join("")}</ol><p class="nowline">${S ? "" : "<b>now</b>"}<span>${N(hm(focus))}, done around <b>${N(ends.replace(/([ap]m)$/, "<small>$1</small>"))}</b></span></p></section>`;
 }
 function startView() {
   if (nightOn) return `<h1 class="home vh">Tonight</h1>${nightTicket()}
@@ -2569,7 +2620,7 @@ function runningView() {
   /* while a sheet is open it does the talking: the dial keeps only its number and ring */
   const quiet = !!(sheet && tab === "now");
   /* spec 012: with tonight printed, the next sitting is said the way the tape says it */
-  const nn = nightNext(), then = nxt ? `<span class="swatch ${nxt.type}" aria-hidden="true"></span>Then ${esc(longName(nxt))} for ${nxt.min} min.` : nn ? `Then ${esc(nn.name)}${nn.of > 1 ? `, ${nn.k + 1} of ${nn.of}` : ""}.` : "";
+  const nn = nightNext(), then = nxt ? `<span class="swatch ${nxt.type}" aria-hidden="true"></span>Then ${esc(longName(nxt))} for ${nxt.min} min.` : nn ? `Then ${esc(nn.name)}${nn.of > 1 ? `, ${partOf(nn)}` : ""}.` : "";
   /* the next step always sits under the dial, in every state, so the dial never moves */
   const note = quiet ? `<p class="note"></p>` : toast ? `<p class="note go" role="status">${N(esc(toast))}</p>` : `<p class="note">${N(then)}</p>`;
   /* on focus blocks of 45+, a reserved slot under the next step: silent, 3 minutes at the midpoint, then empty again */
@@ -3309,13 +3360,16 @@ function openSheet(s) { opener = document.activeElement; const at = performance.
   if (s.kind !== "done") say(`Time's up on ${longName(cur())}.`); }
 function closeSheet() { sheet = null; }
 
+/* the running block is a part of one of tonight's items: say which, as the roll does ("30 min, part 1 of 2") */
+const runningPart = () => { if (!S || !night || !night.printed || !night.taken) return null; const sp = sittingsOf(night)[night.taken - 1];
+  return sp && sp.of > 1 && sp.name === title(cur().label) ? sp : null; };
 function ledgerView() {
   const n = k => ledger.filter(e => e.kind === k).length;
   const deals = dealCount();
   const any = ledger.length || studied;
-  return `${toComeView()}<div class="tapehead"><h2 id="tapeh" tabindex="-1">Today's deals</h2><span class="tapeval" id="tapeval"></span></div>
+  return `<div class="tapehead"><h2 id="tapeh" tabindex="-1">Today's deals</h2><span class="tapeval" id="tapeval"></span></div>${toComeView()}
   ${!any && !nightLeft().length ? `<p class="soft">Nothing yet. Every deal you make lands here, with its terms.</p>` : ""}
-  ${ledger.length || S ? `<ul class="stubs" aria-label="Deals, newest first">${S ? `<li class="stubcard live"><span class="t"><b>now</b><span class="stamp plain">${remaining() <= 0 ? "Time's up" : "Running"}</span></span><span class="what"><span class="row"><span class="title">${esc(title(cur().label))}</span></span><em>${N(cur().type === "focus" ? `${cur().min} min of focus` : `${cur().min} min break`)}</em></span></li>` : ""}${ledger.map((e, i) => `<li class="stubcard${freshStub(e)}">${stubInner(e, i)}</li>`).reverse().join("")}</ul>` : ""}
+  ${ledger.length || S ? `<ul class="stubs" aria-label="Deals, newest first">${S ? `<li class="stubcard live"><span class="t"><b>now</b>${remaining() <= 0 ? `<span class="stamp plain">Time's up</span>` : ""}</span><span class="what"><span class="row"><span class="title">${esc(title(cur().label))}</span></span><em>${N(cur().type === "focus" ? (sp => sp ? `${cur().min} min, ${partOf(sp)}` : `${cur().min} min of focus`)(runningPart()) : `${cur().min} min break`)}</em></span></li>` : ""}${ledger.map((e, i) => `<li class="stubcard${freshStub(e)}">${stubInner(e, i)}</li>`).reverse().join("")}</ul>` : ""}
   ${any ? `<dl class="totals">
     <div class="go"><dt>Studied</dt><dd>${N(studied)} min</dd></div>
     <div><dt>Deals made</dt><dd>${deals}</dd></div>
@@ -3470,9 +3524,9 @@ function bind() {
       if (bg) S.firstMove = bg.move.trim();
       if (BE) {
         saveDeal();
-        if (fc) { BE.startFromCard(fc.id, d); if (fc.comeback) BE.logEvent("comeback_started", fc.id); }
+        if (fc) { BE.startFromCard(fc.id, d, nightAt()); if (fc.comeback) BE.logEvent("comeback_started", fc.id); }
         else if (bg) BE.startBigOne({ title: bigTitle(), ...(bg.type ? { taskType: bg.type } : {}), ...(bg.gut ? { gutMin: bg.gut } : {}), firstMove: bg.move.trim(), deal: d, namedAt: bg.namedAt ?? Date.now() + clockOffset });
-        else BE.start(d);
+        else BE.start(d, nightAt());
       }
       /* the demo has no server: its big one is a sample card, so the block-end notes have something to ask about */
       if (bg && !BE) { S.taskId = "demo"; bigOneCards = [{ id: "demo", title: bigTitle(), startWith: bg.move.trim(), progress: null, minutes: bg.pay, comeback: false, offerRespread: false, ...(bg.type ? { taskType: bg.type } : {}) }, ...cards().filter(c => c.id !== "demo")]; }
@@ -3862,7 +3916,7 @@ function demoPlanData() {
   };
 }
 function fromHash() {
-  const h = location.hash.slice(1);
+  let h = location.hash.slice(1);
   fresh(); if (!BE) DEMO_SHIFT = shiftTo(22, 41); mode = "start"; setTab("now"); weekAsk = null; bigOneCards = []; demoAside = []; wakeOn = readWake(); pushAsk = null; demoPlans = demoPlanData();
   let after = null;
   const run = (left, ask) => { S = buildSession(deal); S.serial = "0412"; S.startedAt = vnow - (S.durMs - left); S.askCount = ask || 0; };
@@ -3952,11 +4006,15 @@ function fromHash() {
   /* spec 012, tonight in a line: an evening at 7:52pm with two big ones open and a reading deal already done.
      The ticket empty, then mid-line, then whole, then a length's choices open; printed; its first sitting running; done */
   else if (h.startsWith("tonight")) {
+    /* "-tape": the same state, scrolled to the phone's tape */
+    if (h.endsWith("-tape")) { h = h.slice(0, -5); requestAnimationFrame(() => requestAnimationFrame(() => { const t = $("#side-ledger"); if (t) t.scrollIntoView({ block: "start" }); })); }
     DEMO_SHIFT = shiftTo(19, 52);
     bigOneCards = demoCards(DEMO_CARDS.slice(0, 2));
     ledger = [stubOf({ kind: "freebie", blockLabel: "Reels", minutes: 5 }, "7:18pm"), stubOf({ kind: "deal", blockLabel: "Reading, BIO 180 ch. 7", minutes: 12 }, "7:19pm"), stubOf({ kind: "done", blockLabel: "Reading, BIO 180 ch. 7", minutes: 12 }, "7:31pm")];
     studied = 12; night = newNight();
-    if (h !== "tonight-empty") closeDraft(h === "tonight-typing" ? "history paper 1h, orgo set 4, bio ch 7" : "history paper 1h, orgo set 4, bio ch 7,");
+    /* issue #14: numbered coursework, one length each */
+    if (h === "tonight-lectures") closeDraft("lecture 15, lecture 16 1h, lab 20 45m,");
+    else if (h !== "tonight-empty") closeDraft(h === "tonight-typing" ? "history paper 1h, orgo set 4, bio ch 7" : "history paper 1h, orgo set 4, bio ch 7,");
     if (h === "tonight-size") nightPick = { i: 0, kind: "size" };
     if (["tonight", "tonight-running", "tonight-done"].includes(h)) {
       night.printed = true; loadNight();
@@ -4052,6 +4110,16 @@ window.pomodealApp = {
     /* the done sheet belongs to its deal: another round started elsewhere, or 10 more minutes taken there, closes it */
     if (sheet && sheet.kind === "done" && (sheet.sid !== S.id || remaining() > 0)) { sheet = null; lastSig = ""; render(); return; }
     lastSig = ""; if (!sheet) render();
+  },
+  /** spec 012: tonight's night from the server (nights.tonight for today's key), or null */
+  night(doc) {
+    if (!BE) return;
+    const next = doc ? { items: doc.items, taken: doc.taken } : null;
+    if (nightSeen && JSON.stringify(next) === JSON.stringify(nightDoc)) return;
+    nightDoc = next; applyNight();
+    const a = document.activeElement;
+    if (tab !== "now" || stamping || nightOn || (a && a.matches("#view input, #view textarea"))) return;
+    lastSig = ""; render();
   },
   /** today's ledger from the server, newest first */
   ledger(entries) {
