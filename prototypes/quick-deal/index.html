@@ -1076,7 +1076,10 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
    Tonight is written the way a deal is: one sentence on the ticket. What you type closes into underlined words at each
    comma; the open end of the sentence is where the next one goes. Printed, the sittings wait at the top of the tape. */
 .tickethead #plannight { flex: none; margin: -10px -12px -10px auto; }
-.ticket.night .sentence { font-size: 1.375rem; line-height: 1.45; text-wrap: pretty; }
+.ticket.night .sentence { font-size: 1.25rem; line-height: 1.45; text-wrap: pretty; }
+.ticket.night .sentence .item::before { content: "\A"; white-space: pre; }
+/* the underline scales with the type, so five stacked words read as a sentence, not stripes (one style for every changeable word) */
+.ticket.night .sentence .tok { text-decoration-thickness: .085em; text-underline-offset: .17em; }
 .ticket.night .sentence .nsz { white-space: nowrap; }
 .ticket.night .sentence .lead { color: var(--ink); font-size: 1.25em; font-weight: 800; }
 .ticket.night .sentence .tok { font-size: 1.2em; }
@@ -1085,8 +1088,9 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 .nightin[size="1"]:focus { width: 3ch; }
 .nightin::placeholder { color: color-mix(in srgb, var(--ink) 42%, transparent); font-weight: 500; }
 .nightin:focus-visible { outline: none; }
-.ticket.night .nightfit { padding-top: 12px; border-top: 1px solid var(--rule); font-size: 1.0625rem; color: var(--soft); }
-.nightfit b { font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 1.75em; line-height: 1; color: var(--ink); vertical-align: -.08em; margin-left: 2px; }
+.ticket.night .nightfit { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; padding-top: 2px; font-size: 1rem; line-height: 1.35; color: var(--soft); }
+.nightfit b { flex: none; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 2.75rem; line-height: .82; letter-spacing: -.01em; color: var(--ink); font-variant-numeric: tabular-nums; }
+.nightfit b small { font-size: .42em; font-weight: 700; margin-left: 2px; letter-spacing: 0; }
 .nightname { flex: 1 1 220px; }
 #night-picker[role="radiogroup"] { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 #night-picker[role="radiogroup"] .longrow { grid-column: 1 / -1; display: grid; grid-template-columns: inherit; gap: 8px; margin: 2px 0 0; padding-top: 10px; }
@@ -1094,14 +1098,31 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 .ticketwrap + .onedeal { align-self: center; margin: -6px auto -10px; }
 /* the rest of tonight, said under the ticket where the quiet line goes */
 .nightrest { align-self: stretch; margin: -6px 0 6px; padding-left: 2px; font-size: 1rem; line-height: 1.4; color: var(--soft); text-wrap: pretty; }
-.nightrest b { font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 700; font-size: 1.125em; color: var(--ink); white-space: nowrap; }
+.nightrest b { font-weight: 700; color: var(--ink); white-space: nowrap; }
+.nightrest .at { font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 1.25em; color: var(--ink); }
 /* the unprinted top of the tape: tonight's sittings, lengths where the times go, one faint ink but the next one */
 .tocome { display: flex; flex-direction: column; }
-.tocome h3 { margin: 0 0 4px; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 750; font-size: 1.1875rem; }
+.tocome.draft li, .tocome.draft h3 span b { color: color-mix(in srgb, var(--ink) 38%, transparent); }
+.tocome.draft .nightstrip { opacity: .5; }
+.nightstrip { display: flex; gap: 3px; height: 9px; margin: 2px 0 6px; }
+.nightstrip .ns { display: block; min-width: 4px; border-radius: 2px; }
+.nightstrip .ns.f { background: color-mix(in srgb, var(--ink) 70%, transparent); }
+.nightstrip .ns.f.next { background: var(--ink); }
+.nightstrip .ns.f.paid { background: var(--deal); }
+.nightstrip .ns.b { background: repeating-linear-gradient(135deg, var(--break-stripe) 0 1.5px, transparent 1.5px 4px), var(--break-base); opacity: .5; }
+.nightstrip.home { align-self: stretch; height: 10px; margin: -6px 0 0; }
+.tocome .nightstrip { height: 7px; margin: 4px 0 8px; }
+.tocome h3 { margin: 0 0 4px; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 1.5rem; }
 .tocome h3 span { font-stretch: var(--wd-act); font-weight: 600; font-size: .9375rem; color: var(--soft); }
+.tocome h3 span b { font-stretch: var(--wd-display); font-weight: 800; font-size: 1.375rem; color: var(--ink); font-variant-numeric: tabular-nums; }
 .tocome ol { list-style: none; margin: 0; padding: 0; }
-.tocome li { display: grid; grid-template-columns: 5.25em 1fr; padding: 11px 0 10px; border-top: 1.5px dashed var(--edge-half); color: color-mix(in srgb, var(--ink) 64%, transparent); }
+.tocome li { display: grid; grid-template-columns: 5.25em 1fr; padding: 11px 0 10px; border-top: 1.5px dashed var(--edge-half); color: color-mix(in srgb, var(--ink) 52%, transparent); }
 .tocome li b { font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 600; font-size: 1.0625rem; line-height: 1.2; }
+.tocome li .t { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+/* planned: the stamp hasn't landed yet. Done rows below carry "Done" in this same place */
+.tocome li .slot { display: block; width: 3.4em; height: 1.2em; border-radius: 4px; border-color: color-mix(in srgb, var(--ink) 34%, transparent); }
+.tocome li.next .slot { border-color: var(--wait-edge); }
+.tocome.draft li .slot { border-color: color-mix(in srgb, var(--ink) 22%, transparent); }
 .tocome li .nm { font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 750; font-size: 1.25rem; line-height: 1.15; }
 .tocome li em { display: block; font-style: normal; font-size: .9375rem; line-height: 1.35; margin-top: 2px; }
 .tocome li.next { color: var(--ink); }
@@ -1153,10 +1174,10 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   .ticket .stub.perf::before { top: -7px; left: -4px; clip-path: inset(50% 0 0 0); }
   .ticket.big .stub { position: relative; bottom: auto; background: radial-gradient(circle, var(--edge) 1.5px, transparent 2px) 0 0 / 6px 10px repeat-y, var(--card); }
   .ticket .stub .primary:is(#shake, #print) { font-size: 3.25rem; }
-  .ticket.night .sentence { font-size: 1.75rem; line-height: 1.4; }
+  .ticket.night .sentence { font-size: 1.875rem; line-height: 1.38; }
   /* on a desk the tape beside the ticket already says the rest of the night */
   .nightrest { display: none; }
-  main:not(:has(> .runwrap)) { min-height: calc(100dvh - 60px); justify-content: center; padding-bottom: 96px; }
+  main:not(:has(> .runwrap)) { min-height: calc(100dvh - 60px); justify-content: flex-start; padding-top: calc(50px + var(--stagetop) + clamp(40px, 13vh, 150px)); padding-bottom: 96px; }
   /* above the stage, which is pulled up under it: the floating-wheel control up here has to take clicks */
   .deskhead { position: relative; z-index: 2; display: flex; align-items: baseline; gap: 14px; padding-top: 30px; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 1.25rem; line-height: 1; color: var(--soft); }
   .deskhead .mark { color: var(--ink); }
@@ -1892,7 +1913,8 @@ const snapSize = m => NIGHT_SIZES.reduce((a, s) => Math.abs(s[0] * s[1] - m) < M
 function nightFit(list) {
   if (!list.length) return "";
   const focus = list.reduce((a, s) => a + s.min, 0), breaks = list.slice(0, -1).reduce((a, s) => a + breakBetween(s.min), 0) + (deal.act ? deal.breakMin : 0);
-  return `${hm(focus)} of focus. <span class="nowrap">Done around <b>${clockStr(Date.now() + (focus + breaks) * 60000)}</b>.</span>`;
+  const at = clockStr(Date.now() + (focus + breaks) * 60000);
+  return `<span class="fitl">${hm(focus)} of focus.<br>Done around</span><b>${at.replace(/([ap]m)$/, "<small>$1</small>")}</b>`;
 }
 /* names you already use: open big ones first (with their next piece), then today's deals on the tape */
 function knownNames() {
@@ -1942,10 +1964,21 @@ function nightTicket() {
       <div class="tickethead"><span class="serial">No. ${String(412 + ledger.length).padStart(4, "0")}</span></div>
       <p class="sentence"><span class="lead">Tonight,</span> ${typing || !its.length ? `${body} ${field}` : body.replace(/<\/span><\/span>$/, `${field}</span></span>`)}</p>
       ${pk}
-      ${fit ? `<p class="nightfit">${N(fit)}</p>` : ""}
+      ${fit ? `${nightStrip(sittingsOf(night), -1)}<p class="nightfit">${N(fit)}</p>` : ""}
     </div>
     <div class="stub perf"><button class="primary" id="print"${its.length || parseItem(night.draft) ? "" : " disabled"}>Print</button></div>
   </section></div><button class="textbtn onedeal" id="onedeal">Just one deal</button>`;
+}
+/* the night as a shape, in the dial's language: a solid length per sitting, a hatched one per break between them;
+   sittings already paid are green, the next one full ink. Nothing to press: it is the plan drawn to scale. */
+function nightStrip(list, taken, cls) {
+  if (!list.length) return "";
+  const parts = [];
+  list.forEach((s, i) => {
+    if (i) parts.push(`<i class="ns b" style="flex:${breakBetween(list[i - 1].min)}"></i>`);
+    parts.push(`<i class="ns f${i < taken ? " paid" : i === taken && taken >= 0 ? " next" : ""}" style="flex:${s.min}"></i>`);
+  });
+  return `<div class="nightstrip${cls ? " " + cls : ""}" aria-hidden="true">${parts.join("")}</div>`;
 }
 const sizeChip = (it, s) => { const on = it.n === s[0] && it.min === s[1]; return `<button class="chip" role="radio" data-nsizeset="${s[0]}:${s[1]}" aria-checked="${on}">${on ? CHECK : ""}${N(sizeText({ n: s[0], min: s[1] }))}</button>`; };
 /* the next sitting goes on the deal ticket: a big one's as if loaded from its card, anything else as a plain deal */
@@ -1979,7 +2012,7 @@ function nightRound(s, nx) {
 function fitNight() {
   const sen = $(".ticket.night .sentence"); if (!sen) return;
   const w = sen.clientWidth;
-  sen.querySelectorAll(".item").forEach(el => { el.classList.add("nowrap"); if (el.getBoundingClientRect().width > w) el.classList.remove("nowrap"); });
+  sen.querySelectorAll(".item").forEach(el => { el.classList.add("nowrap"); if (Math.max(0, ...[...el.getClientRects()].map(r => r.width)) > w + 1) el.classList.remove("nowrap"); });
 }
 function bindNight() {
   fitNight(); if (document.fonts) document.fonts.ready.then(fitNight);
@@ -2021,17 +2054,19 @@ function nightRest() {
   const nm = n => `<b>${N(esc(n.replace(/ again$/, "")))}</b>${/ again$/.test(n) ? " again" : ""}`;
   const said = names.length > 1 ? `${names.slice(0, -1).map(nm).join(", ")} and ${nm(names[names.length - 1])}` : nm(names[0]);
   const focus = left.reduce((a, s) => a + s.min, 0), breaks = left.slice(0, -1).reduce((a, s) => a + breakBetween(s.min), 0) + (deal.act ? deal.breakMin : 0);
-  return `<p class="nightrest">Then ${said}. <span class="nowrap">Done around <b>${clockStr(Date.now() + (focus + breaks) * 60000)}</b>.</span></p>`;
+  return `<p class="nightrest">Then ${said}. <span class="nowrap">Done around <span class="at">${clockStr(Date.now() + (focus + breaks) * 60000)}</span>.</span></p>`;
 }
 const nightLink = () => nightOn || S ? "" : `<button class="textbtn" id="plannight">${nightLeft().length ? "Change tonight" : "Plan tonight"}</button>`;
 /* the unprinted top of the tape */
 function toComeView() {
-  const left = nightLeft(); if (!left.length) return "";
+  /* typing tonight's line: the rows it would print, faint and unprinted */
+  const draft = nightOn && night && night.items.length > 0;
+  const left = draft ? sittingsOf(night) : nightLeft(); if (!left.length) return "";
   const total = left.reduce((a, s) => a + s.min, 0);
-  const ends = clockStr(Date.now() + (total + left.slice(0, -1).reduce((a, s) => a + breakBetween(s.min), 0) + (nightLoaded && deal.act ? deal.breakMin : 0)) * 60000);
-  return `<section class="tocome" aria-labelledby="tocomeh"><h3 id="tocomeh">Still to come <span>${N(`${hm(total)}, done ${ends}`)}</span></h3><ol>${left.map((s, i) => {
+  const ends = clockStr(Date.now() + (total + left.slice(0, -1).reduce((a, s) => a + breakBetween(s.min), 0) + ((nightLoaded || draft) && deal.act ? deal.breakMin : 0)) * 60000);
+  return `<section class="tocome${draft ? " draft" : ""}" aria-labelledby="tocomeh"><h3 id="tocomeh">Still to come <span>${N(hm(total))}, done <b>${ends}</b></span></h3>${draft ? nightStrip(left, -1) : nightStrip(sittingsOf(night), night.taken)}<ol>${left.map((s, i) => {
     const sub = s.piece && s.k === 0 ? s.piece : s.of > 1 ? `${s.k + 1} of ${s.of}` : "";
-    return `<li${i === 0 ? ` class="next"` : ""}><b>${N(`${s.min} min`)}</b><span><span class="nm">${esc(s.name)}</span>${sub ? `<em>${N(esc(sub))}</em>` : ""}</span></li>`; }).join("")}</ol><div class="tcperf" aria-hidden="true"></div></section>`;
+    return `<li${i === 0 && !draft ? ` class="next"` : ""}><span class="t"><b>${N(`${s.min} min`)}</b><span class="slot" aria-hidden="true"></span></span><span><span class="nm">${esc(s.name)}</span>${sub ? `<em>${N(esc(sub))}</em>` : ""}</span></li>`; }).join("")}</ol><div class="tcperf" aria-hidden="true"></div></section>`;
 }
 function startView() {
   if (nightOn) return `<h1 class="home vh">Tonight</h1>${nightTicket()}
@@ -2039,7 +2074,7 @@ function startView() {
   const planned = nightLeft().length > 0;
   const door = !fromCard && !planned && shownCards().length > 0, folded = door && !quickOpen;
   const tk = door ? `${quickDoor(!folded)}<div id="quickdeal"${folded ? " hidden" : ""}>${ticket(true)}</div>` : ticket(true);
-  return `<h1 class="home vh">Make a deal</h1>${weekView()}${planned ? "" : cardsView()}${tk}${nightRest()}
+  return `<h1 class="home vh">Make a deal</h1>${weekView()}${planned ? "" : cardsView()}${tk}${planned && nightLoaded ? nightStrip(sittingsOf(night), night.taken, "home") : ""}${nightRest()}
   ${deal.act && !folded ? `<button class="textbtn skip" id="skipbreak">Skip ${esc(deal.act)}, start ${esc(fromCard ? fromCard.title : big.on ? bigTitle() : shortTask())} now</button>` : ""}
   <section class="rows${folded ? "" : " anchor"}" aria-label="Your room">${presence()}</section>`;
 }
@@ -2806,8 +2841,7 @@ function ledgerView() {
   const n = k => ledger.filter(e => e.kind === k).length;
   const deals = dealCount();
   const any = ledger.length || studied;
-  return `<div class="tapehead"><h2 id="tapeh" tabindex="-1">Today's deals</h2><span class="tapeval" id="tapeval"></span></div>
-  ${toComeView()}
+  return `${toComeView()}<div class="tapehead"><h2 id="tapeh" tabindex="-1">Today's deals</h2><span class="tapeval" id="tapeval"></span></div>
   ${!any && !nightLeft().length ? `<p class="soft">Nothing yet. Every deal you make lands here, with its terms.</p>` : ""}
   ${ledger.length || S ? `<ul class="stubs" aria-label="Deals, newest first">${S ? `<li class="stubcard live"><span class="t"><b>now</b><span class="stamp plain">Running</span></span><span class="what"><span class="row"><span class="title">${esc(title(cur().label))}</span></span><em>${S.serial ? `<span class="num">No. ${S.serial}</span>, ` : ""}${cur().type === "focus" ? "focus" : "your break"}</em></span></li>` : ""}${ledger.map((e, i) => `<li class="stubcard${freshStub(e)}">${stubInner(e, i)}</li>`).reverse().join("")}</ul>` : ""}
   ${any ? `<dl class="totals">
