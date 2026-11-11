@@ -1091,6 +1091,8 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 .nightin[size="1"]:focus { width: 3ch; }
 .nightin::placeholder { color: color-mix(in srgb, var(--ink) 42%, transparent); font-weight: 500; }
 .nightin:focus-visible { outline: none; }
+/* the empty line shows its whole example, on a line of its own when the ticket is narrow */
+.nightin:placeholder-shown { min-width: min(14.5em, 100%); }
 .ticket.night .nightfit { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; padding-top: 2px; font-size: 1rem; line-height: 1.35; color: var(--soft); }
 .nightfit b { flex: none; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 2.75rem; line-height: .82; letter-spacing: -.01em; color: var(--ink); font-variant-numeric: tabular-nums; }
 .nightfit b small { font-size: .42em; font-weight: 700; margin-left: 2px; letter-spacing: 0; }
@@ -1216,6 +1218,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
      If the column were taller than the window, the page would scroll to reach its end and slide the tape's head off the top. */
   .tapeside { grid-area: tape; position: sticky; top: 0; align-self: start; margin: 0; display: flex; flex-direction: column; max-height: 100vh; max-height: 100dvh; }
   .tapeside > * { flex: none; }
+  .tapeside::before { margin: 0; height: 3px; border-radius: 2px; box-shadow: inset 0 1px 1px rgba(0, 0, 0, .35); }
   /* signed in, the account button sits in the top right corner: the tape hangs below it */
   /* it hangs 76px down (the page's 20px top plus the 56px margin), so at the top of the page it fits the window too */
   body.live .tapeside { margin-top: 56px; top: 56px; max-height: calc(100vh - 76px); max-height: calc(100dvh - 76px); }
@@ -1271,11 +1274,11 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 }
 .roll { display: none; }
 /* spec 014, phone too: names you already use, as choices under tonight's sentence; one tap adds one at its known length */
-.nightadd { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 18px; margin-top: -4px; }
+.nightadd { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 20px; margin-top: -4px; }
 .nightadd[hidden] { display: none; }
-.nightadd .add { display: inline-flex; align-items: baseline; gap: 6px; padding: 6px 0; background: none; border: none; border-radius: 0; cursor: pointer; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 750; font-size: 1.125rem; line-height: 1.2; color: color-mix(in srgb, var(--ink) 40%, transparent); text-decoration: underline dashed color-mix(in srgb, var(--ink) 30%, transparent); text-decoration-thickness: 1.5px; text-underline-offset: .22em; }
+.nightadd .add { display: inline; padding: 6px 0; background: none; border: none; border-radius: 0; cursor: pointer; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 750; font-size: 1.125rem; line-height: 1.2; color: color-mix(in srgb, var(--ink) 66%, transparent); text-decoration: underline dashed color-mix(in srgb, var(--ink) 45%, transparent); text-decoration-skip-ink: none; text-decoration-thickness: 1.5px; text-underline-offset: .22em; }
 .nightadd .add .num { font: inherit; }
-.nightadd .add .sz { font-stretch: var(--wd-act); font-weight: 500; font-size: .875em; text-decoration: none; }
+.nightadd .add .sz { margin-left: .35em; font-stretch: var(--wd-act); font-weight: 500; font-size: .875em; }
 @media (hover: hover) { .nightadd .add:hover { color: var(--ink); text-decoration-color: var(--deal); } }
 /* ---------- spec 014: the desk is three objects ----------
    The ticket (the hero, at the top of the stage), the tape (hanging at the right), and the roll along the front edge:
@@ -1335,9 +1338,9 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   /* printed, the roll is paper a step under the ticket: the ticket stays the brightest thing on the desk */
   .roll { --rollp: color-mix(in srgb, var(--tape) 55%, var(--paper)); }
   /* dark: printed paper a clear step above the desk, the next sitting a step above that (under the ticket) */
-  :root[data-theme="dark"] .rs.f:is(.draft, .pend) { outline-color: color-mix(in srgb, var(--ink) 58%, transparent); }
+  :root[data-theme="dark"] .rs.f:is(.draft, .pend) { outline-color: color-mix(in srgb, var(--ink) 40%, transparent); }
   :root[data-theme="dark"] .roll { --rollp: var(--tape); --rollnext: color-mix(in srgb, var(--card) 88%, var(--tape)); }
-  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .rs.f:is(.draft, .pend) { outline-color: color-mix(in srgb, var(--ink) 58%, transparent); } :root:not([data-theme="light"]) .roll { --rollp: var(--tape); --rollnext: color-mix(in srgb, var(--card) 88%, var(--tape)); } }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .rs.f:is(.draft, .pend) { outline-color: color-mix(in srgb, var(--ink) 40%, transparent); } :root:not([data-theme="light"]) .roll { --rollp: var(--tape); --rollnext: color-mix(in srgb, var(--card) 88%, var(--tape)); } }
   /* a decision sheet does the talking: the clock it ends steps off the desk instead of peeking over the paper */
   body.sheeted #view .runticket { visibility: hidden; }
   .rband { display: flex; align-items: stretch; height: var(--rollh); border-radius: 3px; box-shadow: 0 1px 0 var(--rule), 0 9px 16px -6px var(--lift); }
@@ -1375,15 +1378,11 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   .rs.f:is(.draft, .pend) + .rs.f:is(.draft, .pend) { margin-left: -1.5px; }
   .rs.b:is(.draft, .pend) { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--ink) 30%, transparent) 0 1.5px, transparent 1.5px 6px); }
   /* home: names you already use, one continuous length in hairline, perforated between them */
-  .rloose { display: flex; align-items: baseline; gap: 22px; padding-top: 30px; }
-  .rlead { flex: none; background: none; border: none; padding: 0; color: var(--ink); cursor: pointer; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 1.75rem; line-height: 1; }
+  .rlead { flex: none; background: none; border: none; padding: 0; margin-bottom: -4px; color: var(--ink); cursor: pointer; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 1.75rem; line-height: 1; }
   @media (hover: hover) { .rlead:hover { text-decoration: underline; text-decoration-thickness: .08em; text-underline-offset: .15em; } }
   .rband.loose { box-shadow: none; }
-  .rband.loose { flex: 1; height: auto; min-height: 74px; border-bottom: 1.5px solid color-mix(in srgb, var(--ink) 40%, transparent); border-radius: 0; }
-  .rs.f.sug { background: none; padding: 10px 14px 12px 16px; cursor: pointer; }
-  .rs.f.sug::before { inset: auto auto 0 0; width: 1.5px; height: 26px; background: color-mix(in srgb, var(--ink) 40%, transparent); opacity: 1; }
-  .rs.f.sug:first-child::before { display: block; }
-  @media (hover: hover) { .rs.f.sug:hover { background: var(--rollp); } }
+  .rband.offer .rs.f { cursor: pointer; }
+  @media (hover: hover) { .rband.offer .rs.f:hover { background: var(--rollp); outline-color: var(--wait-edge); } }
   /* a break with a name (the deal's own: Reels, TikTok) says it on a scrap of desk */
   .rs.b .bl { position: absolute; top: 10px; left: 6px; max-width: calc(100% - 12px); padding: 3px 6px 4px; background: var(--paper); border-radius: 2px; font-family: var(--font-head); font-stretch: var(--wd-act); font-size: .875rem; line-height: 1.15; color: var(--soft); overflow: hidden; }
   .rs.b .bl :is(b, em) { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-style: normal; }
@@ -1420,7 +1419,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   body:has(#roll:not([hidden])) .sheet:has(#donenow) > * { grid-column: 1 / -1; }
   body:has(#roll:not([hidden])) .sheet:has(#donenow) > #donenow:has(+ #more10) { grid-column: 1; }
   body:has(#roll:not([hidden])) .sheet:has(#donenow) > #more10 { grid-column: 2; align-self: center; margin: 0; }
-  body:has(#roll:not([hidden])) .sheet { padding-block: 20px 4px; max-height: 100%; }
+  body:has(#roll:not([hidden])) .sheet { padding-block: 22px 16px; max-height: 100%; -webkit-mask: var(--tear-both); mask: var(--tear-both); }
   /* a short window: the decision needs the height, so the roll steps away under a sheet */
   @media (max-height: 800px) { body.sheeted .roll { visibility: hidden; } body.sheeted:has(#roll:not([hidden])) .scrim { padding-top: 24px; padding-bottom: 0; } body.sheeted:has(#roll:not([hidden])) .sheet { padding-block: 34px 30px; } }
   body.sheeted .rhead { visibility: hidden; }
@@ -2350,7 +2349,9 @@ function rollModel() {
   const total = sum(), span = Math.max(total, ROLL_SPAN);
   const run = segs.find(s => s.st === "run");
   const focus = segs.reduce((a, s) => a + (s.t === "f" && s.st !== "paid" ? (s === run ? Math.ceil(remaining() / 60000) : s.min) : 0), 0);
-  return { show, segs, total, span, nowAt, draft, focus, endIn: (total - nowAt) * 60000 };
+  /* the deal's own break, still to come, leads the caption */
+  const lead = segs.find(x => x.t === "b" && x.name && x.st !== "paid");
+  return { show, segs, total, span, nowAt, draft, focus, lead, endIn: (total - nowAt) * 60000 };
 }
 /* home with nothing planned: names you already use lie at the front edge as loose pieces of the roll, to scale,
    in outline; pressing one starts tonight with it */
@@ -2358,15 +2359,21 @@ function rollPieces() {
   if (S || nightOn || mode !== "start" || tab !== "now" || nightLeft().length) return "";
   const list = addable().slice(0, 4); if (!list.length) return "";
   const pieces = list.map((k, i) => { const [n, min] = snapSize(k.min || 20); return { k, i, n, min, size: sizeText({ n, min }) }; });
-  const total = pieces.reduce((a, p) => a + p.n * p.min, 0);
-  return `<div class="rloose"><button class="rlead" id="rollplan">Tonight,</button><div class="rband loose" role="group" aria-label="Tonight">${pieces.map(p => `<button class="rs f sug" style="flex:${p.n * p.min}" data-nadd="${p.i}"><b class="nm">${N(esc(p.k.name))}</b><em>${N(p.size)}</em></button>`).join("")}${total < ROLL_SPAN ? `<span class="rest" style="flex:${ROLL_SPAN - total}"></span>` : ""}</div></div>`;
+  const total = pieces.reduce((t, p) => t + p.n * p.min, 0), span = Math.max(total, ROLL_SPAN), pct = v => (100 * v / span).toFixed(3);
+  const ticks = [], now = Date.now() + (BE ? 0 : DEMO_SHIFT), d0 = new Date(now);
+  d0.setSeconds(0, 0); d0.setMinutes(Math.floor(d0.getMinutes() / 5 + 1) * 5);
+  for (let t = d0.getTime(); (t - now) / 60000 <= span; t += 300000) {
+    const d = new Date(t), mi = d.getMinutes(), h = d.getHours();
+    ticks.push(`<i class="${mi ? mi % 15 ? "" : "q" : "hr"}" style="left:${pct((t - now) / 60000)}%">${mi ? "" : `<b>${h % 12 || 12}</b>${h < 12 ? "am" : "pm"}`}</i>`);
+  }
+  return `<p class="rhead"><button class="rlead" id="rollplan">Tonight,</button></p><div class="rband draft offer" role="group" aria-label="Tonight">${pieces.map(p => `<button class="rs f draft" style="flex:${p.n * p.min}" data-nadd="${p.i}"><b class="nm">${N(esc(p.k.name))}</b><em>${N(p.size)}</em></button>`).join("")}${total < span ? `<span class="rest" style="flex:${span - total}"></span>` : ""}</div><div class="rrule" aria-hidden="true">${ticks.join("")}</div>`;
 }
 function rollView() {
   const m = rollModel(), pct = v => (100 * v / m.span).toFixed(3);
   if (!m.show || !m.total) return rollPieces();
   const seg = s => {
     const end = s === m.segs[m.segs.length - 1] ? " end" : "";
-    if (s.t === "b") return `<i class="rs b ${s.st}${end}" style="flex:${s.min}">${s.name ? `<span class="bl"><b>${esc(s.name)}</b></span>` : ""}</i>`;
+    if (s.t === "b") return `<i class="rs b ${s.st}${end}" style="flex:${s.min}">${s.name ? `` : ""}</i>`;
     const size = `${Math.round(s.min)} min${s.of > 1 ? `, ${s.k + 1} of ${s.of}` : ""}`;
     /* nothing waits for the stamp: a sitting carries Done once it is paid, inked */
     const mark = s.st === "paid" ? `<span class="landed"><span class="stamp">Done</span></span>` : "";
@@ -2382,7 +2389,7 @@ function rollView() {
     const d = new Date(t), mi = d.getMinutes(), h = d.getHours();
     ticks.push(`<i class="${mi ? mi % 15 ? "" : "q" : "hr"}" style="left:${pct(m.nowAt + (t - now) / 60000)}%">${mi ? "" : `<b>${h % 12 || 12}</b>${h < 12 ? "am" : "pm"}`}</i>`);
   }
-  const head = `<p class="rhead"><span class="rh" style="flex:${m.total}"><span>${N(`${hm(m.focus)} of focus`)}</span><span class="at">Done around <b>${clockStr(Date.now() + m.endIn).replace(/([ap]m)$/, "<small>$1</small>")}</b></span></span>${m.span > m.total ? `<i style="flex:${m.span - m.total}"></i>` : ""}</p>`;
+  const head = `<p class="rhead"><span class="rh" style="flex:${m.total}"><span>${N(`${m.lead ? `${m.lead.min} min of ${esc(m.lead.name)}, then ` : ""}${hm(m.focus)} of focus`)}</span><span class="at">Done around <b>${clockStr(Date.now() + m.endIn).replace(/([ap]m)$/, "<small>$1</small>")}</b></span></span>${m.span > m.total ? `<i style="flex:${m.span - m.total}"></i>` : ""}</p>`;
   return `${head}<div class="rband${m.draft ? " draft" : ""}">${m.segs.map(seg).join("")}${m.span > m.total ? `<span class="rest" style="flex:${m.span - m.total}"></span>` : ""}</div><div class="rrule" aria-hidden="true">${ticks.join("")}</div>`;
 }
 function paintRoll(wide) {
