@@ -661,7 +661,7 @@ button.term:focus-visible { outline-offset: 3px; }
 .tearrow.stacked .used > span { flex: 1; min-width: 0; }
 .tearrow.stacked .usedwrap .stamp { left: auto; right: 22px; bottom: auto; top: 9px; }
 .tearrow.stacked .rest { justify-content: flex-start; gap: 10px; padding: 16px 26px 18px 20px; -webkit-mask: var(--zig); mask: var(--zig); }
-.tearrow.stacked .used { transform: translate(-4px, 2px) rotate(-1deg); }
+.tearrow.stacked .used { transform: translate(0, 2px) rotate(-1deg); }
 /* spec 010: on the done sheet the next round is offered as a question over its ticket, said like the clock's other lines */
 .againq { margin: 12px 0 -2px; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 760; font-size: 1.375rem; line-height: 1.15; }
 /* a deal kept is not a used-up break: its stub is printed at full ink, holding just its minutes and the Done stamp */
@@ -1104,7 +1104,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 #night-picker[role="radiogroup"] { display: grid; grid-template-columns: repeat(4, max-content); justify-content: start; align-items: baseline; gap: 0 clamp(12px, 3.4vw, 22px); }
 #night-picker[role="radiogroup"] .longrow { display: contents; }
 #night-picker[role="radiogroup"] .chip { display: inline-block; justify-self: start; text-align: left; min-height: 40px; padding: 4px 0; font-size: 1.0625rem !important; border: none; border-radius: 0; background: none; white-space: nowrap; font-stretch: var(--wd-display); font-weight: 750; font-size: 1.1875rem; color: var(--soft); }
-@media (max-width: 819px) { #night-picker[role="radiogroup"] { grid-template-columns: repeat(4, minmax(0, 1fr)); column-gap: 8px; } #night-picker[role="radiogroup"] .chip { font-size: .9375rem !important; word-spacing: -1px; } }
+@media (max-width: 819px) { #night-picker[role="radiogroup"] { grid-template-columns: repeat(4, minmax(0, 1fr)); column-gap: 8px; } #night-picker[role="radiogroup"] .chip { font-size: .875rem !important; } }
 #night-picker[role="radiogroup"] .chip[aria-checked="true"] { padding: 4px 0; border: none; background: none; color: var(--deal-ink, var(--deal)); text-decoration: underline; text-decoration-thickness: .1em; text-underline-offset: .2em; text-decoration-skip-ink: none; }
 #night-picker[role="radiogroup"] .chip .num { font: inherit; }
 @media (hover: hover) { #night-picker[role="radiogroup"] .chip:not([aria-checked="true"]):hover { background: none; color: var(--ink); } }
@@ -1119,14 +1119,18 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 .tocome { display: flex; flex-direction: column; }
 .tocome.draft li, .tocome.draft h3 span b { color: color-mix(in srgb, var(--ink) 38%, transparent); }
 .tocome.draft .nightstrip { opacity: .5; }
-.nightstrip { display: flex; gap: 3px; height: 9px; margin: 2px 0 6px; }
+.nightstrip { display: flex; gap: 0; height: 12px; margin: 2px 0 6px; }
 .nightstrip .ns { display: block; min-width: 4px; border-radius: 0; }
+/* spec 014: the roll in miniature: outlined paper lengths, the next one inked, paid ones carry the green foot */
+.nightstrip:not(.named) .ns.f { background: color-mix(in srgb, var(--ink) 10%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 42%, transparent); }
+.nightstrip:not(.named) .ns.f.next { background: var(--ink); box-shadow: none; }
+.nightstrip:not(.named) .ns.f.paid { background: color-mix(in srgb, var(--ink) 10%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 42%, transparent), inset 0 -3px 0 var(--deal); }
 .nightstrip .ns.f { background: color-mix(in srgb, var(--ink) 70%, transparent); }
 .nightstrip .ns.f.next { background: var(--ink); }
 .nightstrip .ns.f.paid { background: var(--deal); }
 .nightstrip .ns.b { background: repeating-linear-gradient(135deg, var(--break-stripe) 0 1.5px, transparent 1.5px 4px), var(--break-base); opacity: .5; }
-.nightstrip.onticket { margin: 8px 0 0; height: 8px; }
-.nightstrip.onsheet { margin: 2px 0 -6px; height: 8px; }
+.nightstrip.onticket { margin: 8px 0 0; height: 12px; }
+.nightstrip.onsheet { margin: 2px 0 -6px; height: 12px; }
 .nightmap { display: none; }
 @media (min-width: 820px) {
   .nightstrip.onticket { display: none; }
@@ -1302,13 +1306,11 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   .tapeside { margin-top: var(--tapetop); max-height: calc(100vh - var(--tapetop) - 80px); max-height: calc(100dvh - var(--tapetop) - 80px); }
   body.live .tapeside { margin-top: max(56px, var(--tapetop)); max-height: calc(100dvh - max(56px, var(--tapetop)) - 40px); }
   /* the tape ends above the roll, torn where it ends */
-  /* one rhythm: the tape runs down to a fixed step above the roll, and the room row sits on the tape's foot */
-  body:has(#roll:not([hidden])) main:not(:has(> .runwrap)) { min-height: calc(100dvh - var(--rollall) - 70px); padding-bottom: 8px; }
-  body:has(#roll:not([hidden])) main:not(:has(> .runwrap)) > .rows:last-child { margin-top: auto; }
-  /* the tape ends on a whole row; blank paper runs on to the shared line and tears there */
-  body:has(#roll:not([hidden])):not(.sheeted) .tapeside { min-height: calc(100dvh - var(--rollall) - var(--tapetop) - 92px); }
-  body:has(#roll:not([hidden])):not(.sheeted) .tapeside > .tape { -webkit-mask: none; mask: none; padding-bottom: 8px; }
-  body:has(#roll:not([hidden])):not(.sheeted) .tapeside::after { content: ""; flex: 1 0 18px; background: var(--tape, var(--card)); -webkit-mask: var(--tear-bottom); mask: var(--tear-bottom); }
+  /* one rhythm by constant gaps: the roll sits a step under the longer of the stage and the tape; it sticks to the
+     window's foot only when the desk runs taller than the window */
+  body:has(#roll:not([hidden])) .desk { grid-template-rows: auto auto; align-content: start; }
+  body:has(#roll:not([hidden])) main:not(:has(> .runwrap)) { padding-bottom: 6px; gap: 22px; }
+  body:has(#roll:not([hidden])) .roll { padding-top: 34px; }
   body:has(#roll:not([hidden])) .tapeside { max-height: calc(100vh - var(--rollall) - var(--tapetop) - 84px); max-height: calc(100dvh - var(--rollall) - var(--tapetop) - 84px); }
   body.live:has(#roll:not([hidden])) .tapeside { max-height: calc(100dvh - var(--rollall) - max(56px, var(--tapetop)) - 60px); }
   /* what's to come lies on the desk now; the tape is only what has printed */
@@ -1357,9 +1359,9 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   /* printed, the roll is paper a step under the ticket: the ticket stays the brightest thing on the desk */
   .roll { --rollp: color-mix(in srgb, var(--tape) 55%, var(--paper)); }
   /* dark: printed paper a clear step above the desk, the next sitting a step above that (under the ticket) */
-  :root[data-theme="dark"] .rs.f:is(.draft, .pend) { outline-color: color-mix(in srgb, var(--ink) 40%, transparent); }
+  :root[data-theme="dark"] .rs.f:is(.draft, .pend) { outline-color: color-mix(in srgb, var(--ink) 52%, transparent); }
   :root[data-theme="dark"] .roll { --rollp: var(--tape); --rollnext: var(--card); }
-  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .rs.f:is(.draft, .pend) { outline-color: color-mix(in srgb, var(--ink) 40%, transparent); } :root:not([data-theme="light"]) .roll { --rollp: var(--tape); --rollnext: var(--card); } }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .rs.f:is(.draft, .pend) { outline-color: color-mix(in srgb, var(--ink) 52%, transparent); } :root:not([data-theme="light"]) .roll { --rollp: var(--tape); --rollnext: var(--card); } }
   /* a decision sheet does the talking: the clock it ends steps off the desk instead of peeking over the paper */
   body.sheeted #view .runticket { visibility: hidden; }
   .rband { display: flex; align-items: stretch; height: var(--rollh); border-radius: 3px; box-shadow: 0 1px 0 var(--rule), 0 9px 16px -6px var(--lift); }
@@ -1379,10 +1381,10 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   .rs.b { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--ink) 26%, transparent) 0 1.5px, transparent 1.5px 6px), var(--stub); }
   .rs.b.paid { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--deal) 60%, transparent) 0 1.5px, transparent 1.5px 6px), var(--stub); }
   /* the stamp's place waits bottom right, as on the deal ticket; landed, it is the green Done */
-  .rs .landed { position: absolute; right: 14px; bottom: 18px; width: 62px; height: 27px; transform: rotate(-4deg); }
+  .rs .landed { position: absolute; right: 14px; top: 11px; width: 62px; height: 27px; transform: rotate(-4deg); }
   .rs .landed .stamp { position: absolute; inset: -2px -3px; font-size: 1.0625rem; letter-spacing: .04em; --tilt: 0deg; }
   .rs.paid .nm { color: var(--soft); }
-  @container (max-width: 190px) { .rs .landed { right: 10px; bottom: 15px; width: 50px; height: 22px; } .rs .landed .stamp { font-size: .8125rem; } }
+  @container (max-width: 190px) { .rs .landed { right: 10px; top: 9px; width: 50px; height: 22px; } .rs .landed .stamp { font-size: .8125rem; } }
   @container (max-width: 96px) { .rs .landed, .rs em { display: none; } .rs .nm { font-size: .875rem; white-space: normal; margin: -4px -6px 0 -8px; } }
   /* time being paid is wet ink: a solid green foot runs along the sitting as the dial pays it; a paid sitting keeps it */
   .rs .ink { position: absolute; left: 0; right: 0; bottom: 0; height: 9px; background: var(--deal); transform-origin: 0 50%; transform: scaleX(var(--paid, 1)); will-change: transform; pointer-events: none; }
@@ -1408,6 +1410,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   .rs.b .bl b { font-stretch: var(--wd-display); font-weight: 750; font-size: 1.0625rem; color: var(--ink); }
   /* the roll's far end is torn at round half-holes, like every paper end on the desk */
   .rs.end:not(.draft, .pend, .sug) { -webkit-mask: var(--zig); mask: var(--zig); }
+  .rband:not(.draft) > .rs:first-child:not(.draft, .pend, .end) { --zigl: linear-gradient(#000 0 0) right / calc(100% - 3px) 100% no-repeat, radial-gradient(circle at 0 50%, #0000 2.5px, #000 3.2px) left 0 top 2px / 3px 10px repeat-y; -webkit-mask: var(--zigl); mask: var(--zigl); }
   /* room for more: the rest of the span, left as bare desk */
   .rband .rest { min-width: 0; }
   button.rs.f.draft { cursor: pointer; }
@@ -1429,7 +1432,8 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   /* running: the dial is the one big number; the roll already says what comes next */
   body:has(#roll:not([hidden])) .runticket .note:not(.go) { display: none; }
   /* a decision lands over the desk but ends above the roll, which stays lit: the Done stamp lands on it */
-  body:has(#roll:not([hidden])) .scrim { align-items: flex-start; padding-top: var(--sheettop, 130px); padding-bottom: var(--sheetfoot, calc(var(--rollall) - 38px)); }
+  body:has(#roll:not([hidden])) .scrim { padding-bottom: var(--sheetfoot, calc(var(--rollall) - 38px)); }
+  .scrim { align-items: flex-start; padding-top: var(--sheettop, 130px); }
   /* under a sheet the roll keeps its place and scale but lies lower and quieter: no clock, a shorter band */
   /* the done sheet over the roll: Done for now and the bonus share one row, so the sheet fits between the tape's line and the roll */
   body:has(#roll:not([hidden])) .sheet:has(#donenow) { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 20px; }
@@ -2427,9 +2431,9 @@ function paintRoll(wide) {
 /* desk: a decision sheet starts on the line the ticket and the tape start on, and stops a strip above the roll */
 function placeSheet() {
   const root = document.documentElement, ts = document.querySelector(".tapeside"), band = document.querySelector("#roll:not([hidden]) .rband");
-  if (!WIDE.matches || !ts || !band || !document.body.classList.contains("sheeted")) { root.style.removeProperty("--sheettop"); root.style.removeProperty("--sheetfoot"); return; }
+  if (!WIDE.matches || !ts || !document.body.classList.contains("sheeted")) { root.style.removeProperty("--sheettop"); root.style.removeProperty("--sheetfoot"); return; }
   root.style.setProperty("--sheettop", `${Math.round(ts.getBoundingClientRect().top + 4)}px`);
-  root.style.setProperty("--sheetfoot", `${Math.round(innerHeight - band.getBoundingClientRect().top + 18)}px`);
+  if (band) root.style.setProperty("--sheetfoot", `${Math.round(innerHeight - band.getBoundingClientRect().top + 30)}px`); else root.style.removeProperty("--sheetfoot");
 }
 /* items in the order the sittings run: a big one's sittings, or one name's, one after another, are one item */
 function groupSittings(list) {
