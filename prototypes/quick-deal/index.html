@@ -194,7 +194,7 @@ p { margin: 0; }
 .serial { font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 600; font-size: .9375rem; line-height: 1.2; color: var(--soft); }
 .ticket .stub { padding: 22px 28px 16px 20px; display: flex; flex-direction: column; gap: 8px; transform-origin: 0 0; }
 /* R43: on a big one's ticket the Deal stub sticks above the tab bar, so it is always in reach however long the ticket gets */
-.ticket.big .stub { position: sticky; bottom: calc(60px + env(safe-area-inset-bottom, 0px)); z-index: 1;
+.ticket.big .stub { position: sticky; bottom: calc(60px + env(safe-area-inset-bottom, 0px)); z-index: 1; box-shadow: 0 -12px 14px -10px var(--lift);
   background: radial-gradient(circle, var(--edge) 1.5px, transparent 2px) 0 0 / 10px 6px repeat-x, var(--card); }
 .ticket.torn .stub { transform: translateY(10px) rotate(2deg); opacity: 0; transition: transform .3s ease-in, opacity .3s ease-in; }
 /* the deal sentence: connecting words recede, the four parts you can change are ink and underlined */
@@ -249,9 +249,9 @@ p { margin: 0; }
 .inkchip.lg .ink { padding: 9px 14px; }
 .inkchip.lg:is([aria-pressed="true"], [aria-checked="true"]) .ink { padding: 6.5px 11.5px; }
 /* R43: a size is a number you read at a glance (numeral first, display face); spec 011: a kind is a choice like any other */
-.inkchip.size { font-stretch: var(--wd-display); font-weight: 800; font-size: 1.3125rem; }
-.inkchip.size .ink { padding: 5px 9px; }
-.inkchip.size[aria-pressed="true"] .ink { padding: 2.5px 6.5px; }
+.inkchip.size { min-width: 40px; font-stretch: var(--wd-display); font-weight: 800; font-size: 1.1875rem; }
+.inkchip.size .ink { padding: 4px 7px; }
+.inkchip.size[aria-pressed="true"] .ink { padding: 1.5px 4.5px; }
 .inkchip.kind .ink { padding: 6px 9px; }
 .inkchip.kind[aria-pressed="true"] .ink { padding: 3.5px 6.5px; }
 /* R44: "Not yet" is what no answer already means, so it shows as picked, quietly: a solid ink edge and a check.
@@ -327,10 +327,11 @@ p { margin: 0; }
   -webkit-mask: var(--zig); mask: var(--zig); font-family: var(--font-head); font-variant-numeric: tabular-nums; }
 .ministub b { font-stretch: var(--wd-display); font-weight: 800; font-size: 1.625rem; line-height: 1; }
 /* spec 011 (council c4): a small stamp, the same rubber as the full card's Start tab */
-.ministub { --tilt: -3deg; position: relative; gap: 4px; min-height: 44px; padding: 8px 12px 6px; background: none !important; box-shadow: none; -webkit-mask: none; mask: none; border-radius: 6px; transform: rotate(var(--tilt)); }
+.ministub { --tilt: -3deg; position: relative; flex-direction: column; align-items: center; gap: 1px; min-width: 52px; min-height: 44px; padding: 5px 8px 4px; background: none !important; box-shadow: none; -webkit-mask: none; mask: none; border-radius: 6px; transform: rotate(var(--tilt)); }
 .ministub::before { content: ""; position: absolute; inset: 0; border: 3.5px double currentColor; border-radius: 6px; pointer-events: none; }
 @media (hover: hover) { .ministub:hover { transform: translateY(-1px) rotate(calc(var(--tilt) - 1deg)); } }
-.ministub span { font-stretch: var(--wd-act); font-weight: 700; font-size: .9375rem; line-height: 1; }
+.ministub span { font-stretch: var(--wd-act); font-weight: 700; font-size: .75rem; line-height: 1; }
+.ministub b { font-size: 1.375rem !important; }
 .ministub:focus-visible { outline-offset: -7px; }
 .sheet.paper .ministub { background-color: var(--paper); }
 .bitem .more { flex: none; width: 44px; height: 44px; margin-right: -10px; border: none; background: none; color: var(--soft); display: grid; place-items: center; }
@@ -452,11 +453,12 @@ body.pip { margin: 0; min-height: 100vh; display: grid; place-items: center; bac
 .torn .tear:is(:hover, .pulling, :focus-visible) .len { color: var(--deal); }
 .torn .tear:focus-visible .len { box-shadow: 0 0 0 3px var(--deal); border-radius: 4px; }
 /* spec 011, WCAG 2.5.7: − and + beside the minutes, for anyone who can't drag. Printed like every choice box. */
-.torn .tear { padding-right: 104px; }
-.torn .tsteps { position: absolute; right: 22px; bottom: 0; height: 30px; display: flex; align-items: center; gap: 6px; padding-left: 4px; background: var(--tk); }
+.torn .tear { padding-right: 112px; }
+.torn .tsteps { position: absolute; right: 22px; bottom: 0; height: 30px; display: flex; align-items: center; gap: 12px; padding-left: 4px; background: var(--tk); }
 .tstep { position: relative; width: 32px; height: 28px; padding: 0; display: grid; place-items: center; border: none; border-radius: var(--r-choice); background: none; color: var(--deal-ink); }
-.tstep svg { width: 18px; height: 18px; stroke-width: 2.4; }
-.tstep::after { content: ""; position: absolute; inset: -8px -3px; }
+.tstep svg { width: 20px; height: 20px; stroke-width: 2.8; }
+.tstep::after { content: ""; position: absolute; inset: -8px -6px; }
+.tstep[aria-disabled="true"] { color: var(--edge-half); cursor: default; }
 @media (hover: hover) { .tstep:hover { background: color-mix(in srgb, var(--deal) 8%, var(--card)); } }
 .torn .openend { padding: 4px 24px 6px 14px; }
 .torn .openend .addpiece { padding-left: 0; }
@@ -487,6 +489,7 @@ body.pip { margin: 0; min-height: 100vh; display: grid; place-items: center; bac
   padding: 12px 18px calc(8px + env(safe-area-inset-bottom, 0px)); background: var(--card); border-top: 1px solid var(--rule); }
 .sheet.paper .sfoot .pclose { margin-top: 0; }
 .sheet.paper:has(.sfoot) { scroll-padding-bottom: 170px; }
+html:has(.ticket.big) { scroll-padding-bottom: 260px; }
 .sheet.paper .sfoot { box-shadow: 0 -10px 12px -8px var(--lift); }
 /* R58: pieces against the gut size, said once right above Save: Archivo, ink, no colour, no verdict */
 .sum { margin: 0 0 8px; font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 600; font-size: 1.125rem; line-height: 1.3; color: var(--ink); }
@@ -874,12 +877,11 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 .tape .stubs { gap: 0; filter: none; }
 .tape .stubcard { -webkit-mask: none; mask: none; background: none; box-shadow: none; border-radius: 0; padding-right: 0; grid-template-columns: 68px 1fr; border-top: 1.5px dashed var(--edge-half); }
 .tape .stubcard .t { background: none; padding: 14px 8px 12px 0; align-items: flex-start; justify-content: flex-start; }
-.tape .stubcard .what { padding-right: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 10px; align-items: start; }
-/* council c4: a title gets the whole line; its tag sits beside the first line under it, so titles never wrap round a tag */
-.tape .stubcard .row { display: contents; }
-.tape .stubcard .title { grid-column: 1 / -1; }
-.tape .stubcard .what > em { grid-column: 1; }
-.tape .stubcard .what > .row > .stamp { grid-column: 2; grid-row: 2; align-self: center; }
+.tape .stubcard .what { padding-right: 0; }
+/* council c5: like a receipt's margin mark, the tag is stamped under the time; title and details keep the whole line */
+.tape .stubcard { grid-template-columns: 76px 1fr; }
+.tape .stubcard .t { gap: 7px; }
+.tape .stubcard .t .stamp { font-size: .875rem; padding: 1px 5px 2px; margin-left: -1px; }
 /* a receipt totals at the bottom: one line each, a dotted leader, the figure on the right */
 .totals { margin: 0; padding-top: 12px; border-top: 3px double var(--edge); display: flex; flex-direction: column; gap: 6px; }
 .totals div { display: flex; align-items: baseline; gap: 8px; }
@@ -1135,7 +1137,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   h1 { font-size: 2.75rem; }
   .sentence { font-size: 2rem; line-height: 1.4; }
   .keepon { display: none; }
-  @media (max-width: 1150px) { .tape { padding-inline: 18px; } .tape .stubcard { grid-template-columns: 58px 1fr; } .tape .stubcard .title { font-size: 1.0625rem; } .tape .stubcard .t b { font-size: 1.0625rem; } }
+  @media (max-width: 1150px) { .tape { padding-inline: 18px; } .tape .stubcard { grid-template-columns: 70px 1fr; } .tape .stubcard .title { font-size: 1.0625rem; } .tape .stubcard .t b { font-size: 1.0625rem; } }
   /* a decision is made at the stage: the paper lands over the clock, the tape stays readable beside it */
   .scrim { align-items: flex-end; justify-content: flex-start; padding: 24px 0 0 calc(var(--pad) + max(0px, (100vw - var(--appw)) / 2)); -webkit-backdrop-filter: none; backdrop-filter: none; }
   .sheet, .sheet:not(.paper) { --behind: var(--sheet); width: min(860px, min(100vw, var(--appw)) - 2 * var(--pad) - var(--tapew) - var(--gap)); max-width: none; border: none; border-radius: 0; padding: 34px 32px 30px; max-height: calc(100% - 24px);
@@ -1279,7 +1281,7 @@ let panel = null;
 /* ADR 0005: the repayment picked last time (users.lastRepay), pre-selected from the second ask */
 let lastRepay = null;
 /* progress words (R2): under an hour "45 min", then "2h 5" or "2h" */
-const hm = m => { m = Math.max(0, Math.round(m)); if (m < 60) return `${m} min`; const h = Math.floor(m / 60), r = m % 60; return r ? `${h}h ${r}m` : `${h}h`; };
+const hm = m => { m = Math.max(0, Math.round(m)); if (m < 60) return `${m} min`; const h = Math.floor(m / 60), r = m % 60; return r ? `${h}h ${r} min` : `${h}h`; };
 function progressText(p) {
   if (!p) return "";
   if (p.kind === "stamped") return `${p.n} ${p.n === 1 ? "piece" : "pieces"} done`;
@@ -1723,7 +1725,7 @@ const dealCount = () => ledger.filter(e => !NOT_DEALS[e.kind]).length;
 /* mid-sentence a title loses its capital ("of reading BIO 180 ch. 7"), but never an acronym's ("of BIO midterm", not "bIO") */
 const lower = t => t.replace(/^([A-Z])(?=[a-z]*\b)/, c => c.toLowerCase());
 const stubTitle = e => ASKS[e.kind] ? e.text.replace(/ more min of /, " min of ").replace(/^(\d)/, "+$1") : e.text;
-const stubInner = (e, i) => `<span class="t"><b>${e.t.replace(/[ap]m$/, "")}<small>${e.t.slice(-2)}</small></b></span><span class="what"><span class="row"><span class="title">${esc(stubTitle(e))}</span>${e.kind === "deal" ? "" : `<span class="stamp${PLAIN[e.kind] ? " plain" : ""}" style="--tilt:${TILTS[i % TILTS.length]}deg">${MARK[e.kind]}</span>`}</span><em>${N(esc(e.sub || TERMS[e.kind]))}</em>${e.note ? `<em>First thing: ${N(esc(lower(e.note)))}${/[.?!]$/.test(e.note) ? "" : "."}</em>` : ""}</span>`;
+const stubInner = (e, i) => `<span class="t"><b>${e.t.replace(/[ap]m$/, "")}<small>${e.t.slice(-2)}</small></b>${e.kind === "deal" ? "" : `<span class="stamp${PLAIN[e.kind] ? " plain" : ""}" style="--tilt:${TILTS[i % TILTS.length]}deg">${MARK[e.kind]}</span>`}</span><span class="what"><span class="row"><span class="title">${esc(stubTitle(e))}</span></span><em>${N(esc(e.sub || TERMS[e.kind]))}</em>${e.note ? `<em>First thing: ${N(esc(lower(e.note)))}${/[.?!]$/.test(e.note) ? "" : "."}</em>` : ""}</span>`;
 /* tonight's sample ledger. The intercept's "Last Reels deal" reads from it, so every screen tells the same story:
    an hour on the history paper, stopped partway; a reading deal with its Reels break ended early, done; the next
    round, kept going 10 more, done; then a TikTok deal. */
@@ -1803,7 +1805,7 @@ function startView() {
   const door = !fromCard && shownCards().length > 0, folded = door && !quickOpen;
   const tk = door ? `${quickDoor(!folded)}<div id="quickdeal"${folded ? " hidden" : ""}>${ticket(true)}</div>` : ticket(true);
   return `<h1 class="home">Make a deal</h1>${weekView()}${cardsView()}${tk}
-  ${deal.act && !folded ? `<button class="textbtn skip" id="skipbreak">Skip ${esc(deal.act)}, start ${esc(fromCard ? fromCard.title : shortTask())} now</button>` : ""}
+  ${deal.act && !folded ? `<button class="textbtn skip" id="skipbreak">Skip ${esc(deal.act)}, start ${esc(fromCard ? fromCard.title : big.on ? bigTitle() : shortTask())} now</button>` : ""}
   <section class="rows${folded ? "" : " anchor"}" aria-label="Your room">${presence()}</section>`;
 }
 function interceptView() {
@@ -2186,7 +2188,7 @@ function splitBody() {
         <button class="prm" data-prm="${i}" aria-label="Remove ${nm}">${CROSS}</button>
       </div>
       <div class="tear" data-tear="${i}" role="slider" tabindex="0" aria-orientation="vertical" aria-label="Length of ${nm}" aria-valuemin="${PIECE_MIN}" aria-valuemax="${PIECE_MAX}" aria-valuenow="${m}" aria-valuetext="${m} minutes"><span class="len" aria-hidden="true"><b>${m}</b> min</span></div>
-      <span class="tsteps"><button class="tstep" data-tstep="-5" data-i="${i}" aria-label="5 minutes shorter: ${nm}">${MINUS}</button><button class="tstep" data-tstep="5" data-i="${i}" aria-label="5 minutes longer: ${nm}">${PLUS}</button></span></li>`;
+      <span class="tsteps"><button class="tstep" data-tstep="-5" data-i="${i}" aria-label="5 minutes shorter: ${nm}" aria-disabled="${m <= PIECE_MIN}">${MINUS}</button><button class="tstep" data-tstep="5" data-i="${i}" aria-label="5 minutes longer: ${nm}" aria-disabled="${m >= PIECE_MAX}">${PLUS}</button></span></li>`;
     /* R64: a stamp is never removed by one stray tap */
     const ask = p.ask === i ? `<li class="pask" role="group" aria-label="Remove ${nm}?"><p>Remove ${nm}? Its stamp goes too.</p>
       <button class="textbtn gone" id="s-askyes">Remove it</button><button class="textbtn" id="s-askno">Keep it</button></li>` : "";
@@ -2222,7 +2224,9 @@ function setLen(i, m) {
   const r = panel && panel.rows[i]; if (!r) return;
   r.minutes = m; const t = document.querySelector(`#panel-root [data-tear="${i}"]`); if (!t) return;
   t.closest(".piece").style.setProperty("--m", m); t.querySelector(".len b").textContent = m;
-  t.setAttribute("aria-valuenow", m); t.setAttribute("aria-valuetext", `${m} minutes`); syncSplit();
+  t.setAttribute("aria-valuenow", m); t.setAttribute("aria-valuetext", `${m} minutes`);
+  const st = d => document.querySelector(`#panel-root [data-tstep="${d}"][data-i="${i}"]`);
+  st(-5)?.setAttribute("aria-disabled", m <= PIECE_MIN); st(5)?.setAttribute("aria-disabled", m >= PIECE_MAX); syncSplit();
 }
 /* how many pixels of ticket one minute is (matches --px in the stylesheet) */
 const PX_PER_MIN = 1;
@@ -2578,7 +2582,7 @@ function ledgerView() {
   const any = ledger.length || studied;
   return `<div class="tapehead"><h2 id="tapeh" tabindex="-1">Today's deals</h2><span class="tapeval" id="tapeval"></span></div>
   ${!any ? `<p class="soft">Nothing yet. Every deal you make lands here, with its terms.</p>` : ""}
-  ${ledger.length || S ? `<ul class="stubs" aria-label="Deals, newest first">${S ? `<li class="stubcard live"><span class="t"><b>now</b></span><span class="what"><span class="row"><span class="title">${esc(title(cur().label))}</span><span class="stamp plain">Running</span></span><em>${S.serial ? `<span class="num">No. ${S.serial}</span>, ` : ""}${cur().type === "focus" ? "focus" : "your break"}</em></span></li>` : ""}${ledger.map((e, i) => `<li class="stubcard${freshStub(e)}">${stubInner(e, i)}</li>`).reverse().join("")}</ul>` : ""}
+  ${ledger.length || S ? `<ul class="stubs" aria-label="Deals, newest first">${S ? `<li class="stubcard live"><span class="t"><b>now</b><span class="stamp plain">Running</span></span><span class="what"><span class="row"><span class="title">${esc(title(cur().label))}</span></span><em>${S.serial ? `<span class="num">No. ${S.serial}</span>, ` : ""}${cur().type === "focus" ? "focus" : "your break"}</em></span></li>` : ""}${ledger.map((e, i) => `<li class="stubcard${freshStub(e)}">${stubInner(e, i)}</li>`).reverse().join("")}</ul>` : ""}
   ${any ? `<dl class="totals">
     <div class="go"><dt>Studied</dt><dd>${N(studied)} min</dd></div>
     <div><dt>Deals made</dt><dd>${deals}</dd></div>
