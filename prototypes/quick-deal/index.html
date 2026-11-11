@@ -1101,18 +1101,14 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 .nightfit b { flex: none; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 2.75rem; line-height: .82; letter-spacing: -.01em; color: var(--ink); font-variant-numeric: tabular-nums; }
 .nightfit b small { font-size: .42em; font-weight: 700; margin-left: 2px; letter-spacing: 0; }
 .nightname { flex: 1 1 220px; }
-#night-picker[role="radiogroup"] { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-#night-picker[role="radiogroup"] .longrow { grid-column: 1 / -1; display: grid; grid-template-columns: inherit; gap: 8px; margin: 0; padding-top: 0; border-top: none; }
-#night-picker[role="radiogroup"] .chip { justify-content: center; white-space: nowrap; }
-/* spec 014: on a desk the lengths are two printed lines of words, the chosen one green and underlined */
-@media (min-width: 820px) {
-  #night-picker[role="radiogroup"] { display: grid; grid-template-columns: repeat(4, max-content); justify-content: start; align-items: baseline; gap: 0 clamp(12px, 3.4vw, 22px); }
-  #night-picker[role="radiogroup"] .longrow { display: contents; }
-  #night-picker[role="radiogroup"] .chip { display: inline-block; justify-self: start; text-align: left; min-height: 40px; padding: 4px 0; font-size: 1.0625rem !important; border: none; border-radius: 0; background: none; white-space: nowrap; font-stretch: var(--wd-display); font-weight: 750; font-size: 1.1875rem; color: var(--soft); }
-  #night-picker[role="radiogroup"] .chip[aria-checked="true"] { padding: 4px 0; border: none; background: none; color: var(--deal-ink, var(--deal)); text-decoration: underline; text-decoration-thickness: .1em; text-underline-offset: .2em; text-decoration-skip-ink: none; }
-  #night-picker[role="radiogroup"] .chip .num { font: inherit; }
-  @media (hover: hover) { #night-picker[role="radiogroup"] .chip:not([aria-checked="true"]):hover { background: none; color: var(--ink); } }
-}
+/* spec 014: tonight's lengths are two printed lines of words, the chosen one green and underlined */
+#night-picker[role="radiogroup"] { display: grid; grid-template-columns: repeat(4, max-content); justify-content: start; align-items: baseline; gap: 0 clamp(12px, 3.4vw, 22px); }
+#night-picker[role="radiogroup"] .longrow { display: contents; }
+#night-picker[role="radiogroup"] .chip { display: inline-block; justify-self: start; text-align: left; min-height: 40px; padding: 4px 0; font-size: 1.0625rem !important; border: none; border-radius: 0; background: none; white-space: nowrap; font-stretch: var(--wd-display); font-weight: 750; font-size: 1.1875rem; color: var(--soft); }
+#night-picker[role="radiogroup"] .chip[aria-checked="true"] { padding: 4px 0; border: none; background: none; color: var(--deal-ink, var(--deal)); text-decoration: underline; text-decoration-thickness: .1em; text-underline-offset: .2em; text-decoration-skip-ink: none; }
+#night-picker[role="radiogroup"] .chip .num { font: inherit; }
+@media (hover: hover) { #night-picker[role="radiogroup"] .chip:not([aria-checked="true"]):hover { background: none; color: var(--ink); } }
+@media (max-width: 819px) { #night-picker[role="radiogroup"] { grid-template-columns: repeat(4, minmax(0, 1fr)); column-gap: 8px; } #night-picker[role="radiogroup"] .chip { font-size: .9375rem !important; word-spacing: -.5px; } }
 .ticketwrap + .onedeal { align-self: center; margin: -6px auto -10px; }
 /* the rest of tonight, said under the ticket where the quiet line goes */
 .nightrest { align-self: stretch; margin: -6px 0 6px; padding-left: 2px; font-size: 1rem; line-height: 1.4; color: var(--soft); text-wrap: pretty; }
@@ -1128,7 +1124,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 .nightstrip .ns { display: block; min-width: 4px; border-radius: 0; }
 /* spec 014: the roll in miniature: outlined paper lengths, the next one inked, paid ones carry the green foot */
 .nightstrip:not(.named) .ns.f { background: color-mix(in srgb, var(--ink) 10%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 42%, transparent); }
-.nightstrip:not(.named) .ns.f.next { background: var(--ink); box-shadow: none; }
+.nightstrip:not(.named) .ns.f.next { background: var(--tape, var(--card)); box-shadow: inset 0 0 0 1.5px var(--ink); }
 .nightstrip:not(.named) .ns.f.paid { background: var(--deal); box-shadow: none; }
 .nightstrip .ns.f { background: color-mix(in srgb, var(--ink) 70%, transparent); }
 .nightstrip .ns.f.next { background: var(--ink); }
@@ -1314,7 +1310,8 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   /* one rhythm by constant gaps: the roll sits a step under the longer of the stage and the tape; it sticks to the
      window's foot only when the desk runs taller than the window */
   body:has(#roll:not([hidden])) .desk { grid-template-rows: auto auto; align-content: start; }
-  body:has(#roll:not([hidden])) main:not(:has(> .runwrap)) { padding-bottom: 6px; gap: 22px; }
+  body:has(#roll:not([hidden])) main:not(:has(> .runwrap)) { padding-bottom: 6px; gap: 22px; align-self: stretch; }
+  body:has(#roll:not([hidden])) main:not(:has(> .runwrap)) > .rows:last-child { margin-top: auto; }
   body:has(#roll:not([hidden])) .roll { padding-top: 34px; }
   body:has(#roll:not([hidden])) .tapeside { max-height: calc(100vh - var(--rollall) - var(--tapetop) - 84px); max-height: calc(100dvh - var(--rollall) - var(--tapetop) - 84px); }
   body.live:has(#roll:not([hidden])) .tapeside { max-height: calc(100dvh - var(--rollall) - max(56px, var(--tapetop)) - 60px); }
@@ -2412,7 +2409,7 @@ function rollView() {
       : `<div class="rs f ${s.st}${end}" style="flex:${s.min}"${s.mv != null && /^(next)?$/.test(s.st) ? ` data-mv="l:${s.mv}"` : ""}>${inner}</div>`;
   };
   /* the clock printed on the desk under the roll, in the dial's ticks: every 5 minutes, longer each quarter, the hour named */
-  const ticks = [], now = Date.now() + (BE ? 0 : DEMO_SHIFT), d0 = new Date(now);
+  const ticks = [], now = Date.now() + (BE ? 0 : DEMO_SHIFT), start = now - m.nowAt * 60000, d0 = new Date(start);
   d0.setSeconds(0, 0); d0.setMinutes(Math.floor(d0.getMinutes() / 5 + 1) * 5);
   for (let t = d0.getTime(); (t - now) / 60000 <= m.span - m.nowAt; t += 300000) {
     const d = new Date(t), mi = d.getMinutes(), h = d.getHours();
@@ -3936,6 +3933,7 @@ function fromHash() {
         S = buildSession({ act: null, breakMin: 10, task: "History paper", focusMin: 30 }); S.serial = "0415"; S.taskId = "paper"; S.firstMove = "Claim for paragraph 2";
         night.taken = 1; nightLoaded = false; deal.focusMin = fromCard ? fromCard.prevFocus : deal.focusMin; fromCard = null;
         S.startedAt = h === "tonight-done" ? vnow - S.durMs : vnow - 8 * 60000;
+        DEMO_SHIFT = shiftTo(20, h === "tonight-done" ? 23 : 1);
         ledger.push(stubOf({ kind: "deal", blockLabel: "History paper", minutes: 30, taskId: "paper" }, "7:53pm"));
         if (h === "tonight-done") sheet = { kind: "done", focusMe: true, notes: newNotes() };
       }
