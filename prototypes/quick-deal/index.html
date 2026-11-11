@@ -1101,13 +1101,18 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 .nightfit b { flex: none; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 2.75rem; line-height: .82; letter-spacing: -.01em; color: var(--ink); font-variant-numeric: tabular-nums; }
 .nightfit b small { font-size: .42em; font-weight: 700; margin-left: 2px; letter-spacing: 0; }
 .nightname { flex: 1 1 220px; }
-#night-picker[role="radiogroup"] { display: grid; grid-template-columns: repeat(4, max-content); justify-content: start; align-items: baseline; gap: 0 clamp(12px, 3.4vw, 22px); }
-#night-picker[role="radiogroup"] .longrow { display: contents; }
-#night-picker[role="radiogroup"] .chip { display: inline-block; justify-self: start; text-align: left; min-height: 40px; padding: 4px 0; font-size: 1.0625rem !important; border: none; border-radius: 0; background: none; white-space: nowrap; font-stretch: var(--wd-display); font-weight: 750; font-size: 1.1875rem; color: var(--soft); }
-@media (max-width: 819px) { #night-picker[role="radiogroup"] { grid-template-columns: repeat(4, minmax(0, 1fr)); column-gap: 8px; } #night-picker[role="radiogroup"] .chip { font-size: .875rem !important; } }
-#night-picker[role="radiogroup"] .chip[aria-checked="true"] { padding: 4px 0; border: none; background: none; color: var(--deal-ink, var(--deal)); text-decoration: underline; text-decoration-thickness: .1em; text-underline-offset: .2em; text-decoration-skip-ink: none; }
-#night-picker[role="radiogroup"] .chip .num { font: inherit; }
-@media (hover: hover) { #night-picker[role="radiogroup"] .chip:not([aria-checked="true"]):hover { background: none; color: var(--ink); } }
+#night-picker[role="radiogroup"] { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+#night-picker[role="radiogroup"] .longrow { grid-column: 1 / -1; display: grid; grid-template-columns: inherit; gap: 8px; margin: 0; padding-top: 0; border-top: none; }
+#night-picker[role="radiogroup"] .chip { justify-content: center; white-space: nowrap; }
+/* spec 014: on a desk the lengths are two printed lines of words, the chosen one green and underlined */
+@media (min-width: 820px) {
+  #night-picker[role="radiogroup"] { display: grid; grid-template-columns: repeat(4, max-content); justify-content: start; align-items: baseline; gap: 0 clamp(12px, 3.4vw, 22px); }
+  #night-picker[role="radiogroup"] .longrow { display: contents; }
+  #night-picker[role="radiogroup"] .chip { display: inline-block; justify-self: start; text-align: left; min-height: 40px; padding: 4px 0; font-size: 1.0625rem !important; border: none; border-radius: 0; background: none; white-space: nowrap; font-stretch: var(--wd-display); font-weight: 750; font-size: 1.1875rem; color: var(--soft); }
+  #night-picker[role="radiogroup"] .chip[aria-checked="true"] { padding: 4px 0; border: none; background: none; color: var(--deal-ink, var(--deal)); text-decoration: underline; text-decoration-thickness: .1em; text-underline-offset: .2em; text-decoration-skip-ink: none; }
+  #night-picker[role="radiogroup"] .chip .num { font: inherit; }
+  @media (hover: hover) { #night-picker[role="radiogroup"] .chip:not([aria-checked="true"]):hover { background: none; color: var(--ink); } }
+}
 .ticketwrap + .onedeal { align-self: center; margin: -6px auto -10px; }
 /* the rest of tonight, said under the ticket where the quiet line goes */
 .nightrest { align-self: stretch; margin: -6px 0 6px; padding-left: 2px; font-size: 1rem; line-height: 1.4; color: var(--soft); text-wrap: pretty; }
@@ -1119,18 +1124,18 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 .tocome { display: flex; flex-direction: column; }
 .tocome.draft li, .tocome.draft h3 span b { color: color-mix(in srgb, var(--ink) 38%, transparent); }
 .tocome.draft .nightstrip { opacity: .5; }
-.nightstrip { display: flex; gap: 0; height: 12px; margin: 2px 0 6px; }
+.nightstrip { display: flex; gap: 0; height: 14px; margin: 2px 0 6px; -webkit-mask: var(--zig2); mask: var(--zig2); }
 .nightstrip .ns { display: block; min-width: 4px; border-radius: 0; }
 /* spec 014: the roll in miniature: outlined paper lengths, the next one inked, paid ones carry the green foot */
 .nightstrip:not(.named) .ns.f { background: color-mix(in srgb, var(--ink) 10%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 42%, transparent); }
 .nightstrip:not(.named) .ns.f.next { background: var(--ink); box-shadow: none; }
-.nightstrip:not(.named) .ns.f.paid { background: color-mix(in srgb, var(--ink) 10%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 42%, transparent), inset 0 -3px 0 var(--deal); }
+.nightstrip:not(.named) .ns.f.paid { background: var(--deal); box-shadow: none; }
 .nightstrip .ns.f { background: color-mix(in srgb, var(--ink) 70%, transparent); }
 .nightstrip .ns.f.next { background: var(--ink); }
 .nightstrip .ns.f.paid { background: var(--deal); }
 .nightstrip .ns.b { background: repeating-linear-gradient(135deg, var(--break-stripe) 0 1.5px, transparent 1.5px 4px), var(--break-base); opacity: .5; }
-.nightstrip.onticket { margin: 8px 0 0; height: 12px; }
-.nightstrip.onsheet { margin: 2px 0 -6px; height: 12px; }
+.nightstrip.onticket { margin: 8px 0 0; height: 14px; }
+.nightstrip.onsheet { margin: 2px 0 -6px; height: 14px; }
 .nightmap { display: none; }
 @media (min-width: 820px) {
   .nightstrip.onticket { display: none; }
@@ -1317,8 +1322,8 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   .tape .tocome, .nightmap, .ticket.night .nightfit, .ticket.night .nightstrip, .nightstrip.onticket { display: none; }
 
   /* the quiet lines under the ticket start on its text edge, one edge instead of a centred column */
-  :is(.ticketwrap + .onedeal, main > .skip) { align-self: flex-start; margin-left: 24px; text-align: left; }
-  .ticketwrap + .bigchip { align-self: flex-start; margin-left: 8px; }
+  :is(.ticketwrap + .onedeal, main > .skip) { align-self: flex-start; margin-left: -12px; text-align: left; }
+  .ticketwrap + .bigchip { align-self: flex-start; margin-left: 0; }
   /* while a length is being picked the way back steps aside; the choice is the moment */
   .ticketwrap:has(#night-picker) + .onedeal { visibility: hidden; }
   /* the hero: a ticket at desk scale, lying on the pad it was torn from */
@@ -1399,8 +1404,8 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   .rs.f:is(.draft, .pend) + .rs.f:is(.draft, .pend) { margin-left: -1.5px; }
   .rs.b:is(.draft, .pend) { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--ink) 30%, transparent) 0 1.5px, transparent 1.5px 6px); }
   /* home: names you already use, one continuous length in hairline, perforated between them */
-  .rlead { background: none; border: none; padding: 0; color: var(--ink); cursor: pointer; font: inherit; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .2em; }
-  @media (hover: hover) { .rlead:hover { color: var(--deal-ink); } }
+  .rlead { background: none; border: none; padding: 0; color: var(--ink); cursor: pointer; font: inherit; font-weight: 700; }
+  @media (hover: hover) { .rlead:hover { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .2em; } }
   .rband.loose { box-shadow: none; }
   .rband.offer .rs.f { cursor: pointer; }
   @media (hover: hover) { .rband.offer .rs.f:hover { background: var(--rollp); outline-color: var(--wait-edge); } }
