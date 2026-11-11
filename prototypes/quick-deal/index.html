@@ -242,7 +242,7 @@ p { margin: 0; }
 .bigchip[aria-pressed="true"] { color: var(--deal); }
 /* spec 011 (Chris): off the ticket, a quiet line under it */
 .ticketwrap + .bigchip { align-self: center; margin: -6px auto -10px; font-family: var(--font-body); font-stretch: normal; font-weight: 400; font-size: 1rem; color: var(--soft); }
-.ticketwrap + .bigchip .cbox { width: 18px; height: 18px; border-radius: 50%; }
+.ticketwrap + .bigchip .cbox { width: 18px; height: 18px; border-radius: 3px; border-style: dashed; }
 /* both rows are one tap and skippable; nothing is picked until you pick it. They read as the rest of the sentence:
    "About 2h", "Mostly writing". The connecting word recedes like the sentence's own. */
 .phrases { display: flex; flex-direction: column; gap: 2px; margin-block: -6px -2px; }
@@ -1101,9 +1101,10 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 .nightfit b { flex: none; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 2.75rem; line-height: .82; letter-spacing: -.01em; color: var(--ink); font-variant-numeric: tabular-nums; }
 .nightfit b small { font-size: .42em; font-weight: 700; margin-left: 2px; letter-spacing: 0; }
 .nightname { flex: 1 1 220px; }
-#night-picker[role="radiogroup"] { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 18px; }
+#night-picker[role="radiogroup"] { display: grid; grid-template-columns: repeat(4, max-content); justify-content: start; align-items: baseline; gap: 0 clamp(12px, 3.4vw, 22px); }
 #night-picker[role="radiogroup"] .longrow { display: contents; }
-#night-picker[role="radiogroup"] .chip { display: inline-block; min-height: 40px; padding: 4px 0; border: none; border-radius: 0; background: none; white-space: nowrap; font-stretch: var(--wd-display); font-weight: 750; font-size: 1.1875rem; color: var(--soft); }
+#night-picker[role="radiogroup"] .chip { display: inline-block; justify-self: start; text-align: left; min-height: 40px; padding: 4px 0; font-size: 1.0625rem !important; border: none; border-radius: 0; background: none; white-space: nowrap; font-stretch: var(--wd-display); font-weight: 750; font-size: 1.1875rem; color: var(--soft); }
+@media (max-width: 819px) { #night-picker[role="radiogroup"] { grid-template-columns: repeat(4, minmax(0, 1fr)); column-gap: 8px; } #night-picker[role="radiogroup"] .chip { font-size: .9375rem !important; word-spacing: -1px; } }
 #night-picker[role="radiogroup"] .chip[aria-checked="true"] { padding: 4px 0; border: none; background: none; color: var(--deal-ink, var(--deal)); text-decoration: underline; text-decoration-thickness: .1em; text-underline-offset: .2em; text-decoration-skip-ink: none; }
 #night-picker[role="radiogroup"] .chip .num { font: inherit; }
 @media (hover: hover) { #night-picker[role="radiogroup"] .chip:not([aria-checked="true"]):hover { background: none; color: var(--ink); } }
@@ -1119,7 +1120,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 .tocome.draft li, .tocome.draft h3 span b { color: color-mix(in srgb, var(--ink) 38%, transparent); }
 .tocome.draft .nightstrip { opacity: .5; }
 .nightstrip { display: flex; gap: 3px; height: 9px; margin: 2px 0 6px; }
-.nightstrip .ns { display: block; min-width: 4px; border-radius: 2px; }
+.nightstrip .ns { display: block; min-width: 4px; border-radius: 0; }
 .nightstrip .ns.f { background: color-mix(in srgb, var(--ink) 70%, transparent); }
 .nightstrip .ns.f.next { background: var(--ink); }
 .nightstrip .ns.f.paid { background: var(--deal); }
@@ -1281,7 +1282,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 }
 .roll { display: none; }
 /* spec 014, phone too: names you already use, as choices under tonight's sentence; one tap adds one at its known length */
-.nightadd { display: block; margin-top: -4px; text-wrap: balance; line-height: 2; }
+.nightadd { display: block; margin-top: -4px; line-height: 2; }
 .nightadd .add { margin-right: 20px; }
 .nightadd[hidden] { display: none; }
 .nightadd .add { display: inline; padding: 6px 0; background: none; border: none; border-radius: 0; cursor: pointer; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 750; font-size: 1.125rem; line-height: 1.2; color: color-mix(in srgb, var(--ink) 74%, transparent); text-decoration: underline solid color-mix(in srgb, var(--ink) 34%, transparent); text-decoration-skip-ink: none; text-decoration-thickness: 1px; text-underline-offset: .24em; }
@@ -1294,22 +1295,28 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 @media (min-width: 820px) {
   /* the roll is on the desk only while tonight is being written or is printed; the rest of the desk makes room for it */
   /* one line across the desk: the ticket and the tape start at the same height (--tapetop) */
-  :root { --rollh: 104px; --rollall: 0px; --tapetop: calc(50px + var(--stagetop) + clamp(8px, 3.5vh, 40px)); }
+  :root { --rollh: 90px; --rollall: 0px; --tapetop: calc(50px + var(--stagetop) + clamp(8px, 3.5vh, 40px)); }
   body:has(#roll:not([hidden])) { --rollall: calc(var(--rollh) + 112px); }
   .desk { grid-template-areas: "stage tape" "roll roll"; grid-template-rows: 1fr auto; }
   main:not(:has(> .runwrap)) { min-height: 0; padding-top: var(--tapetop); padding-bottom: 36px; }
   .tapeside { margin-top: var(--tapetop); max-height: calc(100vh - var(--tapetop) - 80px); max-height: calc(100dvh - var(--tapetop) - 80px); }
   body.live .tapeside { margin-top: max(56px, var(--tapetop)); max-height: calc(100dvh - max(56px, var(--tapetop)) - 40px); }
   /* the tape ends above the roll, torn where it ends */
-  /* a tall stage (a size's choices open) scrolls clear of the roll instead of sliding under it */
-  body:has(#roll:not([hidden])) main:not(:has(> .runwrap)) { padding-bottom: calc(var(--rollall) - 70px); }
+  /* one rhythm: the tape runs down to a fixed step above the roll, and the room row sits on the tape's foot */
+  body:has(#roll:not([hidden])) main:not(:has(> .runwrap)) { min-height: calc(100dvh - var(--rollall) - 70px); padding-bottom: 8px; }
+  body:has(#roll:not([hidden])) main:not(:has(> .runwrap)) > .rows:last-child { margin-top: auto; }
+  /* the tape ends on a whole row; blank paper runs on to the shared line and tears there */
+  body:has(#roll:not([hidden])):not(.sheeted) .tapeside { min-height: calc(100dvh - var(--rollall) - var(--tapetop) - 92px); }
+  body:has(#roll:not([hidden])):not(.sheeted) .tapeside > .tape { -webkit-mask: none; mask: none; padding-bottom: 8px; }
+  body:has(#roll:not([hidden])):not(.sheeted) .tapeside::after { content: ""; flex: 1 0 18px; background: var(--tape, var(--card)); -webkit-mask: var(--tear-bottom); mask: var(--tear-bottom); }
   body:has(#roll:not([hidden])) .tapeside { max-height: calc(100vh - var(--rollall) - var(--tapetop) - 84px); max-height: calc(100dvh - var(--rollall) - var(--tapetop) - 84px); }
   body.live:has(#roll:not([hidden])) .tapeside { max-height: calc(100dvh - var(--rollall) - max(56px, var(--tapetop)) - 60px); }
   /* what's to come lies on the desk now; the tape is only what has printed */
   .tape .tocome, .nightmap, .ticket.night .nightfit, .ticket.night .nightstrip, .nightstrip.onticket { display: none; }
 
   /* the quiet lines under the ticket start on its text edge, one edge instead of a centred column */
-  :is(.ticketwrap + .bigchip, .ticketwrap + .onedeal, main > .skip) { align-self: flex-start; margin-left: 24px; text-align: left; }
+  :is(.ticketwrap + .onedeal, main > .skip) { align-self: flex-start; margin-left: 24px; text-align: left; }
+  .ticketwrap + .bigchip { align-self: flex-start; margin-left: 8px; }
   /* while a length is being picked the way back steps aside; the choice is the moment */
   .ticketwrap:has(#night-picker) + .onedeal { visibility: hidden; }
   /* the hero: a ticket at desk scale, lying on the pad it was torn from */
@@ -1322,7 +1329,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
     .ticket .stub .primary:is(#shake, #print) { font-size: 3.5rem; }
     .ticket .startw { font-size: 1.125rem; }
   }
-  #night-picker[role="radiogroup"] .chip { font-size: 1.375rem; }
+  #night-picker[role="radiogroup"] .chip { font-size: 1.375rem !important; }
 
   /* a sheet does the talking: the roll waits under it */
   /* a small desk (a laptop split, a tablet on its side): the stub narrows so the sentence keeps its measure */
@@ -1333,7 +1340,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
     .ticket .stub .primary:is(#shake, #print) { font-size: 2.25rem; min-width: 0; width: 100%; min-height: 86px; padding-inline: 10px; }
     .sentence { font-size: 1.875rem; }
     .ticket.night .sentence { font-size: 1.375rem; line-height: 1.42; }
-    #night-picker[role="radiogroup"] .chip { font-size: 1.125rem; }
+    #night-picker[role="radiogroup"] .chip { font-size: 1.1875rem !important; }
     #night-picker[role="radiogroup"] .chip svg { display: none; }
     .nightadd .add { font-size: 1.0625rem; }
   }
@@ -1351,8 +1358,8 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   .roll { --rollp: color-mix(in srgb, var(--tape) 55%, var(--paper)); }
   /* dark: printed paper a clear step above the desk, the next sitting a step above that (under the ticket) */
   :root[data-theme="dark"] .rs.f:is(.draft, .pend) { outline-color: color-mix(in srgb, var(--ink) 40%, transparent); }
-  :root[data-theme="dark"] .roll { --rollp: var(--tape); --rollnext: color-mix(in srgb, var(--card) 88%, var(--tape)); }
-  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .rs.f:is(.draft, .pend) { outline-color: color-mix(in srgb, var(--ink) 40%, transparent); } :root:not([data-theme="light"]) .roll { --rollp: var(--tape); --rollnext: color-mix(in srgb, var(--card) 88%, var(--tape)); } }
+  :root[data-theme="dark"] .roll { --rollp: var(--tape); --rollnext: var(--card); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .rs.f:is(.draft, .pend) { outline-color: color-mix(in srgb, var(--ink) 40%, transparent); } :root:not([data-theme="light"]) .roll { --rollp: var(--tape); --rollnext: var(--card); } }
   /* a decision sheet does the talking: the clock it ends steps off the desk instead of peeking over the paper */
   body.sheeted #view .runticket { visibility: hidden; }
   .rband { display: flex; align-items: stretch; height: var(--rollh); border-radius: 3px; box-shadow: 0 1px 0 var(--rule), 0 9px 16px -6px var(--lift); }
@@ -1894,7 +1901,7 @@ addEventListener("scroll", tapePrint, { passive: true });
 function tapeSeen() { const t = $("#side-ledger"); if (!unseen || !t || t.hidden) return; if (t.getBoundingClientRect().top < innerHeight * .62) { unseen = 0; paintTape(); } }
 function paintTape() {
   const v = $("#tapeval"); if (!v) return;
-  const deals = dealCount(), txt = unseen ? `${unseen} new` : deals ? `${deals}` : "";
+  const deals = dealCount(), txt = unseen ? `${unseen} new` : "";
   if (unseen && +v.dataset.n < unseen) { v.classList.remove("pop"); void v.offsetWidth; v.classList.add("pop"); }
   v.dataset.n = unseen; v.classList.toggle("new", !!unseen); if (v.textContent !== txt) v.textContent = txt;
 }
