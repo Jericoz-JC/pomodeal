@@ -1326,8 +1326,8 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   /* printed, the roll is paper a step under the ticket: the ticket stays the brightest thing on the desk */
   .roll { --rollp: color-mix(in srgb, var(--tape) 55%, var(--paper)); }
   /* dark: printed paper a clear step above the desk, the next sitting a step above that (under the ticket) */
-  :root[data-theme="dark"] .roll { --rollp: var(--tape); --rollnext: color-mix(in srgb, var(--card) 60%, var(--tape)); }
-  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .roll { --rollp: var(--tape); --rollnext: color-mix(in srgb, var(--card) 60%, var(--tape)); } }
+  :root[data-theme="dark"] .roll { --rollp: var(--tape); --rollnext: color-mix(in srgb, var(--card) 88%, var(--tape)); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .roll { --rollp: var(--tape); --rollnext: color-mix(in srgb, var(--card) 88%, var(--tape)); } }
   /* a decision sheet does the talking: the clock it ends steps off the desk instead of peeking over the paper */
   body.sheet-done #view .runticket { visibility: hidden; }
   .rband { display: flex; align-items: stretch; height: var(--rollh); border-radius: 3px; box-shadow: 0 1px 0 var(--rule), 0 9px 16px -6px var(--lift); }
@@ -1365,13 +1365,14 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   .rs.f:is(.draft, .pend) + .rs.f:is(.draft, .pend) { margin-left: -1.5px; }
   .rs.b:is(.draft, .pend) { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--ink) 30%, transparent) 0 1.5px, transparent 1.5px 6px); }
   /* home: names you already use, one continuous length in hairline, perforated between them */
-  .rloose { display: flex; align-items: flex-start; gap: 22px; }
-  .rlead { flex: none; padding-top: 34px; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 1.75rem; line-height: 1; }
-  .rcol { flex: 1; min-width: 0; }
+  .rloose { display: flex; align-items: flex-end; gap: 22px; }
+  .rlead { flex: none; background: none; border: none; padding: 0 0 14px; color: var(--ink); cursor: pointer; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 1.75rem; line-height: 1; }
+  @media (hover: hover) { .rlead:hover { text-decoration: underline; text-decoration-thickness: .08em; text-underline-offset: .15em; } }
   .rband.loose { box-shadow: none; }
-  .rs.f.sug { background: none; outline: 1.5px solid color-mix(in srgb, var(--ink) 34%, transparent); outline-offset: -1.5px; cursor: pointer; }
-  .rs.f.sug + .rs.f.sug { margin-left: -1.5px; }
-  .rs.f.sug::before { opacity: 1; }
+  .rband.loose { flex: 1; height: auto; min-height: 68px; border-bottom: 1.5px solid color-mix(in srgb, var(--ink) 40%, transparent); border-radius: 0; }
+  .rs.f.sug { background: none; padding: 10px 14px 12px 16px; cursor: pointer; }
+  .rs.f.sug::before { inset: auto auto 0 0; width: 1.5px; height: 26px; background: color-mix(in srgb, var(--ink) 40%, transparent); opacity: 1; }
+  .rs.f.sug:first-child::before { display: block; }
   @media (hover: hover) { .rs.f.sug:hover { background: var(--rollp); } }
   /* a break with a name (the deal's own: Reels, TikTok) says it on a scrap of desk */
   .rs.b .bl { position: absolute; top: 10px; left: 6px; max-width: calc(100% - 12px); padding: 3px 6px 4px; background: var(--paper); border-radius: 2px; font-family: var(--font-head); font-stretch: var(--wd-act); font-size: .875rem; line-height: 1.15; color: var(--soft); overflow: hidden; }
@@ -1393,8 +1394,8 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   /* running: the dial is the one big number; the roll already says what comes next */
   body:has(#roll:not([hidden])) .runticket .note:not(.go) { display: none; }
   /* a decision lands over the desk but ends above the roll, which stays lit: the Done stamp lands on it */
-  body:has(#roll:not([hidden])) .scrim { padding-top: 124px; padding-bottom: calc(var(--rollall) - 52px); }
-  body:has(#roll:not([hidden])) .sheet { padding-block: 22px 12px; }
+  body:has(#roll:not([hidden])) .scrim { padding-top: 130px; padding-bottom: calc(var(--rollall) - 38px); }
+  body:has(#roll:not([hidden])) .sheet { padding-block: 20px 4px; max-height: 100%; }
   /* a short window: the decision needs the height, so the roll steps away under a sheet */
   @media (max-height: 800px) { body.sheeted .roll { visibility: hidden; } body.sheeted:has(#roll:not([hidden])) .scrim { padding-top: 24px; padding-bottom: 0; } body.sheeted:has(#roll:not([hidden])) .sheet { padding-block: 34px 30px; } }
   body.sheeted .rhead { visibility: hidden; }
@@ -1409,6 +1410,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   .runticket .startw { font-size: 1.125rem; }
   .runticket .timerwrap { flex: none; }
   .runticket .dial { width: clamp(220px, min(100dvh - 290px - var(--rollall), 100cqw - 300px), 520px); margin: 0; }
+  @media (max-width: 1199px) { .rs.b .bl em { display: none; } .rs.b .bl { padding-inline: 4px; } }
   @media (max-width: 1100px) { .rs .nm { font-size: 1.125rem; } .rs.f { padding: 11px 10px 0 13px; } .rhead .at b { font-size: 2rem; } }
   /* a short window: everything a step smaller so the ways out stay above the roll */
   @media (max-height: 800px) { :root { --rollh: 78px; --rollall: calc(var(--rollh) + 100px); } .roll { padding-top: 16px; } .rhead .at b { font-size: 2rem; } .rs.f { padding-top: 10px; } .nightadd .chip { min-height: 38px; padding-block: 6px; } .tickethead { min-height: 34px; }
@@ -2324,8 +2326,7 @@ function rollPieces() {
   const list = addable().slice(0, 4); if (!list.length) return "";
   const pieces = list.map((k, i) => { const [n, min] = snapSize(k.min || 20); return { k, i, n, min, size: sizeText({ n, min }) }; });
   const total = pieces.reduce((a, p) => a + p.n * p.min, 0);
-  const ticks = []; for (let t = 5; t <= ROLL_SPAN; t += 5) ticks.push(`<i class="${t % 60 ? t % 15 ? "" : "q" : "hr"}" style="left:${(100 * t / ROLL_SPAN).toFixed(3)}%">${t % 60 ? "" : `${t / 60}h`}</i>`);
-  return `<div class="rloose"><span class="rlead">Tonight,</span><div class="rcol"><div class="rband loose" role="group" aria-label="Tonight">${pieces.map((p, j) => `<button class="rs f sug${j === pieces.length - 1 ? " end" : ""}" style="flex:${p.n * p.min}" data-nadd="${p.i}"><b class="nm">${N(esc(p.k.name))}</b><em>${N(p.size)}</em></button>`).join("")}${total < ROLL_SPAN ? `<span class="rest" style="flex:${ROLL_SPAN - total}"></span>` : ""}</div><div class="rrule" aria-hidden="true">${ticks.join("")}</div></div></div>`;
+  return `<div class="rloose"><button class="rlead" id="rollplan">Tonight,</button><div class="rband loose" role="group" aria-label="Tonight">${pieces.map(p => `<button class="rs f sug" style="flex:${p.n * p.min}" data-nadd="${p.i}"><b class="nm">${N(esc(p.k.name))}</b><em>${N(p.size)}</em></button>`).join("")}${total < ROLL_SPAN ? `<span class="rest" style="flex:${ROLL_SPAN - total}"></span>` : ""}</div></div>`;
 }
 function rollView() {
   const m = rollModel(), pct = v => (100 * v / m.span).toFixed(3);
@@ -2355,6 +2356,7 @@ function paintRoll(wide) {
     rl.innerHTML = html; rl.dataset.sig = html;
     rl.querySelectorAll("[data-nsize]").forEach(b => b.onclick = () => { const i = +b.dataset.nsize; nightPick = nightPick && nightPick.i === i && nightPick.kind === "size" ? null : { i, kind: "size" }; render(); });
   }
+  const rp = document.getElementById("rollplan"); if (rp) rp.onclick = () => { if (!night || night.printed) night = newNight(); nightOn = true; nightPick = null; nextFocus = "#nightin"; render(); };
   inkRoll(); snapTape();
 }
 /* the tape scrolls inside its column; with the roll on the desk the column is shorter, so it ends on a whole row
@@ -2373,7 +2375,8 @@ function snapTape() {
 /* one transform a frame while a sitting runs: no layout, no repaint of the roll */
 function inkRoll() { const k = document.getElementById("rollink"); if (k && S) k.style.setProperty("--paid", Math.max(0, Math.min(1, 1 - remaining() / S.durMs)).toFixed(4)); }
 
-const nightLink = () => nightOn || S ? "" : `<button class="textbtn" id="plannight">${nightLeft().length ? "Change tonight" : "Plan tonight"}</button>`;
+/* on a desk, with names on offer at the front edge, "Tonight," there is the way in */
+const nightLink = () => nightOn || S || (WIDE.matches && mode === "start" && !nightLeft().length && addable().length) ? "" : `<button class="textbtn" id="plannight">${nightLeft().length ? "Change tonight" : "Plan tonight"}</button>`;
 /* the unprinted top of the tape */
 function toComeView() {
   /* typing tonight's line: the rows it would print, faint and unprinted */
