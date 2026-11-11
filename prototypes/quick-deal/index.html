@@ -300,6 +300,8 @@ p { margin: 0; }
    are lines under the ticket that carry the sentence on: "or Orgo problem set 4", each a word you swap onto the ticket,
    with one small imprint that starts it as it stands. */
 .swaps { list-style: none; margin: -2px 0 0; padding: 0 2px; display: flex; flex-direction: column; }
+/* with the quick deal on, the lines stand apart from the deal's own quiet lines */
+@media (max-width: 819px) { .swaps.q { margin-top: 14px; } }
 .swapline { display: flex; align-items: center; gap: 14px; min-height: 56px; background: radial-gradient(circle, var(--edge) 1px, transparent 1.5px) 0 100% / 8px 3px repeat-x; }
 .swapline.last { background: none; min-height: 52px; gap: 26px; }
 .swapline .said { flex: 1; min-width: 0; font-family: var(--font-head); font-stretch: var(--wd-display); font-size: 1.1875rem; line-height: 1.2; color: var(--soft); }
@@ -312,7 +314,7 @@ p { margin: 0; }
 .bitem .ministub.go1 span, .swapline .ministub.go1 span { font-size: 1.0625rem; }
 /* green is wet ink: at rest the line's Start is DEAL's die before it is inked (double rule, square corners, a tilt) in
    dry ink; pressed, it lands green */
-.ministub.go1 { --tilt: -2deg; color: color-mix(in srgb, var(--ink) 62%, transparent); border-radius: 4px; }
+.ministub.go1 { --tilt: -2deg; color: var(--ink); border-radius: 4px; }
 .ministub.go1::before { border: 3.5px double currentColor; border-radius: 4px; }
 .ministub.go1.pressed { color: var(--deal); }
 .ministub.go1.pressed::before { animation: slam .5s linear both; -webkit-mask: var(--noise) 0 0 / 120px 60px; mask: var(--noise) 0 0 / 120px 60px; background: color-mix(in srgb, var(--deal) 12%, transparent); }
@@ -322,10 +324,13 @@ p { margin: 0; }
 .swapline .quickon + .allbig { margin-left: -26px; }
 /* a desk has a pointer and the roll below: the lines are tighter, so the room row stays above the roll */
 @media (min-width: 820px) {
-  /* the lines keep to the sentence's column, tight enough that the room row stays clear of the roll */
-  main > .swaps { margin: -12px clamp(250px, 34cqw, 300px) -26px 0; }
-  .swapline { min-height: 42px; }
-  .swapline.last { min-height: 34px; }
+  /* the lines run the ticket's width, each Start under the DEAL stub so every stamp keeps one column; tight enough
+     that the room row stays clear of the roll */
+  main > .swaps { margin: -12px 0 -26px; }
+  .swapline { display: grid; grid-template-columns: minmax(0, 1fr) clamp(250px, 34cqw, 300px); min-height: 44px; }
+  .swapline .said { font-size: 1.375rem; }
+  .swapline .ministub.go1 { justify-self: center; }
+  .swapline.last { display: flex; min-height: 34px; }
   .swapline .ministub.go1 { min-height: 34px; padding-block: 4px 2px; }
 }
 /* what the card used to say, now notes on the ticket */
@@ -2110,7 +2115,7 @@ function cardsView() {
   if (fromCard && fromCard.comeback) noteComeback(fromCard.id);
   const lines = shown.map(c => `<li class="swapline"><p class="said"><b>${N(`${c.minutes} min`)}</b> of <button class="swapname" data-load="${esc(c.id)}" aria-label="${esc(c.title)}, put it on the ticket">${esc(c.title)}</button></p>${goStamp(c)}</li>`).join("");
   const quick = fromCard ? `<button class="textbtn quickon" id="quickopen">Quick deal</button>` : "";
-  return `<ul class="swaps" aria-label="Or instead">${lines}<li class="swapline last">${quick}${link}</li></ul>`;
+  return `<ul class="swaps${fromCard ? "" : " q"}" aria-label="Or instead">${lines}<li class="swapline last">${quick}${link}</li></ul>`;
 }
 /* spec 008 "Weekly check-in": { key } while the question is up (the Sunday's day key), else null. Core decides when
    (shouldAskCheckIn); the shell sends it here. Answering or the x hides it for the week. */
