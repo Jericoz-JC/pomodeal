@@ -28,6 +28,15 @@ Accessibility is not a review lens for this product. If a member can't be reache
    check no headless Edge is left after it.
 3. Make one contact sheet per comparison, so each reviewer opens a few images, not dozens.
 
+## Benchmark against the competition
+
+Judge against the apps Pomodeal competes with, not in a vacuum (the build loop's step 3, from Theo's "Agents Sucked At
+UI"). Naming the apps is not enough: show them. Pull each app's App Store screenshots with the iTunes Search API
+(`https://itunes.apple.com/search?term=<name>&entity=software&limit=1`, field `screenshotUrls`) into the scratchpad,
+never into the repo, and make one sheet. The set: Forest, Opal, Structured, Session, Flow, Tiimo, Things 3, one sec,
+Focus Friend. For a taste round, ask each reviewer to rank Pomodeal among them and name the specific thing each of the
+top three does better; the goal is to rank first on taste, not to clear a score.
+
 ## A round
 
 Start the three reviewers in parallel, each fresh, read-only, with no target score. Give each:

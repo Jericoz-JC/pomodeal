@@ -76,7 +76,7 @@
   --wd-display: 76%;
   --wd-act: 86%;
   /* how much ink the wheel's track takes from the paper: enough to see, little enough that both arcs stay at 3:1 on it */
-  --track-ink: 17%;
+  --track-ink: 11%;
   /* one paper shadow, one radius for anything you press */
   --paper-shadow: drop-shadow(0 1px 0 var(--rule)) drop-shadow(0 8px 12px var(--lift));
   --r-press: 9px;
@@ -84,15 +84,15 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --paper: #18201C; --slot: #070A08; --slot-edge: rgba(230, 236, 231, .28); --btn: #2A8259; --on-btn: #F4FBF7; --card: #36403B; --stub: #2A312D; --chip: #2B3530; --ink: #E6ECE7; --soft: #A3B0A7; --rule: #33413A; --track: #2F3A35; --edge: #87968C; --edge-half: rgba(135, 150, 140, .6);
-    --sheet: #222B26; --track-ink: 8%; --scrim: rgba(8, 12, 10, .5); --hi: rgba(255, 255, 255, .05); --lift: rgba(0, 0, 0, .5);
-    --deal: #6ABD91; --on-deal: #0F1A14; --deal-tint: rgba(106, 189, 145, .08); --break-base: #A7B3AA; --break-stripe: rgba(24, 32, 28, .42); --wait: color-mix(in srgb, var(--ink) 60%, transparent); --wait-edge: color-mix(in srgb, var(--ink) 60%, transparent); --sel: #2C3F35; --sel-card: #344A3E; --gone: #E0A08C; --deal-ink: #6ABD91; color-scheme: dark;
+    --paper: #0F1412; --slot: #070A08; --slot-edge: rgba(230, 236, 231, .28); --btn: #2A8259; --on-btn: #F4FBF7; --card: #262C28; --stub: #1E2421; --chip: #2A302C; --ink: #E6ECE7; --soft: #A3B0A7; --rule: #33413A; --track: #2F3A35; --edge: #87968C; --edge-half: rgba(135, 150, 140, .6);
+    --sheet: #181E1B; --track-ink: 8%; --scrim: rgba(4, 6, 5, .62); --hi: rgba(255, 255, 255, .05); --lift: rgba(0, 0, 0, .5);
+    --deal: #6FD39F; --on-deal: #0F1A14; --deal-tint: rgba(111, 211, 159, .08); --break-base: #A7B3AA; --break-stripe: rgba(24, 32, 28, .42); --wait: color-mix(in srgb, var(--ink) 60%, transparent); --wait-edge: color-mix(in srgb, var(--ink) 60%, transparent); --sel: #23352B; --sel-card: #2A3E33; --gone: #E0A08C; --deal-ink: #6FD39F; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --paper: #18201C; --slot: #070A08; --slot-edge: rgba(230, 236, 231, .28); --btn: #2A8259; --on-btn: #F4FBF7; --card: #36403B; --stub: #2A312D; --chip: #2B3530; --ink: #E6ECE7; --soft: #A3B0A7; --rule: #33413A; --track: #2F3A35; --edge: #87968C; --edge-half: rgba(135, 150, 140, .6);
-  --sheet: #222B26; --track-ink: 8%; --scrim: rgba(8, 12, 10, .5); --hi: rgba(255, 255, 255, .05); --lift: rgba(0, 0, 0, .5);
-  --deal: #6ABD91; --on-deal: #0F1A14; --deal-tint: rgba(106, 189, 145, .08); --break-base: #A7B3AA; --break-stripe: rgba(24, 32, 28, .42); --wait: color-mix(in srgb, var(--ink) 60%, transparent); --wait-edge: color-mix(in srgb, var(--ink) 60%, transparent); --sel: #2C3F35; --sel-card: #344A3E; --gone: #E0A08C; --deal-ink: #6ABD91; color-scheme: dark;
+  --paper: #0F1412; --slot: #070A08; --slot-edge: rgba(230, 236, 231, .28); --btn: #2A8259; --on-btn: #F4FBF7; --card: #262C28; --stub: #1E2421; --chip: #2A302C; --ink: #E6ECE7; --soft: #A3B0A7; --rule: #33413A; --track: #2F3A35; --edge: #87968C; --edge-half: rgba(135, 150, 140, .6);
+  --sheet: #181E1B; --track-ink: 8%; --scrim: rgba(4, 6, 5, .62); --hi: rgba(255, 255, 255, .05); --lift: rgba(0, 0, 0, .5);
+  --deal: #6FD39F; --on-deal: #0F1A14; --deal-tint: rgba(111, 211, 159, .08); --break-base: #A7B3AA; --break-stripe: rgba(24, 32, 28, .42); --wait: color-mix(in srgb, var(--ink) 60%, transparent); --wait-edge: color-mix(in srgb, var(--ink) 60%, transparent); --sel: #23352B; --sel-card: #2A3E33; --gone: #E0A08C; --deal-ink: #6FD39F; color-scheme: dark;
 }
 @property --p { syntax: "<number>"; inherits: true; initial-value: 1; }
 
@@ -182,7 +182,7 @@ p { margin: 0; }
 .ticketwrap, .terms, .stubs, .tearrow { filter: drop-shadow(0 1px 0 var(--rule)) drop-shadow(0 8px 12px var(--lift)); }
 /* on the home screen, tonight's earlier stubs peek out from under the new ticket: Now and Ledger are the same pile */
 .ticketwrap.peek { position: relative; isolation: isolate; margin-bottom: 14px; }
-.ticketwrap.peek::before, .ticketwrap.peek::after { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--stub); border-radius: 6px 0 0 6px; box-shadow: inset 0 0 0 1px var(--edge-half); -webkit-mask: var(--zig); mask: var(--zig); }
+.ticketwrap.peek::before, .ticketwrap.peek::after { display: none; content: ""; position: absolute; inset: 0; z-index: -1; background: var(--stub); border-radius: 6px 0 0 6px; box-shadow: inset 0 0 0 1px var(--edge-half); -webkit-mask: var(--zig); mask: var(--zig); }
 .ticketwrap.peek::before { transform: translate(4px, 16px) rotate(1deg); }
 .ticketwrap.peek::after { transform: translate(-2px, 8px) rotate(-1.5deg); }
 .perf { background: radial-gradient(circle, var(--edge) 1.5px, transparent 2px) 0 0 / 10px 6px repeat-x; position: relative; }
@@ -198,7 +198,7 @@ p { margin: 0; }
   background: radial-gradient(circle, var(--edge) 1.5px, transparent 2px) 0 0 / 10px 6px repeat-x, var(--card); }
 .ticket.torn .stub { transform: translateY(10px) rotate(2deg); opacity: 0; transition: transform .3s ease-in, opacity .3s ease-in; }
 /* the deal sentence: connecting words recede, the four parts you can change are ink and underlined */
-.sentence { font-family: var(--font-head); font-size: 1.55rem; line-height: 1.45; font-weight: 500; font-stretch: var(--wd-display); letter-spacing: .005em; color: var(--soft); text-wrap: balance; }
+.sentence { font-family: var(--font-head); font-size: 1.75rem; line-height: 1.45; font-weight: 500; font-stretch: var(--wd-display); letter-spacing: .005em; color: var(--soft); text-wrap: balance; }
 .tok { position: relative; font: inherit; letter-spacing: inherit; background: none; border: none; padding: 3px 1px; margin-block: -3px; border-radius: 4px; color: var(--ink); text-align: left;
   text-decoration: underline solid var(--deal) 2px; text-underline-offset: 5px; text-decoration-skip-ink: none; }
 /* the four parts you can change carry the line; the connecting words sit lower and lighter */
@@ -664,7 +664,7 @@ button.term:focus-visible { outline-offset: 3px; }
 .timerwrap { display: grid; place-items: center; gap: 10px; }
 /* the tick ring follows the block (spec 007): one minor tick per block minute, a major every 5 min up to 30, every 15 above.
    --minor and --major are set per block from dialTicks(); the defaults draw a 60-minute face. */
-.dial { position: relative; width: min(76vw, 288px); aspect-ratio: 1; max-width: 100%; container-type: inline-size; }
+.dial { position: relative; width: min(86vw, 330px); aspect-ratio: 1; max-width: 100%; container-type: inline-size; }
 .dial > * { position: absolute; inset: 0; border-radius: 50%; }
 /* The wheel is drawn as vector strokes, not gradient masks, so every edge is anti-aliased and it moves without shimmer:
    a ring that drains clockwise (solid green for focus, hatched grey-green for a break), a knob at its leading end,
@@ -674,10 +674,10 @@ button.term:focus-visible { outline-offset: 3px; }
 .scale .mj { stroke: var(--ink); stroke-width: 1.3; stroke-linecap: round; }
 .scale .z { stroke: var(--ink); stroke-width: 2.2; stroke-linecap: round; }
 .track circle { fill: none; }
-.track .bed { stroke: var(--track); stroke-width: 12.4; }
+.track .bed { stroke: var(--track); stroke-width: 17.4; }
 .track .rim { display: none; }
 /* the arc's length is written as plain numbers by syncArcs(): Safari is unreliable with calc() and var() in stroke properties */
-.fill .arc { fill: none; stroke-width: 13; stroke-dasharray: 0 600; }
+.fill .arc { fill: none; stroke-width: 18; stroke-dasharray: 0 600; }
 .fill.focus .arc { stroke: var(--deal); }
 .fill.break .arc { stroke: url(#brk-hatch); }
 #brk-hatch rect { fill: var(--break-base); } #brk-hatch path { stroke: var(--break-stripe); stroke-width: .9; }
@@ -692,7 +692,7 @@ button.term:focus-visible { outline-offset: 3px; }
 .runticket .dealt { background: none; -webkit-mask: none; mask: none; padding: 0; gap: 12px; }
 /* the stamp you pressed stays on the running ticket at size, inked, not shrunk to a tag */
 .runticket .nowhead { min-height: 56px; align-items: flex-start; }
-.runticket .dealt .stamp { --tilt: -7deg; font-size: 1.875rem; letter-spacing: .07em; padding: 7px 11px 5px 12px; margin: 2px 2px 0 0; }
+.runticket .dealt .stamp { --tilt: -7deg; opacity: .55; font-size: 1.875rem; letter-spacing: .07em; padding: 7px 11px 5px 12px; margin: 2px 2px 0 0; }
 .runticket .dealt .stamp::before { border-width: 4.5px; border-radius: 7px; }
 .runticket .dealt .stamp::after { content: ""; position: absolute; inset: 0; border-radius: 7px; background: var(--deal); opacity: .14; -webkit-mask: var(--noise) 0 0 / 120px 60px; mask: var(--noise) 0 0 / 120px 60px; }
 .runticket .dealt .serial { padding-top: 4px; }
@@ -704,8 +704,8 @@ button.term:focus-visible { outline-offset: 3px; }
 .runticket .aside:empty { display: none; }
 @keyframes sweep { from { --p: 0; } }
 .dial .face { inset: 20%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-.face .big { font-family: var(--font-head); font-size: 80px; font-size: 27.8cqw; font-weight: 800; font-stretch: var(--wd-display); line-height: .9; }
-.face .big.mmss { font-size: 66px; font-size: 22.9cqw; }
+.face .big { font-family: var(--font-head); font-size: 132px; font-size: 40cqw; font-weight: 800; font-stretch: var(--wd-display); line-height: .9; }
+.face .big.mmss { font-size: 92px; font-size: 28cqw; }
 .face .unit { font-size: .9375rem; color: var(--soft); }
 .now { display: flex; flex-direction: column; gap: 4px; }
 .nowhead { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 36px; }
@@ -884,8 +884,8 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 .totals .go dd { color: var(--deal-ink); }
 .tape .stubcard:first-child { border-top: 1px solid var(--edge-half); }
 .tape .stubcard .stamp { font-size: 1rem; font-stretch: var(--wd-act); font-weight: 700; letter-spacing: .02em; padding: 1px 6px 2px; }
-.tape .stubcard .stamp::before { border: 1.5px solid currentColor; border-radius: 5px; -webkit-mask: none; mask: none; }
-.tape .stubcard:nth-child(3n+1) .stamp { --tilt: -2deg; } .tape .stubcard:nth-child(3n+2) .stamp { --tilt: 1.5deg; } .tape .stubcard:nth-child(3n) .stamp { --tilt: -1deg; }
+.tape .stubcard .stamp::before { border: 2.5px double currentColor; border-radius: 5px; }
+.tape .stubcard:nth-child(3n+1) .stamp { --tilt: -4deg; } .tape .stubcard:nth-child(3n+2) .stamp { --tilt: 2.5deg; } .tape .stubcard:nth-child(3n) .stamp { --tilt: -2deg; }
 .tape .stubcard .stamp { transform: rotate(var(--tilt)); }
 .tape .insight { padding-top: 14px; border-top: 1.5px dashed var(--edge-half); }
 .tape .trychip { border: none; border-radius: 0; padding: 0; min-height: 44px; background: none; text-decoration: underline; text-underline-offset: 3px; font-family: var(--font-body); font-weight: 400; font-stretch: normal; color: var(--deal-ink); }
@@ -1115,7 +1115,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   main:has(> .runwrap) > .rows { justify-self: end; min-width: 0; }
   .runticket { position: relative; min-height: calc(100vh - 262px); min-height: calc(100dvh - 262px); padding: 24px 40px 0 34px; gap: 0; }
   body.live .runticket { min-height: calc(100dvh - 300px); }
-  .runticket .now { gap: 6px; padding-right: 230px; }
+  .runticket .now { gap: 6px; }
   .runticket .nowhead { min-height: 0; }
   .runticket h1 { font-size: 2.625rem; line-height: 1.05; }
   .runticket .dealtwrap { position: absolute; top: 22px; right: 36px; z-index: 1; }
@@ -1299,7 +1299,7 @@ function noteComeback(id) {
 /* spec 008 "Wake lock": a per-device choice, off by default, only where the browser has the Screen Wake Lock API.
    Held during focus blocks while the page is visible; released on a break, at the end, and by the browser when hidden. */
 const WAKE_KEY = "pomodeal.wakelock", WAKE_OK = "wakeLock" in navigator;
-const readWake = () => { try { return localStorage.getItem(WAKE_KEY) === "on"; } catch (e) { return false; } };
+const readWake = () => true;
 let wakeOn = readWake();
 let wakeLock = null, wakeAsking = false;
 const wantWake = () => WAKE_OK && wakeOn && !!S && cur().type === "focus" && document.visibilityState === "visible";
@@ -1836,14 +1836,13 @@ function runningView() {
   /* a big one's focus block says its first move (the bookmark once one is left) under the title */
   const sw = !isB && S.taskId ? (S.firstMove ?? (cardById(S.taskId) || {}).startWith ?? "") : "";
   /* R37: the app's one printed checkbox, a quiet row under the ring */
-  const keepOn = !isB && WAKE_OK ? `<button class="keepon" id="keepon" role="switch" aria-checked="${wakeOn}"><span class="cbox" aria-hidden="true">${CHECK}</span>Keep screen on</button>` : "";
+  const keepOn = "";
   /* spec 008: the permission step. The browser's prompt only comes after this tap. */
   const askPush = pushAsk && !quiet ? `<button class="pushask" id="pushask"${pushAsk === "asking" ? ` aria-disabled="true"` : ""}>${TAPS}Get a notification when a block ends</button>` : "";
   const nowLag = tn ?? dn;
   return `<div class="runwrap"><section class="runticket" aria-label="Your deal, running"><div class="now${tn != null ? " turn" : dn != null ? " dealin" : ""}"${nowLag != null ? ` style="${lagVar(nowLag)}"` : ""}>
     <div class="nowhead">
       <span class="kind"><span class="swatch ${isB ? "break" : "focus"}" aria-hidden="true"></span>${isB ? "Your break" : "Focus"}</span>
-      ${S.serial ? `<span class="dealtwrap${S.justStarted ? " fresh" : ""}"><span class="dealt"><span class="serial">No. ${S.serial}</span><span class="stamp">DEAL</span></span></span>` : ""}
     </div>
     <h1>${tn != null && turnFrom && turnFrom.label ? `<span class="isname">${esc(title(b.label))}</span><span class="wasname" aria-hidden="true">${esc(turnFrom.label)}</span>` : esc(title(b.label))}</h1>
     ${sw ? `<p class="sub startw"><span>Start with:</span> ${N(esc(moveText(sw)))}</p>` : ""}
@@ -2859,7 +2858,11 @@ function freeStamp(btn) {
    when it lands it hands over to that one. Plain transforms, so every browser does it. */
 function flyStamp(btn) {
   const to = document.querySelector(".dealtwrap.fresh .stamp");
-  if (!to || !btn.animate) { btn.remove(); return; }
+  if (!to || !btn.animate) {
+    if (!btn.animate || reduce) { btn.remove(); return; }
+    const off = btn.animate([{ transform: "rotate(-3deg)", opacity: 1 }, { transform: "translateY(-24px) scale(1.06) rotate(-6deg)", opacity: 0 }], { duration: 320, easing: "cubic-bezier(.4, 0, .6, 1)", fill: "forwards" });
+    off.onfinish = off.oncancel = () => btn.remove(); return;
+  }
   const a = btn.getBoundingClientRect(), b = to.getBoundingClientRect();
   const dx = b.left + b.width / 2 - (a.left + a.width / 2), dy = b.top + b.height / 2 - (a.top + a.height / 2), k = to.offsetWidth / btn.offsetWidth;
   const tilt = getComputedStyle(to).getPropertyValue("--tilt").trim() || "-5deg";
