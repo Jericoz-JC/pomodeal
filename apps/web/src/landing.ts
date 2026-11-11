@@ -195,22 +195,8 @@ export const LANDING_CSS = `
   #pd-gate .ld-dock { display: none; }
   #pd-gate .ld-foot { padding-bottom: 40px; }
 }
-/* first look: the wheel winds on, a sample copy of the ticket is stamped and filed into the pile, and the fresh one is yours */
-#pd-gate .ld-intro .dial { animation: sweep .7s .1s cubic-bezier(.3, .7, .2, 1) backwards; }
-#pd-gate .ld-sample { position: absolute; left: 0; right: 0; top: 0; z-index: 3; pointer-events: none; animation: ld-in .38s .12s cubic-bezier(.2, .8, .2, 1) backwards; }
-/* the stamped sample drops toward the pile and is gone before the fresh ticket arrives: two tickets never overlap,
-   and ink is never un-stamped */
-#pd-gate .ld-sample.ld-file { transform-origin: 30% 0; animation: ld-file .4s cubic-bezier(.5, 0, .75, .3) forwards; }
-@keyframes ld-in { from { opacity: 0; transform: translateY(18px); } }
-@keyframes ld-file { 45% { opacity: 1; } to { opacity: 0; transform: translateY(40%) rotate(-2deg) scale(.96); } }
-#pd-gate .ld-ticket.ld-under { opacity: 0; }
-#pd-gate .ld-ticket.ld-fresh { animation: ld-fresh .3s ease-out backwards; }
-@keyframes ld-fresh { from { opacity: 0; transform: translateY(8px); } }
-#pd-gate .ld-peek.ld-bump { animation: ld-bump .32s .28s ease-out; }
-@keyframes ld-bump { 40% { transform: rotate(-2deg) translateY(4px); } }
-
 @media (prefers-reduced-motion: reduce) {
-  #pd-gate .ld-press, #pd-gate .ld-press.pressed, #pd-gate .ld-ticket.ld-hit, #pd-gate .ld-say p.pop, #pd-gate .ld-intro .dial { animation: none; transform: rotate(var(--tilt, 0deg)); }
+  #pd-gate .ld-press, #pd-gate .ld-press.pressed, #pd-gate .ld-ticket.ld-hit, #pd-gate .ld-say p.pop { animation: none; transform: rotate(var(--tilt, 0deg)); }
   #pd-gate .ld-ticket.ld-hit { transform: none; }
   #pd-gate .ld-press.pressed::after { animation: none; }
 }
@@ -448,28 +434,6 @@ export function bindLanding(root: HTMLElement, a: LandingActions) {
     if (demo === "asked" || demo === "terms") ask(); if (demo === "terms") ask();
     return;
   }
-
-  // First look, before anyone reads a word: the wheel winds on, and a sample copy of this ticket is stamped and slides
-  // under the real one into the pile behind it. The real ticket is untouched; its stamp is yours. Any tap or key ends it.
-  if (reduce) return;
-  const twrap = $<HTMLElement>(".ld-twrap")!, peek = $<HTMLElement>(".ld-peek");
-  const sample = ticket.cloneNode(true) as HTMLElement;
-  sample.removeAttribute("id"); sample.removeAttribute("aria-label"); sample.querySelectorAll("[id]").forEach((e) => e.removeAttribute("id"));
-  sample.querySelectorAll("[aria-live]").forEach((e) => e.removeAttribute("aria-live"));
-  sample.setAttribute("aria-hidden", "true"); sample.inert = true; sample.classList.add("ld-sample");
-  const sampleBtn = sample.querySelector<HTMLElement>(".ld-press"), sampleSay = sample.querySelector<HTMLElement>(".ld-say p");
-  ticket.classList.add("ld-under"); sample.classList.add("ld-intro"); twrap.append(sample);
-  const timers: number[] = [];
-  const cancel = () => {
-    timers.forEach(clearTimeout); sample.remove(); ticket.classList.remove("ld-under");
-    root.removeEventListener("pointerdown", cancel, true); root.removeEventListener("keydown", cancel, true);
-  };
-  root.addEventListener("pointerdown", cancel, true); root.addEventListener("keydown", cancel, true);
-  const at = (ms: number, f: () => void) => timers.push(window.setTimeout(f, ms));
-  at(900, () => { sampleBtn?.classList.add("pressed"); sample.classList.add("ld-hit"); });
-  at(1150, () => { sample.classList.add("ld-stamped"); if (sampleSay) sampleSay.innerHTML = `Deal. Reels until ${later(breakMin)}, then reading.`; });
-  at(1800, () => { sample.classList.add("ld-file"); peek?.classList.add("ld-bump"); });
-  at(2170, () => { ticket.classList.remove("ld-under"); ticket.classList.add("ld-fresh"); });
-  at(2250, () => sample.remove());
-  at(2500, cancel);
+  // No first-look show: the page opens on the ticket at rest, and the stamp moves only when the visitor presses it
+  // (Chris, Nov 11: the staged sample stamping read as tacky).
 }

@@ -34,6 +34,16 @@ without asking Chris first.
 - "Needs more than one sitting?" is a quiet line under the ticket, not on it. The clock answers in words, with no small wheel.
 - The screen stays on during every focus block; there is no switch.
 
+## The desk (spec 014, Chris, Nov 11)
+
+- On a desk (820 px and up) there are three objects: the ticket, the tape on the right (only what has printed), and
+  while tonight is written or printed the roll along the front edge, tonight to scale. The phone layout is separate.
+- While a block runs on a desk, the name sits beside the dial and the roll lies under both. The dial is still alone:
+  no card, no stamp, no label.
+- The roll shows clock hours under it; tonight's lengths can be dragged along it to reorder them.
+- A list pasted into tonight's line (one per line) becomes its items.
+- The sign-in page has no staged first look: nothing animates until the visitor presses something.
+
 ## Choosing time
 
 - People pick a time from choices, the way the deal's length picker works. No − and + steppers, no number fields.
