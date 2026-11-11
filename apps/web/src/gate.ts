@@ -34,9 +34,9 @@ const CSS = `
   padding: calc(24px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(24px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
 #pd-gate[hidden] { display: none; }
 #pd-gate .wrap { max-width: 440px; margin: 0 auto; min-height: 100%; display: flex; flex-direction: column; gap: 22px; }
-#pd-gate .wrap .mark { display: flex; align-items: center; gap: 10px; font-family: var(--font-head); font-stretch: 78%; font-weight: 800; font-size: 26px; }
+#pd-gate .wrap .mark { display: flex; align-items: center; gap: 10px; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 26px; }
 #pd-gate .wrap .mark img { width: 34px; height: 34px; border-radius: 9px; }
-#pd-gate .wrap h1 { font-family: var(--font-head); font-stretch: 78%; font-weight: 800; font-size: 40px; line-height: 1; margin: 0; text-wrap: balance; }
+#pd-gate .wrap h1 { font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 40px; line-height: 1; margin: 0; text-wrap: balance; }
 #pd-gate .wrap p { margin: 0; font-size: 17px; line-height: 1.45; }
 #pd-gate .wrap .soft { color: var(--soft); }
 #pd-gate .wrap .ticket { position: relative; background: var(--card); border-radius: 6px; box-shadow: 0 1px 0 var(--rule), 0 18px 34px -26px rgba(27,33,29,.6); }
@@ -44,9 +44,9 @@ const CSS = `
 #pd-gate .wrap .ticket .stub { position: relative; border-top: 2px dashed var(--rule); padding: 16px 20px 18px; display: flex; flex-direction: column; gap: 10px; }
 #pd-gate .wrap .ticket .stub::before, #pd-gate .wrap .ticket .stub::after { content: ""; position: absolute; top: -11px; width: 20px; height: 20px; border-radius: 50%; background: var(--paper); }
 #pd-gate .wrap .ticket .stub::before { left: -10px; } #pd-gate .wrap .ticket .stub::after { right: -10px; }
-#pd-gate .wrap .big { font-family: var(--font-head); font-stretch: 78%; font-weight: 750; font-size: 30px; line-height: 1.1; }
-#pd-gate .wrap .code { font-family: var(--font-head); font-stretch: 85%; font-weight: 750; font-size: 28px; letter-spacing: .08em; }
-#pd-gate .wrap .stamp { position: absolute; right: 16px; top: 14px; font-family: var(--font-head); font-stretch: 70%; font-weight: 900; font-size: 22px; color: var(--deal);
+#pd-gate .wrap .big { font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 750; font-size: 30px; line-height: 1.1; }
+#pd-gate .wrap .code { font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 750; font-size: 28px; letter-spacing: .08em; }
+#pd-gate .wrap .stamp { position: absolute; right: 16px; top: 14px; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 900; font-size: 22px; color: var(--deal);
   border: 3px solid var(--deal); border-radius: 8px; padding: 0 8px; transform: rotate(-9deg); opacity: .9; }
 #pd-gate .wrap .secondary { width: 100%; min-height: 54px; border-radius: 12px; padding: 14px 18px; font: inherit; font-weight: 700; font-size: 17px; cursor: pointer; }
 #pd-gate .wrap .secondary { border: 1.5px solid var(--edge); background: transparent; color: var(--ink); }
@@ -58,17 +58,17 @@ const CSS = `
 #pd-gate :focus-visible { outline: 3px solid var(--deal); outline-offset: 2px; border-radius: 8px; }
 #pd-gate .wrap .lede { font-size: 18px; color: var(--soft); max-width: 34ch; }
 #pd-gate .wrap .sample { position: relative; background: var(--card); border-radius: 6px; padding: 18px 18px 16px; box-shadow: 0 1px 0 var(--rule), 0 18px 34px -26px rgba(27,33,29,.6); }
-#pd-gate .wrap .sample .serial { font-family: var(--font-head); font-stretch: 80%; font-weight: 700; font-size: 14px; color: var(--soft); }
-#pd-gate .wrap .sample .deal { font-family: var(--font-head); font-stretch: 80%; font-weight: 750; font-size: 26px; line-height: 1.12; margin-top: 6px; padding-right: 86px; }
+#pd-gate .wrap .sample .serial { font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 700; font-size: 14px; color: var(--soft); }
+#pd-gate .wrap .sample .deal { font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 750; font-size: 26px; line-height: 1.12; margin-top: 6px; padding-right: 86px; }
 #pd-gate .wrap .sample .stamp { top: 18px; }
 #pd-gate .wrap .steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; border-top: 1px solid var(--rule); }
 #pd-gate .wrap .steps li { display: grid; grid-template-columns: 36px 1fr; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--rule); }
 #pd-gate .wrap .steps li p { margin: 0; }
-#pd-gate .wrap .steps .n { font-family: var(--font-head); font-stretch: 75%; font-weight: 800; font-size: 26px; line-height: 1; color: var(--deal); }
+#pd-gate .wrap .steps .n { font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 26px; line-height: 1; color: var(--deal); }
 #pd-gate .wrap .steps b { display: block; font-size: 17px; margin-bottom: 2px; }
 #pd-gate .wrap .steps span { color: var(--soft); font-size: 15.5px; line-height: 1.4; }
 #pd-gate .wrap .signin { display: flex; flex-direction: column; gap: 10px; }
-#pd-gate .wrap .signin h2 { font-family: var(--font-head); font-stretch: 80%; font-weight: 800; font-size: 24px; margin: 0; }
+#pd-gate .wrap .signin h2 { font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 24px; margin: 0; }
 #pd-gate .wrap .prov { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 54px; border-radius: 12px; border: 1.5px solid var(--edge);
   background: var(--card); color: var(--ink); font: inherit; font-weight: 700; font-size: 17px; cursor: pointer; }
 #pd-gate .wrap .prov svg { width: 22px; height: 22px; flex: none; }

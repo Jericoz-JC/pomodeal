@@ -49,10 +49,15 @@ const base = pathToFileURL(page).href;
 for (const scheme of ["light", "dark"]) {
   await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-color-scheme", value: scheme }] });
   for (const s of STATES.filter(x => !only || only.includes(x))) {
-    await send("Page.navigate", { url: "about:blank" });
-    await send("Page.navigate", { url: `${base}#${s}` });
-    await wait(1200); // fonts + first render
-    const shot = await send("Page.captureScreenshot", { format: "png" });
+    // a capture now and then stalls after many shots in one browser: load the state again and retry once
+    let shot;
+    for (let tryNo = 1; !shot; tryNo++) {
+      await send("Page.navigate", { url: "about:blank" });
+      await send("Page.navigate", { url: `${base}#${s}` });
+      await wait(1200); // fonts + first render
+      try { shot = await send("Page.captureScreenshot", { format: "png" }); }
+      catch (e) { if (tryNo >= 2) throw e; console.warn(`${s}-${scheme}: ${e.message}, retrying`); }
+    }
     writeFileSync(join(out, `${s}-${scheme}.png`), Buffer.from(shot.result.data, "base64"));
   }
 }

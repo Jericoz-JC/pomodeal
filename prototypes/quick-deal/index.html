@@ -54,25 +54,45 @@
   --sel-card: #E8EFEA;
   --behind: var(--paper);
   /* the slot the tape feeds from is a dark slit in both themes */
-  --slot: #1B211D; --slot-edge: transparent;
+  --slot: #8A948D; --slot-edge: transparent;
   --btn: var(--deal); --on-btn: var(--on-deal);
   --font-head: "Archivo", "Arial Narrow", "Segoe UI", sans-serif;
   --font-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
   --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='60'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' seed='4'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2.6 2.2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  /* the torn right edge every ticket shares */
-  --zig: linear-gradient(#000 0 0) left / calc(100% - 6px) 100% no-repeat, conic-gradient(from 225deg at right, #000 90deg, #0000 0) right top / 6px 12px repeat-y;
+  /* spec 011: one edge. Paper is torn along a row of punched holes, so a torn side shows the holes it went through:
+     round half-holes, 3 px deep every 10 px. The perforation printed inside a ticket uses the same pitch. */
+  --zig: linear-gradient(#000 0 0) left / calc(100% - 3px) 100% no-repeat, radial-gradient(circle at 100% 50%, #0000 2.5px, #000 3.2px) right 0 top 2px / 3px 10px repeat-y;
+  /* torn on both sides: a stub's ticket, where the stub came off on the left */
+  --zig2: linear-gradient(#000 0 0) center / calc(100% - 6px) 100% no-repeat, radial-gradient(circle at 0 50%, #0000 2.5px, #000 3.2px) left 0 top 2px / 3px 10px repeat-y, radial-gradient(circle at 100% 50%, #0000 2.5px, #000 3.2px) right 0 top 2px / 3px 10px repeat-y;
+  /* across the top of a sheet and the foot of the tape: the same half-holes, a size up for the bigger paper */
+  --tear-top: linear-gradient(#000 0 0) bottom / 100% calc(100% - 5px) no-repeat, radial-gradient(circle at 50% 0, #0000 4.4px, #000 5.1px) left 3px top 0 / 15px 5px repeat-x;
+  --tear-bottom: linear-gradient(#000 0 0) top / 100% calc(100% - 5px) no-repeat, radial-gradient(circle at 50% 100%, #0000 4.4px, #000 5.1px) left 3px bottom 0 / 15px 5px repeat-x;
+  --tear-both: linear-gradient(#000 0 0) center / 100% calc(100% - 10px) no-repeat, radial-gradient(circle at 50% 0, #0000 4.4px, #000 5.1px) left 3px top 0 / 15px 5px repeat-x, radial-gradient(circle at 50% 100%, #0000 4.4px, #000 5.1px) left 3px bottom 0 / 15px 5px repeat-x;
+  /* a row of punched holes printed inside paper, where it will tear */
+  --holes-x: radial-gradient(circle, var(--edge) 1.5px, transparent 2px) 0 50% / 10px 6px repeat-x;
+  --holes-y: radial-gradient(circle, var(--edge) 1.5px, transparent 2px) 50% 0 / 6px 10px repeat-y;
+  /* type (spec 011): Archivo at two widths only. Display (76 %) is numbers, headings and the names printed on tickets;
+     action (86 %) is everything you press and the small print on a ticket. Atkinson is for sentences. */
+  --wd-display: 76%;
+  --wd-act: 86%;
+  /* how much ink the wheel's track takes from the paper: enough to see, little enough that both arcs stay at 3:1 on it */
+  --track-ink: 17%;
+  /* one paper shadow, one radius for anything you press */
+  --paper-shadow: drop-shadow(0 1px 0 var(--rule)) drop-shadow(0 8px 12px var(--lift));
+  --r-press: 9px;
+  --r-choice: 6px;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --paper: #18201C; --slot: #070A08; --slot-edge: rgba(230, 236, 231, .28); --btn: #2A8259; --on-btn: #F4FBF7; --card: #2E3A34; --stub: #212A25; --chip: #2B3530; --ink: #E6ECE7; --soft: #A3B0A7; --rule: #33413A; --track: #2F3A35; --edge: #74847A; --edge-half: rgba(116, 132, 122, .6);
-    --sheet: #1D2521; --scrim: rgba(8, 12, 10, .5); --hi: rgba(255, 255, 255, .05); --lift: rgba(0, 0, 0, .5);
-    --deal: #6CCB97; --on-deal: #0F1A14; --deal-tint: rgba(108, 203, 151, .08); --break-base: #A7B3AA; --break-stripe: rgba(24, 32, 28, .42); --wait: color-mix(in srgb, var(--ink) 60%, transparent); --wait-edge: color-mix(in srgb, var(--ink) 60%, transparent); --sel: #283C32; --sel-card: #2E4037; --gone: #E0A08C; --deal-ink: #6CCB97; color-scheme: dark;
+    --paper: #18201C; --slot: #070A08; --slot-edge: rgba(230, 236, 231, .28); --btn: #2A8259; --on-btn: #F4FBF7; --card: #36403B; --stub: #2A312D; --chip: #2B3530; --ink: #E6ECE7; --soft: #A3B0A7; --rule: #33413A; --track: #2F3A35; --edge: #87968C; --edge-half: rgba(135, 150, 140, .6);
+    --sheet: #222B26; --track-ink: 8%; --scrim: rgba(8, 12, 10, .5); --hi: rgba(255, 255, 255, .05); --lift: rgba(0, 0, 0, .5);
+    --deal: #6ABD91; --on-deal: #0F1A14; --deal-tint: rgba(106, 189, 145, .08); --break-base: #A7B3AA; --break-stripe: rgba(24, 32, 28, .42); --wait: color-mix(in srgb, var(--ink) 60%, transparent); --wait-edge: color-mix(in srgb, var(--ink) 60%, transparent); --sel: #2C3F35; --sel-card: #344A3E; --gone: #E0A08C; --deal-ink: #6ABD91; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --paper: #18201C; --slot: #070A08; --slot-edge: rgba(230, 236, 231, .28); --btn: #2A8259; --on-btn: #F4FBF7; --card: #2E3A34; --stub: #212A25; --chip: #2B3530; --ink: #E6ECE7; --soft: #A3B0A7; --rule: #33413A; --track: #2F3A35; --edge: #74847A; --edge-half: rgba(116, 132, 122, .6);
-  --sheet: #1D2521; --scrim: rgba(8, 12, 10, .5); --hi: rgba(255, 255, 255, .05); --lift: rgba(0, 0, 0, .5);
-  --deal: #6CCB97; --on-deal: #0F1A14; --deal-tint: rgba(108, 203, 151, .08); --break-base: #A7B3AA; --break-stripe: rgba(24, 32, 28, .42); --wait: color-mix(in srgb, var(--ink) 60%, transparent); --wait-edge: color-mix(in srgb, var(--ink) 60%, transparent); --sel: #283C32; --sel-card: #2E4037; --gone: #E0A08C; --deal-ink: #6CCB97; color-scheme: dark;
+  --paper: #18201C; --slot: #070A08; --slot-edge: rgba(230, 236, 231, .28); --btn: #2A8259; --on-btn: #F4FBF7; --card: #36403B; --stub: #2A312D; --chip: #2B3530; --ink: #E6ECE7; --soft: #A3B0A7; --rule: #33413A; --track: #2F3A35; --edge: #87968C; --edge-half: rgba(135, 150, 140, .6);
+  --sheet: #222B26; --track-ink: 8%; --scrim: rgba(8, 12, 10, .5); --hi: rgba(255, 255, 255, .05); --lift: rgba(0, 0, 0, .5);
+  --deal: #6ABD91; --on-deal: #0F1A14; --deal-tint: rgba(106, 189, 145, .08); --break-base: #A7B3AA; --break-stripe: rgba(24, 32, 28, .42); --wait: color-mix(in srgb, var(--ink) 60%, transparent); --wait-edge: color-mix(in srgb, var(--ink) 60%, transparent); --sel: #2C3F35; --sel-card: #344A3E; --gone: #E0A08C; --deal-ink: #6ABD91; color-scheme: dark;
 }
 @property --p { syntax: "<number>"; inherits: true; initial-value: 1; }
 
@@ -83,6 +103,8 @@ body { background: var(--paper); color: var(--ink); font-family: var(--font-body
 button, input, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
 :focus-visible { outline: 3px solid var(--deal); outline-offset: 2px; border-radius: 8px; }
+/* a green ring on a green stamp disappears: stamps and tickets you stamp are ringed in ink, further out */
+:is(.primary, button.term, .bigcard .go, .ministub, .pills .chip):focus-visible { outline-color: var(--ink); outline-offset: 4px; }
 .vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 .app { max-width: 440px; margin: 0 auto; min-height: 100%; display: flex; flex-direction: column;
@@ -103,10 +125,10 @@ main { flex: 1; display: flex; flex-direction: column; gap: 20px; padding-block:
 .desk > main { flex: none; }
 .tapeside { flex: none; margin-bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
 h1, h2 { font-family: var(--font-head); margin: 0; text-wrap: balance; }
-h1 { font-size: 2.125rem; line-height: 1.02; font-weight: 800; font-stretch: 78%; letter-spacing: -0.005em; }
-h2 { font-size: 1.5rem; line-height: 1.1; font-weight: 750; font-stretch: 82%; }
+h1 { font-size: 2.125rem; line-height: 1.02; font-weight: 800; font-stretch: var(--wd-display); letter-spacing: -0.005em; }
+h2 { font-size: 1.5rem; line-height: 1.1; font-weight: 750; font-stretch: var(--wd-display); }
 h1.home { margin-top: 8px; }
-.label { font-family: var(--font-head); font-size: 1.125rem; line-height: 1.15; font-weight: 750; font-stretch: 80%; margin: 0; }
+.label { font-family: var(--font-head); font-size: 1.125rem; line-height: 1.15; font-weight: 750; font-stretch: var(--wd-display); margin: 0; }
 p { margin: 0; }
 .soft { color: var(--soft); }
 .small { font-size: .9375rem; }
@@ -114,12 +136,12 @@ p { margin: 0; }
 
 /* buttons: Archivo, the voice for things you act on */
 .primary, .secondary { width: 100%; min-height: 54px; border-radius: 8px; padding: 12px 18px; display: block; text-align: center;
-  font-family: var(--font-head); font-stretch: 85%; font-weight: 700; font-size: 1.1875rem; line-height: 1.25; letter-spacing: .01em; }
+  font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 700; font-size: 1.1875rem; line-height: 1.25; letter-spacing: .01em; }
 /* one action language: anything that commits you is a stamp. Clean double-ruled rubber while it waits, slammed and
    inked when you press it (the action happens once it has landed, see "stamp buttons" in the script). DEAL is the
    largest of them; the others carry their words in the same face. */
-.primary { --tilt: -1.5deg; position: relative; width: auto; min-width: min(100%, 230px); max-width: 100%; margin: 6px auto 2px; padding: 12px 26px 10px; border: none; border-radius: 9px;
-  background: none; color: var(--deal); box-shadow: none; font-size: 1.5rem; font-weight: 800; font-stretch: 78%; letter-spacing: .02em; line-height: 1.1;
+.primary { --tilt: -2.5deg; position: relative; width: auto; min-width: min(100%, 230px); max-width: 100%; margin: 6px auto 2px; padding: 12px 26px 10px; border: none; border-radius: 9px;
+  background: none; color: var(--deal); box-shadow: none; font-size: 1.5rem; font-weight: 800; font-stretch: var(--wd-display); letter-spacing: .02em; line-height: 1.1;
   transform: rotate(var(--tilt)); transition: transform .14s ease-out, filter .14s ease-out; }
 .primary::before { content: ""; position: absolute; inset: 0; border: 4.5px double currentColor; border-radius: 9px; pointer-events: none; }
 .primary::after { content: ""; position: absolute; inset: 0; border-radius: 9px; background: currentColor; opacity: 0; pointer-events: none;
@@ -135,17 +157,26 @@ p { margin: 0; }
 /* while something is being stamped the stamp keeps its ink */
 :is(.stamped, .busy) .primary:disabled { color: var(--deal); cursor: default; }
 :is(.stamped, .busy) .primary:disabled::before { border: 4.5px double currentColor; }
-.secondary { border: 1.5px solid var(--edge); background: transparent; color: var(--ink); }
-.textbtn { background: none; border: none; color: var(--soft); text-decoration: underline; text-underline-offset: 3px; padding: 10px 12px; min-height: 44px; align-self: center; font-size: .9375rem; }
+/* spec 011: three levels of action, the same on every sheet. A stamp commits you (above). A plain button is the other
+   way out: the stamp's shape with a single straight ink rule, never tilted, never green. A link is small and to the side. */
+.secondary { border: 1.5px solid var(--edge); border-radius: 6px; background: var(--card); color: var(--ink); min-height: 50px; padding: 11px 18px; font-size: 1.125rem; font-weight: 650; transition: background-color .12s; }
+@media (hover: hover) { .secondary:hover { background: color-mix(in srgb, var(--deal) 5%, var(--card)); } }
+.textbtn { background: none; border: none; color: var(--soft); padding: 10px 12px; min-height: 44px; align-self: center; }
+/* every link reads the same: a sentence in the reading face, soft, with a plain underline. It is the quiet way out,
+   so it never competes with the stamp (council r1). Its digits are Archivo numerals like any sentence's. */
+:is(.textbtn, .presence .see, .mv, .tape .trychip, .deskhead .pipbtn) { font-family: var(--font-body); font-stretch: normal; font-weight: 400; font-size: 1rem; line-height: 1.3; letter-spacing: 0;
+  text-decoration: underline 1px currentColor; text-underline-offset: 3px; }
+:is(.textbtn, .presence .see, .mv, .tape .trychip, .deskhead .pipbtn):hover { color: var(--ink); }
 .stack { display: flex; flex-direction: column; gap: 10px; }
 
 /* chips */
 .chips { display: flex; flex-wrap: wrap; gap: 8px; }
-/* one selected state everywhere: approval-green outline, green-tinted fill, green text */
-.chip { border: none; background: var(--chip); box-shadow: inset 0 0 0 1.5px var(--edge); border-radius: 999px; padding: 10px 16px; min-height: 44px;
-  display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-head); font-stretch: 85%; font-weight: 700; font-size: 1.0625rem; line-height: 1.15; letter-spacing: .01em; }
+/* spec 011: every choice is one printed box. A hairline at rest; picked, it is inked with the stamp's double green rule. */
+.chip { border: 1.5px solid var(--edge); background: none; border-radius: var(--r-choice); padding: 9px 14px; min-height: 44px;
+  display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 700; font-size: 1.0625rem; line-height: 1.15; letter-spacing: .01em; }
 .chip svg { width: 14px; height: 14px; flex: none; }
-.chip:is([aria-pressed="true"], [aria-checked="true"]) { background: var(--sel); color: var(--deal); box-shadow: inset 0 0 0 2px var(--deal); }
+.chip:is([aria-pressed="true"], [aria-checked="true"]) { background: var(--sel); color: var(--deal); border: 4px double var(--deal); padding: 6.5px 11.5px; }
+@media (hover: hover) { .chip:not([aria-pressed="true"], [aria-checked="true"]):hover { background: color-mix(in srgb, var(--ink) 5%, transparent); } }
 
 /* ---------- one ticket ---------- */
 .ticketwrap, .terms, .stubs, .tearrow { filter: drop-shadow(0 1px 0 var(--rule)) drop-shadow(0 8px 12px var(--lift)); }
@@ -154,26 +185,26 @@ p { margin: 0; }
 .ticketwrap.peek::before, .ticketwrap.peek::after { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--stub); border-radius: 6px 0 0 6px; box-shadow: inset 0 0 0 1px var(--edge-half); -webkit-mask: var(--zig); mask: var(--zig); }
 .ticketwrap.peek::before { transform: translate(4px, 16px) rotate(1deg); }
 .ticketwrap.peek::after { transform: translate(-2px, 8px) rotate(-1.5deg); }
-.perf { background: radial-gradient(circle, var(--edge) 1.2px, transparent 1.7px) 0 0 / 8px 6px repeat-x; position: relative; }
+.perf { background: radial-gradient(circle, var(--edge) 1.5px, transparent 2px) 0 0 / 10px 6px repeat-x; position: relative; }
 .perf::before { content: ""; position: absolute; top: -4px; left: -7px; width: 14px; height: 14px; border-radius: 50%; background: var(--behind); clip-path: inset(0 0 0 50%); }
 
 .ticket { position: relative; background: var(--card); border-radius: 6px 0 0 6px; box-shadow: inset 0 1px 0 var(--hi); -webkit-mask: var(--zig); mask: var(--zig); }
 .ticket .body { padding: 16px 28px 28px 20px; display: flex; flex-direction: column; gap: 14px; }
 .tickethead { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 48px; }
-.serial { font-family: var(--font-head); font-stretch: 75%; font-weight: 600; font-size: .9375rem; line-height: 1.2; color: var(--soft); }
+.serial { font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 600; font-size: .9375rem; line-height: 1.2; color: var(--soft); }
 .ticket .stub { padding: 22px 28px 16px 20px; display: flex; flex-direction: column; gap: 8px; transform-origin: 0 0; }
 /* R43: on a big one's ticket the Deal stub sticks above the tab bar, so it is always in reach however long the ticket gets */
 .ticket.big .stub { position: sticky; bottom: calc(60px + env(safe-area-inset-bottom, 0px)); z-index: 1;
-  background: radial-gradient(circle, var(--edge) 1.2px, transparent 1.7px) 0 0 / 8px 6px repeat-x, var(--card); }
+  background: radial-gradient(circle, var(--edge) 1.5px, transparent 2px) 0 0 / 10px 6px repeat-x, var(--card); }
 .ticket.torn .stub { transform: translateY(10px) rotate(2deg); opacity: 0; transition: transform .3s ease-in, opacity .3s ease-in; }
 /* the deal sentence: connecting words recede, the four parts you can change are ink and underlined */
-.sentence { font-family: var(--font-head); font-size: 1.55rem; line-height: 1.45; font-weight: 500; font-stretch: 86%; letter-spacing: .005em; color: var(--soft); text-wrap: balance; }
+.sentence { font-family: var(--font-head); font-size: 1.55rem; line-height: 1.45; font-weight: 500; font-stretch: var(--wd-display); letter-spacing: .005em; color: var(--soft); text-wrap: balance; }
 .tok { position: relative; font: inherit; letter-spacing: inherit; background: none; border: none; padding: 3px 1px; margin-block: -3px; border-radius: 4px; color: var(--ink); text-align: left;
   text-decoration: underline solid var(--edge) 2px; text-underline-offset: 5px; text-decoration-skip-ink: auto; }
 /* the four parts you can change carry the line; the connecting words sit lower and lighter */
 .sentence .tok { font-size: 1.25em; font-weight: 700; line-height: 1.2; }
 /* the third ask: the clock's line carries one token, the same pattern as the deal sentence */
-.bubble .tok { font-family: var(--font-head); font-stretch: 85%; font-weight: 700; font-size: 1.3125rem; line-height: 1.2; }
+.bubble .tok { font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 700; font-size: 1.3125rem; line-height: 1.2; }
 .tok::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 44px; margin-top: -22px; }
 .nowrap { white-space: nowrap; } .nowrap .tok { white-space: normal; }
 .tok:hover, .tok[aria-expanded="true"] { color: var(--deal); text-decoration-color: var(--deal); }
@@ -184,7 +215,7 @@ p { margin: 0; }
 .picker.row::-webkit-scrollbar { display: none; }
 .picker.row .chip { flex: none; white-space: nowrap; }
 .picker input { flex: 1 1 180px; min-width: 0; min-height: 44px; border: 1.5px solid var(--edge); border-radius: 10px; padding: 10px 12px; background: var(--paper); }
-.hint { font-size: .875rem; color: var(--soft); text-align: center; }
+.hint { font-size: .9375rem; color: var(--ink); text-align: center; }
 /* longer lengths sit under the quick ones, past a hairline, with one line that says what changes (spec 007; council r1: always shown) */
 .longrow { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 8px; padding-top: 10px; margin-top: 2px; border-top: 1px solid var(--rule); }
 .longrow .why { flex-basis: 100%; font-size: .9375rem; color: var(--soft); }
@@ -193,37 +224,36 @@ p { margin: 0; }
 /* the first payment starts its own line, like a second line item under the break */
 .sentence .payline { display: block; }
 .bigchip { align-self: flex-start; display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 8px 10px 8px 0; margin-block: -6px -4px; border: none; background: none; color: var(--ink);
-  font-family: var(--font-head); font-stretch: 85%; font-weight: 700; font-size: 1.125rem; line-height: 1.15; letter-spacing: .01em; text-align: left; }
+  font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 700; font-size: 1.125rem; line-height: 1.15; letter-spacing: .01em; text-align: left; }
 /* one printed checkbox for the app: "Bigger than one block?" on the ticket and "Keep screen on" under the ring */
-.cbox { flex: none; width: 22px; height: 22px; border: 1.5px dashed var(--wait-edge); border-radius: 4px; display: grid; place-items: center; color: var(--deal); }
+.cbox { flex: none; width: 22px; height: 22px; border: 1.5px solid var(--edge); border-radius: 5px; display: grid; place-items: center; color: var(--deal); }
 .cbox svg { width: 14px; height: 14px; visibility: hidden; }
-:is([aria-pressed="true"], [aria-checked="true"]) > .cbox { border: 2px solid var(--deal); background: var(--sel); }
+:is([aria-pressed="true"], [aria-checked="true"]) > .cbox { border: 3px double var(--deal); background: var(--sel); }
 :is([aria-pressed="true"], [aria-checked="true"]) > .cbox svg { visibility: visible; }
 .bigchip[aria-pressed="true"] { color: var(--deal); }
 /* both rows are one tap and skippable; nothing is picked until you pick it. They read as the rest of the sentence:
    "About 2h", "Mostly writing". The connecting word recedes like the sentence's own. */
 .phrases { display: flex; flex-direction: column; gap: 2px; margin-block: -6px -2px; }
 .phrase { display: flex; flex-wrap: wrap; align-items: center; column-gap: 2px; }
-.phrase .pw { font-family: var(--font-head); font-stretch: 86%; font-weight: 500; font-size: 1.125rem; color: var(--soft); margin-right: 6px; }
+.phrase .pw { font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 500; font-size: 1.125rem; color: var(--soft); margin-right: 6px; }
 /* a choice printed on a ticket: a small empty box dashed in ink, like the stamp box. Picking it inks it with the
    stamp's double green rule. The box is drawn small; the button around it is the 44px target. */
 .inkchip { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; padding: 0 2px; border: none; background: none; color: var(--ink);
-  font-family: var(--font-head); font-stretch: 85%; font-weight: 700; font-size: 1rem; line-height: 1.1; letter-spacing: .01em; }
-.inkchip .ink { display: inline-flex; align-items: center; gap: 4px; padding: 5px 7px; border: 1.5px dashed var(--wait-edge); border-radius: 5px; }
+  font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 700; font-size: 1rem; line-height: 1.1; letter-spacing: .01em; }
+.inkchip .ink { display: inline-flex; align-items: center; gap: 4px; padding: 5px 7px; border: 1.5px solid var(--edge); border-radius: var(--r-choice); }
 .inkchip .ink svg { width: 13px; height: 13px; flex: none; }
-.inkchip:is([aria-pressed="true"], [aria-checked="true"]) .ink { border: 3px double var(--deal); padding: 3.5px 5.5px; background: var(--sel); color: var(--deal); }
+.inkchip:is([aria-pressed="true"], [aria-checked="true"]) .ink { border: 4px double var(--deal); padding: 2.5px 4.5px; background: var(--sel); color: var(--deal); }
 .inkchip:focus-visible { outline-offset: -1px; }
 /* the done answers are the screen's question, so their boxes are drawn larger */
 .inkchip.lg { font-size: 1.125rem; }
 .inkchip.lg .ink { padding: 9px 14px; }
-.inkchip.lg:is([aria-pressed="true"], [aria-checked="true"]) .ink { padding: 7.5px 12.5px; }
-/* R43: a size is a number you read at a glance (Archivo, numeral first); a kind is a word you read (Atkinson) */
-.inkchip.size { font-stretch: 74%; font-weight: 800; font-size: 1.3125rem; }
+.inkchip.lg:is([aria-pressed="true"], [aria-checked="true"]) .ink { padding: 6.5px 11.5px; }
+/* R43: a size is a number you read at a glance (numeral first, display face); spec 011: a kind is a choice like any other */
+.inkchip.size { font-stretch: var(--wd-display); font-weight: 800; font-size: 1.3125rem; }
 .inkchip.size .ink { padding: 5px 9px; }
-.inkchip.size[aria-pressed="true"] .ink { padding: 3.5px 7.5px; }
-.inkchip.kind { font-family: var(--font-body); font-stretch: normal; font-weight: 400; font-size: 1rem; letter-spacing: 0; }
+.inkchip.size[aria-pressed="true"] .ink { padding: 2.5px 6.5px; }
 .inkchip.kind .ink { padding: 6px 9px; }
-.inkchip.kind[aria-pressed="true"] .ink { padding: 4.5px 7.5px; font-weight: 700; }
+.inkchip.kind[aria-pressed="true"] .ink { padding: 3.5px 6.5px; }
 /* R44: "Not yet" is what no answer already means, so it shows as picked, quietly: a solid ink edge and a check.
    Only "Yes, stamp it" is inked with the green stamp. */
 .inkchip.lg[data-done="no"][aria-checked="true"] .ink { border: 1.5px solid var(--edge); padding: 9px 14px; background: none; color: var(--ink); }
@@ -258,21 +288,21 @@ p { margin: 0; }
 .bigones > .cardwrap { filter: drop-shadow(0 1px 0 var(--rule)) drop-shadow(0 8px 12px var(--lift)); margin-bottom: 8px; }
 .bigcard { position: relative; display: grid; grid-template-columns: 70px minmax(0, 1fr); background: var(--card); border-radius: 6px 0 0 6px; box-shadow: inset 0 1px 0 var(--hi); -webkit-mask: var(--zig); mask: var(--zig); }
 .bigcard .go { border: none; margin: 0; padding: 12px 4px; border-radius: 6px 0 0 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
-  background: radial-gradient(circle, var(--card) 1.3px, transparent 1.8px) 100% 2px / 6px 8px repeat-y, var(--deal); color: var(--on-deal); font-family: var(--font-head); }
-.bigcard .go b { font-stretch: 72%; font-weight: 800; font-size: 2.125rem; line-height: .85; font-variant-numeric: tabular-nums; }
-.bigcard .go span { font-stretch: 85%; font-weight: 700; font-size: 1rem; line-height: 1; }
+  background: radial-gradient(circle, var(--card) 1.3px, transparent 1.8px) 100% 2px / 6px 10px repeat-y, var(--deal); color: var(--on-deal); font-family: var(--font-head); }
+.bigcard .go b { font-stretch: var(--wd-display); font-weight: 800; font-size: 2.125rem; line-height: .85; font-variant-numeric: tabular-nums; }
+.bigcard .go span { font-stretch: var(--wd-act); font-weight: 700; font-size: 1rem; line-height: 1; }
 .bigcard .go span:first-child { margin-bottom: 2px; }
 /* the card's own edge would clip an outside ring: the ring sits inside the tab */
 .bigcard .go:focus-visible { outline: 3px solid var(--deal); outline-offset: -5px; }
 /* one action language: the card's start tab is a stamp too, the minutes inside its double rule on the card's paper */
-.bigcard .go { --tilt: -4deg; position: relative; background: radial-gradient(circle, var(--edge) 1.2px, transparent 1.7px) 100% 2px / 6px 8px repeat-y; color: var(--deal); }
+.bigcard .go { --tilt: -4deg; position: relative; background: radial-gradient(circle, var(--edge) 1.5px, transparent 2px) 100% 2px / 6px 10px repeat-y; color: var(--deal); }
 .bigcard .go::before { content: ""; position: absolute; left: 7px; right: 10px; top: 50%; height: 104px; margin-top: -52px; border: 4px double currentColor; border-radius: 7px; transform: rotate(var(--tilt)); pointer-events: none; }
 .bigcard .go > * { transform: rotate(var(--tilt)); }
 @media (hover: hover) { .bigcard .go:hover::before { transform: translateY(-2px) rotate(calc(var(--tilt) - 2deg)) scale(1.04); } }
 .bigcard .go.pressed::before { animation: slam .62s linear both; -webkit-mask: var(--noise) 0 0 / 120px 60px; mask: var(--noise) 0 0 / 120px 60px; background: color-mix(in srgb, var(--deal) 12%, transparent); }
 .bigcard .what { min-width: 0; padding: 6px 20px 8px 14px; display: flex; flex-direction: column; gap: 3px; }
 .bigcard .row { display: flex; align-items: flex-start; gap: 2px; }
-.bigcard .ttl { flex: 1; min-width: 0; padding-top: 8px; font-stretch: 76%; font-weight: 750; font-size: 1.375rem; line-height: 1.1; overflow-wrap: anywhere; }
+.bigcard .ttl { flex: 1; min-width: 0; padding-top: 8px; font-stretch: var(--wd-display); font-weight: 750; font-size: 1.375rem; line-height: 1.1; overflow-wrap: anywhere; }
 .bigcard .more { flex: none; width: 44px; height: 44px; margin: 0 -12px 0 0; border: none; background: none; color: var(--soft); display: grid; place-items: center; }
 .bigcard .more svg { width: 22px; height: 22px; }
 .bigcard .more:focus-visible { outline-offset: -4px; }
@@ -282,16 +312,16 @@ p { margin: 0; }
 .allbig { align-self: flex-start; margin: -12px 0 -6px -12px; }
 /* a row: the title, then "Start 20 min" in the deal's green. No pill: the words are the button. */
 .bitem { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 4px 0 4px 2px; }
-.bitem .btitle { flex: 1; min-width: 0; font-family: var(--font-head); font-stretch: 78%; font-weight: 750; font-size: 1.1875rem; line-height: 1.15; overflow-wrap: anywhere; }
+.bitem .btitle { flex: 1; min-width: 0; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 750; font-size: 1.1875rem; line-height: 1.15; overflow-wrap: anywhere; }
 .bitem.setaside .btitle { color: var(--soft); }
 .bitem .reopen { flex: none; margin-right: -12px; }
 /* R45: every other big one starts from a small stub that echoes the card's: the minutes in Archivo, a perforated
    edge, a torn right side. Printed on paper, not filled, so the card's green tab stays the one filled button. */
 .ministub { flex: none; display: inline-flex; align-items: baseline; justify-content: center; gap: 3px; min-width: 76px; min-height: 48px; padding: 12px 16px 8px 18px; border: none; border-radius: 5px 0 0 5px; color: var(--deal);
-  background: radial-gradient(circle, var(--edge) 1.1px, transparent 1.6px) 3px 3px / 6px 7px repeat-y, var(--card); box-shadow: inset 0 0 0 1.5px var(--edge-half);
+  background: radial-gradient(circle, var(--edge) 1.5px, transparent 2px) 3px 3px / 6px 10px repeat-y, var(--card); box-shadow: inset 0 0 0 1.5px var(--edge-half);
   -webkit-mask: var(--zig); mask: var(--zig); font-family: var(--font-head); font-variant-numeric: tabular-nums; }
-.ministub b { font-stretch: 72%; font-weight: 800; font-size: 1.625rem; line-height: 1; }
-.ministub span { font-stretch: 85%; font-weight: 700; font-size: .9375rem; line-height: 1; }
+.ministub b { font-stretch: var(--wd-display); font-weight: 800; font-size: 1.625rem; line-height: 1; }
+.ministub span { font-stretch: var(--wd-act); font-weight: 700; font-size: .9375rem; line-height: 1; }
 .ministub:focus-visible { outline-offset: -7px; }
 .sheet.paper .ministub { background-color: var(--paper); }
 .bitem .more { flex: none; width: 44px; height: 44px; margin-right: -10px; border: none; background: none; color: var(--soft); display: grid; place-items: center; }
@@ -301,14 +331,14 @@ p { margin: 0; }
 /* spec 008 weekly check-in: a plain note on the paper above Quick Deal, one question, three answers, an x */
 .weekask { border: 1.5px solid var(--edge); border-radius: 6px; padding: 4px 6px 14px 16px; margin-bottom: 14px; }
 .weekask .wkhead { display: flex; align-items: flex-start; gap: 4px; }
-.weekask h2 { flex: 1; min-width: 0; padding-top: 10px; font-stretch: 76%; font-weight: 750; font-size: 1.25rem; line-height: 1.2; text-wrap: balance; }
+.weekask h2 { flex: 1; min-width: 0; padding-top: 10px; font-stretch: var(--wd-display); font-weight: 750; font-size: 1.25rem; line-height: 1.2; text-wrap: balance; }
 .weekask .wkx { flex: none; width: 44px; height: 44px; border: none; background: none; color: var(--soft); display: grid; place-items: center; }
 .weekask .wkx svg { width: 20px; height: 20px; }
 .weekask .wkopts { display: flex; flex-wrap: wrap; gap: 8px; padding-right: 8px; margin-top: 6px; }
-.weekask .wkopts .chip { padding: 8px 12px; background: transparent; box-shadow: inset 0 0 0 1.5px var(--soft); }
-.quickrow { display: flex; align-items: stretch; width: 100%; min-height: 64px; padding: 0; border: 1.5px dashed var(--wait-edge); border-radius: 6px; background: none; color: var(--ink); text-align: left;
-  font-family: var(--font-head); font-stretch: 85%; font-weight: 700; font-size: 1.1875rem; line-height: 1.2; letter-spacing: .01em; }
-.quickrow .plus { flex: none; width: 56px; display: grid; place-items: center; color: var(--soft); background: radial-gradient(circle, var(--edge) 1.1px, transparent 1.6px) 100% 3px / 6px 7px repeat-y; }
+.weekask .wkopts .chip { padding: 8px 12px; }
+.quickrow { display: flex; align-items: stretch; width: 100%; min-height: 60px; padding: 0; border: 1.5px dashed var(--edge); border-radius: 6px; background: none; color: var(--ink); text-align: left;
+  font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 700; font-size: 1.1875rem; line-height: 1.2; letter-spacing: .01em; }
+.quickrow .plus { flex: none; width: 52px; display: grid; place-items: center; color: var(--soft); background: var(--holes-y); background-position: 100% 0; }
 .quickrow .plus svg { width: 22px; height: 22px; }
 .quickrow .qt { flex: 1; align-self: center; padding: 12px 14px 12px 16px; }
 .quickrow .chev { flex: none; align-self: center; width: 20px; height: 20px; margin-right: 16px; color: var(--soft); transform: rotate(90deg); }
@@ -333,9 +363,9 @@ p { margin: 0; }
 /* R39: the card's ⋯ menu and the full list are a sheet of ticket paper torn from the pad: a torn top edge, the title
    as the stub, a perforation under it, then plain rows. No grabber, no ruled list. */
 .sheet.paper { --behind: var(--card); background: var(--card); border-top: none; border-radius: 0; padding-top: 24px; gap: 10px;
-  -webkit-mask: linear-gradient(#000 0 0) bottom / 100% calc(100% - 8px) no-repeat, conic-gradient(from 135deg at top, #000 90deg, #0000 0) left top / 16px 8px repeat-x;
-  mask: linear-gradient(#000 0 0) bottom / 100% calc(100% - 8px) no-repeat, conic-gradient(from 135deg at top, #000 90deg, #0000 0) left top / 16px 8px repeat-x; }
-.sheet.paper .pperf { flex: none; height: 6px; margin: 2px 0 2px; background: radial-gradient(circle, var(--edge) 1.2px, transparent 1.7px) 0 50% / 8px 6px repeat-x; }
+  -webkit-mask: var(--tear-top);
+  mask: var(--tear-top); }
+.sheet.paper .pperf { flex: none; height: 6px; margin: 2px 0 2px; background: radial-gradient(circle, var(--edge) 1.5px, transparent 2px) 0 50% / 10px 6px repeat-x; }
 .sheet.paper .pclose { margin-top: 2px; }
 .menu { display: flex; flex-direction: column; }
 .mrow { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%; min-height: 56px; padding: 12px 2px; border: none; background: none; text-align: left; font-size: 1.0625rem; line-height: 1.3; color: var(--ink); }
@@ -365,20 +395,26 @@ p { margin: 0; }
 /* a stamped piece keeps its mark beside its name: the inked box a picked choice gets, small enough to leave the name room */
 /* the floating wheel (Document Picture-in-Picture): the wheel and its number fill a small window */
 body.pip { margin: 0; min-height: 100vh; display: grid; place-items: center; background: var(--paper); }
-.pipticket { --behind: var(--card); --track: color-mix(in srgb, var(--ink) 24%, var(--card)); display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100vw; min-height: 100vh; padding: 12px 14px; background: var(--card); }
+.pipticket { --behind: var(--card); --track: color-mix(in srgb, var(--deal) 8%, color-mix(in srgb, var(--ink) var(--track-ink), var(--card))); display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100vw; min-height: 100vh; padding: 12px 14px; background: var(--card); }
 .pipticket .dial { width: min(100vw - 40px, 100vh - 92px); }
-.pipkind { display: flex; align-items: center; gap: 8px; max-width: 100%; font: 750 1.125rem/1.1 var(--font-head); font-stretch: 78%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pipkind { display: flex; align-items: center; gap: 8px; max-width: 100%; font: 750 1.125rem/1.1 var(--font-head); font-stretch: var(--wd-display); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pipnote { min-height: 1.2em; font-size: .875rem; color: var(--soft); text-align: center; }
 .deskhead .pipbtn { min-height: 0; padding: 0; margin-left: 10px; font-family: var(--font-body); font-weight: 400; font-stretch: normal; font-size: .9375rem; color: var(--deal-ink); }
 
 /* a keyboard key printed on the control it presses (desks only, see markKeys) */
 .key { position: absolute; right: -9px; top: -9px; z-index: 1; display: grid; place-items: center; min-width: 22px; height: 22px; padding: 0 5px; border-radius: 5px;
-  background: var(--card); color: var(--soft); box-shadow: inset 0 0 0 1.5px var(--edge-half), 0 1.5px 0 var(--edge-half);
-  font: 700 .75rem/1 var(--font-head); font-stretch: 85%; letter-spacing: 0; text-transform: none; transform: rotate(calc(-1 * var(--tilt, 0deg))); pointer-events: none; }
+  background: var(--card); color: var(--soft); box-shadow: inset 0 0 0 1.5px var(--edge), 0 1.5px 0 var(--edge);
+  font: 700 .75rem/1 var(--font-head); font-stretch: var(--wd-act); letter-spacing: 0; text-transform: none; transform: rotate(calc(-1 * var(--tilt, 0deg))); pointer-events: none; }
 .textbtn:has(> .key), .secondary:has(> .key) { position: relative; }
 .textbtn > .key { position: static; display: inline-grid; margin-left: 8px; vertical-align: 1px; transform: none; }
 .term .pad .key { right: 6px; top: 6px; }
 .pressed .key, .stamped .key { visibility: hidden; }
+/* a key is shown on the control under the pointer or the keyboard, not printed across every corner (council r1) */
+/* keys stay printed so they can be found, and sit inside the control instead of across its corner */
+.key { transition: opacity .12s; }
+:is(:hover, :focus-visible) > .key, :is(button, .term):is(:hover, :focus-visible) .key { opacity: 1; }
+.secondary > .key { right: 14px; top: 50%; transform: translateY(-50%); }
+#shake > .key { right: 10px; top: 10px; transform: rotate(calc(-1 * var(--tilt, 0deg))); }
 
 /* ---------- the split: one ticket, torn into pieces ----------
    The big one is one ticket. Each piece is a length of it, as long as its minutes (1 px a minute over a fixed base), and
@@ -393,12 +429,12 @@ body.pip { margin: 0; min-height: 100vh; display: grid; place-items: center; bac
 /* the tear line: a row of punched holes with a notch at the ticket's edge; the piece's length sits on it like a tab */
 .torn .tear { position: relative; flex: none; height: 30px; margin: 0 -24px 0 -14px; padding: 0 24px 0 14px; display: flex; align-items: center; justify-content: flex-end;
   cursor: ns-resize; touch-action: none; -webkit-user-select: none; user-select: none; border-radius: 0;
-  background: radial-gradient(circle, var(--edge) 1.3px, transparent 1.8px) 0 50% / 8px 6px repeat-x; }
+  background: radial-gradient(circle, var(--edge) 1.5px, transparent 2px) 0 50% / 10px 6px repeat-x; }
 .torn .tear::before { content: ""; position: absolute; left: 0; right: 0; top: -8px; bottom: -8px; }
 .torn .tear::after { content: ""; position: absolute; left: -8px; top: 50%; width: 16px; height: 16px; margin-top: -8px; border-radius: 50%; background: var(--card); box-shadow: inset -1.5px 0 0 var(--edge-half); }
 .torn .len { position: relative; display: inline-flex; align-items: baseline; gap: 3px; padding: 3px 10px 3px 10px; background: var(--tk); color: var(--ink);
-  font-family: var(--font-head); font-stretch: 80%; font-weight: 700; font-size: .9375rem; line-height: 1; transition: color .12s; }
-.torn .len b { font-size: 1.625rem; font-weight: 800; font-stretch: 74%; font-variant-numeric: tabular-nums; }
+  font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 700; font-size: .9375rem; line-height: 1; transition: color .12s; }
+.torn .len b { font-size: 1.625rem; font-weight: 800; font-stretch: var(--wd-display); font-variant-numeric: tabular-nums; }
 /* a grip printed beside the number: two short rules, the way a pull tab is marked */
 .torn .len::before { content: ""; align-self: center; width: 12px; height: 7px; margin-right: 6px; border-block: 2px solid currentColor; opacity: .5; }
 .torn .tear:is(:hover, .pulling, :focus-visible) { background-image: linear-gradient(var(--deal), var(--deal)); background-size: 100% 2px; background-position: 0 50%; background-repeat: no-repeat; outline: none; }
@@ -413,7 +449,7 @@ body.pip { margin: 0; min-height: 100vh; display: grid; place-items: center; bac
 .pask .textbtn { margin-left: -12px; margin-right: 8px; }
 .pask .textbtn.gone { color: var(--gone); }
 .addpiece { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 48px; padding: 8px 14px 8px 0; border: none; background: none; color: var(--ink); text-align: left;
-  font-family: var(--font-head); font-stretch: 85%; font-weight: 700; font-size: 1.0625rem; line-height: 1.2; letter-spacing: .01em; }
+  font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 700; font-size: 1.0625rem; line-height: 1.2; letter-spacing: .01em; }
 .addpiece svg { flex: none; width: 20px; height: 20px; color: var(--soft); }
 /* R57: "Removed Body. Undo", for a few seconds */
 .undo { display: flex; align-items: center; gap: 4px; min-height: 44px; font-size: .9375rem; }
@@ -433,25 +469,25 @@ body.pip { margin: 0; min-height: 100vh; display: grid; place-items: center; bac
   padding: 12px 18px calc(8px + env(safe-area-inset-bottom, 0px)); background: var(--card); border-top: 1px solid var(--rule); }
 .sheet.paper .sfoot .pclose { margin-top: 0; }
 /* R58: pieces against the gut size, said once right above Save: Archivo, ink, no colour, no verdict */
-.sum { margin: 0 0 8px; font-family: var(--font-head); font-stretch: 85%; font-weight: 600; font-size: 1.125rem; line-height: 1.3; color: var(--ink); }
+.sum { margin: 0 0 8px; font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 600; font-size: 1.125rem; line-height: 1.3; color: var(--ink); }
 /* the spread: the due day, then the days, each with what lands on it */
 .sphead { position: relative; padding-right: 92px; }
 /* R55: no empty slot; signing stamps the sheet with the deal's own stamp motion */
 .sphead .signmark { position: absolute; right: 0; top: 2px; font-size: 1.25rem; letter-spacing: .03em; padding: 3px 8px; }
 .due { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
-.due .duelab { font-family: var(--font-head); font-stretch: 85%; font-weight: 700; font-size: 1.1875rem; line-height: 1.2; }
+.due .duelab { font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 700; font-size: 1.1875rem; line-height: 1.2; }
 .due .phrase { margin-left: -2px; }
-.due input { align-self: flex-start; min-height: 48px; padding: 8px 12px; border: 1.5px solid var(--edge); border-radius: 10px; background: var(--paper); font-family: var(--font-head); font-stretch: 85%; font-weight: 700; font-size: 1.125rem; }
+.due input { align-self: flex-start; min-height: 48px; padding: 8px 12px; border: 1.5px solid var(--edge); border-radius: 10px; background: var(--paper); font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 700; font-size: 1.125rem; }
 .due input:focus { border-color: var(--deal); }
 .dueknown { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; min-height: 48px; }
 .dueknown p { font-size: 1.0625rem; }
-.dueknown p b { font-family: var(--font-head); font-stretch: 85%; font-weight: 700; font-size: 1.1875rem; }
+.dueknown p b { font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 700; font-size: 1.1875rem; }
 .dueknown .textbtn { margin-left: -12px; }
 .days { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
 .day { padding: 10px 0 6px; }
 .day + .day { border-top: 1px solid var(--rule); }
-.day h3 { margin: 0; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; font-family: var(--font-head); font-stretch: 80%; font-weight: 750; font-size: 1.25rem; line-height: 1.2; }
-.day h3 .dm { font-stretch: 74%; font-weight: 700; font-size: 1.125rem; color: var(--ink); font-variant-numeric: tabular-nums; }
+.day h3 { margin: 0; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 750; font-size: 1.25rem; line-height: 1.2; }
+.day h3 .dm { font-stretch: var(--wd-display); font-weight: 700; font-size: 1.125rem; color: var(--ink); font-variant-numeric: tabular-nums; }
 /* R59: the day's load as a shape: a static bar, its length the day's minutes against the fullest day */
 .load { display: block; height: 6px; margin: 6px 0 2px; border-radius: 3px; background: var(--chip); overflow: hidden; }
 .load i { display: block; height: 100%; border-radius: 3px; background: var(--deal); }
@@ -466,7 +502,7 @@ body.pip { margin: 0; min-height: 100vh; display: grid; place-items: center; bac
 .spwhy { font-size: .9375rem; line-height: 1.4; color: var(--soft); }
 /* R60: a comeback card's fresh plan is its own small outlined button, apart from "Start with" */
 .bigcard .respread { align-self: flex-start; min-height: 44px; margin: 6px 0 10px; padding: 8px 14px; border: 1.5px solid var(--edge); border-radius: 10px; background: none; color: var(--ink);
-  font-family: var(--font-head); font-stretch: 85%; font-weight: 700; font-size: 1rem; line-height: 1.2; letter-spacing: .01em; }
+  font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 700; font-size: 1rem; line-height: 1.2; letter-spacing: .01em; }
 /* R61: Delete sits apart from the rows that keep the big one */
 .menu .mrow.gone { border-top: 1px solid var(--rule); margin-top: 4px; }
 
@@ -474,8 +510,8 @@ body.pip { margin: 0; min-height: 100vh; display: grid; place-items: center; bac
 .keepon { justify-self: center; display: inline-flex; align-items: center; gap: 10px; min-height: 44px; margin-top: -6px; padding: 8px 12px; border: none; background: none; color: var(--soft); font-size: .9375rem; }
 .keepon[aria-checked="true"] { color: var(--ink); }
 /* spec 008 push: the one-time offer of taps at block ends, under the ring. Dashed in ink like anything not agreed to yet. */
-.pushask { justify-self: center; display: inline-flex; align-items: center; gap: 10px; min-height: 48px; margin-top: 2px; padding: 10px 18px 10px 14px; border: 1.5px dashed var(--wait-edge); border-radius: 6px; background: none; color: var(--ink);
-  font-family: var(--font-head); font-stretch: 85%; font-weight: 700; font-size: 1.0625rem; line-height: 1.2; letter-spacing: .01em; }
+.pushask { justify-self: center; display: inline-flex; align-items: center; gap: 10px; min-height: 48px; margin-top: 2px; padding: 10px 18px 10px 14px; border: 2px solid var(--edge); border-radius: var(--r-press); background: none; color: var(--ink);
+  font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 700; font-size: 1.0625rem; line-height: 1.2; letter-spacing: .01em; }
 .pushask svg { flex: none; width: 22px; height: 22px; color: var(--deal); }
 .pushask[aria-disabled="true"] { color: var(--soft); cursor: progress; }
 /* spec 008 install sheet (iPhone Safari): three small drawings of Safari's own controls, the one to tap ringed in green */
@@ -486,10 +522,10 @@ body.pip { margin: 0; min-height: 100vh; display: grid; place-items: center; bac
 .howto .shot .hl { stroke: var(--deal); }
 .howto .shot .ink { stroke: var(--ink); }
 .howto .cap { font-size: .9375rem; line-height: 1.3; overflow-wrap: anywhere; }
-.howto .n { display: block; margin-bottom: 2px; font-family: var(--font-head); font-stretch: 80%; font-weight: 800; font-size: 1.25rem; line-height: 1; color: var(--deal-ink); }
+.howto .n { display: block; margin-bottom: 2px; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 1.25rem; line-height: 1; color: var(--deal-ink); }
 
 /* ---------- one stamp: double-ruled border with the ink texture, letters solid so they stay readable ---------- */
-.stamp { --tilt: -3deg; position: relative; display: inline-grid; place-items: center; color: var(--deal); font-family: var(--font-head); font-stretch: 82%; font-weight: 800;
+.stamp { --tilt: -3deg; position: relative; display: inline-grid; place-items: center; color: var(--deal); font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800;
   letter-spacing: .06em; line-height: 1; padding: 3px 8px; transform: rotate(var(--tilt)); }
 .stamp::before { content: ""; position: absolute; inset: 0; border: 3px double var(--deal); border-radius: 6px; -webkit-mask: var(--noise) 0 0 / 120px 60px; mask: var(--noise) 0 0 / 120px 60px; }
 /* not yet agreed: the stamp box is printed on the ticket, empty, dashed in ink. The word DEAL only exists once you agree. */
@@ -510,6 +546,7 @@ body.pip { margin: 0; min-height: 100vh; display: grid; place-items: center; bac
    (what you give up, in words, never a "5 → 2" figure) and a stub past a perforation that carries the DEAL stamp's face.
    Pressing the ticket is pressing the stamp: it lifts, slams down, inks, and the ticket and sheet take the hit. */
 .sheet h2.you { align-self: flex-end; max-width: 84%; font-family: var(--font-body); font-stretch: normal; font-weight: 400; font-size: 1.0625rem; line-height: 1.35; color: var(--soft); text-align: right; text-wrap: balance; }
+.sheet h2.you .num { font: 480 1.04em var(--font-head); font-stretch: var(--wd-act); }
 .answer { display: flex; align-items: center; gap: 14px; margin-bottom: 2px; }
 .voice { flex: none; width: 60px; height: 60px; overflow: visible; }
 .voice .bed { fill: none; stroke: color-mix(in srgb, var(--ink) 22%, var(--sheet)); stroke-width: 12; }
@@ -519,28 +556,34 @@ body.pip { margin: 0; min-height: 100vh; display: grid; place-items: center; bac
 .voice .tk line { stroke: var(--ink); stroke-width: 2.4; stroke-linecap: round; }
 .answer .says .num { font: inherit; letter-spacing: inherit; }
 .voice .kn circle { fill: var(--ink); stroke: var(--sheet); stroke-width: 3; }
-.answer .says { font-family: var(--font-head); font-stretch: 80%; font-weight: 750; font-size: 1.625rem; line-height: 1.12; color: var(--ink); text-wrap: balance; }
+.answer .says { font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 750; font-size: 1.625rem; line-height: 1.12; color: var(--ink); text-wrap: balance; }
 .answer .says:focus { outline: none; }
 .answer .says .tok { font-size: 1em; font-weight: 750; padding-block: 1px; }
 
 .terms { display: flex; flex-direction: column; gap: 10px; }
+/* the outline follows the paper's shape, holes and all: four 1 px shadows on the group, then the paper's lift */
+.terms { filter: drop-shadow(1px 0 0 var(--edge)) drop-shadow(-1px 0 0 var(--edge)) drop-shadow(0 1px 0 var(--edge)) drop-shadow(0 -1px 0 var(--edge)) drop-shadow(0 8px 12px var(--lift)); }
 .term { position: relative; z-index: 0; width: 100%; padding: 0; border: none; background: none; color: var(--ink); text-align: left; font: inherit;
   display: grid; grid-template-columns: minmax(0, 1fr) 108px; align-items: stretch; min-height: 92px; }
 .term::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: 6px 0 0 6px; background: var(--card); box-shadow: inset 0 1px 0 var(--hi); -webkit-mask: var(--zig); mask: var(--zig); }
 /* a button has a visible edge at rest, about 3.9:1 against the sheet */
 button.term { cursor: pointer; transition: transform .08s ease-out; }
-button.term::before { box-shadow: inset 0 0 0 1px var(--edge), inset 0 2px 0 var(--hi); }
+button.term::before { box-shadow: inset 0 2px 0 var(--hi); }
 button.term:active { transform: translateY(1px); }
 .term.stamped::before { background: var(--sel-card); box-shadow: inset 0 0 0 2px var(--deal); }
+.term.stamped .say { color: var(--ink); }
 button.term:focus-visible { outline-offset: 3px; }
 /* the sentence: what you agree to, in bold, then what it does to the rest of tonight */
-.term .say { align-self: center; padding: 14px 12px 15px 16px; font-size: 1.0625rem; line-height: 1.4; text-wrap: pretty; }
-.term .say b { font-weight: 700; }
+.term .say { align-self: center; display: block; padding: 15px 12px 16px 18px; font-size: 1rem; line-height: 1.4; color: var(--soft); text-wrap: pretty; }
+/* spec 011: what you agree to is printed as the ticket's name, like every ticket's; what it does to the rest of tonight is a sentence under it */
+.term .say b { display: block; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 760; font-size: 1.375rem; line-height: 1.12; letter-spacing: 0; color: var(--ink); text-wrap: balance; margin-bottom: 4px; }
+.term .say b .num { font: inherit; letter-spacing: inherit; }
+.term .say b:only-child { margin: 4px 0; }
 .term .say .lastpick { display: block; margin-top: 6px; font-size: .9375rem; line-height: 1.3; color: var(--deal-ink); }
 /* ADR 0005: the repayment picked last time waits with a green edge and says so; stamping it is still one tap */
 .term.pre::before { box-shadow: inset 0 0 0 2px var(--deal), inset 0 2px 0 var(--hi); }
 /* the stub you stamp: a perforation down its left edge, the stamp's face in the middle */
-.term .pad { position: relative; display: grid; place-items: center; padding: 10px 18px 10px 8px; background: radial-gradient(circle, var(--edge) 1.2px, transparent 1.7px) 0 0 / 6px 8px repeat-y; }
+.term .pad { position: relative; display: grid; place-items: center; padding: 10px 18px 10px 8px; background: radial-gradient(circle, var(--edge) 1.5px, transparent 2px) 0 0 / 6px 10px repeat-y; }
 .term .pad .stamp { --tilt: -6deg; font-size: 1.5rem; letter-spacing: .07em; padding: 9px 10px 7px 11px; transition: transform .14s ease-out, filter .14s ease-out; }
 /* at rest the face is clean rubber: a crisp double rule. The ink texture only exists once it has hit the paper. */
 .term .pad .stamp::before { border-width: 4.5px; border-radius: 7px; -webkit-mask: none; mask: none; }
@@ -553,22 +596,24 @@ button.term:focus-visible { outline-offset: 3px; }
 @media (hover: hover) {
   /* the stamp rises off the paper under the pointer, ready to come down */
   button.term:hover:not(:disabled) .pad .stamp { transform: translateY(-3px) rotate(-8deg) scale(1.05); filter: drop-shadow(0 5px 4px var(--lift)); }
-  button.term:hover:not(:disabled)::before { box-shadow: inset 0 0 0 1.5px var(--edge), inset 0 2px 0 var(--hi); }
+  button.term:hover:not(:disabled)::before { background: color-mix(in srgb, var(--deal) 5%, var(--card)); }
   button.term.pre:hover:not(:disabled)::before { box-shadow: inset 0 0 0 2px var(--deal), inset 0 2px 0 var(--hi); }
 }
 .prompt { font-size: 1rem; }
 
 /* the boundary: the session ticket, its break half torn off and marked used, the rest of the deal still yours */
 .tearrow { display: flex; align-items: stretch; gap: 0; margin-block: 2px 4px; }
+/* spec 011: the stub is the ticket's own paper, torn off a few pixels to the left on the same line. Both torn sides show
+   the holes they came apart along. A used break's stub is the older, greyer paper with soft words; a kept deal's is full ink. */
 .tearrow .usedwrap { position: relative; flex: none; width: 108px; min-height: 104px; display: flex; }
-.tearrow .used { flex: 1; display: flex; flex-direction: column; justify-content: flex-start; gap: 2px; padding: 14px 16px 12px 14px; background: var(--stub); border-radius: 6px 0 0 6px; opacity: .72;
-  -webkit-mask: var(--zig); mask: var(--zig); transform: translateX(-8px) rotate(-2deg); transform-origin: 100% 100%; animation: tear .22s ease-out both; }
-.tearrow .used b { font-family: var(--font-head); font-stretch: 78%; font-weight: 800; font-size: 1.375rem; line-height: 1; }
+.tearrow .used { flex: 1; display: flex; flex-direction: column; justify-content: flex-start; gap: 2px; padding: 14px 16px 12px 14px; background: var(--stub); color: var(--soft); border-radius: 6px 0 0 6px;
+  -webkit-mask: var(--zig); mask: var(--zig); transform: rotate(-1.2deg); transform-origin: 100% 100%; animation: tear .22s ease-out both; }
+.tearrow .used b { font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 1.375rem; line-height: 1; }
 /* one line on the stub, so a long title never runs under the Used stamp */
 .tearrow .used > span { font-size: .875rem; color: var(--soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tearrow .usedwrap .stamp { --tilt: -6deg; position: absolute; left: 12px; bottom: 16px; font-size: 1.25rem; letter-spacing: .03em; padding: 3px 7px; animation: ink .5s .2s linear backwards; }
-.tearrow .rest { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 4px; padding: 14px 24px 16px 16px; background: var(--card); box-shadow: inset 0 1px 0 var(--hi); -webkit-mask: var(--zig); mask: var(--zig); }
-.tearrow .rest b { font-family: var(--font-head); font-stretch: 80%; font-weight: 750; font-size: 1.5rem; line-height: 1.1; text-wrap: balance; }
+.tearrow .rest { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 4px; padding: 14px 24px 16px 18px; background: var(--card); box-shadow: inset 0 1px 0 var(--hi); -webkit-mask: var(--zig2); mask: var(--zig2); }
+.tearrow .rest b { font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 760; font-size: 1.5rem; line-height: 1.1; text-wrap: balance; }
 @keyframes tear { from { transform: none; opacity: 1; } }
 /* R33: on a narrow phone, a big one's block end lays the used stub on top of the rest of the deal instead of beside it */
 /* R44: the bookmark and the done question are printed on the rest of the ticket, under a perforation, so the one
@@ -578,13 +623,14 @@ button.term:focus-visible { outline-offset: 3px; }
 .tearrow.stacked .used { flex-direction: row; align-items: baseline; gap: 10px; padding: 12px 98px 16px 14px; min-width: 0; }
 .tearrow.stacked .used > span { flex: 1; min-width: 0; }
 .tearrow.stacked .usedwrap .stamp { left: auto; right: 22px; bottom: auto; top: 9px; }
-.tearrow.stacked .rest { justify-content: flex-start; gap: 10px; padding: 16px 26px 18px 20px; }
+.tearrow.stacked .rest { justify-content: flex-start; gap: 10px; padding: 16px 26px 18px 20px; -webkit-mask: var(--zig); mask: var(--zig); }
+.tearrow.stacked .used { transform: translate(-4px, 2px) rotate(-1deg); }
 /* spec 010: on the done sheet the next round is offered as a question over its ticket, said like the clock's other lines */
-.againq { margin: 6px 0 -4px; font-family: var(--font-head); font-stretch: 78%; font-weight: 750; font-size: 1.375rem; line-height: 1.15; }
+.againq { margin: 12px 0 -2px; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 760; font-size: 1.375rem; line-height: 1.15; }
 /* a deal kept is not a used-up break: its stub is printed at full ink, holding just its minutes and the Done stamp */
-.tearrow.kept .used { opacity: 1; }
+.tearrow.kept .used { background: var(--card); color: var(--ink); }
 .tearrow .rest > p { display: flex; flex-direction: column; gap: 4px; }
-.tearrow .rest .nperf { flex: none; height: 6px; margin: 4px -26px 0 -20px; background: radial-gradient(circle, var(--edge) 1.2px, transparent 1.7px) 4px 50% / 8px 6px repeat-x; }
+.tearrow .rest .nperf { flex: none; height: 6px; margin: 4px -26px 0 -20px; background: radial-gradient(circle, var(--edge) 1.5px, transparent 2px) 4px 50% / 10px 6px repeat-x; }
 .tearrow .rest .notes { padding: 0; }
 
 /* clock persona */
@@ -625,7 +671,7 @@ button.term:focus-visible { outline-offset: 3px; }
 /* the running block is the ticket you stamped: its serial and stamp at the head, the clock printed on it as its seal,
    and what comes next on the stub under the perforation */
 .runwrap { filter: drop-shadow(0 1px 0 var(--rule)) drop-shadow(0 8px 12px var(--lift)); margin-right: -4px; }
-.runticket { --behind: var(--card); --track: color-mix(in srgb, var(--ink) 24%, var(--card)); display: flex; flex-direction: column; gap: 6px; padding: 14px 26px 0 20px; background: var(--card); border-radius: 6px 0 0 6px; box-shadow: inset 0 1px 0 var(--hi); -webkit-mask: var(--zig); mask: var(--zig); }
+.runticket { --behind: var(--card); --track: color-mix(in srgb, var(--deal) 8%, color-mix(in srgb, var(--ink) var(--track-ink), var(--card))); display: flex; flex-direction: column; gap: 6px; padding: 14px 26px 0 20px; background: var(--card); border-radius: 6px 0 0 6px; box-shadow: inset 0 1px 0 var(--hi); -webkit-mask: var(--zig); mask: var(--zig); }
 .runticket .dealtwrap { filter: none; }
 .runticket .dealt { background: none; -webkit-mask: none; mask: none; padding: 0; gap: 12px; }
 /* the stamp you pressed stays on the running ticket at size, inked, not shrunk to a tag */
@@ -635,14 +681,14 @@ button.term:focus-visible { outline-offset: 3px; }
 .runticket .dealt .stamp::after { content: ""; position: absolute; inset: 0; border-radius: 7px; background: var(--deal); opacity: .14; -webkit-mask: var(--noise) 0 0 / 120px 60px; mask: var(--noise) 0 0 / 120px 60px; }
 .runticket .dealt .serial { padding-top: 4px; }
 .runticket .timerwrap { padding-top: 6px; }
-.runticket .note { justify-self: stretch; max-width: none; margin: 8px -26px 0 -20px; padding: 14px 26px 16px 20px; border-top: 2px dotted var(--edge); }
-.runticket .note:empty { border-top-color: transparent; }
+.runticket .note { justify-self: stretch; max-width: none; margin: 8px -26px 0 -20px; padding: 16px 26px 16px 20px; background: var(--holes-x); background-position: 0 0; }
+.runticket .note:empty { background: none; }
 .runticket .aside:not(:empty) { margin-bottom: 12px; }
 .act .keepon, .act .pushask { align-self: center; margin-top: 0; }
 .runticket .aside:empty { display: none; }
 @keyframes sweep { from { --p: 0; } }
 .dial .face { inset: 20%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-.face .big { font-family: var(--font-head); font-size: 80px; font-size: 27.8cqw; font-weight: 800; font-stretch: 70%; line-height: .9; }
+.face .big { font-family: var(--font-head); font-size: 80px; font-size: 27.8cqw; font-weight: 800; font-stretch: var(--wd-display); line-height: .9; }
 .face .big.mmss { font-size: 66px; font-size: 22.9cqw; }
 .face .unit { font-size: .9375rem; color: var(--soft); }
 .now { display: flex; flex-direction: column; gap: 4px; }
@@ -660,10 +706,12 @@ body.sheeted #view :is(.act, .rows) { visibility: hidden; }
 .note .swatch { display: inline-block; width: 12px; height: 12px; margin-right: 8px; vertical-align: -1px; }
 /* every number is set in Archivo, the face of the dial and the ledger, so 180 and 10:46pm look the same
    in a heading and in a sentence (Atkinson's slashed zero read as code) */
-.num { font-family: var(--font-head); font-stretch: 88%; font-weight: 480; font-size: 1.04em; letter-spacing: 0; font-variant-numeric: tabular-nums lining-nums; }
+.num { font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 480; font-size: 1.04em; letter-spacing: 0; font-variant-numeric: tabular-nums lining-nums; }
 :is(b, strong, .go, .state) .num { font-weight: inherit; }
 /* inside things already set in Archivo (buttons, chips, headings), a number just takes the surrounding type */
-:is(.primary, .secondary, .chip, .trychip, h1, h2, .title, .top) .num { font: inherit; letter-spacing: inherit; }
+/* spec 011: anything already set in Archivo keeps its own width, weight and size for its digits, so "10 min" on a stub
+   is one word, not a number in a different cut. The audit script (docs/specs/011) checks no digit is left in Atkinson. */
+:is(.primary, .secondary, .chip, .inkchip, .trychip, h1, h2, h3, .title, .top, b, strong, .tok, .sentence, .says, .serial, .stamp, .totals dd, .againq, .sum, .duelab, .len, .go, .ministub, .quickrow, .pushask, .btitle, .pipkind, .bigchip, .addpiece, .tapeval, .big, .unit-num) .num { font: inherit; letter-spacing: inherit; }
 .chipbtn .num { font-size: 1em; }
 /* the theme switch: three choices in one row, the one in use filled */
 .themesw { display: inline-flex; padding: 2px; gap: 2px; border-radius: 8px; box-shadow: inset 0 0 0 1px var(--rule); }
@@ -673,7 +721,7 @@ body.sheeted #view :is(.act, .rows) { visibility: hidden; }
 /* the stamped stub of tonight's deal stays with the session */
 .dealtwrap { flex: none; filter: drop-shadow(0 1px 0 var(--rule)) drop-shadow(0 3px 5px var(--lift)); }
 .dealt { display: flex; align-items: center; gap: 10px; min-height: 32px; padding: 4px 20px 4px 10px; background: var(--card); border-radius: 4px 0 0 4px; -webkit-mask: var(--zig); mask: var(--zig); }
-.dealt .serial { font-size: .8125rem; }
+.dealt .serial { font-size: .875rem; }
 .dealt .stamp { --tilt: -5deg; font-size: .8125rem; padding: 2px 5px; }
 .dealt .stamp::before { border-width: 2.5px; border-radius: 4px; }
 .rows + .soft { margin-top: -6px; }
@@ -712,28 +760,28 @@ div.presence { cursor: default; color: var(--soft); }
 .tally.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .tally div { padding: 12px 10px 12px 0; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .tally div + div { border-left: 1px solid var(--rule); padding-left: 12px; }
-.tally b { font-family: var(--font-head); font-stretch: 72%; font-size: 2.125rem; line-height: 1; font-weight: 800; }
+.tally b { font-family: var(--font-head); font-stretch: var(--wd-display); font-size: 2.125rem; line-height: 1; font-weight: 800; }
 .tally b.go { color: var(--deal); }
 .tally div > span { font-size: .875rem; color: var(--soft); line-height: 1.25; }
 .stubs { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
 .stubcard { width: 100%; border: none; color: var(--ink); text-align: left; font: inherit; background: var(--card); display: grid; grid-template-columns: 80px 1fr; position: relative; padding: 0 12px 0 0; border-radius: 6px 0 0 6px; box-shadow: inset 0 1px 0 var(--hi); -webkit-mask: var(--zig); mask: var(--zig); }
 button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal-tint)), var(--card); }
-.stubcard .t { position: relative; background: radial-gradient(circle, var(--edge) 1.2px, transparent 1.7px) 100% 0 / 6px 8px repeat-y; padding: 12px 5px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.stubcard .t b { font-family: var(--font-head); font-stretch: 80%; font-weight: 750; font-size: 1.25rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.stubcard .t { position: relative; background: radial-gradient(circle, var(--edge) 1.5px, transparent 2px) 100% 0 / 6px 10px repeat-y; padding: 12px 5px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.stubcard .t b { font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 750; font-size: 1.25rem; line-height: 1; font-variant-numeric: tabular-nums; }
 .stubcard .t b small { font-family: var(--font-body); font-weight: 400; font-stretch: normal; font-size: .875rem; color: var(--ink); margin-left: 1px; }
 .stubcard .what { padding: 11px 10px 11px 12px; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .stubcard .row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-.stubcard .title { flex: 1; font-family: var(--font-head); font-stretch: 74%; font-weight: 750; font-size: 1.25rem; line-height: 1.15; min-width: 0; text-wrap: pretty; }
+.stubcard .title { flex: 1; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 750; font-size: 1.25rem; line-height: 1.15; min-width: 0; text-wrap: pretty; }
 .stubcard .what em { font-style: normal; font-size: .9375rem; color: var(--soft); line-height: 1.35; text-wrap: pretty; }
 /* ledger stamps: every deal is inked green, whatever its terms; the word carries the kind. Grey ink is only for
    things that were not deals (stopped early, opened without one). */
-.stubcard .stamp { flex: none; margin-top: 1px; font-size: 1rem; font-stretch: 85%; letter-spacing: .03em; padding: 3px 6px; }
+.stubcard .stamp { flex: none; margin-top: 1px; font-size: 1rem; font-stretch: var(--wd-display); letter-spacing: .03em; padding: 3px 6px; }
 .stamp.plain { color: var(--soft); }
 .stamp.plain::before { border-color: var(--soft); }
 .insight { display: flex; flex-direction: column; gap: 10px; }
 .insight-act { padding-left: 46px; }
 .trychip { border: 1.5px solid var(--deal); border-radius: 999px; background: transparent; color: var(--deal); padding: 8px 16px; min-height: 44px;
-  font-family: var(--font-head); font-stretch: 85%; font-weight: 700; font-size: 1.0625rem; letter-spacing: .01em; }
+  font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 700; font-size: 1.0625rem; letter-spacing: .01em; }
 .trychip[aria-pressed="true"] { background: var(--sel); }
 
 /* room: people are plain rows on the paper, not tickets. Each row keeps the dial's ring language:
@@ -741,7 +789,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 .person.you { border-top: 1px solid var(--rule); }
 .person:last-child { border-bottom: 1px solid var(--rule); }
 #nudged:focus { outline: none; }
-.joined { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px; box-shadow: inset 0 0 0 1.5px var(--deal); color: var(--deal); font-family: var(--font-head); font-stretch: 85%; font-weight: 700; font-size: .875rem; vertical-align: 2px; }
+.joined { display: inline-block; margin-left: 6px; padding: 1px 8px; border-radius: 999px; box-shadow: inset 0 0 0 1.5px var(--deal); color: var(--deal); font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 700; font-size: .875rem; vertical-align: 2px; }
 .nudge { padding: 10px 0; margin-block: -6px -10px; align-self: flex-start; display: block; }
 .people { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
 .person { display: grid; grid-template-columns: 56px 1fr auto; align-items: center; gap: 14px; min-height: 76px; padding: 10px 2px; }
@@ -757,20 +805,20 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 .mini .fill.focus { background: var(--deal); }
 .mini .fill.break { background: repeating-conic-gradient(var(--break-base) 0 26deg, transparent 26deg 30deg); }
 .mini.sm .fill.break { background: repeating-conic-gradient(var(--break-base) 0 52deg, transparent 52deg 60deg); }
-.mini .ini { display: grid; place-items: center; font-family: var(--font-head); font-stretch: 80%; font-weight: 750; font-size: 1.3125rem; }
+.mini .ini { display: grid; place-items: center; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 750; font-size: 1.3125rem; }
 .mini.md .ini { font-size: 1rem; }
 .mini.sm .ini { font-size: .75rem; }
 .mini.live::after { content: ""; position: absolute; right: 1px; bottom: 1px; width: 11px; height: 11px; border-radius: 50%; background: var(--deal); box-shadow: 0 0 0 2.5px var(--paper); animation: live 2s ease-in-out infinite; }
 .mini.sm.live::after { width: 7px; height: 7px; right: -1px; bottom: -1px; box-shadow: 0 0 0 2px var(--paper); }
 @keyframes live { 50% { transform: scale(.7); opacity: .6; } }
 .person .who { min-width: 0; }
-.person .who strong { font-family: var(--font-head); font-stretch: 82%; font-weight: 750; font-size: 1.1875rem; }
+.person .who strong { font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 750; font-size: 1.1875rem; }
 .person .who small { display: block; color: var(--soft); font-size: .9375rem; line-height: 1.3; }
 /* numbers on the right are display numerals; status words stay in the reading face */
 .state { text-align: right; display: flex; flex-direction: column; align-items: flex-end; line-height: 1.1; font-size: .9375rem; font-weight: 400; color: var(--soft); }
-.state b { font-family: var(--font-head); font-size: 1.75rem; font-weight: 800; font-stretch: 72%; line-height: 1; color: var(--ink); font-variant-numeric: tabular-nums; }
+.state b { font-family: var(--font-head); font-size: 1.75rem; font-weight: 800; font-stretch: var(--wd-display); line-height: 1; color: var(--ink); font-variant-numeric: tabular-nums; }
 .state.on b { color: var(--deal); }
-.state small { font-weight: 400; font-size: .8125rem; color: var(--soft); }
+.state small { font-weight: 400; font-size: .875rem; color: var(--soft); }
 /* check-in: one row of three pills; the picked one is filled green with a check */
 .pills { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 /* unpicked pills are open choices: no fill, an outline in the secondary text color */
@@ -792,14 +840,14 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 .side[hidden] { display: none; }
 .tapeside { position: relative; margin: 0 -4px; padding-bottom: 28px; filter: drop-shadow(0 1px 0 var(--rule)) drop-shadow(0 10px 18px var(--lift)); }
 /* the slot the tape feeds from */
-.tapeside::before { content: ""; display: block; height: 7px; margin: 0 -7px; border-radius: 4px; background: var(--slot); box-shadow: inset 0 2px 2px rgba(0, 0, 0, .55), 0 0 0 1px var(--slot-edge); position: relative; z-index: 1; }
+.tapeside::before { content: ""; display: block; height: 5px; margin: 0 -5px; border-radius: 3px; background: var(--slot); box-shadow: inset 0 2px 2px rgba(0, 0, 0, .55), 0 0 0 1px var(--slot-edge); position: relative; z-index: 1; }
 .tape { display: flex; flex-direction: column; gap: 16px; background: var(--card); padding: 18px 20px 30px;
-  -webkit-mask: linear-gradient(#000 0 0) top / 100% calc(100% - 7px) no-repeat, conic-gradient(from -45deg at bottom, #000 90deg, #0000 0) bottom / 14px 7px repeat-x;
-  mask: linear-gradient(#000 0 0) top / 100% calc(100% - 7px) no-repeat, conic-gradient(from -45deg at bottom, #000 90deg, #0000 0) bottom / 14px 7px repeat-x; }
+  -webkit-mask: var(--tear-bottom);
+  mask: var(--tear-bottom); }
 .tapehead { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; min-height: 34px; }
-.tape h2 { font-size: 1.625rem; font-stretch: 78%; font-weight: 800; }
+.tape h2 { font-size: 1.625rem; font-stretch: var(--wd-display); font-weight: 800; }
 .tape h2:focus { outline: none; }
-.tapeval { flex: none; font-size: .9375rem; color: var(--soft); }
+.tapeval { flex: none; font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 600; font-size: .9375rem; color: var(--soft); }
 .tapeval.new { color: var(--deal-ink); font-weight: 700; }
 .tapeval.pop { animation: pop .3s cubic-bezier(.3, 1.6, .5, 1); transform-origin: 100% 50%; }
 /* on the tape a deal is a printed entry between perforations, not a separate torn stub */
@@ -812,11 +860,12 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 .totals div { display: flex; align-items: baseline; gap: 8px; }
 .totals dt { color: var(--soft); font-size: .9375rem; }
 .totals div::before { content: ""; order: 1; flex: 1; border-bottom: 2px dotted var(--edge-half); transform: translateY(-4px); }
-.totals dd { order: 2; margin: 0; font-family: var(--font-head); font-stretch: 80%; font-weight: 750; font-size: 1.1875rem; font-variant-numeric: tabular-nums; }
+.totals dd { order: 2; margin: 0; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 750; font-size: 1.1875rem; font-variant-numeric: tabular-nums; }
 .totals .go dd { color: var(--deal-ink); }
 .tape .stubcard:first-child { border-top: 1px solid var(--edge-half); }
-.tape .stubcard .stamp { font-size: .875rem; padding: 2px 5px; }
-.tape .stubcard:nth-child(3n+1) .stamp { --tilt: -4deg; } .tape .stubcard:nth-child(3n+2) .stamp { --tilt: 2.5deg; } .tape .stubcard:nth-child(3n) .stamp { --tilt: -1.5deg; }
+.tape .stubcard .stamp { font-size: 1rem; font-stretch: var(--wd-act); font-weight: 700; letter-spacing: .02em; padding: 1px 6px 2px; }
+.tape .stubcard .stamp::before { border: 1.5px solid currentColor; border-radius: 5px; -webkit-mask: none; mask: none; }
+.tape .stubcard:nth-child(3n+1) .stamp { --tilt: -2deg; } .tape .stubcard:nth-child(3n+2) .stamp { --tilt: 1.5deg; } .tape .stubcard:nth-child(3n) .stamp { --tilt: -1deg; }
 .tape .stubcard .stamp { transform: rotate(var(--tilt)); }
 .tape .insight { padding-top: 14px; border-top: 1.5px dashed var(--edge-half); }
 .tape .trychip { border: none; border-radius: 0; padding: 0; min-height: 44px; background: none; text-decoration: underline; text-underline-offset: 3px; font-family: var(--font-body); font-weight: 400; font-stretch: normal; color: var(--deal-ink); }
@@ -958,7 +1007,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
    You do not press a button under the deal, you stamp it. The Deal control is the stamp's face: outlined and clean while it
    waits, slammed and inked when you press. It then travels to the head of the running ticket. */
 .primary#shake { position: relative; display: block; width: auto; min-width: 180px; min-height: 76px; margin: 6px auto 4px; padding: 6px 34px 4px; background: none; box-shadow: none; color: var(--deal); border-radius: 10px;
-  font-size: 2.75rem; font-weight: 800; font-stretch: 76%; letter-spacing: .07em; text-transform: uppercase; line-height: 1; --tilt: -3deg; transform: rotate(var(--tilt)); transition: transform .12s ease-out; }
+  font-size: 2.75rem; font-weight: 800; font-stretch: var(--wd-display); letter-spacing: .07em; text-transform: uppercase; line-height: 1; --tilt: -3deg; transform: rotate(var(--tilt)); transition: transform .12s ease-out; }
 .primary#shake::before { content: ""; position: absolute; inset: 0; border: 6px double currentColor; border-radius: 10px; }
 .primary#shake:hover:not(:disabled) { transform: rotate(-3deg) scale(1.03); }
 .primary#shake:active:not(:disabled) { transform: rotate(-3deg) scale(.96); }
@@ -974,15 +1023,18 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 /* ---------- the room on paper ----------
    Each friend is the stub of the ticket they are on: their wheel on the stub end, what they are doing, how long is left.
    A check-in is a stamp you put on your own. */
-.people { gap: 8px; filter: drop-shadow(0 1px 0 var(--rule)) drop-shadow(0 6px 10px var(--lift)); }
+/* spec 011: the room is one roster on one sheet of ticket paper, a hairline between people, not a stack of stubs */
+.roster { filter: var(--paper-shadow); }
+.people { gap: 0; background: var(--card); border-radius: 6px 0 0 6px; padding: 4px 3px 4px 0; -webkit-mask: var(--zig); mask: var(--zig); }
 .person, .person + .person, .person.you, .person:last-child { border: none; }
-.person { background: var(--card); border-radius: 6px 0 0 6px; padding: 10px 22px 10px 12px; min-height: 72px; -webkit-mask: var(--zig); mask: var(--zig); grid-template-columns: 64px 1fr auto; gap: 12px; }
-.person .who { padding-left: 14px; background: radial-gradient(circle, var(--edge) 1.2px, transparent 1.7px) 0 0 / 6px 8px repeat-y; align-self: stretch; display: flex; flex-direction: column; justify-content: center; }
-.person.you { background: var(--stub); }
-.person { --track: color-mix(in srgb, var(--ink) 20%, var(--card)); }
+.person { padding: 10px 18px 10px 14px; min-height: 72px; grid-template-columns: 56px 1fr auto; gap: 14px; }
+.person + .person { border-top: 1px solid var(--edge-half); }
+.person .who { align-self: stretch; display: flex; flex-direction: column; justify-content: center; }
+.person.you { background: var(--stub); border-radius: 6px 0 0 0; margin-top: -4px; padding-top: 14px; }
+.person { --track: color-mix(in srgb, var(--deal) 8%, color-mix(in srgb, var(--ink) var(--track-ink), var(--card))); }
 .presence { --track: color-mix(in srgb, var(--ink) 22%, var(--paper)); }
 .pills { gap: 14px; padding: 6px 4px 2px; }
-.pills .chip { position: relative; border-radius: 6px; background: none; box-shadow: none; color: var(--soft); font-family: var(--font-head); font-stretch: 80%; font-weight: 800; font-size: 1.125rem; letter-spacing: .05em; text-transform: uppercase; min-height: 48px; }
+.pills .chip { position: relative; border-radius: 6px; background: none; box-shadow: none; color: var(--soft); font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 1.125rem; letter-spacing: .05em; text-transform: uppercase; min-height: 48px; }
 .pills .chip::before { content: ""; position: absolute; inset: 0; border: 4px double currentColor; border-radius: 6px; }
 .pills .chip:nth-child(1) { transform: rotate(-2deg); } .pills .chip:nth-child(2) { transform: rotate(1.5deg); } .pills .chip:nth-child(3) { transform: rotate(-1deg); }
 .pills .chip[aria-checked="true"] { background: none; color: var(--deal); box-shadow: none; }
@@ -992,8 +1044,8 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 /* ---------- sheets are paper ----------
    No grab handle and no rounded corners: a sheet is a length of paper fed up from the bottom, torn across its top. */
 .sheet:not(.paper) { border-top: none; border-radius: 0; padding-top: 26px;
-  -webkit-mask: linear-gradient(#000 0 0) bottom / 100% calc(100% - 8px) no-repeat, conic-gradient(from 135deg at top, #000 90deg, #0000 0) left top / 16px 8px repeat-x;
-  mask: linear-gradient(#000 0 0) bottom / 100% calc(100% - 8px) no-repeat, conic-gradient(from 135deg at top, #000 90deg, #0000 0) left top / 16px 8px repeat-x; }
+  -webkit-mask: var(--tear-top);
+  mask: var(--tear-top); }
 .grab { display: none; }
 
 /* ---------- the desk (wide windows) ----------
@@ -1003,7 +1055,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   :root { --pad: clamp(28px, 5vw, 72px); --gap: clamp(28px, 4vw, 56px); --tapew: clamp(300px, 30vw, 372px); --stagetop: clamp(14px, 3vh, 30px); }
   .app { max-width: 1200px; padding-inline: var(--pad); }
   /* above the stage, which is pulled up under it: the floating-wheel control up here has to take clicks */
-  .deskhead { position: relative; z-index: 2; display: flex; align-items: baseline; gap: 14px; padding-top: 30px; font-family: var(--font-head); font-stretch: 76%; font-weight: 800; font-size: 1.25rem; line-height: 1; color: var(--soft); }
+  .deskhead { position: relative; z-index: 2; display: flex; align-items: baseline; gap: 14px; padding-top: 30px; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 1.25rem; line-height: 1; color: var(--soft); }
   .deskhead .mark { color: var(--ink); }
   .deskhead .day { font-family: var(--font-body); font-weight: 400; font-stretch: normal; font-size: .9375rem; }
   .desk { display: grid; grid-template-columns: minmax(0, 1fr) var(--tapew); grid-template-areas: "stage tape"; align-items: start; column-gap: var(--gap); margin-top: -50px; }
@@ -1042,7 +1094,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   .runticket .timerwrap { flex: 1; display: flex; flex-direction: column; align-items: stretch; padding-top: 0; }
   .runticket .dial { width: clamp(240px, min(100dvh - 470px, 100cqw - 140px), 600px); margin: auto; padding: 0; }
   .runticket .face .unit { font-size: max(.9375rem, 4.4cqw); }
-  .runticket .note { margin: 18px -40px 0 -34px; padding: 16px 40px 20px 34px; border-top: 2px dotted var(--edge); text-align: left; font-size: 1.125rem; max-width: none; }
+  .runticket .note { margin: 18px -40px 0 -34px; padding: 18px 40px 20px 34px; background: var(--holes-x); background-position: 0 0; text-align: left; font-size: 1.125rem; max-width: none; }
   .runticket .aside { margin: -6px 0 12px; text-align: left; }
   .timerwrap { gap: 14px; }
   h1 { font-size: 2.75rem; }
@@ -1051,10 +1103,10 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   .keepon { display: none; }
   @media (max-width: 1150px) { .tape { padding-inline: 18px; } .tape .stubcard { grid-template-columns: 58px 1fr; } .tape .stubcard .title { font-size: 1.0625rem; } .tape .stubcard .t b { font-size: 1.0625rem; } }
   /* a decision is made at the stage: the paper lands over the clock, the tape stays readable beside it */
-  .scrim { align-items: center; justify-content: flex-start; padding: 24px 0 24px calc(var(--pad) + max(0px, (100vw - 1200px) / 2)); -webkit-backdrop-filter: none; backdrop-filter: none; }
-  .sheet, .sheet:not(.paper) { --behind: var(--sheet); width: min(720px, min(100vw, 1200px) - 2 * var(--pad) - var(--tapew) - var(--gap)); max-width: none; border: none; border-radius: 0; padding: 34px 32px 34px; max-height: calc(100% - 48px);
-    -webkit-mask: linear-gradient(#000 0 0) center / 100% calc(100% - 16px) no-repeat, conic-gradient(from 135deg at top, #000 90deg, #0000 0) left top / 16px 8px repeat-x, conic-gradient(from -45deg at bottom, #000 90deg, #0000 0) left bottom / 16px 8px repeat-x;
-    mask: linear-gradient(#000 0 0) center / 100% calc(100% - 16px) no-repeat, conic-gradient(from 135deg at top, #000 90deg, #0000 0) left top / 16px 8px repeat-x, conic-gradient(from -45deg at bottom, #000 90deg, #0000 0) left bottom / 16px 8px repeat-x; }
+  .scrim { align-items: flex-end; justify-content: flex-start; padding: 24px 0 0 calc(var(--pad) + max(0px, (100vw - 1200px) / 2)); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .sheet, .sheet:not(.paper) { --behind: var(--sheet); width: min(720px, min(100vw, 1200px) - 2 * var(--pad) - var(--tapew) - var(--gap)); max-width: none; border: none; border-radius: 0; padding: 34px 32px 30px; max-height: calc(100% - 24px);
+    -webkit-mask: var(--tear-top);
+    mask: var(--tear-top); }
   @keyframes sheet-in { from { transform: translateY(18px); opacity: 0; } }
   /* asking for time at a desk: the clock's answer and the stamps read from arm's length */
   .voice { width: 76px; height: 76px; }
@@ -1142,7 +1194,7 @@ function applyTerm(s, term, intention) {
 /* ledger kinds, as the server files them (packages/core negotiation.ts, ADRs 0006 and 0007). `deal` is the deal itself;
    `done` (it ran its full time), `end_early` (Stop for now), `skip` (a block ended early) and `forgiven` (borrowed
    minutes cleared) are not more deals. `done` is green: it is the deal kept, not a deal missed. */
-const MARK = { deal: "Deal", done: "Done", freebie: "Free", borrow: "Borrowed", trade: "+Focus", bonus: "Bonus", override: "No terms", end_early: "Stopped", skip: "Early", forgiven: "Cleared" };
+const MARK = { deal: "Deal", done: "Done", freebie: "Free", borrow: "Borrowed", trade: "Traded", bonus: "Bonus", override: "No terms", end_early: "Stopped", skip: "Early", forgiven: "Cleared" };
 const TERMS = { deal: "The deal you made", done: "The whole deal", freebie: "On the house", borrow: "Borrowed from a later break", trade: "Traded for 5 more min of focus", bonus: "Kept going for 10 more", override: "No terms", end_early: "Stopped for now", skip: "Moved on early", forgiven: "Borrowed minutes don't carry over" };
 const NOT_DEALS = { done: 1, end_early: 1, skip: 1, forgiven: 1 };
 /* asks for more time: their title is "+5 min of Reels" */
@@ -1196,9 +1248,9 @@ let lastRepay = null;
 const hm = m => { m = Math.max(0, Math.round(m)); if (m < 60) return `${m} min`; const h = Math.floor(m / 60), r = m % 60; return r ? `${h}h ${r}m` : `${h}h`; };
 function progressText(p) {
   if (!p) return "";
-  if (p.kind === "stamped") return `${p.n} stamped`;
+  if (p.kind === "stamped") return `${p.n} ${p.n === 1 ? "piece" : "pieces"} done`;
   if (p.kind === "toGo") return `${p.n} to go`;
-  if (p.kind === "in") return `${hm(p.minutes)} in`;
+  if (p.kind === "in") return `${hm(p.minutes)} done so far`;
   if (p.kind === "left") return `about ${hm(p.minutes)} left`;
   return "";
 }
@@ -1485,8 +1537,8 @@ function face(r, m) {
 const ROOM = [
   { n: "Maya", i: "M", live: true, d: "Focusing on Orgo", left: 14, u: "min left", p: .55, t: "focus" },
   { n: "Jordan", i: "J", d: "On a break, texting", left: 3, u: "min of break", p: .4, t: "break" },
-  { n: "Priya", i: "P", st: "Deciding", d: "Picking her next block", p: 0, t: "none" },
-  { n: "Sam", i: "S", st: "", d: "Checked in stuck at 10:38pm", p: 0, t: "none" },
+  { n: "Priya", i: "P", st: "Deciding", d: "Picking a next block", p: 0, t: "none" },
+  { n: "Sam", i: "S", st: "", d: "Checked in at 10:38pm: stuck", p: 0, t: "none" },
 ];
 const mini = (p, size) => `<span class="mini${size ? " " + size : ""}${p.live ? " live" : ""}" aria-hidden="true" style="--p:${p.p}"><span class="track"></span>${p.t !== "none" ? `<span class="fill ${p.t}"></span>` : ""}<span class="ini">${p.i}</span></span>`;
 
@@ -1513,7 +1565,7 @@ function paintTitle() { const t = S ? `${remaining() <= 0 ? "Time's up" : `${min
 function deskHead() {
   const d = new Date(Date.now() + (BE ? 0 : DEMO_SHIFT));
   /* while a block runs, the desk's own control sits up here: floating the wheel over your other windows */
-  const pip = PIP_OK && S && tab === "now" ? `<button class="textbtn pipbtn" id="pipbtn" aria-pressed="${!!pipWin}">${pipWin ? "Wheel is on top" : "Keep the wheel on top"}</button>` : "";
+  const pip = PIP_OK && S && tab === "now" ? `<button class="textbtn pipbtn" id="pipbtn" aria-pressed="${!!pipWin}">${pipWin ? "Timer is on top" : "Keep the timer on top"}</button>` : "";
   return `<span class="mark">Pomodeal</span><span class="day">${N(`${d.toLocaleDateString([], { weekday: "long" })}, ${clockStr()}`)}</span>${pip}`;
 }
 
@@ -1589,11 +1641,11 @@ function ticket(peek) {
       <p class="sentence">${s}</p>
       ${fc.startWith ? `<p class="startw"><span>Start with:</span> ${N(esc(moveText(fc.startWith)))}</p>` : ""}
       ${pk}
-      <button class="textbtn notcard" id="notcard">Not this one</button>
+      <button class="textbtn notcard" id="notcard">Make a quick deal instead</button>
     </div>
     <div class="stub perf">
       <button class="primary" id="shake">Deal</button>
-      <p class="hint">Press DEAL to start. ${WIDE.matches ? "Click" : "Tap"} an underlined part to change it.</p>
+      <p class="hint">${WIDE.matches ? "Click" : "Tap"} an underlined word to change it, then press DEAL.</p>
     </div>
   </section></div>`;
   }
@@ -1604,11 +1656,11 @@ function ticket(peek) {
   const tokName = `<button class="tok" data-pick="task" aria-controls="deal-picker" aria-expanded="${p === "task"}" aria-label="${esc(bigTitle())}, the big one, change">${esc(bigTitle())}</button>`;
   const tokPay = `<button class="tok" id="paytok" aria-label="${big.pay} minutes, first payment, switch to ${big.pay === 15 ? 30 : 15}">${big.pay} min</button>`;
   const sentence = isBig
-    ? `${deal.act ? `<span class="nowrap">${tokB(p)} of ${tokA(p)}.</span>` : `${tokA(p)}.`} <span class="payline">First payment on <span class="nowrap">${tokName}:</span> <span class="nowrap">${tokPay}.</span></span>`
+    ? `${deal.act ? `<span class="nowrap">${tokB(p)} of ${tokA(p)}.</span>` : `${tokA(p)}.`} <span class="payline">First sitting on <span class="nowrap">${tokName}:</span> <span class="nowrap">${tokPay}.</span></span>`
     : deal.act
       ? `<span class="nowrap">${tokB(p)} of ${tokA(p)},</span> then <span class="nowrap">${tokF(p)} of</span> <span class="nowrap">${tokT(p)}.</span>`
       : `${tokA(p)}. Straight into <span class="nowrap">${tokF(p)} of</span> <span class="nowrap">${tokT(p)}.</span>`;
-  const bigChip = offerBig ? `<button class="bigchip" id="bigchip" aria-pressed="${big.on}"><span class="cbox" aria-hidden="true">${CHECK}</span>Bigger than one sitting?</button>` : "";
+  const bigChip = offerBig ? `<button class="bigchip" id="bigchip" aria-pressed="${big.on}"><span class="cbox" aria-hidden="true">${CHECK}</span>Needs more than one sitting?</button>` : "";
   /* R32: the two optional rows are phrases on the ticket, "About 2h" and "Mostly writing", with printed boxes to ink.
      Each name starts with what's printed ("2h, about 2 hours"), so voice control and screen readers agree. */
   const bigRows = isBig ? `<div class="phrases">
@@ -1626,7 +1678,7 @@ function ticket(peek) {
     </div>
     <div class="stub perf">
       <button class="primary" id="shake">Deal</button>
-      <p class="hint">Press DEAL to start. ${WIDE.matches ? "Click" : "Tap"} an underlined part to change it.</p>
+      <p class="hint">${WIDE.matches ? "Click" : "Tap"} an underlined word to change it, then press DEAL.</p>
     </div>
   </section></div>`;
 }
@@ -1636,7 +1688,8 @@ const TILTS = [-2, 1.5, -1, 2.5, -3, 1];
    the deal itself, a deal done, and borrowing are inked like any other deal */
 const PLAIN = { end_early: 1, skip: 1, forgiven: 1, override: 1 };
 const dealCount = () => ledger.filter(e => !NOT_DEALS[e.kind]).length;
-const lower = t => t.replace(/^./, c => c.toLowerCase());
+/* mid-sentence a title loses its capital ("of reading BIO 180 ch. 7"), but never an acronym's ("of BIO midterm", not "bIO") */
+const lower = t => t.replace(/^([A-Z])(?=[a-z]*\b)/, c => c.toLowerCase());
 const stubTitle = e => ASKS[e.kind] ? e.text.replace(/ more min of /, " min of ").replace(/^(\d)/, "+$1") : e.text;
 const stubInner = (e, i) => `<span class="t"><b>${e.t.replace(/[ap]m$/, "")}<small>${e.t.slice(-2)}</small></b></span><span class="what"><span class="row"><span class="title">${esc(stubTitle(e))}</span><span class="stamp${PLAIN[e.kind] ? " plain" : ""}" style="--tilt:${TILTS[i % TILTS.length]}deg">${MARK[e.kind]}</span></span><em>${N(esc(e.sub || TERMS[e.kind]))}</em>${e.note ? `<em>First thing: ${N(esc(lower(e.note)))}${/[.?!]$/.test(e.note) ? "" : "."}</em>` : ""}</span>`;
 /* tonight's sample ledger. The intercept's "Last Reels deal" reads from it, so every screen tells the same story:
@@ -1718,7 +1771,7 @@ function startView() {
   const door = !fromCard && shownCards().length > 0, folded = door && !quickOpen;
   const tk = door ? `${quickDoor(!folded)}<div id="quickdeal"${folded ? " hidden" : ""}>${ticket(true)}</div>` : ticket(true);
   return `<h1 class="home">Make a deal</h1>${weekView()}${cardsView()}${tk}
-  ${deal.act && !folded ? `<button class="textbtn skip" id="skipbreak">Skip the break, start ${esc(fromCard ? fromCard.title : shortTask())}</button>` : ""}
+  ${deal.act && !folded ? `<button class="textbtn skip" id="skipbreak">Skip ${esc(deal.act)}, start ${esc(fromCard ? fromCard.title : shortTask())} now</button>` : ""}
   <section class="rows${folded ? "" : " anchor"}" aria-label="Your room">${presence()}</section>`;
 }
 function interceptView() {
@@ -1728,7 +1781,7 @@ function interceptView() {
     <p class="lastdeal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg><span>${(() => { const r = newest(ledger, "Reels") || newest(SEED, "Reels"); return N(`Last Reels deal: ${r.t}, ${SHORT[r.kind]}.`); })()}</span></p>
     <div class="intercept-foot">
       <button class="textbtn" id="letmein">Not now, just open Instagram</button>
-      <p class="caption">Your Intercept shortcut opened this.</p>
+      <p class="caption">Your Instagram shortcut opened this.</p>
     </div>`;
 }
 function presence(still) {
@@ -1757,11 +1810,11 @@ function runningView() {
   /* R37: the app's one printed checkbox, a quiet row under the ring */
   const keepOn = !isB && WAKE_OK ? `<button class="keepon" id="keepon" role="switch" aria-checked="${wakeOn}"><span class="cbox" aria-hidden="true">${CHECK}</span>Keep screen on</button>` : "";
   /* spec 008: the permission step. The browser's prompt only comes after this tap. */
-  const askPush = pushAsk && !quiet ? `<button class="pushask" id="pushask"${pushAsk === "asking" ? ` aria-disabled="true"` : ""}>${TAPS}Turn on taps at block ends</button>` : "";
+  const askPush = pushAsk && !quiet ? `<button class="pushask" id="pushask"${pushAsk === "asking" ? ` aria-disabled="true"` : ""}>${TAPS}Get a notification when a block ends</button>` : "";
   const nowLag = tn ?? dn;
   return `<div class="runwrap"><section class="runticket" aria-label="Your deal, running"><div class="now${tn != null ? " turn" : dn != null ? " dealin" : ""}"${nowLag != null ? ` style="${lagVar(nowLag)}"` : ""}>
     <div class="nowhead">
-      <span class="kind"><span class="swatch ${isB ? "break" : "focus"}" aria-hidden="true"></span>${isB ? "Break you chose" : "Focus"}</span>
+      <span class="kind"><span class="swatch ${isB ? "break" : "focus"}" aria-hidden="true"></span>${isB ? "Your break" : "Focus"}</span>
       ${S.serial ? `<span class="dealtwrap${S.justStarted ? " fresh" : ""}"><span class="dealt"><span class="serial">No. ${S.serial}</span><span class="stamp">DEAL</span></span></span>` : ""}
     </div>
     <h1>${tn != null && turnFrom && turnFrom.label ? `<span class="isname">${esc(title(b.label))}</span><span class="wasname" aria-hidden="true">${esc(turnFrom.label)}</span>` : esc(title(b.label))}</h1>
@@ -1783,7 +1836,7 @@ function runningView() {
   <section class="rows" aria-label="Your room">
     ${presence(!isB)}
   </section>
-  ${S.debt > 0 ? `<p class="soft small">${N(S.debt)} borrowed minutes come off your next round's break. If you're done for now, they're cleared.</p>` : ""}`;
+  ${S.debt > 0 ? `<p class="soft small">You borrowed ${N(S.debt)} ${S.debt === 1 ? "minute" : "minutes"}. They come off your next break, and if you stop here you don't owe them.</p>` : ""}`;
 }
 
 function renderSheet() {
@@ -1838,7 +1891,7 @@ function sheetBody() {
         <p class="rest" id="dealcost">${serial}<b>${N(rest)}</b></p>
       </div>
       <button class="primary" id="go">${nxt ? `Start ${esc(nameOf(nxt))}` : "Stop for now"}</button>
-      <button class="textbtn" id="ask2">Ask for ${N(5)} more minutes</button>`;
+      <button class="textbtn" id="ask2">Ask for ${N(5)} more minutes of ${esc(longName(b))}</button>`;
   } else if (sheet.kind === "done") {
     /* spec 010: the deal ran its full time. The ticket is stamped Done; a big one's two notes sit under it; then the
        next round as a fresh ticket to stamp, Done for now at the same size, and the clock's 10 more minutes. */
@@ -1853,7 +1906,7 @@ function sheetBody() {
       </div>` : "";
     const { deal: d, repaid } = repayDebt(nextRound(S), S.debt), line = dealLine(d);
     const owed = repaid ? `${repaid} borrowed ${repaid === 1 ? "minute comes" : "minutes come"} off this break.` : "";
-    const more = canBonus() && !movedOn() ? `<button class="textbtn" id="more10">10 more minutes of ${esc(card ? card.title : shortName(b))}</button>` : "";
+    const more = canBonus() && !movedOn() ? `<button class="textbtn" id="more10">${N("Keep going for 10 more minutes")}</button>` : "";
     body = `<span class="grab" aria-hidden="true"></span>
       <h2 id="sh" tabindex="-1">That was the deal.</h2>
       <div class="tearrow kept${n ? " stacked" : ""}">
@@ -1869,7 +1922,7 @@ function sheetBody() {
     const offer = makeOffer(S);
     const back = `<button class="secondary" id="nevermind">${over ? `Start ${esc(nameOf(nxt))} instead` : "Never mind"}</button>`;
     /* you ask, quoted small; the clock answers, large */
-    const ask = `<h2 id="sh" class="you" tabindex="-1">“5 more minutes of ${esc(title(b.label))}?”</h2>`;
+    const ask = `<h2 id="sh" class="you" tabindex="-1">${N(`“5 more minutes of ${esc(title(b.label))}?”`)}</h2>`;
     if (offer.terms[0].kind === "freebie") {
       const ends = clockStr(Date.now() + remaining() + 5 * 60000);
       body = `${ask}
@@ -1886,7 +1939,7 @@ function sheetBody() {
       const pre = offer.terms.findIndex(t => t.kind === lastRepay);
       /* what each term costs, said as a sentence in your own words: no arrows, no figures to decode */
       const mins = n => `${n} ${n === 1 ? "minute" : "minutes"}`;
-      const borrow = !bp.from ? ["Take them from my next round's break.", "If I'm done for now, they're cleared."]
+      const borrow = !bp.from ? ["Take them from my next break.", "If I stop after this, I don't owe them."]
         : bp.from === bp.to ? ["Take them from later breaks.", `My next break stays at ${mins(bp.from)}.`]
         : bp.carry ? ["Take them from my next break.", `It goes from ${mins(bp.from)} to ${bp.to}, and the other ${bp.carry} ${bp.carry === 1 ? "comes off a later break" : "come off later breaks"}.`]
         : ["Take them from my next break.", `It goes from ${mins(bp.from)} to ${bp.to}.`];
@@ -1895,7 +1948,7 @@ function sheetBody() {
         return termTicket("button", ` data-term="${i}"`, lead, rest, i === pre);
       }).join("");
       /* the override always works, but stays a quiet link under the healthier choice */
-      const noterms = `<button class="textbtn" data-term="x">No terms. I need this.</button>`;
+      const noterms = `<button class="textbtn" data-term="x">Just give me the 5 minutes</button>`;
       if (needs) {
         /* the third ask: the clock fills in a first thing; tapping it opens one sideways row of choices */
         const shown = sheet.typing ? ((sheet.typed || "").trim() || "type it") : sheet.draft;
@@ -1950,9 +2003,9 @@ function panelBody() {
         <button class="mrow" id="m-break">Take a break first<small>${N(`A break, then ${c.minutes} min on this.`)}</small></button>
         <button class="mrow" id="m-split">Split into pieces<small>${hasPieces ? "Rename, resize, add or remove pieces." : "Name the parts and guess the minutes for each."}</small></button>
         <button class="mrow" id="m-spread">Spread over the days left<small>${spreadable(pl) ? "A little each day up to the due day. Nothing is set until you sign." : "Split it first, then spread the pieces."}</small></button>
-        <button class="mrow" id="m-fresh">Start fresh on this one<small>Clears the bookmark and your gut size. Pieces stay.</small></button>
+        <button class="mrow" id="m-fresh">Start fresh on this one<small>Clears your next step and your size guess. Pieces stay.</small></button>
         <button class="mrow" id="m-aside">Set aside<small>Off this screen. It waits in All big tasks.</small></button>
-        <button class="mrow gone" id="m-del">Delete<small>Gone for good, bookmark and all.</small></button>
+        <button class="mrow gone" id="m-del">Delete<small>Gone for good, notes and all.</small></button>
       </div>
       <button class="textbtn pclose" id="p-close">Close</button>`;
   }
@@ -1966,7 +2019,7 @@ function panelBody() {
   const open = (items || []).filter(i => i.status !== "set_aside"), aside = (items || []).filter(i => i.status === "set_aside");
   const list = panel.error ? `<p>Your big ones didn't load.</p><button class="secondary" id="l-retry">Try again</button>`
     : !items ? `<p class="soft" role="status">Getting your big ones…</p>`
-    : !items.length ? `<p class="soft">Nothing here yet. Tick “Bigger than one sitting?” on a deal to start one.</p>`
+    : !items.length ? `<p class="soft">Nothing here yet. Tick “Needs more than one sitting?” on a deal to start one.</p>`
     : `${open.length ? `<ul class="biglist" aria-label="Open">${open.map(row).join("")}</ul>` : ""}
       ${aside.length ? `<h3 class="asideh" id="asideh">Set aside</h3><ul class="biglist" aria-labelledby="asideh">${aside.map(row).join("")}</ul>` : ""}`;
   return `<h2 id="ph" tabindex="-1">All big tasks</h2>
@@ -2084,7 +2137,7 @@ const pieceName = (r, i) => r.title.trim() || r.was || `piece ${i + 1}`;
 const splitPieces = p => p.rows.map(r => ({ r, title: r.title.trim() || (r.stampedAt != null ? r.was || "" : "") })).filter(x => x.title)
   .map(({ r, title }) => ({ title, minutes: clampMin(r.minutes), ...(r.plannedDay ? { plannedDay: r.plannedDay } : {}), ...(r.stampedAt != null ? { stampedAt: r.stampedAt } : {}) }));
 /* spec 008: said once, without comment, and only when there was a gut size */
-const splitSum = p => { const g = p.task.gutMin; if (!g) return ""; const tot = p.rows.reduce((a, r) => a + clampMin(r.minutes), 0); return `Your pieces add up to ${hm(tot)}. Your gut said ${gutText(g)}.`; };
+const splitSum = p => { const g = p.task.gutMin; if (!g) return ""; const tot = p.rows.reduce((a, r) => a + clampMin(r.minutes), 0); return `Your pieces add up to ${hm(tot)}. You guessed ${gutText(g)}.`; };
 const saveText = p => splitPieces(p).length ? "Save pieces" : "Name a piece to save";
 function splitBody() {
   const p = panel, c = cardById(p.id); if (!c) return null;
@@ -2107,7 +2160,7 @@ function splitBody() {
   };
   const sum = splitSum(p), full = p.rows.length >= MAX_PIECES, u = p.undo;
   return `<h2 id="ph" tabindex="-1">${esc(c.title)} in pieces</h2>
-    ${p.rows.length ? `<p class="soft small splithint">${WIDE.matches ? "Drag" : "Slide"} a tear line to make a piece longer or shorter.</p>` : ""}
+    ${p.rows.length ? `<p class="soft small splithint">${WIDE.matches ? "Drag" : "Slide"} a dotted line to make a piece longer or shorter.</p>` : ""}
     <ol class="pieces torn" aria-label="Pieces">${p.rows.map(row).join("")}
       <li class="openend">${full ? `<p class="soft small">Up to ${MAX_PIECES} pieces.</p>` : `<button class="addpiece" id="s-add">${PLUS}Add a piece</button>`}</li></ol>
     ${u ? `<p class="undo" role="status">Removed ${esc(pieceName(u.row, u.at))}. <button class="textbtn" id="s-undo">Undo</button></p>` : ""}
@@ -2174,7 +2227,7 @@ const LINES = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke
 const aiOffered = p => (BE ? !!ENV.aiSuggest : true) && aiConsent() !== "no" && !p.rows.some(r => r.stampedAt != null);
 function aiBlock(p) {
   const a = p.ai;
-  if (a && a.state === "ask") return `<div class="aiask" role="group" aria-labelledby="ai-q"><p id="ai-q">${AI_DISCLOSURE}</p>
+  if (a && a.state === "ask") return `<div class="aiask" role="group" aria-labelledby="ai-q"><p id="ai-q">${N(AI_DISCLOSURE)}</p>
       <div class="aibtns"><button class="secondary" id="ai-yes">Suggest pieces</button><button class="textbtn" id="ai-no">I'll split it myself</button></div></div>`;
   if (a && a.state === "wait") return `<p class="ainote" id="ai-note" tabindex="-1" role="status">Getting suggestions…</p>`;
   if (a && a.state === "filled") return `<p class="undo" id="ai-note" tabindex="-1" role="status"><span>Suggested pieces. Change any of them before you save.</span> <button class="textbtn" id="ai-undo">Undo</button></p>`;
@@ -2268,7 +2321,7 @@ function planHtml() {
     return `<li class="day"><h3><span>${esc(dayName(day))}</span><span class="dm">${N(hm(total))}</span></h3><span class="load" aria-hidden="true"><i style="width:${Math.round(total / most * 100)}%"></i></span>${pieces.length ? `<ul>${pieces.map(({ d, i }) => {
       const nm = esc(t.pieces[d.pieceIndex].title);
       /* the day's total is in its heading; a row says its own minutes only when the day holds more than one */
-      return `<li class="prow"><span class="ptitle">${nm}</span>${pieces.length > 1 ? `<span class="pmin">${N(hm(d.minutes))}</span>` : ""}${pick(i, d, nm)}</li>`; }).join("")}</ul>` : ""}</li>`;
+      return `<li class="prow"><span class="ptitle">${N(nm)}</span>${pieces.length > 1 ? `<span class="pmin">${N(hm(d.minutes))}</span>` : ""}${pick(i, d, nm)}</li>`; }).join("")}</ul>` : ""}</li>`;
   }).join("");
   /* spec 008: exam study goes over two or more days when it can, and says why, once */
   const why = t.taskType === "exam" && days.length >= 2 ? `<p class="spwhy">Two shorter days usually stick better than one long night. Change it if you need to.</p>` : "";
@@ -2486,7 +2539,7 @@ function ledgerView() {
   const any = ledger.length || studied;
   return `<div class="tapehead"><h2 id="tapeh" tabindex="-1">Today's deals</h2><span class="tapeval" id="tapeval"></span></div>
   ${!any ? `<p class="soft">Nothing yet. Every deal you make lands here, with its terms.</p>` : ""}
-  ${ledger.length || S ? `<ul class="stubs" aria-label="Deals, newest first">${S ? `<li class="stubcard live"><span class="t"><b>now</b></span><span class="what"><span class="row"><span class="title">${esc(title(cur().label))}</span><span class="stamp plain">Running</span></span><em>${S.serial ? `<span class="num">No. ${S.serial}</span>, ` : ""}${cur().type === "focus" ? "focus" : "the break you chose"}</em></span></li>` : ""}${ledger.map((e, i) => `<li class="stubcard${freshStub(e)}">${stubInner(e, i)}</li>`).reverse().join("")}</ul>` : ""}
+  ${ledger.length || S ? `<ul class="stubs" aria-label="Deals, newest first">${S ? `<li class="stubcard live"><span class="t"><b>now</b></span><span class="what"><span class="row"><span class="title">${esc(title(cur().label))}</span><span class="stamp plain">Running</span></span><em>${S.serial ? `<span class="num">No. ${S.serial}</span>, ` : ""}${cur().type === "focus" ? "focus" : "your break"}</em></span></li>` : ""}${ledger.map((e, i) => `<li class="stubcard${freshStub(e)}">${stubInner(e, i)}</li>`).reverse().join("")}</ul>` : ""}
   ${any ? `<dl class="totals">
     <div class="go"><dt>Studied</dt><dd>${N(studied)} min</dd></div>
     <div><dt>Deals made</dt><dd>${deals}</dd></div>
@@ -2524,10 +2577,10 @@ function roomView(side) {
   const samExtra = nudged ? `<small id="nudged" tabindex="-1">${N("Nudge sent: “You got this, start with one page.”")}</small>` : `<button class="textbtn nudge" id="nudge">Send a nudge</button>`;
   return `${side ? `<h2>Late-night BIO crew</h2>` : `<button class="textbtn back" id="backnow">Back to the clock</button><h1>Late-night BIO crew</h1>`}
   <p class="soft">${N("4 friends. Messages wait until your break.")}</p>
-  <ul class="people" aria-label="Who's here">
+  <div class="roster"><ul class="people" aria-label="Who's here">
     <li class="person you">${mini(me)}${who(me)}${state(me)}</li>
     ${ROOM.map(p => `<li class="person">${mini(p)}${who(p, p.n === "Sam" ? samExtra : "")}${state(p)}</li>`).join("")}
-  </ul>
+  </ul></div>
   ${!running ? `<button class="primary" id="joinmaya">${N("Start 14 min with Maya")}</button>` : ""}
   <section class="stack" aria-labelledby="cih"><h2 class="label" id="cih">Your check-in</h2>
     <div class="pills" role="radiogroup" aria-labelledby="cih">${["Starting", "Stuck", "Done"].map(c => { const on = !!checkin && checkin.c === c; return `<button class="chip" role="radio" data-ci="${c}" aria-checked="${on}">${on ? CHECK : ""}${c}</button>`; }).join("")}</div>
@@ -2566,7 +2619,7 @@ function bind() {
     big.on = !big.on; if (big.on && big.namedAt == null) big.namedAt = Date.now() + clockOffset;
     if (picker === "focus") picker = null;
     /* R40: the ticket is drawn again, so focus is put back on the box you pressed (Safari doesn't focus a tapped button) */
-    nextFocus = "#bigchip"; render(); say(big.on ? `First payment on ${bigTitle()}: ${big.pay} minutes. Size and kind are optional.` : "Back to one deal.");
+    nextFocus = "#bigchip"; render(); say(big.on ? `First sitting on ${bigTitle()}: ${big.pay} minutes. Size and kind are optional.` : "Back to one deal.");
   });
   document.querySelectorAll("[data-type]").forEach(b => b.onclick = () => {
     const k = b.dataset.type; big.type = big.type === k ? null : k;
@@ -2578,7 +2631,7 @@ function bind() {
     const m = +b.dataset.gut; big.gut = big.gut === m ? null : m;
     nextFocus = `[data-gut="${m}"]`; render(); say(big.gut ? `About ${gutSpoken(m)}` : "No size picked");
   });
-  on("#paytok", () => { big.pay = big.pay === 15 ? 30 : 15; render(); say(`First payment, ${big.pay} minutes.`); });
+  on("#paytok", () => { big.pay = big.pay === 15 ? 30 : 15; render(); say(`First sitting, ${big.pay} minutes.`); });
   const fm = $("#firstmove"); if (fm) {
     fitLine(fm);
     fm.oninput = e => { big.move = e.target.value; big.edited = !!e.target.value.trim(); fitLine(fm, false); };
