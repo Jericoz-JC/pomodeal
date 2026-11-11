@@ -158,3 +158,11 @@ From here every change went to the council in small rounds (`.claude/skills/desi
 | c6: those fixes | 7/10 | 7.5/10 | 6.5/10 | first move asked before size and kind; slim stamps lead on the left, 14 px words; DEAL centred and larger on desk; desk start centred beside the tape; tag column in em; "building something", "The first one's free", "Kept going 10 more minutes" |
 
 Not taken, with why: boxes round − and + (accessibility, c6) after two reviewers asked for bare glyphs in c5; a grip on the tear line (designer, c6); "Needs more than one sitting" as a statement (taste); duplicate piece names spoken with their position (accessibility), left for the split's own round.
+
+### Chris on the council (after c6)
+
+Chris: the reviewers felt like they were "making features in isolation", and the split's − and + went against how the app (and most apps) picks time. He is the primary user and doesn't want accessibility to drive design.
+
+- The split's − and + steppers are removed: they were added only for WCAG 2.5.7 and undid round 7's ruling ("No plus and minus steppers"). The tear line's grip is back.
+- The council's accessibility reviewer is replaced by **the primary user**: a capable student who studies with Pomodeal nightly.
+- Reviewers now get `.claude/skills/design-council/settled.md`, Chris's decisions. Every proposed fix is checked against it, and against how the app already does the same job, before it is built. Anything that re-opens a decision goes to Chris as a question.

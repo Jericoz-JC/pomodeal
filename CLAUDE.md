@@ -40,7 +40,8 @@ Every push to `main` deploys the site **and** the production Convex backend (Clo
 - Copy follows `docs/specs/003-voice-and-copy.md` once it exists: no labels, no shame, no streaks.
 - Any new stored user-behavior field updates `docs/specs/006-privacy-inventory.md` in the same change.
 - Decisions go in `docs/decisions/NNNN-title.md` (context, decision, consequences).
-- Design council: run the `design-council` skill (`.claude/skills/design-council`, adapted from tstack's `council`) on every user-visible change before committing it, in small rounds. Members: a product designer and an accessibility reviewer on Claude Opus 5.5, an art director for taste on Claude Fable 5.2.
+- Design council: run the `design-council` skill (`.claude/skills/design-council`, adapted from tstack's `council`) on every user-visible change before committing it, in small rounds. Members: a product designer and "the primary user" (a capable student who studies with it nightly) on Claude Opus 5.5, an art director for taste on Claude Fable 5.2. Reviewers get `.claude/skills/design-council/settled.md`; check every fix against it before building.
+- Pomodeal is built for Chris's taste; he is the primary user. Accessibility is not a design driver.
 - No copy that explains basic UI ("Tap an underlined word…", "Drag the line…", "One tap."), and no keyboard-key badges on controls. Users are people like Chris.
 - Before any UI work, load the frontend-design skill (and Design plugin skills for critique/a11y). Chris rejected the first visual pass as "AI-generated": avoid indigo/purple + yellow highlights, all-caps eyebrow labels, `·` separators, monospace data labels, and the identical rounded-card kit.
 - Current visual direction (prototype r2): one "approved" green accent on grey-green paper; focus = solid ring, break = hatched ring; the deal is a ticket that gets stamped; Archivo condensed for numbers/headings, Atkinson Hyperlegible for text.

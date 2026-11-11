@@ -446,20 +446,13 @@ body.pip { margin: 0; min-height: 100vh; display: grid; place-items: center; bac
 .torn .tear::after { content: ""; position: absolute; left: -8px; top: 50%; width: 16px; height: 16px; margin-top: -8px; border-radius: 50%; background: var(--card); box-shadow: inset -1.5px 0 0 var(--edge-half); }
 .torn .len { position: relative; display: inline-flex; align-items: baseline; gap: 3px; padding: 3px 10px 3px 10px; background: var(--tk); color: var(--ink);
   font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 700; font-size: .9375rem; line-height: 1; transition: color .12s; }
+.torn .len::before { content: ""; align-self: center; width: 12px; height: 7px; margin-right: 6px; border-block: 2px solid currentColor; opacity: .5; }
 .torn .len b { font-size: 1.625rem; font-weight: 800; font-stretch: var(--wd-display); font-variant-numeric: tabular-nums; }
 /* a grip printed beside the number: two short rules, the way a pull tab is marked */
 
 .torn .tear:is(:hover, .pulling, :focus-visible) { background-image: linear-gradient(var(--deal), var(--deal)); background-size: 100% 2px; background-position: 0 50%; background-repeat: no-repeat; outline: none; }
 .torn .tear:is(:hover, .pulling, :focus-visible) .len { color: var(--deal); }
 .torn .tear:focus-visible .len { box-shadow: 0 0 0 3px var(--deal); border-radius: 4px; }
-/* spec 011, WCAG 2.5.7: − and + beside the minutes, for anyone who can't drag. Printed like every choice box. */
-.torn .tear { padding-right: 112px; }
-.torn .tsteps { position: absolute; right: 22px; bottom: 0; height: 30px; display: flex; align-items: center; gap: 12px; padding-left: 4px; background: var(--tk); }
-.tstep { position: relative; width: 32px; height: 28px; padding: 0; display: grid; place-items: center; border: none; border-radius: var(--r-choice); background: none; color: var(--deal-ink); }
-.tstep svg { width: 20px; height: 20px; stroke-width: 2.8; }
-.tstep::after { content: ""; position: absolute; inset: -8px -6px; }
-.tstep[aria-disabled="true"] { color: var(--edge-half); cursor: default; }
-@media (hover: hover) { .tstep:hover { background: color-mix(in srgb, var(--deal) 8%, var(--card)); } }
 .torn .openend { padding: 4px 24px 6px 14px; }
 .torn .openend .addpiece { padding-left: 0; }
 .torn .pask { padding: 6px 24px 8px 14px; border-bottom: none; }
@@ -2153,7 +2146,6 @@ const propose = (t, due) => BE && BE.proposeSpread
 /* something to spread: a piece not stamped yet, or open terms left from the gut size */
 const spreadable = t => !!t && (t.pieces.some(p => p.stampedAt == null) || (t.openTermsMin || 0) > 0);
 const clampMin = v => Math.min(PIECE_MAX, Math.max(PIECE_MIN, Math.round((Number.isFinite(v) ? v : SLOT_MIN) / 5) * 5));
-const MINUS = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"/></svg>`;
 const CROSS = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg>`;
 
 /* ----- Split ----- */
@@ -2188,8 +2180,7 @@ function splitBody() {
         ${r.stampedAt != null ? `<span class="stamp pstamp">Done<span class="vh">, stamped</span></span>` : ""}
         <button class="prm" data-prm="${i}" aria-label="Remove ${nm}">${CROSS}</button>
       </div>
-      <div class="tear" data-tear="${i}" role="slider" tabindex="0" aria-orientation="vertical" aria-label="Length of ${nm}" aria-valuemin="${PIECE_MIN}" aria-valuemax="${PIECE_MAX}" aria-valuenow="${m}" aria-valuetext="${m} minutes"><span class="len" aria-hidden="true"><b>${m}</b> min</span></div>
-      <span class="tsteps"><button class="tstep" data-tstep="-5" data-i="${i}" aria-label="5 minutes shorter: ${nm}" aria-disabled="${m <= PIECE_MIN}">${MINUS}</button><button class="tstep" data-tstep="5" data-i="${i}" aria-label="5 minutes longer: ${nm}" aria-disabled="${m >= PIECE_MAX}">${PLUS}</button></span></li>`;
+      <div class="tear" data-tear="${i}" role="slider" tabindex="0" aria-orientation="vertical" aria-label="Length of ${nm}" aria-valuemin="${PIECE_MIN}" aria-valuemax="${PIECE_MAX}" aria-valuenow="${m}" aria-valuetext="${m} minutes"><span class="len" aria-hidden="true"><b>${m}</b> min</span></div></li>`;
     /* R64: a stamp is never removed by one stray tap */
     const ask = p.ask === i ? `<li class="pask" role="group" aria-label="Remove ${nm}?"><p>Remove ${nm}? Its stamp goes too.</p>
       <button class="textbtn gone" id="s-askyes">Remove it</button><button class="textbtn" id="s-askno">Keep it</button></li>` : "";
@@ -2218,7 +2209,6 @@ function nameRow(i) {
   const r = panel.rows[i]; if (!r) return; const nm = pieceName(r, i), q = s => document.querySelector(`#panel-root ${s}`);
   const set = (el, l) => { if (el) el.setAttribute("aria-label", l); };
   set(q(`[data-tear="${i}"]`), `Length of ${nm}`); set(q(`[data-prm="${i}"]`), `Remove ${nm}`);
-  set(q(`[data-tstep="-5"][data-i="${i}"]`), `5 minutes shorter: ${nm}`); set(q(`[data-tstep="5"][data-i="${i}"]`), `5 minutes longer: ${nm}`);
 }
 /* a piece's new length, drawn in place: its height, its number and the slider's value */
 function setLen(i, m) {
@@ -2226,8 +2216,7 @@ function setLen(i, m) {
   r.minutes = m; const t = document.querySelector(`#panel-root [data-tear="${i}"]`); if (!t) return;
   t.closest(".piece").style.setProperty("--m", m); t.querySelector(".len b").textContent = m;
   t.setAttribute("aria-valuenow", m); t.setAttribute("aria-valuetext", `${m} minutes`);
-  const st = d => document.querySelector(`#panel-root [data-tstep="${d}"][data-i="${i}"]`);
-  st(-5)?.setAttribute("aria-disabled", m <= PIECE_MIN); st(5)?.setAttribute("aria-disabled", m >= PIECE_MAX); syncSplit();
+  syncSplit();
 }
 /* how many pixels of ticket one minute is (matches --px in the stylesheet) */
 const PX_PER_MIN = 1;
@@ -2441,11 +2430,6 @@ function bindPlanning() {
         el.onpointermove = ev => { const v = clampMin(m0 + (ev.clientY - y0) / PX_PER_MIN); if (v !== clampMin(p.rows[i].minutes)) { setLen(i, v); buzz(4); } };
         el.onpointerup = el.onpointercancel = () => { el.classList.remove("pulling"); el.onpointermove = el.onpointerup = el.onpointercancel = null; };
       };
-    });
-    document.querySelectorAll("#panel-root [data-tstep]").forEach(b => b.onclick = () => {
-      const i = +b.dataset.i, r = p.rows[i]; if (!r) return;
-      const m = clampMin(clampMin(r.minutes) + +b.dataset.tstep); if (m === clampMin(r.minutes)) return;
-      setLen(i, m); say(`${pieceName(r, i)}, ${m} minutes`);
     });
     document.querySelectorAll("#panel-root [data-prm]").forEach(b => b.onclick = () => {
       const i = +b.dataset.prm, r = p.rows[i]; if (!r) return;
