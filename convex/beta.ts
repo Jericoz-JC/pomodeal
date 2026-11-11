@@ -1,9 +1,10 @@
 import { ConvexError, v } from "convex/values";
 import type { UserIdentity } from "convex/server";
+import { internal } from "./_generated/api";
 import { internalMutation, mutation, query, type MutationCtx } from "./_generated/server";
 import { emailHashOf } from "./lib/email";
 import { currentMember, requireMember } from "./lib/members";
-import { getBetaSettings } from "./lib/signups";
+import { brakeReason, getBetaSettings, memberCounts, putBetaSettings } from "./lib/signups";
 
 /** Each member can hand out this many single-use invites (a room holds 12, including you). */
 export const DEFAULT_ALLOWANCE = 11;
@@ -100,8 +101,21 @@ async function tryRelink(ctx: MutationCtx, identity: UserIdentity): Promise<bool
   return true;
 }
 
-/** After any new member: closes sign-ups if a limit is reached (spec 010, the brake). */
-async function afterJoin(_ctx: MutationCtx, _now: number): Promise<void> {}
+/**
+ * Spec 010, the brake: after any new member (open join or invite), if sign-ups are open and a limit has been reached,
+ * close them in this same transaction and alert the admins. The join that reaches the limit has already succeeded.
+ */
+async function afterJoin(ctx: MutationCtx, now: number): Promise<void> {
+  const s = await getBetaSettings(ctx);
+  if (s.signups !== "open") return;
+  const counts = await memberCounts(ctx, s, now);
+  const reason = brakeReason(counts, s);
+  if (!reason) return;
+  const count = reason === "dayLimit" ? counts.recent : counts.total;
+  await putBetaSettings(ctx, { signups: "inviteOnly", paused: { at: now, reason, count } });
+  const body = reason === "dayLimit" ? `${count} new members in 24 hours.` : `${count} members, the cap.`;
+  await ctx.scheduler.runAfter(0, internal.push.notifyAdmins, { title: "Sign-ups paused", body });
+}
 
 /**
  * Spec 010: runs on every app load once the sign-in token is attached. In order: a member gets a missing emailHash
