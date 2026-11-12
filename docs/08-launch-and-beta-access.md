@@ -26,7 +26,16 @@ Exact steps to put Pomodeal on Cloudflare Pages with WorkOS sign-in, and how inv
 3. In the **WorkOS dashboard** for that production environment:
    - **Redirects:** add `https://pomodeal.app/callback` and `https://pomodeal.pages.dev/callback` (use your real `*.pages.dev` name from step C). Set the **sign-out redirect** to `https://pomodeal.app`.
    - **Authentication → Sessions → CORS / allowed origins:** add `https://pomodeal.app` and `https://pomodeal.pages.dev`.
-   - **Authentication methods:** turn on **Magic Auth** (email code). For **Google**, production needs your own Google OAuth client (WorkOS walks you through it); dev works without one.
+   - **Authentication methods:** turn on **Magic Auth** (email code). **Google** and **GitHub** each need your own OAuth app in production (WorkOS walks you through both); staging works without them. Leave **Apple** off: it needs an Apple developer account and a Mac.
+   - **JWT template** (Authentication → Sessions): `{"email": {{user.email}}, "email_verified": {{user.email_verified}}}`. Add the same template to the staging environment too, now: it is how accounts carry over (below).
+
+### Moving members from WorkOS staging to production (spec 016)
+
+A member's sign-in identity changes with the WorkOS environment, so accounts are matched by a hash of the verified email instead.
+
+1. With the JWT template on the staging environment, wait until **Ready for the WorkOS move** on the Sign-ups screen equals the member count (everyone has opened the app once).
+2. Set up the production environment as above, then point `WORKOS_CLIENT_ID` (Convex prod) and `VITE_WORKOS_CLIENT_ID` (Cloudflare) at its client id and push.
+3. Everyone is signed out once. Their next sign-in, with Google, GitHub or an email code on the same address, moves their account across: same data, same invites.
 
 ## C. Cloudflare (Worker with static assets)
 
@@ -70,24 +79,26 @@ The app works out its own sign-in callback from the URL it's opened on, so there
 
 ---
 
-## How beta access works
+## How beta access works (spec 016)
 
 ```
-friend gets link ──► pomodeal.app/?invite=CODE ──► "You're invited" ticket
-        │                                              │ Accept invite
-        │                                              ▼
-        │                                   WorkOS sign-up (email code or Google)
-        │                                              │ back to /callback
-        │                                              ▼
-        │                              beta.claim(CODE): checks it exists, isn't used,
-        │                              isn't expired → creates their member row
-        │                                              ▼
-        └──── no code? signs in anyway ──► "You're on the list" (no data access)
+someone signs in (GitHub, Google or email) ──► beta.enter, once per app load
+        │
+        ├─ already a member ─────────────────► the app (their email hash is filled in if missing)
+        ├─ same verified email, other WorkOS env ► their old account moves to this sign-in
+        ├─ sign-ups open ────────────────────► joins; the brake checks the limits
+        └─ sign-ups closed ──────────────────► "Pomodeal is full for now" (on the list, no data access)
+
+friend opens pomodeal.app/?invite=CODE ──► sign in ──► beta.claim(CODE) ──► joins, open or closed
 ```
 
-- **Members invite friends** from the account button (top right) → **Invite friends** → **Make an invite ticket** → **Copy link**. Each ticket works once. Everyone gets **11** (a full room of 12 with you); admins are unlimited.
+- **Sign-ups start invite-only** until an admin opens them: account button → **Sign-ups** → **Open sign-ups**.
+- **The brake:** when 40 people have joined in 24 hours, or there are 150 members, sign-ups switch to invite-only by themselves and every admin's devices get a push ("Sign-ups paused: 40 new members in 24 hours."). Invites count toward both numbers but are never refused. Reopening starts a fresh 24-hour count. Both limits are editable on the screen.
+- **What the screen shows:** new members in the last 24 hours, members against the cap, members who studied this week (what costs function calls), people waiting, members ready for the WorkOS move, and a link to the Convex usage page. The free Convex plan stops at 1M function calls a month; Professional ($25 a month) includes 25M.
+- **Waiting people get in by themselves** when sign-ups reopen, the next time they have the app open.
+- **Members invite friends** from the account button → **Invite friends** → **Make an invite ticket** → **Copy link**. Each ticket works once. Everyone gets **11** (a full room of 12 with you); admins are unlimited.
 - **Founder or batch invites** come from the CLI: `npx convex run --prod beta:seedInvite '{"maxUses":10,"note":"BIO 180 group","expiresInDays":14}'`.
-- **Everything is enforced on the server.** Every Convex function derives the user from the WorkOS token (`ctx.auth`), never from what the browser sends. A signed-in person without a claimed invite can't read or write any study data.
+- **Everything is enforced on the server.** Every Convex function derives the user from the WorkOS token (`ctx.auth`), never from what the browser sends. Only admins can read the numbers or change sign-ups.
 - **Errors people can see:** "That invite code doesn't exist", "That invite has already been used", "That invite has expired". Each one tells them to ask their friend for a new link.
 
 ## Handy admin commands
@@ -97,6 +108,7 @@ npx convex run --prod beta:seedInvite '{"maxUses":1}'                 # one foun
 npx convex run --prod beta:makeAdmin '{"displayName":"Name"}'          # unlimited invites
 npx convex data --prod users                                          # who's in
 npx convex data --prod invites                                        # which codes are used
+npx convex data --prod waitlist                                       # who is waiting (sign-ups are on the Sign-ups screen)
 ```
 
 ## Known limits for the beta

@@ -70,7 +70,23 @@ async function start() {
     signOut: () => { clearInvite(); authkit.signOut({ returnTo: location.origin }); },
     createInvite: async () => { await convex.mutation(api.beta.createInvite, {}); },
     closeInvites: () => history.replaceState(null, "", "/"),
+    // Spec 016: the admin Sign-ups panel. Queries don't read the clock, so the panel passes the minute and
+    // re-subscribes each minute while it is open, which keeps "the last 24 hours" moving.
+    watchSignups: (on) => {
+      stopOverview?.(); stopOverview = null; clearInterval(overviewTimer);
+      if (!on) return;
+      const subscribe = () => {
+        stopOverview?.();
+        stopOverview = convex.onUpdate(api.admin.overview, { now: Math.floor(Date.now() / 60_000) * 60_000 }, (o) => gate.setOverview(o));
+      };
+      subscribe();
+      overviewTimer = window.setInterval(subscribe, 60_000);
+    },
+    setSignups: async (mode) => { await convex.mutation(api.admin.setSignups, { mode }); },
+    setLimits: async (limits) => { await convex.mutation(api.admin.setLimits, limits); },
   });
+  let stopOverview: (() => void) | null = null;
+  let overviewTimer = 0;
 
   const user = authkit.getUser();
   if (!user) { gate.setState({ kind: "signedOut", invite }); return; }
@@ -79,12 +95,25 @@ async function start() {
     try { return await authkit.getAccessToken({ forceRefresh: forceRefreshToken }); } catch { return null; }
   });
 
+  const name = [user.firstName, user.lastName].filter(Boolean).join(" ") || user.email.split("@")[0];
+  // Spec 016: once per load, beta.enter fills in the email hash, carries an account across WorkOS environments,
+  // and lets a new account in when sign-ups are open. A waitlisted person is let in live if sign-ups reopen.
+  let entered = false, entering = false;
+  async function enter() {
+    if (entering) return;
+    entering = true;
+    try { await convex.mutation(api.beta.enter, { displayName: name }); entered = true; }
+    catch { /* connection trouble: the next update or a reload tries again */ }
+    finally { entering = false; }
+  }
+
   let claiming = false;
   convex.onUpdate(api.beta.me, {}, async (me) => {
     if (me.status === "member") {
       clearInvite(); invite = null;
-      gate.setState({ kind: "member" } satisfies GateState, { displayName: me.displayName, invitesLeft: me.invitesLeft });
+      gate.setState({ kind: "member" } satisfies GateState, { displayName: me.displayName, invitesLeft: me.invitesLeft, admin: me.role === "admin" });
       goLive(convex);
+      if (!entered) void enter();
       return;
     }
     if (me.status === "signedOut") { gate.setState({ kind: "loading" }); return; } // token still attaching
@@ -92,7 +121,6 @@ async function start() {
       claiming = true;
       gate.setState({ kind: "claiming", invite });
       try {
-        const name = [user.firstName, user.lastName].filter(Boolean).join(" ") || user.email.split("@")[0];
         await convex.mutation(api.beta.claim, { code: invite, displayName: name });
       } catch (e) {
         // The server said no (used, expired, not found): the code is spent. Anything else is a connection
@@ -103,7 +131,9 @@ async function start() {
       }
       return;
     }
-    if (!claiming) gate.setState({ kind: "waitlist", email: user.email });
+    if (claiming) return;
+    gate.setState({ kind: "waitlist", email: user.email, signups: me.signups });
+    if (!entered || me.signups === "open") void enter();
   });
 
   convex.onUpdate(api.beta.myInvites, {}, (t) => gate.setTickets(t));

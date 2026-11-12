@@ -10,12 +10,14 @@ Changes from the original thesis: added **Phase 0** (concepts and spikes before 
 
 **In review:** tonight in a line (spec 012) and the desk overhaul (spec 014), one PR. The planner runs in the screens with tonight kept in the open page; its storage (`nights` table, `nights.print`, `nights.tonight`, `fromNight` on the two start mutations) is the next backend step, in spec 012's "Building it for real". The big-one cards screen in the paper language is spec 015, the standing ticket (in review).
 
+**On a branch (`beta/open-signups`, spec 016, ADR 0009), not merged:** an open beta with a brake. Anyone who signs in joins until 40 join in 24 hours or there are 150 members; then sign-ups switch to invite-only by themselves and admins get a push. Admins watch and control it on a Sign-ups screen in the account menu. Apple sign-in stays until the WorkOS production switch. Each member's email is stored as a hash so accounts carry over when WorkOS moves to production; every member has to open the app once before that switch.
+
 *The rest of this section is as of Nov 9.*
 
 Phase 0's interview gate was skipped on purpose: we launched a closed beta to friends first. Phase 1 is partly live at https://pomodeal.app.
 
 **Live**
-- Landing page with a playable deal, one-tap GitHub / Google / Apple sign-in (WorkOS AuthKit, demo social credentials), install hint
+- Landing page with a playable deal, one-tap GitHub / Google / Apple sign-in (WorkOS AuthKit, demo social credentials; Apple goes before the WorkOS production switch), install hint
 - Invite-only beta: invite links (11 per member, unlimited for admins), waitlist screen, account menu
 - For members: Quick Deal, the dial with focus and break blocks, the 2-minute heads-up (in-app), asking for time (borrow / trade / override, a first step on the third ask), the bonus offer, end early, today's ledger. All server-side through Convex, so devices stay in sync
 - Installable PWA; every push to `main` deploys the site and the backend
@@ -32,7 +34,7 @@ Phase 0's interview gate was skipped on purpose: we launched a closed beta to fr
 4. Presets and a block builder; history beyond 24 hours
 5. Then Phase 1.5 rooms
 
-**Before any public launch:** WorkOS production credentials and a custom auth domain, remove `noindex`, privacy policy, age gate, delete-my-data.
+**Before any public launch:** WorkOS production credentials and a custom auth domain (follow the switch checklist in [spec 016](specs/016-open-beta-and-signup-brake.md) so members keep their accounts), remove `noindex`, privacy policy, age gate, delete-my-data.
 
 **YouTube, decided:** *scenes* (your own video or stream that plays and pauses with blocks) belong in the web app on desktop, after push notifications; on phone they play only after a tap. *Pausing your YouTube tab when a break ends* belongs to the Chrome extension (E2), because a web page can't control other tabs.
 

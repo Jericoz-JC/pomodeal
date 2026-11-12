@@ -8,16 +8,19 @@
  * @module
  */
 
+import type * as admin from "../admin.js";
 import type * as ai from "../ai.js";
 import type * as aiNode from "../aiNode.js";
 import type * as beta from "../beta.js";
 import type * as checkIns from "../checkIns.js";
 import type * as crons from "../crons.js";
 import type * as events from "../events.js";
+import type * as lib_email from "../lib/email.js";
 import type * as lib_events from "../lib/events.js";
 import type * as lib_members from "../lib/members.js";
 import type * as lib_nights from "../lib/nights.js";
 import type * as lib_pushSchedule from "../lib/pushSchedule.js";
+import type * as lib_signups from "../lib/signups.js";
 import type * as lib_suggestions from "../lib/suggestions.js";
 import type * as lib_tasks from "../lib/tasks.js";
 import type * as metrics from "../metrics.js";
@@ -34,16 +37,19 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  admin: typeof admin;
   ai: typeof ai;
   aiNode: typeof aiNode;
   beta: typeof beta;
   checkIns: typeof checkIns;
   crons: typeof crons;
   events: typeof events;
+  "lib/email": typeof lib_email;
   "lib/events": typeof lib_events;
   "lib/members": typeof lib_members;
   "lib/nights": typeof lib_nights;
   "lib/pushSchedule": typeof lib_pushSchedule;
+  "lib/signups": typeof lib_signups;
   "lib/suggestions": typeof lib_suggestions;
   "lib/tasks": typeof lib_tasks;
   metrics: typeof metrics;

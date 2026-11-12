@@ -84,6 +84,29 @@ export const fire = internalMutation({
   },
 });
 
+/** Spec 016: the brake's alert, one push per admin device (each admin's newest MAX_SUBSCRIPTIONS). */
+export const notifyAdmins = internalMutation({
+  args: { title: v.string(), body: v.string() },
+  returns: v.null(),
+  handler: async (ctx, { title, body }) => {
+    const admins = await ctx.db.query("users").withIndex("by_role", (q) => q.eq("role", "admin")).collect();
+    for (const admin of admins) {
+      const subs = await ctx.db
+        .query("pushSubscriptions")
+        .withIndex("by_userId", (q) => q.eq("userId", admin._id))
+        .order("desc")
+        .take(MAX_SUBSCRIPTIONS);
+      for (const sub of subs) {
+        await ctx.scheduler.runAfter(0, internal.pushNode.send, {
+          subscriptionId: sub._id,
+          payload: { web_push: 8030 as const, notification: { title, body, navigate: "/" } },
+        });
+      }
+    }
+    return null;
+  },
+});
+
 /** What `send` needs to deliver: the endpoint and keys, or null if the subscription is gone. */
 export const subscription = internalQuery({
   args: { subscriptionId: v.id("pushSubscriptions") },
