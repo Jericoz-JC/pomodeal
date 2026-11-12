@@ -6,8 +6,7 @@ import { ConvexError } from "convex/values";
 import { createClient } from "@workos-inc/authkit-js";
 import { api } from "../../../convex/_generated/api";
 import type { Doc, Id } from "../../../convex/_generated/dataModel";
-import { cardsFor, proposeSpread, shouldAskCheckIn, splitSlots, weekKey, type BigOneCardRow, type Piece, type SpreadDay, type TaskType } from "../../../packages/core/src";
-import { localDayKey, msToLocalMidnight } from "./days";
+import { cardsFor, msToNextStudyDay, proposeSpread, shouldAskCheckIn, splitSlots, studyDayKey, studyDayStart, weekKey, type BigOneCardRow, type Piece, type SpreadDay, type TaskType } from "../../../packages/core/src";
 import { mountGate, type GateState, type Provider } from "./gate";
 import { enablePush, pushConfigured, pushSupported, type PushResult } from "./push";
 
@@ -121,7 +120,7 @@ interface LiveApp {
   bigOnes(cards: BigOneCardRow[]): void;
   /** The Sunday's day key while the weekly question is due (and not skipped on this device), else null. */
   weekCheckin(weekKey: string | null): void;
-  /** spec 012: tonight's stored night for today's local day, or null */
+  /** spec 012: tonight's stored night for today's study day, or null */
   night(doc: { items: NightRow[]; taken: number } | null): void;
   /** What this device can do: Web Push in this tab, opened from the Home Screen, an iPhone Safari tab; and whether the
    *  server offers "Suggest pieces" (api.ai.enabled, so it is sent again whenever that changes). */
@@ -154,7 +153,7 @@ interface Backend {
   /** namedAt: client time plus clock offset when the student first tapped "Bigger than one block?" */
   startBigOne(d: { title: string; taskType?: TaskType; gutMin?: number; firstMove: string; deal: DealArgs; namedAt?: number }): void;
   startFromCard(taskId: string, deal: DealArgs, fromNight?: number): void;
-  /** spec 012: stores tonight for today's local day; `keepTaken` for a reorder of what is left */
+  /** spec 012: stores tonight for today's study day; `keepTaken` for a reorder of what is left */
   printNight(items: NightRow[], keepTaken?: boolean): void;
   blockNotes(fromIdx: number, bookmark: string | undefined, done: boolean): void;
   taskMenu(taskId: string, action: "startFresh" | "setAside" | "reopen" | "remove"): void;
@@ -188,7 +187,8 @@ function goLive(convex: ConvexClient) {
   // The reply left the server about half a round trip before it arrived.
   const syncClock = (sentAt: number, serverNow: number) => app.clock(serverNow - (sentAt + (Date.now() - sentAt) / 2));
   const report = (what: string) => (e: unknown) => console.error(`[pomodeal] ${what} failed`, e);
-  const dayKey = () => localDayKey(Date.now());
+  /** The study day (4am to 4am local, issue #26): what every day key, the tape and tonight go by. */
+  const dayKey = () => studyDayKey(Date.now());
   /** Open big ones from the subscription below: the cards, and what the split and spread sheets read. */
   let openTasks: Doc<"tasks">[] | null = null;
   const refused = (what: string) => (e: unknown): PlanResult => {
@@ -326,23 +326,20 @@ function goLive(convex: ConvexClient) {
   const sentAt = Date.now();
   convex.mutation(api.sessions.serverNow, {}).then((now) => syncClock(sentAt, now)).catch(report("serverNow"));
   convex.onUpdate(api.sessions.current, {}, (doc) => { sessionId = doc ? doc._id : null; app.session(doc); });
-  // The tape is the last 24 hours before `now`. A query can't read the clock, so the window moves forward by
-  // subscribing again: every hour, and when the app comes back to the front after a while (a phone left open overnight
-  // would otherwise keep yesterday's deals on the tape). New rows always arrive either way: the window has no end.
+  // The tape is today's study day: rows since 4am local (issue #26). A query can't read the clock, so the tape
+  // subscribes again when the next study day starts (the timer at the bottom), and when the app comes back to the
+  // front on a later study day, since a sleeping phone's timer can fire late. New rows always arrive: the window has no end.
   let dropToday: (() => void) | null = null;
-  let todayFrom = 0;
+  let todayKey = "";
   const watchToday = () => {
     dropToday?.();
-    todayFrom = Date.now();
-    dropToday = convex.onUpdate(api.sessions.today, { now: todayFrom }, (entries) => app.ledger(entries));
+    const now = Date.now();
+    todayKey = studyDayKey(now);
+    dropToday = convex.onUpdate(api.sessions.today, { from: studyDayStart(now) }, (entries) => app.ledger(entries));
   };
   watchToday();
-  setInterval(watchToday, 60 * 60_000);
-  document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible" && Date.now() - todayFrom > 10 * 60_000) watchToday();
-  });
 
-  // Big-one cards: recomputed when the tasks change and at local midnight (comeback depends on today's key).
+  // Big-one cards: recomputed when the tasks change and when the study day turns (comeback depends on today's key).
   const pushCards = () => {
     if (!openTasks) return;
     app.bigOnes(cardsFor(openTasks.map(({ _id, ...t }) => ({ ...t, id: _id as string })), dayKey()));
@@ -354,19 +351,23 @@ function goLive(convex: ConvexClient) {
   const pushWeek = () => {
     if (lastWeek === undefined || joinedAt === undefined) return;
     if (joinedAt === null) { app.weekCheckin(null); return; }
-    app.weekCheckin(shouldAskCheckIn(dayKey(), lastWeek ?? undefined, localDayKey(joinedAt)) ? weekKey(dayKey()) : null);
+    app.weekCheckin(shouldAskCheckIn(dayKey(), lastWeek ?? undefined, studyDayKey(joinedAt)) ? weekKey(dayKey()) : null);
   };
   convex.onUpdate(api.checkIns.joinedAt, {}, (j) => { joinedAt = j; pushWeek(); });
   convex.onUpdate(api.checkIns.lastWeekKey, {}, (k) => { lastWeek = k; pushWeek(); });
-  // Tonight (spec 012): the night stored for today's local day, subscribed again at local midnight.
+  // Tonight (spec 012): the night stored for today's study day, subscribed again when the next one starts.
   let dropNight: (() => void) | null = null;
   const watchNight = () => {
     dropNight?.();
     dropNight = convex.onUpdate(api.nights.tonight, { dayKey: dayKey() }, (doc) => app.night(doc ? { items: doc.items, taken: doc.taken } : null));
   };
   watchNight();
-  const armMidnight = () => setTimeout(() => { pushCards(); pushWeek(); watchNight(); armMidnight(); }, msToLocalMidnight(Date.now()));
-  armMidnight();
+  const newDay = () => { watchToday(); pushCards(); pushWeek(); watchNight(); };
+  const armNewDay = () => setTimeout(() => { newDay(); armNewDay(); }, msToNextStudyDay(Date.now()));
+  armNewDay();
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && studyDayKey(Date.now()) !== todayKey) newDay();
+  });
 }
 
 start().catch((e) => console.error("[pomodeal] startup failed", e));

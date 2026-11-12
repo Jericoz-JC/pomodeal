@@ -1626,7 +1626,8 @@ const moveText = s => /^[A-Z][a-z]/.test(s) ? s[0].toLowerCase() + s.slice(1) : 
 /* comeback_shown is logged once per card per local day, on this device (kept for today only) */
 const CB_KEY = "pomodeal.comebackShown";
 const cbSeen = new Set((() => { try { const v = JSON.parse(localStorage.getItem(CB_KEY) || "[]"); return Array.isArray(v) ? v : []; } catch (e) { return []; } })());
-const localDay = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
+/* the study day, as packages/core studyDayKey: 4am to 4am local, so 1am is still last night (issue #26) */
+const localDay = () => { const d = new Date(); if (d.getHours() < 4) d.setDate(d.getDate() - 1); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
 function noteComeback(id) {
   if (!BE) return;
   const day = localDay(), k = `${day}|${id}`; if (cbSeen.has(k)) return;

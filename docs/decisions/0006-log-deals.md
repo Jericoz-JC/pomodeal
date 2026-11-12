@@ -29,5 +29,5 @@ Signed in, the screen no longer makes ledger stubs of its own: the tape shows on
 - "Opened Instagram without a deal" is only reachable in the demo (the intercept screen), so it stays a demo stub and is not filed.
 - A deal made on another device, or before a reload, now shows on every device's tape.
 - Rows from before this change stay as they are; there is nothing to backfill.
-- `sessions.today` reads the 24 hours before a `now` the client sends. The client now subscribes again every hour and when the app comes back to the front, so a phone left open overnight doesn't keep yesterday's rows on the tape.
+- `sessions.today` reads the 24 hours before a `now` the client sends. The client now subscribes again every hour and when the app comes back to the front, so a phone left open overnight doesn't keep yesterday's rows on the tape. Superseded by [ADR 0009](0009-study-day.md): the window was still 24 hours wide, so yesterday's rows stayed on the tape; it now reads from the start of the study day (4am local).
 - "Studied" on the tape is still counted on the device and starts from 0 after a reload. Completed blocks aren't filed, so the server can't total it yet.
