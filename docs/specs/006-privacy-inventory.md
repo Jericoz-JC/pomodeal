@@ -22,7 +22,7 @@ Who can see, in every table: the signed-in student sees their own rows through t
 | inviteAllowance | How many invites they may still make | Limit invite growth | The student, Chris | While the account exists | Chris on request |
 | joinedAt | When they joined | Ordering and support | Chris | While the account exists | Chris on request |
 | lastRepay | borrow or trade, the last repayment pick (spec 008) | Pre-select it on the next ask (ADR 0005) | The student, Chris | While the account exists | Chris on request |
-| emailHash | SHA-256 of the sign-in email (spec 016), never the address itself | Match the account when WorkOS moves from staging to production, where the sign-in identity changes | Chris | While the account exists | Chris on request |
+| emailHash | SHA-256 of the verified sign-in email (spec 016), never the address itself. Unsalted, so it is pseudonymous, not anonymous: anyone holding the table could confirm a guessed address | Match the account when WorkOS moves from staging to production, where the sign-in identity changes | Chris | While the account exists | Chris on request |
 
 ### waitlist
 

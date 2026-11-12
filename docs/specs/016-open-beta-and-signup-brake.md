@@ -139,3 +139,21 @@ Client (`apps/web/src/main.ts`): after auth attaches, call `beta.enter` once (or
 - Email alerts (push and the admin banner only).
 - Reading Convex usage from inside the app (there is no API for it; the screen links to the dashboard).
 - Delete-my-data, the age gate and the privacy policy (still required before a public launch).
+
+## Design rounds
+
+Screens shown with sample numbers in the browser pane at 375 px, light and dark (the panel needs an admin sign-in, so `shoot.mjs` can't reach it).
+
+| Change | Designer | Primary user | Taste |
+| --- | --- | --- | --- |
+| Sign-ups panel and waitlist, round 1 | 7/10 | 7/10 | 7/10 |
+| Round 2: limits are picked words on the ticket (no number fields, no Save), bare usage link, "closed for now" | 7.5/10 | 8/10 | 7/10 |
+| Round 3: four choices on one row, the cap only offers raises, one warning, waitlist on a ticket with a grey LISTED stamp | 8/10 | 8/10 | 8/10 |
+
+After round 3 (three rounds is the limit), only copy all agreed on went in: "Closed for now", "Once it reopens, open Pomodeal and you're in.", "Raise the cap before reopening, …", "Paused itself at 150 members, 3:07 PM."
+
+Left for Chris (one reviewer each, or a settled-rule question):
+- Draw Reopen un-inked until a cap above today's members is picked (designer).
+- Put the waiting count on the paused ticket (primary user).
+- Sit the waitlist ticket at the optical third instead of under the logo; left-align the Reopen stamp (taste).
+- Is a grey stamp that only acknowledges (LISTED, PAUSED) settled? Green is wet ink where a stamp lands (designer).

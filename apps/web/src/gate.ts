@@ -105,15 +105,14 @@ const CSS = `
 #pd-gate .wrap .su-tally dt::after { content: ""; flex: 1; min-width: 16px; border-bottom: 2px dotted var(--rule); }
 #pd-gate .wrap .su-tally dd { margin: 0; font-family: var(--font-head); font-stretch: 80%; font-weight: 750; font-size: 26px; line-height: 1; font-variant-numeric: tabular-nums; }
 #pd-gate .wrap .su-tally dd small { font-size: 16px; font-weight: 600; color: var(--soft); }
-#pd-gate .wrap .su-note { font-size: 15px; line-height: 1.45; color: var(--soft); }
-#pd-gate .wrap .su-note a { color: inherit; text-underline-offset: 3px; }
-#pd-gate .wrap .limits { display: flex; flex-direction: column; gap: 12px; border-top: 1px solid var(--rule); padding-top: 18px; }
-#pd-gate .wrap .limits p { line-height: 2.1; }
-#pd-gate .wrap .limits input { width: 4.2ch; box-sizing: content-box; padding: 0 4px; border: none; border-bottom: 2px solid var(--edge); background: transparent; color: var(--ink);
-  font-family: var(--font-head); font-stretch: 80%; font-weight: 750; font-size: 24px; text-align: center; -moz-appearance: textfield; }
-#pd-gate .wrap .limits input::-webkit-inner-spin-button, #pd-gate .wrap .limits input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-#pd-gate .wrap .limits .err { color: var(--ink); font-weight: 700; }
-#pd-gate .wrap .limits .err:empty { display: none; }
+#pd-gate .wrap .su-rule { margin-top: 6px; }
+/* the limits are numbers you press: Archivo, like every number and every control (settled) */
+#pd-gate .wrap .su-rule .tok { font-family: var(--font-head); font-stretch: var(--wd-act, 80%); font-weight: 700; font-size: 1.08em; }
+#pd-gate .wrap .ticket .body .picker { margin-top: 10px; }
+#pd-gate .wrap .su-err { font-weight: 700; }
+#pd-gate .wrap .su-usage { color: var(--soft); font-size: 15px; text-underline-offset: 3px; padding: 10px 16px; }
+#pd-gate .wrap .ticket .body .picker .chip { padding-inline: 12px; min-width: 56px; justify-content: center; }
+#pd-gate .wrap .ticket p { text-wrap: pretty; }
 #pd-account { position: fixed; z-index: 15; top: calc(8px + env(safe-area-inset-top, 0px)); right: max(10px, env(safe-area-inset-right, 0px));
   width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid var(--edge); background: var(--card); color: var(--ink);
   font-family: var(--font-head); font-weight: 800; font-size: 17px; cursor: pointer; }
@@ -132,6 +131,9 @@ const CSS = `
 const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c] as string));
 /** Digits in running text are Archivo numerals (the prototype's .num), never Atkinson's slashed zero (spec 011). */
 const nums = (html: string) => html.replace(/(<[^>]*>)|\d+(?:[:.,]\d+)*/g, (m, tag) => tag || `<span class="num">${m}</span>`);
+type LimitKey = "dayLimit" | "memberCap";
+const DAY_CHOICES = [20, 40, 60, 100];
+const CAP_CHOICES = [50, 100, 150, 200, 300, 500, 1000, 2000];
 const MARK = `<div class="mark"><img src="/icon-192.png" alt="">Pomodeal</div>`;
 const ICON: Record<Provider, string> = {
   GitHubOAuth: `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.25 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>`,
@@ -156,6 +158,8 @@ export function mountGate(actions: GateActions) {
   let signupsOpen = false; // spec 016: the admin Sign-ups panel
   let isAdmin = false;
   let overview: AdminOverview | null = null;
+  let picking: LimitKey | null = null; // which limit's choices are open on the Sign-ups ticket
+  let pickError = "";
   let tickets: InviteTicket[] = [];
   let invitesLeft: number | null = 0;
   let state: GateState = { kind: "loading" };
@@ -168,23 +172,37 @@ export function mountGate(actions: GateActions) {
     const back = `<div class="foot"><button class="textbtn" id="pd-close">Back to Pomodeal</button></div>`;
     if (!overview) return `<div class="wrap">${MARK}<h1>Sign-ups</h1><p class="soft" role="status">Loading…</p>${back}</div>`;
     const o = overview, open = o.signups === "open";
-    const when = (at: number) => new Date(at).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
-    const status = open ? `Closes itself at ${o.dayLimit} new members in 24 hours or ${o.memberCap} members.`
-      : o.paused?.reason === "dayLimit" ? `Paused ${when(o.paused.at)}: ${o.paused.count} new members in 24 hours.`
-      : o.paused?.reason === "memberCap" ? `Paused ${when(o.paused.at)}: ${o.paused.count} members, the cap.`
+    // the time alone when it was today, the day too when it wasn't
+    const when = (at: number) => new Date(at).toDateString() === new Date().toDateString()
+      ? new Date(at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+      : new Date(at).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+    const status = open ? ""
+      : o.paused?.reason === "dayLimit" ? `Paused itself at ${o.paused.count} new members in 24 hours, ${when(o.paused.at)}.`
+      : o.paused?.reason === "memberCap" ? `Paused itself at ${o.paused.count} members, ${when(o.paused.at)}.`
       : o.paused ? `Closed by you ${when(o.paused.at)}. Invite links still work.`
       : "Invite links still work. Everyone else waits on the list.";
     const stamp = open ? `<span class="stamp" aria-hidden="true">OPEN</span>`
       : `<span class="stamp off" aria-hidden="true">${o.paused && o.paused.reason !== "manual" ? "PAUSED" : "INVITES"}</span>`;
     const atCap = !open && o.members >= o.memberCap;
+    // The limits are words in the ticket's sentence, picked from choices like the deal's lengths (settled: no number fields).
+    const tok = (k: LimitKey) => `<button class="tok" data-pick="${k}" aria-expanded="${picking === k}">${nums(String(o[k]))}</button>`;
+    // four choices on one row at 375 px; a cap is only offered above today's members, since a lower one would close sign-ups at once
+    const choices = picking === "dayLimit" ? [...new Set([...DAY_CHOICES, o.dayLimit])].sort((x, y) => x - y)
+      : picking === "memberCap" ? [...new Set([...CAP_CHOICES.filter((n) => n > o.members).slice(0, 4), ...(o.memberCap > o.members ? [o.memberCap] : [])])].sort((x, y) => x - y)
+      : [];
+    const picker = picking ? `<div class="picker row" role="radiogroup" aria-label="${picking === "dayLimit" ? "New members in 24 hours" : "Member cap"}">${choices
+      .map((n) => `<button class="chip" role="radio" aria-checked="${n === o[picking!]}" data-val="${n}">${n}</button>`).join("")}</div>` : "";
     const row = (label: string, n: number, of?: number) =>
       `<div><dt>${label}</dt><dd>${n}${of !== undefined ? ` <small>of ${of}</small>` : ""}</dd></div>`;
     return `<div class="wrap">${MARK}
       <h1>Sign-ups</h1>
-      <section class="ticket" aria-label="Sign-ups are ${open ? "open" : "invite only"}">
-        <div class="body"><span class="big">${open ? "Anyone who signs in gets in" : "Invite links only"}</span><p class="soft">${nums(status)}</p></div>
-        <div class="stub">${atCap ? `<p>You're at the cap. Raise it first, or the next person closes it again.</p>` : ""}
-          <button class="${open ? "secondary" : "primary"}" id="pd-su-mode">${open ? "Close sign-ups" : "Open sign-ups"}</button></div>
+      <section class="ticket${open ? "" : " closed"}" aria-label="Sign-ups are ${open ? "open" : "invite only"}">
+        <div class="body"><span class="big">${open ? "Open to anyone" : "Invite only"}</span>
+          ${status ? `<p class="soft">${nums(status)}</p>` : ""}
+          <p class="su-rule">${open ? "Closes itself" : "Closes again"} at ${tok("dayLimit")} new members in 24 hours or ${tok("memberCap")} members.</p>
+          ${picker}${pickError ? `<p class="su-err" role="alert">${esc(pickError)}</p>` : ""}</div>
+        <div class="stub">${atCap ? `<p>Raise the cap before reopening, or the next person closes sign-ups again.</p>` : ""}
+          <button class="${open ? "secondary" : "primary"}" id="pd-su-mode">${open ? "Close sign-ups" : o.paused ? "Reopen" : "Open sign-ups"}</button></div>
         ${stamp}</section>
       <dl class="su-tally">
         ${row("New in the last 24 hours", o.newInDay, o.dayLimit)}
@@ -193,13 +211,7 @@ export function mountGate(actions: GateActions) {
         ${row("Waiting to get in", o.waiting)}
         ${row("Ready for the WorkOS move", o.readyForProduction, o.members)}
       </dl>
-      <p class="su-note">Cost follows the people studying, not sign-ups. Function calls are on the <a href="${esc(o.usageUrl)}" target="_blank" rel="noopener">Convex usage page</a>.</p>
-      <form class="limits" id="pd-limits" novalidate>
-        <p>Close sign-ups after <input name="dayLimit" type="number" inputmode="numeric" min="1" step="1" value="${o.dayLimit}" aria-label="New members in 24 hours"> new members in 24 hours, or at <input name="memberCap" type="number" inputmode="numeric" min="1" step="1" value="${o.memberCap}" aria-label="Member cap"> members.</p>
-        <p class="err" role="alert"></p>
-        <button class="secondary" type="submit">Save limits</button>
-      </form>
-      ${back}</div>`;
+      <div class="foot"><a class="su-usage" href="${esc(o.usageUrl)}" target="_blank" rel="noopener">Convex usage</a><button class="textbtn" id="pd-close">Back to Pomodeal</button></div></div>`;
   }
 
   function view(): string {
@@ -232,10 +244,13 @@ export function mountGate(actions: GateActions) {
           <div class="foot"><button class="textbtn" id="pd-signout">Sign out</button></div></div>`;
       case "waitlist":
         // Open sign-ups: an enter call is on its way, so this is only a moment.
-        if (state.signups === "open") return `<div class="wrap">${MARK}<p class="soft" role="status">Loading…</p></div>`;
-        return `<div class="wrap">${MARK}<h1>Pomodeal is full for now</h1>
-          <p>You're on the list, and you'll get in the next time you open it after it reopens.</p>
-          <p class="soft">Got an invite link from a friend? That works any time.</p>
+        if (state.signups === "open") return `<div class="wrap">${MARK}<p class="soft" role="status">Loading…</p>
+          <div class="foot"><button class="textbtn" id="pd-signout">Sign out</button></div></div>`;
+        return `<div class="wrap">${MARK}
+          <section class="ticket closed" aria-label="On the list"><div class="body"><span class="big">Closed for now</span>
+            <p>You're on the list. Once it reopens, open Pomodeal and you're in.</p></div>
+            <div class="stub"><p class="soft">Got an invite link from a friend? That works any time.</p></div>
+            <span class="stamp off" aria-hidden="true">LISTED</span></section>
           <div class="foot">${state.email ? `<p class="fine">Signed in as ${esc(state.email)}</p>` : ""}<button class="textbtn" id="pd-signout">Sign out</button></div></div>`;
       default:
         return "";
@@ -268,18 +283,18 @@ export function mountGate(actions: GateActions) {
       try { await actions.setSignups(overview?.signups === "open" ? "inviteOnly" : "open"); }
       catch { b.disabled = false; b.textContent = "That didn't work. Try again"; }
     });
-    gate.querySelector<HTMLFormElement>("#pd-limits")?.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const f = e.currentTarget as HTMLFormElement, err = f.querySelector<HTMLElement>(".err")!, b = f.querySelector<HTMLButtonElement>("button")!;
-      const num = (n: string) => Number((f.elements.namedItem(n) as HTMLInputElement).value);
-      b.disabled = true; err.textContent = "";
-      try { await actions.setLimits({ memberCap: num("memberCap"), dayLimit: num("dayLimit") }); b.textContent = "Saved"; }
-      catch (x) {
-        const data = (x as { data?: { message?: unknown } }).data;
-        err.textContent = typeof data?.message === "string" ? data.message : "Couldn't save. Check your connection and try again.";
-      }
-      b.disabled = false;
-    });
+    gate.querySelectorAll<HTMLButtonElement>("[data-pick]").forEach((b) => b.addEventListener("click", () => {
+      const k = b.dataset.pick as LimitKey;
+      picking = picking === k ? null : k; pickError = ""; render();
+      gate.querySelector<HTMLElement>(`[data-pick="${k}"]`)?.focus();
+    }));
+    gate.querySelectorAll<HTMLButtonElement>("[data-val]").forEach((b) => b.addEventListener("click", async () => {
+      if (!picking || !overview) return;
+      const k = picking, limits = { memberCap: overview.memberCap, dayLimit: overview.dayLimit, [k]: Number(b.dataset.val) };
+      picking = null; pickError = "";
+      try { await actions.setLimits(limits); }
+      catch { pickError = "That didn't save. Try again."; render(); }
+    }));
     gate.querySelector<HTMLButtonElement>("#pd-new")?.addEventListener("click", async (e) => {
       const b = e.currentTarget as HTMLButtonElement; b.disabled = true;
       try { await actions.createInvite(); } catch { b.disabled = false; b.textContent = "That didn't work. Try again"; }
@@ -323,14 +338,17 @@ export function mountGate(actions: GateActions) {
       }
       acct.hidden = s.kind !== "member";
       if (s.kind === "member" && location.pathname === "/invite") invitesOpen = true;
-      if (s.kind === "member" && location.pathname === "/signups") { openSignups(); return; }
+      if (s.kind === "member" && location.pathname === "/signups") {
+        if (isAdmin) { openSignups(); return; }
+        history.replaceState(null, "", "/");
+      }
       render();
     },
     setTickets(t: InviteTicket[]) { tickets = t; if (invitesOpen) render(); },
-    /** Re-renders the Sign-ups panel, unless the admin is typing in a limit. */
+    /** Re-renders the Sign-ups panel with fresh numbers. */
     setOverview(o: AdminOverview) {
       overview = o;
-      if (signupsOpen && !gate.querySelector("#pd-limits")?.contains(document.activeElement)) render();
+      if (signupsOpen) render();
     },
   };
 }
