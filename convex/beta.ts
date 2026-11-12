@@ -68,12 +68,17 @@ export const claim = mutation({
   },
 });
 
+/** The email hash, only when WorkOS says the address is verified: an unverified claim is never stored or matched. */
+async function verifiedHash(identity: UserIdentity): Promise<string | null> {
+  return identity.emailVerified === true ? emailHashOf(identity) : null;
+}
+
 function cleanName(displayName: string): string {
   return displayName.trim().slice(0, 40) || "New member";
 }
 
 async function hashField(identity: UserIdentity): Promise<{ emailHash?: string }> {
-  const emailHash = await emailHashOf(identity);
+  const emailHash = await verifiedHash(identity);
   return emailHash ? { emailHash } : {};
 }
 
@@ -92,10 +97,13 @@ async function leaveWaitlist(ctx: MutationCtx, tokenIdentifier: string): Promise
  * identity: same row, same data, same invites. Returns whether that happened.
  */
 async function tryRelink(ctx: MutationCtx, identity: UserIdentity): Promise<boolean> {
-  const emailHash = await emailHashOf(identity);
-  if (!emailHash || identity.emailVerified !== true) return false;
-  const match = await ctx.db.query("users").withIndex("by_emailHash", (q) => q.eq("emailHash", emailHash)).first();
-  if (!match || issuerOf(match.tokenIdentifier) === identity.issuer) return false;
+  const emailHash = await verifiedHash(identity);
+  if (!emailHash) return false;
+  // Exactly one member may own a hash; two (which shouldn't happen) means nobody is moved.
+  const matches = await ctx.db.query("users").withIndex("by_emailHash", (q) => q.eq("emailHash", emailHash)).take(2);
+  if (matches.length !== 1) return false;
+  const match = matches[0];
+  if (issuerOf(match.tokenIdentifier) === identity.issuer) return false;
   await ctx.db.patch(match._id, { tokenIdentifier: identity.tokenIdentifier });
   await leaveWaitlist(ctx, identity.tokenIdentifier);
   return true;
@@ -128,7 +136,7 @@ export const enter = mutation({
   handler: async (ctx, { displayName }) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new ConvexError({ code: "SIGNED_OUT", message: "Sign in first." });
-    const emailHash = await emailHashOf(identity);
+    const emailHash = await verifiedHash(identity);
 
     const user = await currentMember(ctx);
     if (user) {

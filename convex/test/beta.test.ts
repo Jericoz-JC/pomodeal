@@ -149,6 +149,27 @@ describe("enter", () => {
     expect(ticket.uses).toBe(0); // the invite stays unspent
   });
 
+  test("an unverified email is never stored as a hash", async () => {
+    const t = newT();
+    await openSignups(t);
+    await account(t, PROD, "maya", "maya@uw.edu", false).mutation(api.beta.enter, { displayName: "Maya" });
+    const userId = await t.run((ctx) => ctx.db.insert("users", { tokenIdentifier: `${STAGING}|sam`, displayName: "Sam", role: "member", inviteId: null, invitedBy: null, inviteAllowance: 0, joinedAt: 1 }));
+    await account(t, STAGING, "sam", "sam@uw.edu").mutation(api.beta.enter, { displayName: "Sam" });
+    const rows = await t.run((ctx) => ctx.db.query("users").collect());
+    expect(rows.map((r) => r.emailHash)).toEqual([undefined, undefined]);
+    expect(rows.find((r) => r._id === userId)!.emailHash).toBeUndefined();
+  });
+
+  test("two members sharing a hash never relink", async () => {
+    const t = newT();
+    await stagingMember(t);
+    await t.run(async (ctx) => ctx.db.insert("users", { tokenIdentifier: `${STAGING}|user_Z`, displayName: "Other", role: "member", inviteId: null, invitedBy: null, inviteAllowance: 0, joinedAt: 2, emailHash: await hashEmail("chris@uw.edu") }));
+    const res = await account(t, PROD, "user_B", "chris@uw.edu", true).mutation(api.beta.enter, { displayName: "Chris" });
+    expect(res.relinked).toBe(false);
+    const ids = (await t.run((ctx) => ctx.db.query("users").collect())).map((u) => u.tokenIdentifier);
+    expect(ids).not.toContain(`${PROD}|user_B`);
+  });
+
   test("a signed-out caller can't enter", async () => {
     const t = newT();
     await expect(t.mutation(api.beta.enter, { displayName: "x" })).rejects.toThrow(/Sign in first/);
