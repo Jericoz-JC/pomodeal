@@ -11,7 +11,7 @@ import { mountGate, type GateState, type Provider } from "./gate";
 import { enablePush, pushConfigured, pushSupported, type PushResult } from "./push";
 
 // Which one-tap buttons to show; each must be enabled in WorkOS → Authentication → Providers.
-const providers = ((import.meta.env.VITE_AUTH_PROVIDERS as string | undefined) || "GoogleOAuth,GitHubOAuth")
+const providers = ((import.meta.env.VITE_AUTH_PROVIDERS as string | undefined) || "GitHubOAuth,GoogleOAuth,AppleOAuth")
   .split(",").map((p) => p.trim()).filter(Boolean) as Provider[];
 
 const convexUrl = (import.meta.env.VITE_CONVEX_URL as string | undefined) || undefined;

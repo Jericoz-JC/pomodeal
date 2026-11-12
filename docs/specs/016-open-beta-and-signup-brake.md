@@ -8,7 +8,7 @@ Friends trying Pomodeal shouldn't need an invite code to get in. It is still a b
 
 Two more things ride along:
 
-- **Apple sign-in goes.** Production WorkOS needs an Apple developer account, and Chris has no Mac. GitHub, Google and email stay.
+- **Apple sign-in stays for now** (Chris, Nov 12). Production WorkOS needs an Apple developer account and Chris has no Mac, so Apple will have to go before the switch to WorkOS production, but not in this change.
 - **Accounts have to survive the move to WorkOS production.** A member row is keyed by `tokenIdentifier`, which is the token's issuer plus its subject. Both change when WorkOS moves from the staging environment to production: the issuer contains the client id, and production is a separate user store where everyone gets a new user id. Without a fix, every member (Chris included) looks brand new on their first production sign-in and their sessions, ledger and invites are stranded.
 
 ## Limits that set the numbers
@@ -77,9 +77,7 @@ WorkOS links sign-ins with the same verified email to one user within an environ
 
 ### Sign-in providers
 
-- The default list becomes `GitHubOAuth,GoogleOAuth`; email stays reachable through "other way", which opens the AuthKit chooser.
-- `AppleOAuth` comes out of the `Provider` type, the icon and label tables, and the landing page's iPhone-first ordering. The primary button is Google, the second GitHub.
-- Chris turns Apple off in the WorkOS staging dashboard. `VITE_AUTH_PROVIDERS` can still override the list.
+Unchanged in this change: GitHub, Google and Apple, with Apple first on an iPhone, and email through "other way". Apple comes out before the WorkOS production switch (see the checklist below).
 
 ## Data changes
 
@@ -123,14 +121,14 @@ Client (`apps/web/src/main.ts`): after auth attaches, call `beta.enter` once (or
 
 1. Ship this spec and set the JWT template on the **staging** environment.
 2. Wait until every current member has opened the app at least once, so each has an `emailHash`. "Ready for production sign-in" on the admin screen reads all of them.
-3. In the WorkOS production environment: Google and GitHub OAuth clients of your own, email code (Magic Auth) on, Apple off, the same JWT template, redirects and CORS for `pomodeal.app`, and a custom auth domain if ready.
+3. In the WorkOS production environment: Google and GitHub OAuth clients of your own, email code (Magic Auth) on, Apple off (and set `VITE_AUTH_PROVIDERS=GoogleOAuth,GitHubOAuth` in Cloudflare so the app stops showing it), the same JWT template, redirects and CORS for `pomodeal.app`, and a custom auth domain if ready.
 4. Set `WORKOS_CLIENT_ID` on the Convex production deployment and `VITE_WORKOS_CLIENT_ID` in Cloudflare to the production client id; push to deploy.
 5. Everyone is signed out once. On their next sign-in, `beta.enter` moves their account across.
 
 ## Docs that change with it
 
 - `docs/08-launch-and-beta-access.md`: how access works now, the admin screen, the production switch.
-- `docs/03-roadmap.md` "Where we are": open beta with a brake; Apple removed.
+- `docs/03-roadmap.md` "Where we are": open beta with a brake.
 - `docs/decisions/0009-open-beta-with-brake.md`: why open plus a brake instead of invite-only.
 - `docs/specs/006-privacy-inventory.md`, `CHANGELOG.md`.
 
