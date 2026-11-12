@@ -29,7 +29,7 @@ describe("starting a deal", () => {
     expect(all).toHaveLength(1);
     expect(all[0]).toMatchObject({ userId, sessionId, kind: "deal", blockLabel: "Reading", minutes: 15 });
     expect(all[0].taskId).toBeUndefined();
-    const today = await as.query(api.sessions.today, { now: Date.now() });
+    const today = await as.query(api.sessions.today, { from: Date.now() - 60 * MIN });
     expect(today.map((r) => r.kind)).toEqual(["deal"]);
   });
 
@@ -123,7 +123,7 @@ describe("ownership", () => {
     await expect(bo.mutation(api.sessions.end, { sessionId, dayKey: DAY })).rejects.toThrow();
     await expect(bo.mutation(api.sessions.next, { sessionId, fromIdx: 0, dayKey: DAY, early: true })).rejects.toThrow();
     expect(await kinds(t)).toEqual(["deal"]);
-    expect(await bo.query(api.sessions.today, { now: Date.now() })).toEqual([]);
+    expect(await bo.query(api.sessions.today, { from: Date.now() - 60 * MIN })).toEqual([]);
     expect((await as.query(api.sessions.current, {}))?.status).toBe("running");
   });
 
@@ -137,5 +137,32 @@ describe("ownership", () => {
     const all = await rows(t);
     expect(all.map((r) => r.kind)).toEqual(["deal", "end_early"]);
     expect(all.every((r) => r.taskId === undefined)).toBe(true);
+  });
+});
+
+describe("the tape is today's study day (issue #26)", () => {
+  test("rows filed before the start the client sends stay off the tape, even within 24 hours", async () => {
+    const t = newT();
+    const { as } = await makeMember(t, "Ada");
+    const { sessionId } = await as.mutation(api.sessions.start, { deal: deal("Reading", 30) });
+    const H = 60 * MIN;
+    const now = Date.now();
+    const from = now - 7 * H; // say it's 11:19am and the study day started at 4am
+    await t.run(async (ctx) => {
+      const s = (await ctx.db.get(sessionId))!;
+      const row = { userId: s.userId, sessionId, blockLabel: "Lecture Planning", minutes: 15 };
+      await ctx.db.insert("ledger", { ...row, at: now - 23 * H, kind: "deal" }); // yesterday 12:11pm
+      await ctx.db.insert("ledger", { ...row, at: from - 1, kind: "end_early" }); // 3:59am, last night
+      await ctx.db.insert("ledger", { ...row, at: from, kind: "skip" }); // 4:00am, today
+    });
+    const tape = await as.query(api.sessions.today, { from });
+    expect(tape.map((r) => r.kind)).toEqual(["deal", "skip"]);
+  });
+
+  test("an app from before the fix still gets its 24 hours", async () => {
+    const t = newT();
+    const { as } = await makeMember(t, "Ada");
+    await as.mutation(api.sessions.start, { deal: deal("Reading", 30) });
+    expect((await as.query(api.sessions.today, { now: Date.now() })).map((r) => r.kind)).toEqual(["deal"]);
   });
 });

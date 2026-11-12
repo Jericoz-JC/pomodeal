@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fix: "Today's deals" showed yesterday's deals ([#26](https://github.com/Jericoz-JC/pomodeal/issues/26)). The tape was the last 24 hours, so at 11am it still held yesterday's noon deals. A day now runs 4am to 4am (ADR 0009): the tape and its totals hold only today's, and a late night stays one night, on the tape, on tonight's plan and on your big ones.
 - Home is the standing ticket (spec 015): the next big one is written into the deal ticket ("30 min of History paper.") and DEAL starts it at its length; the others are written lines under it with one Start stamp each, and a name swaps onto the ticket. The name on the ticket opens its jobs (no more "…"), Take a break first is on the ticket, and Quick deal swaps the ordinary deal on. After finishing a task, home is full instead of a folded row over a blank band.
 - The desk (spec 014): at 820 px and up the screen is three objects, the ticket, the tape and, while tonight is written or printed, the roll along the front edge: tonight drawn to scale over a clock. It is outlined while you write, paper once printed, a green foot grows as the running sitting is paid, and Done lands on it. Drag a length along the roll to change the order. On home, the names you already use lie on the roll; one press starts tonight. Ticket and tape start on one line, every decision sheet hangs from it, and the done sheet stops above the roll so its stamp lands there.
 - Tonight in a line (spec 012): write several assignments as one sentence with commas ("history paper 1h, orgo set 4, bio ch 7"), stamp Print, and each deal takes the next sitting. Names you already use are offered under the sentence, a list pasted from your notes becomes its items, and the night is drawn to scale under the sentence on a phone. Tonight is stored per local day (the `nights` table), so a reload or another device keeps it, and a sitting started on one device is taken on all of them; nights are deleted 2 days later.
@@ -18,7 +19,6 @@
 - Screen readers: announcements made while a sheet is open are now spoken (the live region was inside the part of the page that goes inert), and every sheet opens on its heading.
 - Fix: deals now reach the ledger. Before, the server saved only asks, the bonus and cleared minutes, so a deal made on your phone was gone from the tape a few hours later (ADR 0006). The tape now keeps the deal you made, where you stopped (on a big one: which one and how many minutes you'd done) and a block you ended early, on every device and after a reload. Rows from before the fix stay as they were.
 - Desktop: the tape beside the clock fits the window and scrolls on its own, so a long night no longer pushes its head off the top or its last line below the fold.
-- The tape moves on to the last 24 hours when the app comes back to the front or every hour, so a phone left open overnight doesn't keep yesterday's deals on it.
 
 ## v0.3.0 (2026-11-09)
 

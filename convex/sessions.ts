@@ -151,15 +151,21 @@ export const current = query({
   },
 });
 
-/** The tape: the newest rows from the 24 hours before `now` (the client moves `now` forward, see apps/web/src/main.ts). */
+/** The tape: the newest rows since `from`, the start of the student's study day (4am local, issue #26). Only the
+ *  client knows its time zone, so it sends the instant and subscribes again when the next study day starts (see
+ *  apps/web/src/main.ts). A query can't read the clock, so `from` isn't checked against it: these are the caller's
+ *  own rows, and TAPE_MAX bounds the read. `now` is the old argument (the 24 hours before it), for an app open since
+ *  before this change; drop it a release later. */
 export const today = query({
-  args: { now: v.number() },
-  handler: async (ctx, { now }) => {
+  args: { from: v.optional(v.number()), now: v.optional(v.number()) },
+  handler: async (ctx, { from, now }) => {
     const user = await currentMember(ctx);
     if (!user) return [];
+    const since = from ?? (now === undefined ? null : now - DAY_MS);
+    if (since === null) return [];
     return ctx.db
       .query("ledger")
-      .withIndex("by_userId_and_at", (q) => q.eq("userId", user._id).gte("at", now - DAY_MS))
+      .withIndex("by_userId_and_at", (q) => q.eq("userId", user._id).gte("at", since))
       .order("desc")
       .take(TAPE_MAX);
   },
