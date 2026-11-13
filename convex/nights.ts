@@ -1,5 +1,6 @@
-// Spec 012 "Tonight in a line", built for real: tonight's plan is one row per member per local day. Every sitting
-// starts through sessions.start or tasks.startFromCard with `fromNight`, which takes it in the same transaction.
+// Tonight's line (spec 012, reworked by spec 017): one row per member per local day, saved as it is written. Every
+// sitting starts through sessions.start or tasks.startFromCard with `fromNight`, which takes it in the same
+// transaction; a deal stopped before its time gives its sitting back (convex/lib/nights.ts).
 import { ConvexError, v } from "convex/values";
 import { nightProblem, sittingsOf } from "../packages/core/src";
 import { internal } from "./_generated/api";
@@ -21,9 +22,10 @@ const doneOf = (items: { title: string; sittings: number; minutes: number }[], t
   sittingsOf(items).slice(0, taken).map((s) => `${s.minutes}:${s.title}`).join("\n");
 
 /**
- * Prints tonight: replaces the day's night with `items`, nothing taken yet. With `keepTaken` (a reorder of what is
- * left, from the roll) the sittings already taken stay taken; they must still lead the night unchanged, or someone
- * changed it on another device first.
+ * Saves tonight's line: replaces the day's night with `items`, nothing taken yet. With `keepTaken` (every change
+ * once the line exists) the sittings already taken stay taken; they must still lead the line unchanged, or someone
+ * changed it on another device first. `night_printed` is logged once, on the day's first write (spec 017: the line
+ * is saved on every change, so a row per write would count edits, not nights).
  */
 export const print = mutation({
   args: { dayKey: v.string(), items: v.array(nightItem), keepTaken: v.optional(v.boolean()) },
@@ -45,7 +47,20 @@ export const print = mutation({
     const row = { userId: user._id, dayKey, items, taken, printedAt: Date.now() };
     if (old) await ctx.db.replace("nights", old._id, row);
     else await ctx.db.insert("nights", row);
-    if (!keepTaken) await logEvent(ctx, user._id, "night_printed", { count: items.length });
+    if (!old) await logEvent(ctx, user._id, "night_printed", { count: items.length });
+    return null;
+  },
+});
+
+/** Spec 017: "Just this one", or the line shrinking to the ticket alone. Deletes the day's night; none is fine. */
+export const clear = mutation({
+  args: { dayKey: v.string() },
+  returns: v.null(),
+  handler: async (ctx, { dayKey }) => {
+    const user = await requireMember(ctx);
+    checkDayKey(dayKey);
+    const old = await nightOf(ctx, user._id, dayKey);
+    if (old) await ctx.db.delete(old._id);
     return null;
   },
 });

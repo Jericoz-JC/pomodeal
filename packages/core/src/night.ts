@@ -40,6 +40,15 @@ export interface KnownName<Id extends string = string> {
   piece?: string;
 }
 
+/**
+ * Spec 017: whether a size can be stored. One sitting can be any length a deal can be, because the ticket's own deal
+ * is the line's first item (an 8 min quick deal, a 60 min big one); several sittings are the four sizes on offer.
+ * NIGHT_SIZES stays what a typed size snaps to.
+ */
+export function nightSizeOk(sittings: number, minutes: number): boolean {
+  return sittings === 1 ? FOCUS_LENGTHS.includes(minutes) : NIGHT_SIZES.some(([n, m]) => n === sittings && m === minutes);
+}
+
 /** The size on offer whose total is nearest `minutes` (the first on a tie). */
 export function snapNightSize(minutes: number): readonly [number, number] {
   return NIGHT_SIZES.reduce((a, s) => (Math.abs(s[0] * s[1] - minutes) < Math.abs(a[0] * a[1] - minutes) ? s : a));
@@ -120,7 +129,7 @@ export function nightProblem(input: { items: readonly Pick<NightItem, "title" | 
   for (const it of items) {
     const len = [...it.title.trim()].length;
     if (len < 1 || len > NIGHT_TITLE_MAX || it.title !== it.title.trim()) return "That name doesn't fit";
-    if (!NIGHT_SIZES.some(([n, m]) => n === it.sittings && m === it.minutes)) return "That size isn't on offer";
+    if (!nightSizeOk(it.sittings, it.minutes)) return "That size isn't on offer";
   }
   return null;
 }

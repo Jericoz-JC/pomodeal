@@ -59,6 +59,7 @@ Spec 016. One row holding the sign-up mode, the brake's limits and when it last 
 | state.version | Counter bumped on every change; scheduled pushes check it (spec 008; stored from Task 7, optional on older sessions) | Stop stale pushes firing | Chris | Kept as history | Chris on request |
 | state.scheduledIds | Ids of scheduled push functions (spec 008; stored from Task 13, optional on older sessions) | Cancel old schedules | Chris | Cleared when the session ends | Chris on request |
 | status | running or ended | Find the active session | The student, Chris | Kept as history | Chris on request |
+| fromNight, nightDay | Which sitting of which day's line this deal took: a position and a local date key, no text (spec 017; optional) | Give the sitting back when the deal stops early, so "Stop for now" keeps your place | The student, Chris | Kept as history | Chris on request |
 | createdAt | When it began | Ordering | The student, Chris | Kept as history | Chris on request |
 | taskId | The big one this session belongs to (spec 008) | Task-scoped history | The student, Chris | Kept as history | Unlinked when the big one is deleted |
 | notedIdx | Index of the last focus block whose block-end notes (bookmark, done) were handled (spec 008) | Make block-end notes idempotent | Chris | Kept as history | Chris on request |
@@ -101,17 +102,17 @@ Deleting a big one deletes the row and unlinks its sessions, ledger entries and 
 
 ### nights
 
-Tonight's plan (spec 012, "Tonight in a line"): one row per member per local day, replaced each time the student prints tonight. It vanishes on its own: the daily cleanup deletes a night once its day is more than 2 days old.
+Tonight's line (spec 012, reworked by spec 017): one row per member per local day, saved each time the student changes the line and deleted when they clear it ("Just this one"). It vanishes on its own: the daily cleanup deletes a night once its day is more than 2 days old. Since spec 017 the first item is the ticket's own deal, so a one-off task name typed on the ticket is stored here once anything is added after it.
 
 | Field | What it holds | Why | Who can see | Retention | Deleted by |
 | --- | --- | --- | --- | --- | --- |
-| userId | Owner | Scope to the student | The student, Chris | At most about 3 days | The daily cleanup, once its day is more than 2 days old; a new print the same day replaces the row |
+| userId | Owner | Scope to the student | The student, Chris | At most about 3 days | The daily cleanup, once its day is more than 2 days old; a later change the same day replaces the row; clearing the line deletes it |
 | dayKey | Local date key of the night, from the client (indexed for the cleanup) | One night per day | The student, Chris | Same | Same |
 | items[].title | Up to 6 item names, 1 to 80 characters each (coursework text, like a big one's title) | Print the night and name each sitting | The student, Chris; never sent to AI or a push | Same | Same |
 | items[].taskId | The big one an item names, optional | Start its sittings on that big one | The student, Chris | Same | Deleting the big one clears it; the cleanup |
-| items[].sittings, items[].minutes | The item's size: 1 to 3 sittings of 15, 20, 30 or 45 minutes | Lay out the night | The student, Chris | Same | Same |
-| taken | How many sittings have been started | Know which sitting is next on every device | The student, Chris | Same | Same |
-| printedAt | When it was last printed | Ordering and support | Chris | Same | Same |
+| items[].sittings, items[].minutes | The item's size: one sitting of any length a deal can be (5 to 60 minutes), or 2 or 3 sittings of 30 or 45 minutes | Lay out the night | The student, Chris | Same | Same |
+| taken | How many sittings are done or running (a deal stopped early gives its sitting back) | Know which sitting is next on every device | The student, Chris | Same | Same |
+| printedAt | When the line was last saved | Ordering and support | Chris | Same | Same |
 
 ### events
 
