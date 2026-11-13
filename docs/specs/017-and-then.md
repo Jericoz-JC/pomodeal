@@ -25,7 +25,7 @@ Chris picked direction A of two mocked flows ("lgtm do A") and approved the five
 
 The ticket carries one paragraph:
 
-1. **The deal**, large, as today: "10 min of Reels, then 8 min of BIO 180 ch. 7." or, for a big one, "30 min of History paper." with its "Start with:" line and "Take a break first".
+1. **The deal**, large, as today: "10 min of Reels, then 8 min of BIO 180 ch. 7." or, for a big one, "30 min of History paper." with its "Start with:" line.
 2. **"After that, …"** for the rest of tonight, in tonight's smaller size, only when there is a rest: "After that, 45 min of Orgo problem set 4 and 20 min of BIO 180 ch. 7."
 3. **The close**: "Then you're done." With a rest it carries the finishing time: "Then you're done around **9:42**pm."
 
@@ -55,7 +55,7 @@ Leaving is one ladder: Not tonight (off the line), Set aside (off the names, kep
 ### Starting, stopping, finishing
 
 - **DEAL** is the only stamp on home. It starts the ticket's deal.
-- **While a block runs**, the close sits under the dial: "After that, Orgo problem set 4 and BIO 180 ch. 7. Then you're done around 9:42pm." or "Then you're done." Pressing "you're done" raises a paper sheet with the same paragraph and its cursor, so the line can be added to or changed without stopping. The running item can't be taken out.
+- **While a block runs** on a phone, the close sits under the dial: "After that, Orgo problem set 4 and BIO 180 ch. 7. Then you're done around 9:42pm." or "Then you're done." Pressing "you're done" raises a paper sheet with the same paragraph and its cursor, so the line can be added to or changed without stopping. The running item can't be taken out. On a desk the roll carries the rest and the time, so the line beside the dial is only "Then you're done."
 - **Stop for now** leaves the item at the front of the line. The tape prints Stopped with the minutes, as today. It is offered during a break too.
 - **The done sheet** is unchanged: "Next up?" offers the next item with the break between rounds; "Another round?" when the line is finished. A finished sitting leaves the sentence and stays on the tape and the roll.
 - **Skip Reels, start reading now** skips this deal's break only.
@@ -67,10 +67,12 @@ Leaving is one ladder: Not tonight (off the line), Set aside (off the names, kep
 | State | The ticket |
 | --- | --- |
 | One plain deal | "10 min of Reels, then 8 min of BIO 180 ch. 7." / "Then you're done." Under it: "Needs more than one sitting?" and "Skip Reels, start reading now" |
-| One big one | "30 min of History paper." / "Start with: …" / "Take a break first" / "Then you're done." |
-| Several | the deal, "After that, …", the strip, "Then you're done around 9:42pm." Under it: "Just this one" |
+| One big one | "30 min of History paper." / "Start with: …" / "Then you're done." Under it: "Take a break first" |
+| Several | the deal, "After that, …", the strip, "Then you're done around 9:42pm." Under it: "Just this one" (after "Take a break first" when a big one is on the ticket) |
 | Mid-night | the next deal, what's left after it, the strip with paid lengths green |
 | Night finished | back to one deal |
+
+The break links ("Skip Reels, start reading now", "Take a break first") and "Just this one" share one row of quiet links under the ticket; "Just this one" stays there while a word is being changed.
 
 "Needs more than one sitting?" shows only while tonight is just the ticket and the ticket holds a plain name. It works as today (spec 008). Its choices never slide under the DEAL stub.
 
@@ -134,6 +136,9 @@ Never: "plan", "schedule", "agenda", "to-do", "queue", "overdue", "missed", "beh
 | Not tonight on the ticket's item | The next item moves up onto the ticket |
 | The ticket's name retyped while there is an "After that" | The first item is renamed; the rest stays |
 | A big one deleted while in the line | Its item stays by its title, unlinked (spec 006) |
+| A big one set aside while in the line | Its sittings still to come leave the line, as with Not tonight; a running one is untouched |
+| Not tonight on a split item | Every sitting of it still to come leaves, whatever lengths they now have |
+| The line fills while typing | The cursor closes and nothing takes the keyboard: the next key can't press DEAL. Anything typed past six is dropped |
 | Six items | "you're done" is plain text |
 | A two-sitting item at the front | The ticket holds its first sitting; "After that" starts "30 min more of History paper," |
 | Tonight changed on another device | The line follows the server's; an edit that loses the race is dropped and the screen shows the server's line |
