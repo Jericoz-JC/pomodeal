@@ -4066,7 +4066,8 @@ function fromHash() {
   /* spec 008 push: a focus block just started on a device that can take pushes; then an iPhone Safari tab after its first block */
   else if (h === "push-ask") { deal.act = null; run(deal.focusMin * 60000 - 20000); pushAsk = "ask"; }
   else if (h === "install-ios") {
-    run(0); S.idx = 2; S.durMs = cur().min * 60000; S.startedAt = vnow - 20000;
+    /* the break has just ended: a deal is break then focus (spec 010), so its focus block is 20 s in */
+    run(0); S.idx = 1; S.durMs = cur().min * 60000; S.startedAt = vnow - 20000;
     after = () => { panel = { kind: "install", back: null, focusMe: true, openedAt: performance.now() }; renderPanel(); };
   }
   else if (h === "checkin" || h === "checkin-cards") {
