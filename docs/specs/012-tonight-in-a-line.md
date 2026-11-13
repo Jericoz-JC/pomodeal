@@ -1,6 +1,6 @@
 # Spec 012: Tonight in a line
 
-Status: prototype on branch `claude/day-planner-b00906`. Not built for real, not merged. Owner: Chris.
+Status: built and merged; **its flow is replaced by [spec 017](017-and-then.md)** (Nov 13): no "Tonight," ticket, no Print, no Plan tonight, Change tonight or Just one deal, and Stop for now keeps the sitting. What stays from here: the parser and name matching (section 2), the sizes, the strip, the tape rows above "now", `nights` storage. Owner: Chris.
 Research: [Planning several things for one day](../research/reports/Planning%20several%20things%20for%20one%20day.md).
 Builds on: the deal ticket (specs 001, 007, 010), big ones and pieces (008), the tape (009), the look (011).
 

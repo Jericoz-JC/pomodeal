@@ -12,6 +12,8 @@ Changes from the original thesis: added **Phase 0** (concepts and spikes before 
 
 **On a branch (`beta/open-signups`, spec 016, ADR 0009), not merged:** an open beta with a brake. Anyone who signs in joins until 40 join in 24 hours or there are 150 members; then sign-ups switch to invite-only by themselves and admins get a push. Admins watch and control it on a Sign-ups screen in the account menu. Apple sign-in stays until the WorkOS production switch. Each member's email is stored as a hash so accounts carry over when WorkOS moves to production; every member has to open the app once before that switch.
 
+**On a branch (`claude/friendly-johnson-t4ny5v`, spec 017, ADR 0010), not merged:** one way to add and remove tasks. Tonight is one line and the ticket holds its first item; the sentence ends "Then you're done." and those words are where one thing or six are added. It replaces Plan tonight, Print, Just one deal, Quick deal and the big-task lines of specs 012 and 015, and Stop for now keeps your place.
+
 *The rest of this section is as of Nov 9.*
 
 Phase 0's interview gate was skipped on purpose: we launched a closed beta to friends first. Phase 1 is partly live at https://pomodeal.app.
