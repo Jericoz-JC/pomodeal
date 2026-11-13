@@ -231,7 +231,7 @@ p { margin: 0; }
 .sentence .payline { display: block; }
 .bigchip { align-self: flex-start; display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 8px 10px 8px 0; margin-block: -6px -4px; border: none; background: none; color: var(--ink);
   font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 700; font-size: 1.125rem; line-height: 1.15; letter-spacing: .01em; text-align: left; }
-/* one printed checkbox for the app: "Bigger than one block?" on the ticket and "Keep screen on" under the ring */
+/* the app's one printed checkbox: "Bigger than one block?" on the ticket */
 .cbox { flex: none; width: 22px; height: 22px; border: 1.5px solid var(--edge); border-radius: 5px; display: grid; place-items: center; color: var(--deal); }
 .cbox svg { width: 14px; height: 14px; visibility: hidden; }
 :is([aria-pressed="true"], [aria-checked="true"]) > .cbox { border: 3px double var(--deal); background: var(--sel); }
@@ -366,22 +366,9 @@ body.pip { margin: 0; min-height: 100vh; display: grid; place-items: center; bac
 .pipnote { min-height: 1.2em; font-size: .875rem; color: var(--soft); text-align: center; }
 .deskhead .pipbtn { min-height: 0; padding: 0; margin-left: 10px; font-family: var(--font-body); font-weight: 400; font-stretch: normal; font-size: .9375rem; color: var(--deal-ink); }
 
-/* a keyboard key printed on the control it presses (desks only, see markKeys) */
-.key { position: absolute; right: -9px; top: -9px; z-index: 1; display: grid; place-items: center; min-width: 22px; height: 22px; padding: 0 5px; border-radius: 5px;
-  background: var(--card); color: var(--soft); box-shadow: inset 0 0 0 1.5px var(--edge), 0 1.5px 0 var(--edge);
-  font: 700 .75rem/1 var(--font-head); font-stretch: var(--wd-act); letter-spacing: 0; text-transform: none; transform: rotate(calc(-1 * var(--tilt, 0deg))); pointer-events: none; }
-.textbtn:has(> .key), .secondary:has(> .key) { position: relative; }
-.textbtn > .key { position: static; display: inline-grid; margin-left: 8px; vertical-align: 1px; transform: none; }
-.term .pad .key { right: 16px; top: 10px; }
-.pressed .key, .stamped .key { visibility: hidden; }
-/* a key is shown on the control under the pointer or the keyboard, not printed across every corner (council r1) */
-/* spec 011 (Chris): no key badges printed on controls. The shortcuts still work and are announced (aria-keyshortcuts). */
-.key { display: none !important; }
-/* (kept for reference if badges come back) keys sit inside the control instead of across its corner */
-.key { transition: opacity .12s; }
-:is(:hover, :focus-visible) > .key, :is(button, .term):is(:hover, :focus-visible) .key { opacity: 1; }
-.secondary > .key { right: 14px; top: 50%; transform: translateY(-50%); }
-#shake > .key { right: 10px; top: 10px; transform: rotate(calc(-1 * var(--tilt, 0deg))); }
+/* on a desk these three lie over the shadow of the ticket before them; on a phone the shadow falls across them. The
+   key badges that used to be printed here did this by accident; kept so the desk looks as it did. */
+@media (hover: hover) and (pointer: fine) and (min-width: 820px) { #ask2, #endearly, #donenow { position: relative; } }
 
 /* ---------- the split: one ticket, torn into pieces ----------
    The big one is one ticket. Each piece is a length of it, as long as its minutes (1 px a minute over a fixed base), and
@@ -476,9 +463,6 @@ html:has(.ticket.big) { scroll-padding-bottom: 260px; }
 /* R61: Delete sits apart from the rows that keep the big one */
 .menu .mrow.gone { border-top: 1px solid var(--rule); margin-top: 4px; }
 
-/* wake lock: the same printed box as "Bigger than one block?", a quiet row under the ring */
-.keepon { justify-self: center; display: inline-flex; align-items: center; gap: 10px; min-height: 44px; margin-top: -6px; padding: 8px 12px; border: none; background: none; color: var(--soft); font-size: .9375rem; }
-.keepon[aria-checked="true"] { color: var(--ink); }
 /* spec 008 push: the one-time offer of taps at block ends, under the ring. Dashed in ink like anything not agreed to yet. */
 .pushask { justify-self: center; display: inline-flex; align-items: center; gap: 10px; min-height: 48px; margin-top: 2px; padding: 10px 18px 10px 14px; border: 2px solid var(--edge); border-radius: var(--r-press); background: none; color: var(--ink);
   font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 700; font-size: 1.0625rem; line-height: 1.2; letter-spacing: .01em; }
@@ -680,7 +664,7 @@ main .runticket .scale :is(.mn, .mj) { display: none; }
 .runticket .note .at .num { font: inherit; }
 main .runticket .note:has(.nl) { max-width: none; text-wrap: pretty; line-height: 1.55; }
 .runticket .aside:not(:empty) { margin-bottom: 12px; }
-.act .keepon, .act .pushask { align-self: center; margin-top: 0; }
+.act .pushask { align-self: center; margin-top: 0; }
 .runticket .aside:empty { display: none; }
 @keyframes sweep { from { --p: 0; } }
 .dial .face { inset: 20%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
@@ -1151,7 +1135,6 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   .desk { display: grid; grid-template-columns: minmax(0, 1fr) var(--tapew); grid-template-areas: "stage tape"; align-items: start; column-gap: var(--gap); margin-top: -50px; }
   main { grid-area: stage; width: 100%; max-width: 860px; justify-self: start; padding-block: calc(50px + var(--stagetop)) 48px; gap: 24px; }
   .side { min-width: 0; }
-  .roomside { display: none; }
   /* the column is exactly as tall as the window at most: the slot, the tape (which scrolls inside it) and the line under it.
      If the column were taller than the window, the page would scroll to reach its end and slide the tape's head off the top. */
   .tapeside { grid-area: tape; position: sticky; top: 0; align-self: start; margin: 0; display: flex; flex-direction: column; max-height: 100vh; max-height: 100dvh; }
@@ -1193,7 +1176,6 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   .timerwrap { gap: 14px; }
   h1 { font-size: 2.75rem; }
   .sentence { font-size: 2rem; line-height: 1.4; }
-  .keepon { display: none; }
   @media (max-width: 1150px) { .tape { padding-inline: 18px; } .tape .stubcard { grid-template-columns: 5.25em 1fr; } .tape .stubcard .title { font-size: 1.0625rem; } .tape .stubcard .t b { font-size: 1.0625rem; } }
   /* a decision is made at the stage: the paper lands over the clock, the tape stays readable beside it */
   .scrim { align-items: flex-end; justify-content: flex-start; padding: 24px 0 0 calc(var(--pad) + max(0px, (100vw - var(--appw)) / 2)); -webkit-backdrop-filter: none; backdrop-filter: none; }
@@ -1423,7 +1405,6 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   </div>
   <header class="deskhead" id="deskhead"></header>
   <div class="desk">
-    <aside class="side roomside" id="side-room" aria-label="Your room" hidden></aside>
     <main id="view"></main>
     <aside class="side tapeside" id="side-ledger" aria-label="Today's deals" hidden></aside>
     <!-- spec 014, desk only: the roll, what's still to come laid along the front edge of the desk, to scale -->
@@ -1537,13 +1518,11 @@ function noteComeback(id) {
   cbSeen.add(k); BE.logEvent("comeback_shown", id);
   try { localStorage.setItem(CB_KEY, JSON.stringify([...cbSeen].filter(x => x.startsWith(day + "|")))); } catch (e) {}
 }
-/* spec 008 "Wake lock": a per-device choice, off by default, only where the browser has the Screen Wake Lock API.
-   Held during focus blocks while the page is visible; released on a break, at the end, and by the browser when hidden. */
-const WAKE_KEY = "pomodeal.wakelock", WAKE_OK = "wakeLock" in navigator;
-const readWake = () => true;
-let wakeOn = readWake();
+/* spec 008 "Wake lock", without its switch since spec 011: where the browser has the Screen Wake Lock API, the screen
+   stays on during every focus block while the page is visible; released on a break, at the end, and by the browser when hidden. */
+const WAKE_OK = "wakeLock" in navigator;
 let wakeLock = null, wakeAsking = false;
-const wantWake = () => WAKE_OK && wakeOn && !!S && cur().type === "focus" && document.visibilityState === "visible";
+const wantWake = () => WAKE_OK && !!S && cur().type === "focus" && document.visibilityState === "visible";
 function syncWake() {
   if (!WAKE_OK) return;
   if (wantWake() && !wakeLock && !wakeAsking) {
@@ -1869,18 +1848,17 @@ function render() {
   const v = $("#view");
   if (!S && pushAsk === "ask") pushAsk = null;
   document.body.classList.toggle("modal", tab === "now" && mode === "intercept");
-  /* on a wide window the ledger and the room sit on the desk beside the clock, so those two sections fold into Now */
-  const wide = WIDE.matches && mode !== "intercept", roomOut = false;
+  /* on a wide window the tape hangs on the desk beside the clock */
+  const wide = WIDE.matches && mode !== "intercept";
   /* the sample ledger is on the tape from the start, the way a real night's would be */
   if (!BE && !ledger.length && location.hash !== "#empty") seedLedger();
   /* state settles before anything is drawn: the server's line when a copy is waiting, then what the ticket holds */
   nightSync(); if (!S && mode !== "intercept") settleTicket(); settlePicks();
   v.innerHTML = tab === "room" ? roomView() : mode === "intercept" ? interceptView() : !S ? startView() : runningView();
-  const sl = $("#side-ledger"), sr = $("#side-room"), tapeOn = (tab === "now" || wide) && mode !== "intercept";
-  sl.hidden = !tapeOn; sr.hidden = !roomOut; $(".desk").classList.toggle("noroom", wide && !roomOut);
+  const sl = $("#side-ledger"), tapeOn = (tab === "now" || wide) && mode !== "intercept";
+  sl.hidden = !tapeOn;
   const tapeHtml = tapeOn ? `<div class="tape">${ledgerView()}</div>${BE ? `<p class="tapefoot">Rooms for your friend group open soon. For now, invite friends from the account button at the top.</p>` : ""}` : "";
   if (sl.dataset.sig !== tapeHtml || document.querySelector(".stubcard.fresh")) { sl.innerHTML = tapeHtml; sl.dataset.sig = tapeHtml; }
-  sr.innerHTML = roomOut ? roomView(true) : "";
   paintRoll(wide);
   /* phone: only the tape's top edge is on the first screen */
   $("#deskhead").innerHTML = wide ? deskHead() : "";
@@ -2971,7 +2949,7 @@ function openList() {
 /* the demo's set-aside big ones (live mode reads them from api.tasks.all) */
 let demoAside = [];
 /* live: whether any big one is set aside. Seeded by one list read on attach, set by Set aside, and corrected
-   whenever the list is read. It keeps "All big ones" on the home screen with no open cards (R28). */
+   whenever the list is read. It keeps "All big tasks" under the ticket's name when no big one is open (R28). */
 let hasAside = false;
 const asideKnown = () => BE ? hasAside : demoAside.length > 0;
 const noteAside = items => { if (BE) hasAside = items.some(i => i.status === "set_aside"); };
@@ -3465,7 +3443,7 @@ function freshStub(e) {
   const el = now - e.freshAt; if (el >= 1400) { e.fresh = false; return ""; }
   return ` fresh" style="${lagVar(el)}`;
 }
-function roomView(side) {
+function roomView() {
   if (BE) return `<h1>Rooms</h1>
   <p class="soft">Rooms for your friend group open soon: see who's focusing, and messages wait until everyone's on a break.</p>
   <p class="soft">For now, invite friends from the account button at the top. Each invite is one ticket.</p>`;
@@ -3481,7 +3459,7 @@ function roomView(side) {
   const who = (p, extra) => `<span class="who"><strong>${p.n}</strong>${p.n === "Maya" && withMaya ? `<span class="joined">Joined</span>` : ""}<small>${N(esc(p.d))}</small>${extra || ""}</span>`;
   /* Sam is stuck: one quiet way to help, delivered when his break comes */
   const samExtra = nudged ? `<small id="nudged" tabindex="-1">${N("Nudge sent: “You got this, start with one page.”")}</small>` : `<button class="textbtn nudge" id="nudge">Send a nudge</button>`;
-  return `${side ? `<h2>Late-night BIO crew</h2>` : `<button class="textbtn back" id="backnow">Back to the clock</button><h1>Late-night BIO crew</h1>`}
+  return `<button class="textbtn back" id="backnow">Back to the clock</button><h1>Late-night BIO crew</h1>
   <p class="soft">${N("4 friends. Messages wait until your break.")}</p>
   <div class="roster"><ul class="people" aria-label="Who's here">
     <li class="person you">${mini(me)}${who(me)}${state(me)}</li>
@@ -3555,11 +3533,6 @@ function bind() {
   document.querySelectorAll("[data-respread]").forEach(b => b.onclick = () => openSpread(b.dataset.respread, `[data-respread="${b.dataset.respread}"]`, true));
   /* a big one's sitting takes a break in front of it, for this ticket */
   on("#breakfirst", () => { closePicks(); fromCard.direct = false; picker = deal.act ? null : "act"; nextFocus = deal.act ? '[data-pick="break"]' : '[data-pick="act"]'; render(); });
-  on("#keepon", () => {
-    wakeOn = !wakeOn; try { localStorage.setItem(WAKE_KEY, wakeOn ? "on" : "off"); } catch (e) {}
-    const k = $("#keepon"); k.setAttribute("aria-checked", wakeOn); syncWake();
-    say(wakeOn ? "The screen stays on during focus." : "The screen can sleep again.");
-  });
   on("#pushask", () => {
     if (pushAsk !== "ask") return;
     pushAsk = "asking"; const pb = $("#pushask"); if (pb) pb.setAttribute("aria-disabled", "true");
@@ -3834,7 +3807,7 @@ const SHORTCUTS = {
   s: () => $("#endearly") || $("#sheet-root .scrim:not(.leaving) #donenow") || [...document.querySelectorAll("#sheet-root .scrim:not(.leaving) #go")].find(b => /^Stop/.test(b.textContent)),
 };
 document.addEventListener("keydown", e => {
-  /* desk only, where the keycaps are printed: on a phone a stray key from a Bluetooth keyboard or a key-mapped switch
+  /* desk only: on a phone a stray key from a Bluetooth keyboard or a key-mapped switch
      must not start a round or end a deal (WCAG 2.1.4) */
   if (!FINE.matches) return;
   if (e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
@@ -3844,13 +3817,14 @@ document.addEventListener("keydown", e => {
   const b = find(); if (!b || b.disabled) return;
   e.preventDefault(); b.click();
 });
-/* the keys are printed on the controls they press, on a desk only (a fine pointer that can hover) */
+/* the keys are not printed on the controls they press (spec 011); on a desk (a fine pointer that can hover) each
+   control names its key to assistive tech */
 const KEYCAP = { shake: "D", ask2: "M", endearly: "S", again: "D", donenow: "S" };
 function markKeys() {
   if (!FINE.matches) return;
-  for (const [id, k] of Object.entries(KEYCAP)) { const b = document.getElementById(id); if (b && !b.querySelector(".key")) { b.setAttribute("aria-keyshortcuts", k); b.insertAdjacentHTML("beforeend", `<kbd class="key" aria-hidden="true">${k}</kbd>`); } }
-  document.querySelectorAll("#sheet-root button.term[data-term]").forEach(b => { if (b.querySelector(".key")) return; const k = b.classList.contains("pre") || (b.dataset.term === "0" && !b.nextElementSibling) ? "D" : String(+b.dataset.term + 1); b.setAttribute("aria-keyshortcuts", k === "D" ? "D " + (+b.dataset.term + 1) : k); b.querySelector(".pad").insertAdjacentHTML("beforeend", `<kbd class="key">${k}</kbd>`); });
-  const go = $("#go"); if (go && /^Stop/.test(go.textContent) && !go.querySelector(".key")) { go.setAttribute("aria-keyshortcuts", "S"); go.insertAdjacentHTML("beforeend", `<kbd class="key" aria-hidden="true">S</kbd>`); }
+  for (const [id, k] of Object.entries(KEYCAP)) { const b = document.getElementById(id); if (b) b.setAttribute("aria-keyshortcuts", k); }
+  document.querySelectorAll("#sheet-root button.term[data-term]").forEach(b => { const k = b.classList.contains("pre") || (b.dataset.term === "0" && !b.nextElementSibling) ? "D" : String(+b.dataset.term + 1); b.setAttribute("aria-keyshortcuts", k === "D" ? "D " + (+b.dataset.term + 1) : k); });
+  const go = $("#go"); if (go && /^Stop/.test(go.textContent)) go.setAttribute("aria-keyshortcuts", "S");
 }
 const FINE = matchMedia("(hover: hover) and (pointer: fine) and (min-width: 820px)");
 document.addEventListener("keydown", e => {
@@ -3990,7 +3964,7 @@ function demoPlanData() {
 }
 function fromHash() {
   let h = location.hash.slice(1);
-  fresh(); if (!BE) DEMO_SHIFT = shiftTo(22, 41); mode = "start"; setTab("now"); weekAsk = null; bigOneCards = []; demoAside = []; wakeOn = readWake(); pushAsk = null; demoPlans = demoPlanData();
+  fresh(); if (!BE) DEMO_SHIFT = shiftTo(22, 41); mode = "start"; setTab("now"); weekAsk = null; bigOneCards = []; demoAside = []; pushAsk = null; demoPlans = demoPlanData();
   let after = null;
   const run = (left, ask) => { S = buildSession(deal); S.serial = "0412"; S.startedAt = vnow - (S.durMs - left); S.askCount = ask || 0; };
   if (h === "intercept") mode = "intercept";
@@ -4055,9 +4029,10 @@ function fromHash() {
     const id = h === "respread" ? "lit" : exam ? "bio" : h === "split" ? "paper" : h === "spread-due" ? "site" : "orgo";
     after = () => h.startsWith("split") ? openSplit(id, JOBS_BACK) : openSpread(id, h === "respread" ? `[data-respread="${id}"]` : JOBS_BACK, h === "respread");
   }
-  /* a big one's focus block started from its card, with "Keep screen on" ticked */
+  /* a big one's focus block on its own, with its first move under the name (the screen stays on by itself now;
+     the state keeps its name for the screenshots) */
   else if (h === "running-wakelock") {
-    bigOneCards = demoCards(DEMO_CARDS.slice(0, 2)); wakeOn = true;
+    bigOneCards = demoCards(DEMO_CARDS.slice(0, 2));
     S = buildSession({ act: null, breakMin: 10, task: "History paper", focusMin: 30 }); S.serial = "0412"; S.taskId = "paper"; S.firstMove = "Claim for paragraph 2";
     S.startedAt = vnow - 8 * 60000;
   }
