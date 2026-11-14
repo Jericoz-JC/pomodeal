@@ -43,19 +43,20 @@ The first thing added makes the ticket's own deal the line's first item. Nothing
 
 - **A length** opens the length choices. On the ticket's deal: the deal's lengths, as today. In "After that": the same lengths, then past a hairline 2 × 30 min, 2 × 45 min, 3 × 30 min, 3 × 45 min.
 - **A name** opens one field, the same everywhere: type over it, with **Done**. Under the field:
-  - on the ticket's own name, the names you already use as words (pressing one puts it on the ticket; if it was later in the line it moves to the front) and **All of them**, which opens the All big tasks sheet (rows without Start stamps; a row takes the ticket; set-aside ones keep "Bring it back");
-  - **Do this first** (not on the first item);
+  - on the ticket's own name, the names you already use as words (pressing one puts it on the ticket; if it was later in the line it moves to the front) and, with the quiet ways under them, **All big tasks**, which opens the All big tasks sheet (rows without Start stamps; a row takes the ticket; set-aside ones keep "Bring it back");
   - **Not tonight** (when the line holds more than one thing): the item leaves the line. A big one is back among the names; nothing about it is lost;
-  - **Pieces and days** (a big one): its jobs sheet, unchanged (Split into pieces, Spread over the days left, Start fresh on this one, Set aside, Delete).
+  - **Pieces and days** (a big one): its jobs sheet, unchanged (Split into pieces, Spread over the days left, Start fresh on this one, Set aside, Delete);
+  - **Do this first** (not on the first item).
+  These are one row of quiet links, in this order everywhere.
 - Typing a new name over a big one's makes a plain deal; the big one is untouched and back among the names.
 - **Just this one**, a link under the ticket, shown only while there is an "After that": the rest leaves the line. No confirm; every name is one press away at the open end.
 
-Leaving is one ladder: Not tonight (off the line), Set aside (off the names, kept in All of them), Delete (gone).
+Leaving is one ladder: Not tonight (off the line), Set aside (off the names, kept in All big tasks), Delete (gone).
 
 ### Starting, stopping, finishing
 
 - **DEAL** is the only stamp on home. It starts the ticket's deal.
-- **While a block runs** on a phone, the close sits under the dial: "After that, Orgo problem set 4 and BIO 180 ch. 7. Then you're done around 9:42pm." or "Then you're done." Pressing "you're done" raises a paper sheet with the same paragraph and its cursor, so the line can be added to or changed without stopping. The running item can't be taken out. On a desk the roll carries the rest and the time, so the line beside the dial is only "Then you're done."
+- **While a block runs** on a phone, the close sits under the dial: "After that, Orgo problem set 4 and BIO 180 ch. 7. Then you're done around 9:42pm." or "Then you're done." Pressing "you're done" raises a paper sheet with the same paragraph and its cursor, so the line can be added to or changed without stopping. The running item can't be taken out. On a desk the same line sits beside the dial under the name, without the time: the roll says when.
 - **Stop for now** leaves the item at the front of the line. The tape prints Stopped with the minutes, as today. It is offered during a break too.
 - **The done sheet** is unchanged: "Next up?" offers the next item with the break between rounds; "Another round?" when the line is finished. A finished sitting leaves the sentence and stays on the tape and the roll.
 - **Skip Reels, start reading now** skips this deal's break only.
@@ -107,7 +108,7 @@ The deal ticket and DEAL; spec 012's parser, name matching, paste and sizes; the
 | Take one out | Not tonight |
 | Clear the rest | Just this one |
 | A big one's jobs | Pieces and days |
-| The full list of big ones | All of them |
+| The full list of big ones | All big tasks (the sheet's own title) |
 
 Never: "plan", "schedule", "agenda", "to-do", "queue", "overdue", "missed", "behind". No line explains the UI.
 
@@ -151,6 +152,32 @@ Dragging lengths off the roll to remove them; resizing by dragging tear lines on
 ## Design rounds
 
 Council: product designer and primary user on Claude Opus 5.5, art director on Claude Fable 5.2, each with `settled.md`, fresh each round.
+
+### Rounds 1 to 3: the built flow (Nov 13 and 14)
+
+| Round | Designer | Primary user | Taste |
+| --- | --- | --- | --- |
+| 1, first build | 7/10 | 7.5/10 | 7/10 |
+| 2, after fix pass 1 | 7.5/10 | 8/10 | 7.5/10 |
+| 3, after fix pass 2 | 8/10 | 8/10 | 7.5/10 |
+
+Two acceptance walks (phone and desk, Claude Opus 5.5) ran every add, remove and cancel path against the first build. Neither found a leftover of the old flow or a control under the roll. They found four bugs and a handful of smaller ones, all fixed in pass 1: the line filling handed the keyboard to DEAL; Not tonight left half of a split item; a length choice sat under the stub at 1024 wide; a finished night left a stale task on the ticket; the break between rounds was headed "Your pick"; typed names lost their capitals.
+
+Built from the council:
+
+- Round 1: the finishing time is part of the closing sentence on a phone (it was a 44 px figure that fought the deal); "Take a break first" moved off the ticket to the row of quiet links under it, with "Just this one", which stays while a word is being changed; the open end shows a place to write; the desk stamp stays level with the deal and the roll fits at 1440 by 900.
+- Round 2: the names under a field are one wrapping row; the quiet ways keep one order; "All of them" became "All big tasks" (two art directors read it as "add all of them"); the rest's underlines are a step lighter than the deal's; the close under the dial is set like the ticket's; on a desk six things run on as a sentence and the roll's time is a caption while the ticket says it.
+- Round 3: the desk's running line says what comes after ("Then you're done." alone read as finishing after this block); the quiet ways fit one row at 375 px; text typed at the open end drops to its own line and can't run off the paper.
+
+Not built, and why:
+
+- Dropping one of the two finishing times on a desk (ticket and roll): the ticket's is the settled sentence and the roll's is spec 014. For Chris.
+- "OK" for the field's Done button (two primary users noticed "Done" above "you're done"): a wording call. For Chris.
+- "…, then 8 min of BIO 180 ch. 7. Then you're done." says "then" twice (three reviewers, flag only): the settled sentence. For Chris.
+- Keeping each "N min of Name" unbreakable on a desk (round 3) reverses round 2's fix (one thing per line read as a list). Reviewers were trading it back and forth; left as running text.
+- Hiding the strip at five things or more; an undo line after "Just this one" (every name is one press away at the open end); a larger finishing time (round 1 asked for it smaller).
+
+Stopped after three rounds, as the council's rules say, and shown to Chris.
 
 ### Round 0: diagnosis and two directions
 

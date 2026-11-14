@@ -676,13 +676,13 @@ main .runticket .scale :is(.mn, .mj) { display: none; }
 .runticket .note:empty { background: none; }
 /* the close under the dial (spec 017): each sentence on a line of its own, the finishing time in ink */
 .runticket .note .nl { display: block; }
-/* desk: the close as one short line under the running name */
+/* desk: the close under the running name */
 .runticket .now .then { font-size: 1.125rem; line-height: 1.4; color: var(--soft); }
 .runticket .note .at { font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 700; color: var(--ink); }
 .runticket .note .at .num { font: inherit; }
 .runticket .note .at small { font-size: .78em; }
-.runticket .note .tok { font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 700; color: var(--ink); }
-main .runticket .note:has(.nl) { max-width: none; text-wrap: balance; line-height: 1.55; }
+.runticket :is(.note, .then) .tok { font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 700; color: var(--ink); }
+main .runticket .note:has(.nl) { max-width: none; text-wrap: pretty; line-height: 1.55; }
 .runticket .aside:not(:empty) { margin-bottom: 12px; }
 .act .keepon, .act .pushask { align-self: center; margin-top: 0; }
 .runticket .aside:empty { display: none; }
@@ -1037,6 +1037,8 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 .sentence.after .item::before { content: "\A"; white-space: pre; }
 .sentence.after .tok { font-size: 1.2em; text-decoration-thickness: .055em; text-underline-offset: .2em; }
 .sentence.after .nsz { white-space: nowrap; }
+/* the cursor waits on the last thing's line; what is typed there drops to a line of its own when it doesn't fit */
+.sentence.after .item:has(> .nightin:not(:placeholder-shown)) { white-space: normal; }
 /* the empty cursor at the open end is a place to write: a short baseline in the underline's green, the same width
    focused or not, so nothing shifts under a press */
 .nightin[size="1"] { min-width: 0; width: 5ch; padding: 0; border-bottom: .085em solid var(--deal); }
@@ -1048,6 +1050,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 /* under a name's field: the ways out of tonight sit on the field's left edge, as the ticket's quiet links do */
 .pklinks { flex-basis: 100%; display: flex; flex-wrap: wrap; column-gap: 2px; margin: -4px 0 -8px -12px; }
 .pklinks .textbtn { min-height: 40px; padding-block: 8px; align-self: auto; }
+@media (max-width: 819px) { .pklinks { margin-left: -6px; margin-right: -6px; flex-basis: calc(100% + 12px); column-gap: 0; } .pklinks .textbtn { font-size: .875rem; padding-inline: 6px; } }
 /* between the names and the ways out: the length picker's hairline */
 .pkrule { flex-basis: 100%; height: 1px; margin-top: 2px; background: var(--rule); }
 .nightname { flex: 1 1 220px; }
@@ -2412,7 +2415,7 @@ function afterPara() {
     return `<span class="nowrap item"><span class="nowrap">${!end && last && j ? "and " : ""}<button class="tok nsz" data-lsize="${e.g}" aria-expanded="${!!p && p.kind === "size" && p.g === e.g}" aria-controls="night-picker" aria-label="${esc(size)}, length, change">${N(esc(size))}</button>${e.more ? " more" : ""}</span> <span class="nowrap">of <button class="tok" data-lname="${e.g}" aria-expanded="${!!p && p.kind === "name" && p.g === e.g}" aria-controls="night-picker" aria-label="${esc(e.name)}, change">${esc(tailOf(e.name))}</button>${stop}</span></span>`;
   };
   const body = rest.map(phrase).join(" ");
-  const field = end ? `<label class="vh" for="linein">After that</label><input class="nightin" id="linein" value="${esc(p.draft)}" size="${p.draft.length + 1}" maxlength="120" autocomplete="off" enterkeyhint="done">` : "";
+  const field = end ? `<label class="vh" for="linein">After that</label><input class="nightin" id="linein" placeholder=" " value="${esc(p.draft)}" size="${p.draft.length + 1}" maxlength="120" autocomplete="off" enterkeyhint="done">` : "";
   const e = p && !end ? rest.find(x => x.g === p.g) : null;
   const pk = !e ? "" : p.kind === "size"
     ? `<div class="picker" id="night-picker" role="radiogroup" aria-label="Length of ${esc(e.name)}">${ALL_LENGTHS.map(m => sizeChip(e, [1, m])).join("")}<div class="longrow">${MULTI_SIZES.map(s => sizeChip(e, s)).join("")}</div></div>`
@@ -2420,7 +2423,7 @@ function afterPara() {
   const list = end ? addable() : [];
   const names = list.length ? `<div class="nightadd"${p.draft.trim() ? " hidden" : ""} role="group" aria-label="Names you already use">${list.map((k, i) => `<button class="add" data-ladd="${i}">${N(esc(k.name))}</button>`).join("")}</div>` : "";
   /* the cursor waits on the last item's line; once something is typed it has a line of its own */
-  return `<p class="sentence after">After that, ${end && (p.draft || !rest.length) ? `${body} ${field}` : end ? body.replace(/<\/span><\/span>$/, `${field}</span></span>`) : body}</p>${pk}${names}`;
+  return `<p class="sentence after">After that, ${end && (p.draft || !rest.length) ? `${body} ${field}` : end ? body.replace(/<\/span>$/, ` ${field}</span>`) : body}</p>${pk}${names}`;
 }
 /* the close: "Then you're done." Its last words are the open end; at six things they are plain. With a rest it
    carries the finishing time, in the sentence: "Then you're done around 9:46pm." */
@@ -2736,11 +2739,11 @@ function presence(still) {
 /* the close under the dial (spec 017): what comes after this deal, then "Then you're done", whose last words raise
    the sheet where tonight is added to or changed without stopping */
 const runDone = () => lineFull() ? "you’re done" : `<button class="tok" id="openend" aria-haspopup="dialog">you’re done</button>`;
-function runClose() {
+function runClose(clock = true) {
   const names = lineRest().map(e => `<span class="nowrap">${e.more ? "more " : ""}${esc(tailOf(e.name))}</span>`);
-  const said = names.length > 1 ? `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}` : names[0];
+  const said = names.length > 1 ? `${names.slice(0, -1).join(", ")} <span class="nowrap">and ${names[names.length - 1]}.</span>` : `${names[0]}.`;
   const done = runDone();
-  return `${names.length ? `<span class="nl">After that, ${said}.</span> ` : ""}<span class="nl nowrap">Then ${done}${names.length ? ` around <span class="at">${clockStr(Date.now() + lineEndsIn()).replace(/([ap]m)$/, "<small>$1</small>")}</span>` : ""}.</span>`;
+  return `${names.length ? `<span class="nl">After that, ${said}</span> ` : ""}<span class="nl nowrap">Then ${done}${names.length && clock ? ` around <span class="at">${clockStr(Date.now() + lineEndsIn()).replace(/([ap]m)$/, "<small>$1</small>")}</span>` : ""}.</span>`;
 }
 function runningView() {
   const b = cur(), isB = b.type === "break", r = remaining(), m = minsLeft();
@@ -2765,8 +2768,8 @@ function runningView() {
   /* Stop for now is the quiet way out of a focus block and of a break (spec 017: it keeps your place). Spec 014, desk:
      it sits under the name, and the room row keeps the left edge it has everywhere else. */
   const stop = `<button class="textbtn" id="endearly">Stop for now</button>`;
-  /* desk: the close is one short line under the name, in every running state; the roll says what's after and when */
-  const close = desk ? `<p class="then">Then ${runDone()}.</p>` : "";
+  /* desk: the close sits under the name in every running state, without the time: the roll says when */
+  const close = desk ? `<p class="then">${runClose(false)}</p>` : "";
   return `<div class="runwrap"><section class="runticket" aria-label="Your deal, running"><div class="now${tn != null ? " turn" : dn != null ? " dealin" : ""}"${nowLag != null ? ` style="${lagVar(nowLag)}"` : ""}>
     <div class="nowhead">
       <span class="kind"><span class="swatch ${isB ? "break" : "focus"}" aria-hidden="true"></span>${isB ? "Your break" : "Focus"}</span>
