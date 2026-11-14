@@ -676,6 +676,8 @@ main .runticket .scale :is(.mn, .mj) { display: none; }
 .runticket .note:empty { background: none; }
 /* the close under the dial (spec 017): each sentence on a line of its own, the finishing time in ink */
 .runticket .note .nl { display: block; }
+/* desk: the close as one short line under the running name */
+.runticket .now .then { font-size: 1.125rem; line-height: 1.4; color: var(--soft); }
 .runticket .note .at { font-family: var(--font-head); font-stretch: var(--wd-act); font-weight: 700; color: var(--ink); }
 .runticket .note .at .num { font: inherit; }
 main .runticket .note:has(.nl) { max-width: none; text-wrap: pretty; line-height: 1.55; }
@@ -828,7 +830,6 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 .lastdeal svg { flex: none; width: 22px; height: 22px; }
 .intercept-foot { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-top: -6px; }
 .intercept-foot .caption { text-align: center; font-size: .875rem; color: var(--soft); }
-.skip { margin-block: -6px -4px; }
 
 /* ---------- the tape ----------
    There is no navigation. Tonight's deals print out of a slot as one receipt tape: on a phone its top edge shows at the
@@ -1034,19 +1035,19 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 .sentence.after .item::before { content: "\A"; white-space: pre; }
 .sentence.after .tok { font-size: 1.2em; text-decoration-thickness: .085em; text-underline-offset: .17em; }
 .sentence.after .nsz { white-space: nowrap; }
-/* the cursor at the open end takes a letter's width, focused or not, so nothing shifts under a press */
-.nightin[size="1"] { min-width: 0; width: 1ch; padding: 0; }
+/* the empty cursor at the open end is a place to write: a short baseline in the underline's green, the same width
+   focused or not, so nothing shifts under a press */
+.nightin[size="1"] { min-width: 0; width: 5ch; padding: 0; border-bottom: .085em solid var(--deal); }
 .nightin { font: inherit; font-size: 1.2em; font-weight: 700; line-height: 1.2; color: var(--ink); background: none; border: none; border-radius: 0; padding: 0 2px; margin: 0; max-width: 100%; min-width: 2ch; outline: none; caret-color: var(--deal); vertical-align: baseline; }
 .nightin:focus-visible { outline: none; }
-/* the close carries tonight's one figure, the finishing time: beside the words on a phone, in the sentence on a desk */
-.sentence.after.closing.fig { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; }
-.sentence.after.closing.fig > b { flex: none; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 800; font-size: 2.75rem; line-height: .82; letter-spacing: -.01em; color: var(--ink); font-variant-numeric: tabular-nums; }
-.sentence.after.closing.fig > b small { font-size: .42em; font-weight: 700; margin-left: 2px; letter-spacing: 0; }
+/* the close carries the finishing time in the sentence, a little heavier than the words around it */
 .sentence.after .at { color: var(--ink); font-weight: 800; font-size: 1.2em; white-space: nowrap; }
 .sentence.after .at small { font-size: .6em; font-weight: 700; margin-left: 1px; }
 /* under a name's field: the ways out of tonight sit on the field's left edge, as the ticket's quiet links do */
 .pklinks { flex-basis: 100%; display: flex; flex-wrap: wrap; column-gap: 2px; margin: -4px 0 -8px -12px; }
 .pklinks .textbtn { min-height: 40px; padding-block: 8px; align-self: auto; }
+/* between the names and the ways out: the length picker's hairline */
+.pkrule { flex-basis: 100%; height: 1px; margin-top: 2px; background: var(--rule); }
 .nightname { flex: 1 1 220px; }
 /* spec 014: tonight's lengths are two printed lines of words, the chosen one green and underlined */
 #night-picker[role="radiogroup"] { display: grid; grid-template-columns: repeat(4, max-content); justify-content: start; align-items: baseline; gap: 0 clamp(12px, 3.4vw, 22px); }
@@ -1057,7 +1058,9 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 #night-picker[role="radiogroup"] .chip .num { font: inherit; }
 @media (hover: hover) { #night-picker[role="radiogroup"] .chip:not([aria-checked="true"]):hover { background: none; color: var(--ink); } }
 @media (max-width: 819px) { #night-picker[role="radiogroup"] { grid-template-columns: repeat(4, minmax(0, 1fr)); column-gap: 8px; } #night-picker[role="radiogroup"] .chip { font-size: .9375rem !important; word-spacing: -.5px; } }
-.ticketwrap + .onedeal { align-self: center; margin: -6px auto -10px; }
+/* the quiet links under the ticket, one row */
+.under { display: flex; flex-wrap: wrap; justify-content: center; column-gap: 6px; margin-block: -6px -8px; }
+.under .textbtn { align-self: auto; }
 /* the unprinted top of the tape: tonight's sittings, lengths where the times go, one faint ink but the next one */
 .tocome { display: flex; flex-direction: column; }
 .nightstrip { display: flex; gap: 0; height: 14px; margin: 2px 0 6px; -webkit-mask: var(--zig2); mask: var(--zig2); }
@@ -1216,8 +1219,6 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 /* names you already use, as words under the open end and under the ticket's own name; one press takes one */
 .nightadd { display: block; margin-top: -4px; line-height: 2; }
 .picker .nightadd { flex-basis: 100%; margin-top: -2px; }
-/* "All of them" reads on from the names, as a quiet link */
-.nightadd .textbtn { display: inline; min-height: 0; padding: 6px 0; align-self: auto; }
 .nightadd .add { margin-right: 20px; }
 .nightadd[hidden] { display: none; }
 .nightadd .add { display: inline; padding: 6px 0; background: none; border: none; border-radius: 0; cursor: pointer; font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 750; font-size: 1.125rem; line-height: 1.2; color: color-mix(in srgb, var(--ink) 74%, transparent); text-decoration: underline solid color-mix(in srgb, var(--ink) 34%, transparent); text-decoration-skip-ink: none; text-decoration-thickness: 1px; text-underline-offset: .24em; }
@@ -1241,12 +1242,6 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   body:has(#roll:not([hidden])) .desk { grid-template-rows: auto auto; align-content: start; }
   body:has(#roll:not([hidden])) main:not(:has(> .runwrap)) { padding-bottom: 6px; gap: 22px; align-self: stretch; }
   body:has(#roll:not([hidden])) main:not(:has(> .runwrap)) > .rows:last-child { margin-top: auto; }
-  /* with the roll on the desk, the quiet lines under the ticket and the room share one row (as the way out and the room
-     do under a running block), so the stage ends above the roll */
-  body:has(#roll:not([hidden])) main:not(:has(> .runwrap)) { display: grid; grid-template-columns: auto minmax(0, 1fr); align-content: start; column-gap: 32px; }
-  body:has(#roll:not([hidden])) main:not(:has(> .runwrap)) > * { grid-column: 1 / -1; min-width: 0; }
-  body:has(#roll:not([hidden])) main:not(:has(> .runwrap)) > :is(.onedeal, .skip) { grid-column: 1; align-self: center; }
-  body:has(#roll:not([hidden])) main:not(:has(> .runwrap)) > :is(.onedeal, .skip) ~ .rows { grid-column: 2; align-self: center; margin-top: 0; }
   body:has(#roll:not([hidden])) .roll { --rollpad: 34px; }
   body:has(#roll:not([hidden])) .tapeside { max-height: calc(100vh - var(--rollall) - var(--tapetop) - 84px); max-height: calc(100dvh - var(--rollall) - var(--tapetop) - 84px); }
   body.live:has(#roll:not([hidden])) .tapeside { max-height: calc(100dvh - var(--rollall) - max(56px, var(--tapetop)) - 60px); }
@@ -1254,13 +1249,21 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   .tape .tocome, .nightstrip.onticket { display: none; }
 
   /* the quiet lines under the ticket start on its text edge, one edge instead of a centred column */
-  :is(.ticketwrap + .onedeal, main > .skip) { align-self: flex-start; margin-left: -12px; text-align: left; }
+  .under { justify-content: flex-start; margin-left: -12px; }
   .ticketwrap + .bigchip { align-self: flex-start; margin-left: 0; }
   /* a desk ticket is wide: the rest of tonight runs on as a paragraph, a step under the deal */
   :is(.ticket, .sheet) .sentence.after { font-size: 1.5rem; line-height: 1.5; }
   :is(.ticket, .sheet) .sentence.after .item::before { content: none; }
   /* the hero: a ticket at desk scale, lying on the pad it was torn from */
-  .ticket .body { padding: 30px 30px 36px 36px; gap: 20px; }
+  /* its vertical rhythm is tight (padding, the serial's line, the gaps between the paragraph's parts), not its type:
+     three things at rest and the whole roll fit a 900 px window (spec 017 round 1) */
+  .ticket .body { padding: 22px 30px 26px 36px; gap: 16px; }
+  .tickethead { min-height: 30px; }
+  /* C7: the stamp keeps its height on the stub, level with the deal, however long the paragraph grows */
+  .ticket .stub, .ticket .stub.perf { justify-content: flex-start; padding-top: var(--stamptop, 64px); }
+  /* under the ticket: a pointer needs less height than a thumb */
+  .under .textbtn { min-height: 36px; padding-block: 6px; }
+  body:has(#roll:not([hidden])) main:not(:has(> .runwrap)) { gap: 16px; }
   .ticketwrap { filter: drop-shadow(0 1px 0 var(--rule)) drop-shadow(0 2px 1px color-mix(in srgb, var(--ink) 8%, transparent)) drop-shadow(0 22px 30px var(--lift)); }
   .ticketwrap.peek::before { display: block; transform: translate(7px, 9px) rotate(.5deg); }
   @media (min-width: 1200px) {
@@ -1269,17 +1272,20 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
     .ticket .startw { font-size: 1.125rem; }
   }
   #night-picker[role="radiogroup"] .chip { font-size: 1.375rem !important; }
+  /* as many columns as the ticket's body holds, so no length reaches under the DEAL stub at any desk width */
+  #night-picker[role="radiogroup"] { grid-template-columns: repeat(auto-fill, minmax(5.9rem, 1fr)); column-gap: 12px; }
 
   /* a sheet does the talking: the roll waits under it */
   /* a small desk (a laptop split, a tablet on its side): the stub narrows so the sentence keeps its measure */
   @media (max-width: 1199px) {
     .ticket { grid-template-columns: minmax(0, 1fr) 208px; }
-    .ticket .body { padding: 24px 20px 28px 26px; }
-    .ticket .stub, .ticket .stub.perf { padding: 22px 16px 20px 20px; }
+    .ticket .body { padding: 20px 20px 24px 26px; }
+    .ticket .stub, .ticket .stub.perf { padding: 52px 16px 20px 20px; }
     .ticket .stub .primary#shake { font-size: 2.25rem; min-width: 0; width: 100%; min-height: 86px; padding-inline: 10px; }
     .sentence { font-size: 1.875rem; }
     :is(.ticket, .sheet) .sentence.after { font-size: 1.375rem; line-height: 1.45; }
     #night-picker[role="radiogroup"] .chip { font-size: 1.1875rem !important; }
+    #night-picker[role="radiogroup"] { grid-template-columns: repeat(auto-fill, minmax(5.2rem, 1fr)); }
     #night-picker[role="radiogroup"] .chip svg { display: none; }
     .nightadd .add { font-size: 1.0625rem; }
   }
@@ -1478,10 +1484,10 @@ const ASKS = { freebie: 1, borrow: 1, trade: 1, override: 1, bonus: 1 };
 function stubOf(e, t = clockStr(e.at)) {
   const label = String(e.blockLabel), m = e.minutes, big = !!e.taskId;
   const text = e.kind === "deal" || e.kind === "done" || e.kind === "end_early" ? title(label)
-    : e.kind === "skip" ? `Ended ${label === "Your pick" ? "your break" : title(label)} early`
+    : e.kind === "skip" ? `Ended ${noAct(label) ? "your break" : title(label)} early`
     : e.kind === "forgiven" ? `Cleared ${m} borrowed min`
     : e.kind === "bonus" ? `${m} more min of ${title(label).split(" ")[0].toLowerCase()}`
-    : `${m} more min of ${label}`;
+    : `${m} more min of ${noAct(label) ? "your break" : label}`;
   const sub = e.kind === "deal" ? `${m} min of focus`
     : e.kind === "done" ? (big ? `${m} min on this big one` : `${m} min of focus`)
     : e.kind === "end_early" ? (m ? (big ? `${m} min done on this big one` : `${m} min of focus done`) : TERMS.end_early)
@@ -1492,6 +1498,9 @@ function stubOf(e, t = clockStr(e.at)) {
 
 /* ---------- state ---------- */
 const ACTS = ["Reels", "TikTok", "YouTube", "Texting", "Gaming"];
+/* a break with no activity of its own (the break between rounds after a deal that had none): it is said as "your break".
+   "Your pick" is how older sessions and the server's rounds name it. */
+const NO_ACT = "Break", noAct = l => l === NO_ACT || l === "Your pick";
 let speed = 30, clockOffset = 0, vnow = Date.now(), lastReal = performance.now();
 /* BE is the live backend, attached by the app shell for signed-in members; without it this is the design demo */
 let BE = null;
@@ -1605,7 +1614,7 @@ function nextRound(s) {
   const bonus = s.blocks[s.idx] === focus && s.bonusOffered ? 10 : 0;
   const chosen = [...ALL_FOCUS].reverse().find(m => m <= focus.min - (focus.added || 0) - bonus) || ALL_FOCUS[0];
   const focusMin = isLong(chosen) ? chosen : FOCUS_QUICK.find(m => m > chosen) || FOCUS_QUICK[FOCUS_QUICK.length - 1];
-  return { act: first.type === "break" ? first.label : "Your pick", breakMin: breakBetween(chosen), task: focus.label, focusMin };
+  return { act: first.type === "break" ? first.label : deal.act || NO_ACT, breakMin: breakBetween(chosen), task: focus.label, focusMin };
 }
 /* borrowed minutes still owed come off the next deal's break, down to the floor; the rest is cleared */
 function repayDebt(d, debt) {
@@ -1624,7 +1633,7 @@ const an = n => /^(8|11|18)/.test(String(n)) ? "an" : "a";
 /* the part of a task after its comma: "BIO 180 ch. 7" of "Reading, BIO 180 ch. 7" */
 const tailOf = t => { const i = t.indexOf(","); return (i >= 0 ? t.slice(i + 1) : t).trim() || t; };
 /* a deal said as the ticket says it: "5 min of Reels, then 12 min of BIO 180 ch. 7." */
-const dealLine = d => cap(`${d.act === "Your pick" ? `${an(d.breakMin)} ${d.breakMin} min break` : `${d.breakMin} min of ${d.act}`}, then ${d.focusMin} min of ${tailOf(d.task)}.`);
+const dealLine = d => cap(`${noAct(d.act) ? `${an(d.breakMin)} ${d.breakMin} min break` : `${d.breakMin} min of ${d.act}`}, then ${d.focusMin} min of ${tailOf(d.task)}.`);
 const cur = () => S.blocks[S.idx];
 const remaining = () => Math.max(0, S.startedAt + S.durMs - vnow);
 const minsLeft = () => Math.ceil(remaining() / 60000);
@@ -1632,8 +1641,11 @@ const minsLeft = () => Math.ceil(remaining() / 60000);
 const shiftTo = (h, m) => { const d = new Date(); d.setHours(h, m, 0, 0); return d.getTime() - Date.now(); };
 let DEMO_SHIFT = shiftTo(22, 41);
 function clockStr(ms) { const d = new Date((ms ?? Date.now()) + DEMO_SHIFT); return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }).replace(/\s?([AP])M/i, (m, a) => a.toLowerCase() + "m"); }
-/* a name said mid-sentence: the part before its comma, without a capital that only starts it ("reading", "history paper", "BIO 180 ch. 7") */
-const shortOf = l => lower(String(l).split(",")[0]);
+/* a name said mid-sentence is said as it was typed ("Lab report", "Orgo problem set 4"); only an "-ing" verb that opens
+   it reads on in lower case ("Reading BIO 180 ch. 7" is "reading BIO 180 ch. 7") */
+const lowerName = t => String(t).replace(/^([A-Z])(?=[a-z]*ing\b)/, c => c.toLowerCase());
+/* the part before its comma: "reading" of "Reading, BIO 180 ch. 7" */
+const shortOf = l => lowerName(String(l).split(",")[0]);
 const shortTask = () => shortOf(deal.task);
 /* a block named the way a sentence says it: "reading" of "Reading, BIO 180 ch. 7" */
 const shortName = b => shortOf(b.label);
@@ -1642,7 +1654,7 @@ const title = l => String(l).replace(/,\s*/, " ");
 const taskPhrase = () => title(deal.task).replace(/^./, c => c.toLowerCase());
 /* a block of the running deal is named by its own label, never by what the ticket holds now */
 function nameOf(b) { return b ? (b.type === "focus" ? shortName(b) : "your break") : "the end"; }
-const longName = b => b ? (b.type === "focus" ? lower(title(b.label)) : b.label === "Your pick" ? "your break" : title(b.label)) : "the end";
+const longName = b => b ? (b.type === "focus" ? lowerName(title(b.label)) : noAct(b.label) ? "your break" : title(b.label)) : "the end";
 const cap = s => s.replace(/^./, c => c.toUpperCase());
 /* the task as it sits in the deal sentence: "BIO 180 ch. 7" (the part after the comma) */
 const taskTail = () => tailOf(deal.task);
@@ -1711,7 +1723,8 @@ function goAgain() {
   const nx = nightNext(), d0 = nx ? nightRound(S, nx) : nextRound(S), { deal: d, forgiven } = repayDebt(d0, S.debt);
   const taskId = nx ? nx.taskId : S.taskId, card = taskId ? cardById(taskId) : null, move = nx ? (card ? startOf(card) : "") : S.firstMove;
   const at = nx ? night.taken : undefined;
-  if (nx) night.taken++;
+  /* the ticket holds what this round takes, so after the last one it still shows the last thing it held */
+  if (nx) { night.taken++; holdSitting(nx); }
   if (BE) { if (card) BE.startFromCard(taskId, d0, at); else BE.start(d0, at); }
   fileStop(forgiven); bankFocus();
   S = buildSession(d); S.justStarted = true; S.serial = String(412 + ledger.length).padStart(4, "0");
@@ -1898,10 +1911,12 @@ function render() {
 }
 
 /* every underlined part of the sentence is a button; its accessible name starts with the words you see */
+/* a name's full stop rides inside its word, on the name's last line however it wraps */
+const DOT = `<span class="dot" aria-hidden="true">.</span>`;
 const tokA = p => `<button class="tok" data-pick="act" aria-controls="deal-picker" aria-expanded="${p === "act"}" aria-label="${deal.act ? esc(deal.act) : "No break"}, what you're doing now, change">${deal.act ? esc(deal.act) : "No break"}</button>`;
 const tokB = p => `<button class="tok" data-pick="break" aria-controls="deal-picker" aria-expanded="${p === "break"}" aria-label="${deal.breakMin} minutes, break length, change">${deal.breakMin} min</button>`;
 const tokF = p => `<button class="tok" data-pick="focus" aria-controls="deal-picker" aria-expanded="${p === "focus"}" aria-label="${deal.focusMin} minutes, focus length, change">${deal.focusMin} min</button>`;
-const tokT = p => `<button class="tok" data-pick="task" aria-controls="deal-picker" aria-expanded="${p === "task"}" aria-label="${esc(taskPhrase())}, task, change">${esc(taskTail())}</button>`;
+const tokT = p => `<button class="tok named" data-pick="task" aria-controls="deal-picker" aria-expanded="${p === "task"}" aria-label="${esc(taskPhrase())}, task, change">${esc(taskTail())}${DOT}</button>`;
 /* the focus picker: one choice, so one radiogroup. Five quick lengths, then the longer ones past a hairline.
    Both rows are always shown (council r1): every length is one tap, and 60 looks like a normal choice, not a hidden one. */
 /* the long row's group would make some screen readers count "1 of 3"; the position is stated so 30 min is "6 of 8" */
@@ -1911,11 +1926,12 @@ function focusPicker() {
   return `<div class="picker" id="deal-picker" role="radiogroup" aria-label="Focus minutes">${FOCUS_QUICK.map(lenChip).join("")}<div class="longrow" role="group" aria-labelledby="long-why"><p class="why" id="long-why">Longer blocks come with longer breaks.</p>${FOCUS_LONG.map(lenChip).join("")}</div></div>`;
 }
 /* the ticket's own name, pressed (spec 017): the one field every name opens, typed over, with Done. Under it the names
-   you already use (a press puts that one on the ticket) and All of them, then the ways out of tonight and into a big
-   one's jobs. While a new big one is being named it is the field alone. */
+   you already use (a press puts that one on the ticket), All of them on a line of its own, then past a hairline the
+   ways out of tonight and into a big one's jobs. While a new big one is being named it is the field alone. */
 function ticketName(name, isBig, naming) {
   const names = naming ? [] : addable(true), all = !naming && (cards().length > 0 || asideKnown());
-  return `<div class="picker" id="deal-picker"><label class="vh" for="task">What you'll work on</label><input class="nightname" id="task" value="${esc(name)}" maxlength="80" autocomplete="off" enterkeyhint="done"><button class="chip" id="taskdone">Done</button>${names.length || all ? `<div class="nightadd" role="group" aria-label="Names you already use">${names.map((k, i) => `<button class="add" data-tname="${i}">${N(esc(k.name))}</button>`).join("")}${all ? `<button class="textbtn" id="allbig" aria-haspopup="dialog">All of them</button>` : ""}</div>` : ""}${naming ? "" : nameLinks(false, lineRest().length > 0, isBig)}</div>`;
+  const links = naming ? "" : nameLinks(false, lineRest().length > 0, isBig);
+  return `<div class="picker" id="deal-picker"><label class="vh" for="task">What you'll work on</label><input class="nightname" id="task" value="${esc(name)}" maxlength="80" autocomplete="off" enterkeyhint="done"><button class="chip" id="taskdone">Done</button>${names.length ? `<div class="nightadd" role="group" aria-label="Names you already use">${names.map((k, i) => `<button class="add" data-tname="${i}">${N(esc(k.name))}</button>`).join("")}</div>` : ""}${all ? `<div class="pklinks"><button class="textbtn" id="allbig" aria-haspopup="dialog">All of them</button></div>` : ""}${(names.length || all) && links ? `<span class="pkrule" aria-hidden="true"></span>` : ""}${links}</div>`;
 }
 function ticket(peek) {
   const p = picker, home = mode !== "intercept";
@@ -1930,19 +1946,19 @@ function ticket(peek) {
     : p === "task" ? ticketName(fc ? fc.title : isBig ? bigTitle() : deal.task, !!fc && !!cardById(fc.id), isBig) : "";
   const serial = String(412 + ledger.length).padStart(4, "0");
   /* a big one's name is a word like the others, with the full stop riding on its last line */
-  const named = fc ? `<button class="tok named" data-pick="task" aria-controls="deal-picker" aria-expanded="${p === "task"}" aria-label="${esc(fc.title)}, task, change">${esc(fc.title)}<span class="dot" aria-hidden="true">.</span></button>` : "";
+  const named = fc ? `<button class="tok named" data-pick="task" aria-controls="deal-picker" aria-expanded="${p === "task"}" aria-label="${esc(fc.title)}, task, change">${esc(fc.title)}${DOT}</button>` : "";
   /* a new big one's ticket: the break as ever, then the first payment, whose length flips 15 ↔ 30 in one tap */
-  const tokName = `<button class="tok" data-pick="task" aria-controls="deal-picker" aria-expanded="${p === "task"}" aria-label="${esc(bigTitle())}, the big one, change">${esc(bigTitle())}</button>`;
+  const tokName = `<button class="tok named" data-pick="task" aria-controls="deal-picker" aria-expanded="${p === "task"}" aria-label="${esc(bigTitle())}, the big one, change">${esc(bigTitle())}${DOT}</button>`;
   const tokPay = `<button class="tok" id="paytok" aria-label="${big.pay} minutes, first payment, switch to ${big.pay === 15 ? 30 : 15}">${big.pay} min</button>`;
   const lead = deal.act ? `<span class="nowrap">${tokB(p)} of ${tokA(p)},</span>` : `${tokA(p)}.`;
   const sentence = fc ? (direct ? `<span class="nowrap">${tokF(p)} of</span> ${named}` : `${lead} then <span class="nowrap">${tokF(p)} of</span> ${named}`)
-    : isBig ? `${lead} <span class="payline">${deal.act ? "then" : "Straight into"} the first <span class="nowrap">${tokPay} of</span> <span class="nowrap">${tokName}.</span></span>`
-    : `${lead} ${deal.act ? "then" : "Straight into"} <span class="nowrap">${tokF(p)} of</span> <span class="nowrap">${tokT(p)}.</span>`;
+    : isBig ? `${lead} <span class="payline">${deal.act ? "then" : "Straight into"} the first <span class="nowrap">${tokPay} of</span> ${tokName}</span>`
+    : `${lead} ${deal.act ? "then" : "Straight into"} <span class="nowrap">${tokF(p)} of</span> ${tokT(p)}`;
   /* what a big one's card used to say, as notes under its name */
   const sw = fc ? startOf(live) : "", prog = fc && !live.comeback ? progressText(live.progress) : "";
   const notes = fc && (sw || prog || live.comeback) ? `<div class="notes">${live.comeback && !sw ? `<p class="stillhere"><b>It’s still here.</b></p>` : ""}${sw ? `<p class="startw">${live.comeback ? `<b class="still">It’s still here.</b> ` : ""}<span>Start with:</span> ${N(esc(moveText(sw)))}</p>` : ""}${prog ? `<p class="prog">${N(prog)}</p>` : ""}</div>` : "";
-  /* the ticket's quiet ways on step aside while a word of the rest is being changed */
-  const links = fc && !(linePick && linePick.kind !== "end") && ((direct && p !== "act") || live.offerRespread) ? `<div class="tklinks">${live.offerRespread ? `<button class="textbtn respread" data-respread="${esc(fc.id)}" aria-haspopup="dialog">Re-spread what’s left</button>` : ""}${direct && p !== "act" ? `<button class="textbtn breakfirst" id="breakfirst">Take a break first</button>` : ""}</div>` : "";
+  /* a comeback whose signed plan slipped offers a fresh one, on the ticket */
+  const links = fc && live.offerRespread ? `<div class="tklinks"><button class="textbtn respread" data-respread="${esc(fc.id)}" aria-haspopup="dialog">Re-spread what’s left</button></div>` : "";
   /* R32: the two optional rows are phrases on the ticket, "About 2h" and "Mostly writing", with printed boxes to ink.
      Each name starts with what's printed ("2h, about 2 hours"), so voice control and screen readers agree. */
   const bigRows = isBig ? `<div class="firstmove"><label for="firstmove">When I sit down, I'll first:</label><textarea id="firstmove" rows="1" maxlength="140" enterkeyhint="done" placeholder="Open the doc and write one line">${esc(big.move)}</textarea></div>
@@ -1951,8 +1967,9 @@ function ticket(peek) {
       <div class="phrase" role="group" aria-labelledby="typelab"><span class="pw" id="typelab">It's mostly</span>${Object.keys(BIG_TYPES).map(k => `<button class="inkchip kind" data-type="${k}" aria-pressed="${big.type === k}"><span class="ink">${big.type === k ? CHECK : ""}${esc(TYPE_PHRASE[k])}</span></button>`).join("")}</div>
     </div>` : "";
   /* the rest of the paragraph (spec 017): "After that, …", tonight to scale, and the close with its open end. A new
-     big one being named is its own job: the paragraph comes back when the box is unticked. */
-  const rest = home && !isBig ? `${afterPara()}${lineOn() ? nightStrip(sittingsOf(night), night.taken, "onticket") : ""}${closing()}` : "";
+     big one being named is its own job: the paragraph comes back when the box is unticked. Tonight to scale steps
+     aside while a field or a picker is open, so DEAL stays in reach on a phone. */
+  const rest = home && !isBig ? `${afterPara()}${lineOn() && !picker && !linePick ? nightStrip(sittingsOf(night), night.taken, "onticket") : ""}${closing()}` : "";
   /* the box shows only while tonight is just the ticket and the ticket holds a plain name */
   const bigChip = home && !fc && !nightNext() ? `<button class="bigchip" id="bigchip" aria-pressed="${big.on}"><span class="cbox" aria-hidden="true">${CHECK}</span>Needs more than one sitting?</button>` : "";
   return `<div class="ticketwrap${peek ? " peek" : ""}"><section class="ticket${isBig ? " big" : ""}" id="ticket" aria-label="${fc ? `Your deal on ${esc(fc.title)}` : isBig ? "Your first sitting" : "Your deal"}">
@@ -1973,7 +1990,7 @@ const TILTS = [-2, 1.5, -1, 2.5, -3, 1];
    the deal itself, a deal done, and borrowing are inked like any other deal */
 const PLAIN = { end_early: 1, skip: 1, forgiven: 1, override: 1 };
 const dealCount = () => ledger.filter(e => !NOT_DEALS[e.kind]).length;
-/* mid-sentence a title loses its capital ("of reading BIO 180 ch. 7"), but never an acronym's ("of BIO midterm", not "bIO") */
+/* a sentence read on mid-line loses the capital that only started it ("First thing: open the chapter"), never an acronym's */
 const lower = t => t.replace(/^([A-Z])(?=[a-z]*\b)/, c => c.toLowerCase());
 const stubTitle = e => ASKS[e.kind] ? e.text.replace(/ more min of /, " min of ").replace(/^(\d)/, "+$1") : e.text;
 const stubInner = (e, i) => `<span class="t"><b>${e.t.replace(/[ap]m$/, "")}<small>${e.t.slice(-2)}</small></b>${e.kind === "deal" || e.kind === "done" ? "" : `<span class="stamp${PLAIN[e.kind] ? " plain" : ""}" style="--tilt:${TILTS[i % TILTS.length]}deg">${MARK[e.kind]}</span>`}</span><span class="what"><span class="row"><span class="title">${esc(stubTitle(e))}</span></span><em>${N(esc(e.sub || TERMS[e.kind]))}</em>${e.note ? `<em>First thing: ${N(esc(lower(e.note)))}${/[.?!]$/.test(e.note) ? "" : "."}</em>` : ""}</span>`;
@@ -2017,16 +2034,17 @@ function reink() { const t = document.querySelector("#ticket .sentence"); if (t 
 /* before home is drawn (state settles here, never while drawing): the ticket holds the front of the line. With no
    line it keeps what it held. A big one that is gone (finished, set aside, deleted) hands the ticket to the next one,
    or to the plain deal; a plain name that is exactly an open big one's is that big one. */
+/* a sitting of the line goes on the ticket: a big one's as that big one, anything else as a plain deal */
+function holdSitting(s) {
+  const c = s.taskId ? cardById(s.taskId) : null;
+  if (!c) { fromCard = null; deal.task = s.name; }
+  else if (!fromCard || fromCard.id !== c.id) fromCard = { id: c.id, title: c.title, direct: true };
+  else fromCard.title = c.title;
+  deal.focusMin = s.min; if (big.on) big = newBig();
+}
 function settleTicket() {
   const s = nightNext();
-  if (s) {
-    const c = s.taskId ? cardById(s.taskId) : null;
-    if (!c) { fromCard = null; deal.task = s.name; }
-    else if (!fromCard || fromCard.id !== c.id) fromCard = { id: c.id, title: c.title, direct: true };
-    else fromCard.title = c.title;
-    deal.focusMin = s.min; if (big.on) big = newBig();
-    return;
-  }
+  if (s) { holdSitting(s); return; }
   if (fromCard) { const c = cardById(fromCard.id); if (c) fromCard.title = c.title; else if (bigOneCards !== null) { fromCard = null; seatFirst(); } }
   else if (!big.on) { const own = String(deal.task).trim().toLowerCase(), c = cards().find(x => x.title.toLowerCase() === own); if (c) seat(c); }
 }
@@ -2204,11 +2222,21 @@ function lineOut(g, waits = true) {
   const it = night.items[e.i]; if (it.n > e.n) it.n -= e.n; else { night.items.splice(e.i, 1); if (waits) noteOut(it); }
   lineSave(); return e;
 }
-/* Not tonight on the ticket's item: every sitting of it still to come leaves, and the next item moves up */
+/* every sitting still to come of the items that match leaves the line; what is done (or running) stays */
+function lineDrop(match) {
+  let at = 0;
+  night.items = night.items.flatMap(it => {
+    const done = Math.max(0, Math.min(it.n, night.taken - at)); at += it.n;
+    if (!match(it) || done === it.n) return [it];
+    if (done) return [{ ...it, n: done }];
+    noteOut(it); return [];
+  });
+}
+/* Not tonight on the ticket's item: every sitting of it still to come leaves, however its lengths were changed, and
+   the next item moves up */
 function lineOutFront() {
   const f = nightNext(); if (!f) return;
-  if (f.k) night.items[f.i].n = f.k; else noteOut(night.items.splice(f.i, 1)[0]);
-  lineSave();
+  lineDrop(it => it.name === f.name && (it.taskId || null) === (f.taskId || null)); lineSave();
 }
 /* Just this one: the rest leaves the line */
 function lineJust() {
@@ -2263,12 +2291,25 @@ function lineTake(text) {
   if (added) lineSave(); else lineTidy();
   return lineFull() ? "" : last.replace(/^\s+/, "");
 }
+/* when the cursor last took a key: keys that follow closely are still typing, not shortcuts */
+let typedAt = -1e9;
+/* after something is added: the cursor waits for the next. When the line is full it is gone and nothing takes the
+   focus, so what is still being typed can't land on a stamp (B1). */
+function lineAdded(draft) {
+  linePick = lineFull() ? null : { kind: "end", draft };
+  if (linePick) nextFocus = "#linein";
+  render();
+  if (linePick) return;
+  /* full: whatever is still being typed (or follows a paste) is not a shortcut either */
+  typedAt = performance.now();
+  if (document.activeElement && document.activeElement !== document.body) document.activeElement.blur();
+}
 /* a list copied from notes (one per line, bullets or numbers) lands as items; one line lands as if typed */
 function linePaste(before, text) {
   const list = text.split(/[\n;]+/).map(l => l.replace(/^\s*(?:[-*•–—]|\d+[.)]|\[[ xX]?\])+\s*/, "").trim()).filter(Boolean);
   if (!list.length) return;
   const draft = lineTake(before + (list.length > 1 ? list.map(l => l.replace(/,/g, " ")).join(",") : list[0]) + ",");
-  linePick = lineFull() ? null : { kind: "end", draft }; nextFocus = linePick ? "#linein" : "#shake"; render();
+  lineAdded(draft);
 }
 /* a name you already use, pressed at the open end: it lands at its own length and the cursor waits for the next */
 function lineAddKnown(k) {
@@ -2276,7 +2317,7 @@ function lineAddKnown(k) {
   lineBegin();
   const [n, min] = snapSize(k.min || 20); night.items.push({ name: k.name, n, min, taskId: k.taskId || null, piece: k.piece || "" });
   lineSave();
-  linePick = lineFull() ? null : { kind: "end", draft: "" }; nextFocus = linePick ? "#linein" : "#shake"; render(); say(`${k.name} is in tonight.`);
+  lineAdded(""); say(`${k.name} is in tonight.`);
 }
 /* drag on the roll: a length moves among what's left (the ticket's sitting is the first of them at home) */
 function lineUnits() { const f = !S && nightNext(); return [...(f ? [{ g: night.taken, name: f.name }] : []), ...lineRest()]; }
@@ -2347,7 +2388,7 @@ function nightWrite(items) {
 /* spec 012: the next round on the done sheet is the line's next sitting, with the break between rounds */
 function nightRound(s, nx) {
   const focus = focusOf(s), first = s.blocks[0], c = nx.taskId ? cardById(nx.taskId) : null;
-  return { act: first.type === "break" ? first.label : "Your pick", breakMin: breakBetween(focus.min - (focus.added || 0)), task: c ? c.title : nx.name, focusMin: nx.min };
+  return { act: first.type === "break" ? first.label : deal.act || NO_ACT, breakMin: breakBetween(focus.min - (focus.added || 0)), task: c ? c.title : nx.name, focusMin: nx.min };
 }
 
 /* ----- the paragraph ----- */
@@ -2375,15 +2416,14 @@ function afterPara() {
   /* the cursor waits on the last item's line; once something is typed it has a line of its own */
   return `<p class="sentence after">After that, ${end && (p.draft || !rest.length) ? `${body} ${field}` : end ? body.replace(/<\/span><\/span>$/, `${field}</span></span>`) : body}</p>${pk}${names}`;
 }
-/* the close: "Then you're done." Its last words are the open end. With a rest it carries tonight's one figure, the
-   finishing time: beside the words on a phone, in the sentence on a desk. At six things the words are plain. */
+/* the close: "Then you're done." Its last words are the open end; at six things they are plain. With a rest it
+   carries the finishing time, in the sentence: "Then you're done around 9:46pm." */
 function closing() {
   const end = !!linePick && linePick.kind === "end";
   const done = lineFull() ? "you’re done" : `<button class="tok" id="openend" aria-expanded="${end}">you’re done</button>`;
   if (!lineRest().length) return `<p class="sentence after closing">Then ${done}.</p>`;
   const at = N(clockStr(Date.now() + lineEndsIn()).replace(/([ap]m)$/, "<small>$1</small>"));
-  return WIDE.matches ? `<p class="sentence after closing">Then ${done} around <span class="at">${at}</span>.</p>`
-    : `<p class="sentence after closing fig"><span>Then ${done} around</span><b>${at}</b></p>`;
+  return `<p class="sentence after closing"><span class="nowrap fit">Then ${done}</span> <span class="nowrap fit">around <span class="at">${at}</span>.</span></p>`;
 }
 /* the night as a shape, in the dial's language: a solid length per sitting, a hatched one per break between them;
    sittings already paid are green, the next one full ink. Nothing to press: it is tonight drawn to scale. */
@@ -2396,10 +2436,15 @@ function nightStrip(list, taken, cls) {
   });
   return `<div class="nightstrip${cls ? " " + cls : ""}" aria-hidden="true">${parts.join("")}</div>`;
 }
-/* an item holds together on one line; one wider than the paper (a long name on a phone) wraps like any sentence */
+/* an item holds together on one line, and so do its two halves ("30 min more" and "of Orgo problem set 4,"); whatever
+   would run past the paper's edge wraps like any sentence: first between the halves, then inside them */
 function fitAfter() {
-  document.querySelectorAll(".sentence.after").forEach(sen => { const w = sen.clientWidth;
-    sen.querySelectorAll(".item").forEach(el => { el.classList.add("nowrap"); if (Math.max(0, ...[...el.getClientRects()].map(r => r.width)) > w + 1) el.classList.remove("nowrap"); }); });
+  document.querySelectorAll(".sentence.after").forEach(sen => {
+    const fits = [...sen.querySelectorAll(".item, .item > span, .fit")];
+    fits.forEach(el => el.classList.add("nowrap"));
+    const edge = sen.getBoundingClientRect().left + sen.clientWidth + 1;
+    fits.forEach(el => { if ([...el.getClientRects()].some(r => r.right > edge)) el.classList.remove("nowrap"); });
+  });
 }
 /* the sheet over a running block (spec 017): the same paragraph and cursor, so tonight changes without stopping */
 function openLine(pick) {
@@ -2415,7 +2460,8 @@ function bindLine() {
     /* the open end is wherever you press in the paragraph that isn't a word */
     inp.closest(".sentence").onclick = e => { if (!e.target.closest("button, input")) inp.focus(); };
     inp.oninput = () => {
-      if (inp.value.includes(",")) { const draft = lineTake(inp.value); linePick = lineFull() ? null : { kind: "end", draft }; nextFocus = linePick ? "#linein" : "#shake"; render(); return; }
+      typedAt = performance.now();
+      if (inp.value.includes(",")) { lineAdded(lineTake(inp.value)); return; }
       linePick.draft = inp.value; inp.size = inp.value.length + 1;
       const na = $(".nightadd"); if (na) na.hidden = !!inp.value.trim();
     };
@@ -2426,9 +2472,9 @@ function bindLine() {
     inp.onkeydown = e => {
       if (e.key === "Enter") {
         e.preventDefault();
-        if (inp.value.trim()) { const draft = lineTake(inp.value + ","); linePick = lineFull() ? null : { kind: "end", draft }; nextFocus = linePick ? "#linein" : "#shake"; }
-        else { linePick = null; nextFocus = "#openend"; }
-        render();
+        typedAt = performance.now();
+        if (inp.value.trim()) lineAdded(lineTake(inp.value + ","));
+        else { linePick = null; nextFocus = "#openend"; render(); }
       } else if (e.key === "Backspace" && !inp.value) {
         /* the last thing added comes back as text */
         const rest = lineRest(), last = rest[rest.length - 1]; if (!last) return;
@@ -2581,6 +2627,8 @@ function seatRoll() {
   rl.classList.toggle("flow", last.getBoundingClientRect().bottom + scrollY > innerHeight - rl.offsetHeight + clear + 2);
 }
 addEventListener("resize", () => seatRoll());
+/* the web fonts change the stage's height once they land */
+if (document.fonts) document.fonts.ready.then(() => seatRoll());
 /* desk: a decision sheet starts on the line the ticket and the tape start on, and stops a strip above the roll */
 function placeSheet() {
   const root = document.documentElement, ts = document.querySelector(".tapeside"), band = document.querySelector("#roll:not([hidden]) .rband");
@@ -2653,10 +2701,13 @@ function toComeView() {
 }
 function startView() {
   const c = fromCard ? cardById(fromCard.id) : null; if (c && c.comeback) noteComeback(c.id);
-  /* under the ticket: "Just this one" clears the rest, only while there is an "After that" and none of its words is open */
+  /* the quiet links under the ticket, one row: the break (a big one's sitting takes one first; a deal with one skips
+     it), then "Just this one", which clears the rest and is there whenever there is an "After that" */
+  const brk = fcDirect() ? (picker === "act" ? "" : `<button class="textbtn" id="breakfirst">Take a break first</button>`)
+    : deal.act ? `<button class="textbtn" id="skipbreak">Skip ${esc(deal.act)}, start ${esc(fromCard ? fromCard.title : big.on ? bigTitle() : shortTask())} now</button>` : "";
+  const just = lineRest().length ? `<button class="textbtn" id="onedeal">Just this one</button>` : "";
   return `<h1 class="home vh">Make a deal</h1>${weekView()}${ticket(true)}
-  ${lineRest().length && !linePick && picker !== "task" ? `<button class="textbtn onedeal" id="onedeal">Just this one</button>` : ""}
-  ${deal.act && !fcDirect() ? `<button class="textbtn skip" id="skipbreak">Skip ${esc(deal.act)}, start ${esc(fromCard ? fromCard.title : big.on ? bigTitle() : shortTask())} now</button>` : ""}
+  ${brk || just ? `<div class="under">${brk}${just}</div>` : ""}
   <section class="rows anchor" aria-label="Your room">${presence()}</section>`;
 }
 function interceptView() {
@@ -2678,10 +2729,11 @@ function presence(still) {
 }
 /* the close under the dial (spec 017): what comes after this deal, then "Then you're done", whose last words raise
    the sheet where tonight is added to or changed without stopping */
+const runDone = () => lineFull() ? "you’re done" : `<button class="tok" id="openend" aria-haspopup="dialog">you’re done</button>`;
 function runClose() {
   const names = lineRest().map(e => `<span class="nowrap">${e.more ? "more " : ""}${esc(tailOf(e.name))}</span>`);
   const said = names.length > 1 ? `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}` : names[0];
-  const done = lineFull() ? "you’re done" : `<button class="tok" id="openend" aria-haspopup="dialog">you’re done</button>`;
+  const done = runDone();
   return `${names.length ? `<span class="nl">After that, ${said}.</span> ` : ""}<span class="nl nowrap">Then ${done}${names.length ? ` around <span class="at">${clockStr(Date.now() + lineEndsIn())}</span>` : ""}.</span>`;
 }
 function runningView() {
@@ -2691,7 +2743,8 @@ function runningView() {
   /* while a sheet is open it does the talking: the dial keeps only its number and ring */
   const quiet = !!(sheet && tab === "now");
   /* the next step always sits under the dial, in every state, so the dial never moves: the deal's own next block, then the close */
-  const then = `${nxt ? `<span class="nl"><span class="swatch ${nxt.type}" aria-hidden="true"></span>Then ${esc(longName(nxt))} for ${nxt.min} min.</span> ` : ""}${runClose()}`;
+  const desk = WIDE.matches;
+  const then = `${nxt ? `<span class="nl"><span class="swatch ${nxt.type}" aria-hidden="true"></span>Then ${esc(longName(nxt))} for ${nxt.min} min.</span> ` : ""}${desk ? "" : runClose()}`;
   const note = quiet ? `<p class="note"></p>` : toast ? `<p class="note go" role="status">${N(esc(toast))}</p>` : `<p class="note">${N(then)}</p>`;
   /* on focus blocks of 45+, a reserved slot under the next step: silent, 3 minutes at the midpoint, then empty again */
   const half = isHalfway();
@@ -2705,14 +2758,16 @@ function runningView() {
   const nowLag = tn ?? dn;
   /* Stop for now is the quiet way out of a focus block and of a break (spec 017: it keeps your place). Spec 014, desk:
      it sits under the name, and the room row keeps the left edge it has everywhere else. */
-  const desk = WIDE.matches, stop = `<button class="textbtn" id="endearly">Stop for now</button>`;
+  const stop = `<button class="textbtn" id="endearly">Stop for now</button>`;
+  /* desk: the close is one short line under the name, in every running state; the roll says what's after and when */
+  const close = desk ? `<p class="then">Then ${runDone()}.</p>` : "";
   return `<div class="runwrap"><section class="runticket" aria-label="Your deal, running"><div class="now${tn != null ? " turn" : dn != null ? " dealin" : ""}"${nowLag != null ? ` style="${lagVar(nowLag)}"` : ""}>
     <div class="nowhead">
       <span class="kind"><span class="swatch ${isB ? "break" : "focus"}" aria-hidden="true"></span>${isB ? "Your break" : "Focus"}</span>
     </div>
     <h1>${tn != null && turnFrom && turnFrom.label ? `<span class="isname">${esc(title(b.label))}</span><span class="wasname" aria-hidden="true">${esc(turnFrom.label)}</span>` : esc(title(b.label))}</h1>
     ${sw ? `<p class="sub startw"><span>Start with:</span> ${N(esc(moveText(sw)))}</p>` : ""}
-    ${desk ? stop : ""}
+    ${close}${desk ? stop : ""}
   </div>
   <div class="timerwrap">
     <div class="dial${S.justStarted ? " sweep" : ""}${r <= 0 ? " done" : ""}${heads ? " heads" : ""}${tn != null ? " turn" : wd != null ? " wind" : ""}" style="--p:${r <= 0 ? 0 : (r / S.durMs).toFixed(4)};${dialTicks(S.durMs / 60000)}${dl != null ? ";" + lagVar(dl) : ""}" role="img" aria-label="${r <= 0 ? (dealDone() ? "Deal done" : "Time is up") : m + " minutes left" + (half ? ", halfway" : "")}">
@@ -2738,6 +2793,8 @@ function renderSheet() {
   document.body.classList.toggle("sheeted", open);
   /* spec 014: the done sheet ends the clock; on a desk the clock steps off instead of peeking over the paper */
   document.body.classList.toggle("sheet-done", open && sheet.kind === "done");
+  /* the line's sheet is raised mid-block: the clock keeps its place behind it */
+  document.body.classList.toggle("sheet-line", open && sheet.kind === "line");
   placeSheet();
   if (!open) {
     /* the closing sheet slides back down; it is already out of the accessibility tree and takes no taps */
@@ -2814,8 +2871,8 @@ function sheetBody() {
       <h2 id="sh" tabindex="-1">That was the deal.</h2>
       <div class="tearrow kept${n ? " stacked" : ""}">
         <span class="usedwrap" aria-hidden="true"><span class="used"><b>${N(b.min)} min</b></span><span class="stamp">Done</span></span>
-        ${n ? `<div class="rest"><p id="dealcost">${serial}<b>${N(`${b.min} min of ${esc(card ? name : lower(name))}`)}</b></p>${notes}</div>`
-          : `<p class="rest" id="dealcost">${serial}<b>${N(`${b.min} min of ${esc(card ? name : lower(name))}`)}</b></p>`}
+        ${n ? `<div class="rest"><p id="dealcost">${serial}<b>${N(`${b.min} min of ${esc(card ? name : lowerName(name))}`)}</b></p>${notes}</div>`
+          : `<p class="rest" id="dealcost">${serial}<b>${N(`${b.min} min of ${esc(card ? name : lowerName(name))}`)}</b></p>`}
       </div>
       ${lineOn() ? nightStrip(sittingsOf(night), night.taken, "onsheet") : ""}
       <p class="againq" id="againh">${nextUp ? "Next up?" : "Another round?"}</p>
@@ -3397,8 +3454,10 @@ function cardAction(id, action) {
   }
   /* the demo's start fresh: no bookmark, no gut size, so the type's own first move (live mode waits for the server's card) */
   if (action === "startFresh" && !BE) Object.assign(c, { startWith: FIRST_MOVES[c.taskType] || "", progress: c.progress && c.progress.kind === "left" ? null : c.progress, comeback: false });
-  /* gone from the names, it stays in the line by its title, unlinked (spec 006) */
-  if (night && !cardById(id)) night.items.forEach(it => { if (it.taskId === id) { it.taskId = null; it.piece = ""; } });
+  /* Set aside is the rung above Not tonight: it leaves tonight's line too (what is done, or running, stays). Deleted,
+     it stays in the line by its title, unlinked (spec 006). */
+  if (night && action === "setAside") { lineDrop(it => it.taskId === id); lineSave(); }
+  else if (night && action === "remove") night.items.forEach(it => { if (it.taskId === id) { it.taskId = null; it.piece = ""; } });
   panel = null; render();
   const el = document.querySelector(JOBS_BACK); if (el) el.focus({ preventScroll: true }); else focusTitle();
   say(action === "remove" ? `Deleted ${c.title}.` : action === "setAside" ? `${c.title} set aside. It waits in All big tasks.` : `Starting fresh on ${c.title}.`);
@@ -3418,7 +3477,7 @@ function bindPanel() {
   /* a row takes the ticket: DEAL is the only stamp on home (spec 017) */
   document.querySelectorAll("[data-ltake]").forEach(b => b.onclick = () => {
     const c = cardById(b.dataset.ltake); if (!c) return;
-    panel = null; picker = null; linePick = null; putOnTicket(knownOf(c)); nextFocus = "#shake"; render(); reink(); say(`${c.title} is on the ticket.`);
+    panel = null; picker = null; linePick = null; putOnTicket(knownOf(c)); nextFocus = JOBS_BACK; render(); reink(); say(`${c.title} is on the ticket.`);
   });
   document.querySelectorAll("[data-reopen]").forEach(b => b.onclick = () => {
     const it = (panel.items || []).find(x => x.id === b.dataset.reopen); if (!it) return;
@@ -3839,6 +3898,8 @@ document.addEventListener("keydown", e => {
   if (!FINE.matches) return;
   if (e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
   const t = e.target; if (t && t.closest && t.closest("input, textarea, select, [contenteditable]")) return;
+  /* a key right after the line's cursor went (the line filled mid-list) is the rest of what was being typed */
+  if (performance.now() - typedAt < 1500) { typedAt = performance.now(); return; }
   if (!sheet && panelOpen()) return;
   const find = SHORTCUTS[e.key.toLowerCase()]; if (!find) return;
   const b = find(); if (!b || b.disabled) return;
