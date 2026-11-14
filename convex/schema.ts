@@ -116,6 +116,9 @@ export default defineSchema({
     createdAt: v.number(),
     taskId: v.optional(v.id("tasks")), // the big one this session works on (spec 008)
     notedIdx: v.optional(v.number()), // last focus block whose block-end notes were handled
+    // Spec 017: the sitting of tonight's line this deal took, so stopping early can give it back. No text.
+    fromNight: v.optional(v.number()),
+    nightDay: v.optional(v.string()),
   })
     .index("by_userId_and_status", ["userId", "status"])
     .index("by_taskId", ["taskId"])

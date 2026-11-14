@@ -14,7 +14,7 @@ const STATES = ["start", "intercept", "running", "focus", "heads-up", "boundary"
   "picker-focus", "picker-60", "start-60", "long-running", "long-halfway", "long-heads-up",
   // spec 008: big ones
   "bigone-chip", "bigone-ticket", "bigone-ticket-typed", "bigone-boundary", "bigone-boundary-piece",
-  "cards", "cards-comeback", "cards-more", "cards-menu", "cards-delete", "cards-all", "cards-breakfirst", "cards-quick", "running-wakelock", "offer-terms-repay",
+  "cards", "cards-comeback", "cards-menu", "cards-delete", "cards-all", "running-wakelock", "offer-terms-repay",
   // spec 008: push permission button, iPhone install sheet
   "push-ask", "install-ios",
   // spec 008: planning on the card
@@ -23,8 +23,12 @@ const STATES = ["start", "intercept", "running", "focus", "heads-up", "boundary"
   "split-ai-consent", "split-ai-filled",
   // spec 008: weekly check-in
   "checkin", "checkin-cards",
-  // spec 012: tonight in a line
-  "tonight-empty", "tonight-typing", "tonight-line", "tonight-size", "tonight", "tonight-running", "tonight-done", "tonight-lectures", "tonight-tape", "tonight-running-tape", "tonight-line-tape"];
+  // spec 017: tonight is one line. One plain deal; a big one seated; the open end pressed; three things at rest; a
+  // name of the rest, the ticket's own name and a length pressed; the first one running, and the sheet raised
+  // mid-block; one done with the next on the ticket; the done sheet ("Next up?"); six things; typed coursework;
+  // the phone's tape with what's to come above "now"
+  "then-one", "then-bigone", "then-open", "then-several", "then-name", "then-ticket-name", "then-size", "then-running", "then-running-add",
+  "then-midnight", "then-done", "then-six", "then-lectures", "then-several-tape", "then-running-tape"];
 // ONLY=a,b limits a run to some states (quick review loops); WIDTH=375 checks the narrowest phone; HEIGHT=1400 sees a long screen whole
 const only = process.env.ONLY ? process.env.ONLY.split(",") : null;
 const WIDTH = Number(process.env.WIDTH) || 390;

@@ -31,13 +31,23 @@ without asking Chris first.
 - Anything that commits you is a stamp (DEAL, Start reading, Save pieces). Declining is a paper button. A link is the
   quiet way out.
 - A deal is one sitting and ends on the done sheet (spec 010).
+- Tonight is the same sentence carried on, on the same ticket (spec 017, Chris, Nov 13): "After that, 45 min of Orgo
+  problem set 4 and 20 min of BIO 180 ch. 7. And you're done around 9:42pm." The words "you're done" are underlined:
+  that is where one thing or six are added. There is no second ticket and no Print. DEAL is the only stamp on home.
+- Pressing any name opens the same field everywhere. Taking one out is "Not tonight"; clearing the rest is "Just this
+  one"; a big one's jobs are "Pieces and days". The big-one lines and their Start stamps are gone from home.
+- Stop for now keeps your place in tonight.
+- The close is "And you're done", not "Then you're done" (Chris, Nov 14: a plain deal said "then" twice). A name's
+  field closes with "OK". Nothing typed or pasted past six things is dropped without the student seeing it.
 - "Needs more than one sitting?" is a quiet line under the ticket, not on it. The clock answers in words, with no small wheel.
 - The screen stays on during every focus block; there is no switch.
 
 ## The desk (spec 014, Chris, Nov 11)
 
 - On a desk (820 px and up) there are three objects: the ticket, the tape on the right (only what has printed), and
-  while tonight is written or printed the roll along the front edge, tonight to scale. The phone layout is separate.
+  while tonight holds more than the ticket the roll along the front edge, tonight to scale. The roll never shows a
+  total or a finishing time for names nobody chose, and never covers a control. The finishing time is said once: by
+  the ticket at home, by the roll while a block runs (Chris, Nov 14). The phone layout is separate.
 - While a block runs on a desk, the name sits beside the dial and the roll lies under both. The dial is still alone:
   no card, no stamp, no label.
 - The roll shows clock hours under it; tonight's lengths can be dragged along it to reorder them.

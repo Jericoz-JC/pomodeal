@@ -4,13 +4,15 @@ Each phase ends with a **gate**: a question answered with real usage before the 
 
 Changes from the original thesis: added **Phase 0** (concepts and spikes before code), pulled a **thin social slice** forward into the first beta (it's the phone's only enforcement), and moved YouTube scenes from core to delight.
 
-## Where we are (Nov 11, 2026)
+## Where we are (Nov 14, 2026)
 
 **Since Nov 9, merged:** ledger fix (PR #9, ADR 0006), one sitting per deal (PR #10, spec 010), the visual overhaul and design council (PR #11, spec 011), dark mode with the lamp off (PR #12, spec 013).
 
 **In review:** tonight in a line (spec 012) and the desk overhaul (spec 014), one PR. The planner runs in the screens with tonight kept in the open page; its storage (`nights` table, `nights.print`, `nights.tonight`, `fromNight` on the two start mutations) is the next backend step, in spec 012's "Building it for real". The big-one cards screen in the paper language is spec 015, the standing ticket (in review).
 
 **On a branch (`beta/open-signups`, spec 016, ADR 0009), not merged:** an open beta with a brake. Anyone who signs in joins until 40 join in 24 hours or there are 150 members; then sign-ups switch to invite-only by themselves and admins get a push. Admins watch and control it on a Sign-ups screen in the account menu. Apple sign-in stays until the WorkOS production switch. Each member's email is stored as a hash so accounts carry over when WorkOS moves to production; every member has to open the app once before that switch.
+
+**Nov 14 (PR #29, spec 017, ADR 0010):** one way to add and remove tasks. Tonight is one line and the ticket holds its first item; the sentence ends "And you're done." and those words are where one thing or six are added. It replaces Plan tonight, Print, Just one deal, Quick deal and the big-task lines of specs 012 and 015, and Stop for now keeps your place. Checked by three design council rounds and two end-to-end walks on the prototype; not yet checked against the live backend on real phones or in Safari, so that is the first thing to dogfood after it deploys. Known and left: starting a different big one is three presses (its name, a pick, DEAL), and typed input is loose ("2x30" isn't a size; a name already in the line can be added twice).
 
 *The rest of this section is as of Nov 9.*
 

@@ -150,14 +150,14 @@ interface LiveApp {
   bigOnes(cards: BigOneCardRow[]): void;
   /** The Sunday's day key while the weekly question is due (and not skipped on this device), else null. */
   weekCheckin(weekKey: string | null): void;
-  /** spec 012: tonight's stored night for today's study day, or null */
+  /** spec 017: today's line as the server stores it (the night for today's study day), or null. The screens follow it. */
   night(doc: { items: NightRow[]; taken: number } | null): void;
   /** What this device can do: Web Push in this tab, opened from the Home Screen, an iPhone Safari tab; and whether the
    *  server offers "Suggest pieces" (api.ai.enabled, so it is sent again whenever that changes). */
   env(e: { pushSupported: boolean; installed: boolean; iosSafari: boolean; aiSuggest: boolean }): void;
 }
 interface DealArgs { act: string | null; breakMin: number; task: string; focusMin: number }
-/** spec 012: one item of tonight, as nights.print stores it */
+/** spec 017: one item of tonight's line, as nights.print stores it */
 interface NightRow { title: string; taskId?: string; sittings: number; minutes: number }
 /** What the split and spread sheets need about one big one, read from the open-tasks subscription (no refetch). */
 interface PlanTask { taskType?: TaskType; gutMin?: number; openTermsMin: number | null; pieces: Piece[]; dueDay?: string; spreadSignedAt?: number; slots: string[] }
@@ -173,7 +173,7 @@ interface SuggestHandle {
   dismiss(): void;
 }
 interface Backend {
-  /** `fromNight`: the index of tonight's sitting this deal takes (spec 012) */
+  /** `fromNight`: the index of the line's sitting this deal takes. Stopped early, the server gives it back (spec 017). */
   start(deal: DealArgs, fromNight?: number): void;
   ask(pick: number | "override", intention?: string): void;
   /** early: the student ended the block before its time, which files a `skip` on the ledger. */
@@ -183,8 +183,12 @@ interface Backend {
   /** namedAt: client time plus clock offset when the student first tapped "Bigger than one block?" */
   startBigOne(d: { title: string; taskType?: TaskType; gutMin?: number; firstMove: string; deal: DealArgs; namedAt?: number }): void;
   startFromCard(taskId: string, deal: DealArgs, fromNight?: number): void;
-  /** spec 012: stores tonight for today's study day; `keepTaken` for a reorder of what is left */
-  printNight(items: NightRow[], keepTaken?: boolean): void;
+  /** spec 017: the write for every change to tonight's line: the whole line, for today's study day. The day's first
+   *  write goes without `keepTaken`; later ones carry it, so the sittings already done stay done. Resolves once the
+   *  server's copy reflects it: true when stored, false when refused (it changed on another device first). Never throws. */
+  printNight(items: NightRow[], keepTaken?: boolean): Promise<boolean>;
+  /** spec 017: the line is back to the ticket alone with nothing done: the day's night is deleted. Never throws. */
+  clearNight(): Promise<boolean>;
   blockNotes(fromIdx: number, bookmark: string | undefined, done: boolean): void;
   taskMenu(taskId: string, action: "startFresh" | "setAside" | "reopen" | "remove"): void;
   logEvent(kind: "comeback_shown" | "comeback_started" | "install_done" | "push_enabled", taskId?: string): void;
@@ -267,10 +271,12 @@ function goLive(convex: ConvexClient) {
         .catch(report("startFromCard"));
     },
     printNight: (items, keepTaken) => {
-      // only the stored fields; a refused print (changed on another device) leaves the subscription's copy on screen
+      // only the stored fields; after a refused write (changed on another device) the screens show the subscription's copy again
       const rows = items.map((it) => ({ title: it.title, sittings: it.sittings, minutes: it.minutes, ...(it.taskId ? { taskId: it.taskId as Id<"tasks"> } : {}) }));
-      void convex.mutation(api.nights.print, { dayKey: dayKey(), items: rows, ...(keepTaken ? { keepTaken: true } : {}) }).catch(report("printNight"));
+      return convex.mutation(api.nights.print, { dayKey: dayKey(), items: rows, ...(keepTaken ? { keepTaken: true } : {}) })
+        .then(() => true, (e: unknown) => { report("printNight")(e); return false; });
     },
+    clearNight: () => convex.mutation(api.nights.clear, { dayKey: dayKey() }).then(() => true, (e: unknown) => { report("clearNight")(e); return false; }),
     blockNotes: (fromIdx, bookmark, done) => {
       if (sessionId) void convex.mutation(api.tasks.blockNotes, { sessionId, fromIdx, ...(bookmark ? { bookmark } : {}), done, dayKey: dayKey() }).catch(report("blockNotes"));
     },
@@ -385,7 +391,7 @@ function goLive(convex: ConvexClient) {
   };
   convex.onUpdate(api.checkIns.joinedAt, {}, (j) => { joinedAt = j; pushWeek(); });
   convex.onUpdate(api.checkIns.lastWeekKey, {}, (k) => { lastWeek = k; pushWeek(); });
-  // Tonight (spec 012): the night stored for today's study day, subscribed again when the next one starts.
+  // Tonight's line (spec 017): the night stored for today's study day, subscribed again when the next one starts.
   let dropNight: (() => void) | null = null;
   const watchNight = () => {
     dropNight?.();

@@ -121,7 +121,7 @@ export const startFromCard = mutation({
     if (task.status !== "open") await ctx.db.patch(taskId, { status: "open" });
     const now = Date.now();
     const sessionId = await startSession(ctx, user, deal, now, taskId, dayKey);
-    if (fromNight !== undefined) await takeSitting(ctx, user, dayKey, fromNight);
+    if (fromNight !== undefined) await takeSitting(ctx, user, dayKey, fromNight, sessionId);
     return { sessionId, serverNow: now };
   },
 });

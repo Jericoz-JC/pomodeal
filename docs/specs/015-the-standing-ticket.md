@@ -1,6 +1,6 @@
 # Spec 015: The standing ticket
 
-Status: prototype on branch `claude/home-cards-857ede` (from `main` after PR #13). Not merged. Owner: Chris.
+Status: built and merged; **the lines under the ticket, their Start stamps, Quick deal and All big tasks as a home link are replaced by [spec 017](017-and-then.md)** (Nov 13). What stays from here: the next big one written into the ticket at its own length, Take a break first on the ticket, the name opening its jobs (now "Pieces and days"). Owner: Chris.
 Issues: Jericoz-JC/pomodeal#18 (big-one cards read as a stock kit), Jericoz-JC/pomodeal#20 (home after a task leaves a blank band on a phone).
 Builds on: big ones (008), the look (011), the desk (014).
 

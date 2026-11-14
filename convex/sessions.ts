@@ -8,7 +8,7 @@ import {
 } from "../packages/core/src";
 import { currentMember, requireMember } from "./lib/members";
 import { cancelPushes, reschedule } from "./lib/pushSchedule";
-import { takeSitting } from "./lib/nights";
+import { giveBackSitting, takeSitting } from "./lib/nights";
 import { checkDayKey, ownTask } from "./lib/tasks";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -96,11 +96,14 @@ export async function creditTask(ctx: MutationCtx, session: Doc<"sessions">, min
 /**
  * Stops a running session: "Done for now", "Stop for now", or a new deal replacing it. Credits the running focus
  * block's minutes to the big one, files `done` (it ran its full time, spec 010) or `end_early`, files `forgiven` for
- * borrowed minutes still owed (`owed`: what the next deal's break couldn't take), and ends it.
+ * borrowed minutes still owed (`owed`: what the next deal's break couldn't take), and ends it. A deal that took one
+ * of tonight's sittings and stopped before its time gives the sitting back (spec 017).
  */
 async function stop(ctx: MutationCtx, s: Doc<"sessions">, now: number, dayKey: string | undefined, owed = s.state.debt) {
   await creditTask(ctx, s, focusMinutesDone(s.state, now), dayKey);
-  await log(ctx, s, endEntry(s.state, now, await bigOneTitle(ctx, s)));
+  const entry = endEntry(s.state, now, await bigOneTitle(ctx, s));
+  await log(ctx, s, entry);
+  if (entry.kind === "end_early") await giveBackSitting(ctx, s);
   const forgiven = endSession({ ...s.state, debt: owed }, now);
   if (forgiven) await log(ctx, s, forgiven);
   await saveState(ctx, s, s.state, "ended");
@@ -181,7 +184,7 @@ export const start = mutation({
     if (taskId) await ownTask(ctx, user, taskId);
     const now = Date.now();
     const sessionId = await startSession(ctx, user, deal, now, taskId, dayKey);
-    if (fromNight !== undefined) await takeSitting(ctx, user, dayKey, fromNight);
+    if (fromNight !== undefined) await takeSitting(ctx, user, dayKey, fromNight, sessionId);
     return { sessionId, serverNow: now };
   },
 });

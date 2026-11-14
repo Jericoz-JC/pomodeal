@@ -1,7 +1,7 @@
 // Spec 012 "Tonight in a line": one sentence of assignments, each a size and a name, printed as sittings.
 import { describe, expect, it } from "vitest";
 import {
-  NIGHT_MAX_ITEMS, NIGHT_SIZES, applyBonus, buildSession, nightFit, nightProblem, nightRound, parseNightItem, sittingsOf,
+  NIGHT_MAX_ITEMS, NIGHT_SIZES, applyBonus, buildSession, nightFit, nightProblem, nightRound, nightSizeOk, parseNightItem, sittingsOf,
   type KnownName, type NightItem,
 } from "../src";
 
@@ -99,6 +99,17 @@ describe("nightRound", () => {
   });
 });
 
+describe("nightSizeOk", () => {
+  it("is one sitting of a deal's length, or one of the four multi-sitting sizes", () => {
+    expect(nightSizeOk(1, 8)).toBe(true);
+    expect(nightSizeOk(1, 60)).toBe(true);
+    expect(nightSizeOk(3, 45)).toBe(true);
+    expect(nightSizeOk(2, 15)).toBe(false);
+    expect(nightSizeOk(0, 30)).toBe(false);
+    expect(nightSizeOk(1, 10)).toBe(false);
+  });
+});
+
 describe("nightProblem", () => {
   it("accepts one to six items", () => {
     expect(nightProblem({ items })).toBeNull();
@@ -115,5 +126,11 @@ describe("nightProblem", () => {
   it("refuses a size that isn't on offer", () => {
     expect(nightProblem({ items: [{ ...items[0], sittings: 2, minutes: 20 }] })).not.toBeNull();
     expect(nightProblem({ items: [{ ...items[0], sittings: 4, minutes: 30 }] })).not.toBeNull();
+  });
+  // spec 017: the ticket's own deal is the line's first item, so one sitting can be any length a deal can be
+  it("accepts one sitting of every length a deal can be", () => {
+    for (const minutes of [5, 8, 12, 15, 20, 30, 45, 60]) expect(nightProblem({ items: [{ ...items[0], sittings: 1, minutes }] })).toBeNull();
+    expect(nightProblem({ items: [{ ...items[0], sittings: 1, minutes: 25 }] })).not.toBeNull();
+    expect(nightProblem({ items: [{ ...items[0], sittings: 2, minutes: 60 }] })).not.toBeNull();
   });
 });
