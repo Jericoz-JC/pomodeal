@@ -27,7 +27,7 @@ The ticket carries one paragraph:
 
 1. **The deal**, large, as today: "10 min of Reels, then 8 min of BIO 180 ch. 7." or, for a big one, "30 min of History paper." with its "Start with:" line.
 2. **"After that, …"** for the rest of tonight, in tonight's smaller size, only when there is a rest: "After that, 45 min of Orgo problem set 4 and 20 min of BIO 180 ch. 7."
-3. **The close**: "Then you're done." With a rest it carries the finishing time: "Then you're done around **9:42**pm."
+3. **The close**: "And you're done." With a rest it carries the finishing time: "And you're done around **9:42**pm." (It was "Then you're done"; on a plain deal that said "then" twice. Chris, Nov 14.)
 
 `you're done` is underlined like every word you can change. It is the open end: where one thing or six are added.
 
@@ -42,7 +42,7 @@ The first thing added makes the ticket's own deal the line's first item. Nothing
 ### Changing
 
 - **A length** opens the length choices. On the ticket's deal: the deal's lengths, as today. In "After that": the same lengths, then past a hairline 2 × 30 min, 2 × 45 min, 3 × 30 min, 3 × 45 min.
-- **A name** opens one field, the same everywhere: type over it, with **Done**. Under the field:
+- **A name** opens one field, the same everywhere: type over it, with **OK** (not "Done", which sat right above "you're done"). Under the field:
   - on the ticket's own name, the names you already use as words (pressing one puts it on the ticket; if it was later in the line it moves to the front) and, with the quiet ways under them, **All big tasks**, which opens the All big tasks sheet (rows without Start stamps; a row takes the ticket; set-aside ones keep "Bring it back");
   - **Not tonight** (when the line holds more than one thing): the item leaves the line. A big one is back among the names; nothing about it is lost;
   - **Pieces and days** (a big one): its jobs sheet, unchanged (Split into pieces, Spread over the days left, Start fresh on this one, Set aside, Delete);
@@ -56,7 +56,7 @@ Leaving is one ladder: Not tonight (off the line), Set aside (off the names, kep
 ### Starting, stopping, finishing
 
 - **DEAL** is the only stamp on home. It starts the ticket's deal.
-- **While a block runs** on a phone, the close sits under the dial: "After that, Orgo problem set 4 and BIO 180 ch. 7. Then you're done around 9:42pm." or "Then you're done." Pressing "you're done" raises a paper sheet with the same paragraph and its cursor, so the line can be added to or changed without stopping. The running item can't be taken out. On a desk the same line sits beside the dial under the name, without the time: the roll says when.
+- **While a block runs** on a phone, the close sits under the dial: "After that, Orgo problem set 4 and BIO 180 ch. 7. And you're done around 9:42pm." or "And you're done." Pressing "you're done" raises a paper sheet with the same paragraph and its cursor, so the line can be added to or changed without stopping. The running item can't be taken out. On a desk the same line sits beside the dial under the name, without the time: the roll says when.
 - **Stop for now** leaves the item at the front of the line. The tape prints Stopped with the minutes, as today. It is offered during a break too.
 - **The done sheet** is unchanged: "Next up?" offers the next item with the break between rounds; "Another round?" when the line is finished. A finished sitting leaves the sentence and stays on the tape and the roll.
 - **Skip Reels, start reading now** skips this deal's break only.
@@ -67,9 +67,9 @@ Leaving is one ladder: Not tonight (off the line), Set aside (off the names, kep
 
 | State | The ticket |
 | --- | --- |
-| One plain deal | "10 min of Reels, then 8 min of BIO 180 ch. 7." / "Then you're done." Under it: "Needs more than one sitting?" and "Skip Reels, start reading now" |
-| One big one | "30 min of History paper." / "Start with: …" / "Then you're done." Under it: "Take a break first" |
-| Several | the deal, "After that, …", the strip, "Then you're done around 9:42pm." Under it: "Just this one" (after "Take a break first" when a big one is on the ticket) |
+| One plain deal | "10 min of Reels, then 8 min of BIO 180 ch. 7." / "And you're done." Under it: "Needs more than one sitting?" and "Skip Reels, start reading now" |
+| One big one | "30 min of History paper." / "Start with: …" / "And you're done." Under it: "Take a break first" |
+| Several | the deal, "After that, …", the strip, "And you're done around 9:42pm." Under it: "Just this one" (after "Take a break first" when a big one is on the ticket) |
 | Mid-night | the next deal, what's left after it, the strip with paid lengths green |
 | Night finished | back to one deal |
 
@@ -80,7 +80,7 @@ The break links ("Skip Reels, start reading now", "Take a break first") and "Jus
 ### The desk
 
 - The same ticket, with the paragraph as running text. No big-one lines, no Start stamps.
-- **The roll** shows only while tonight holds more than the ticket. It mirrors the paragraph: pressing a length opens that item's choices on the ticket; dragging reorders; its dashed tail is the open end. A finished length keeps Done; a stopped one is not stamped. It never shows a total or a finishing time for names nobody chose, and it never covers a control.
+- **The roll** shows only while tonight holds more than the ticket. It mirrors the paragraph: pressing a length opens that item's choices on the ticket; dragging reorders; its dashed tail is the open end. A finished length keeps Done; a stopped one is not stamped. It never shows a total or a finishing time for names nobody chose, and it never covers a control. The finishing time is said once: at home by the ticket (the roll keeps the focus total), while a block runs by the roll.
 - A list pasted on home lands at the open end.
 
 ## Decided (Chris, Nov 13)
@@ -139,7 +139,8 @@ Never: "plan", "schedule", "agenda", "to-do", "queue", "overdue", "missed", "beh
 | A big one deleted while in the line | Its item stays by its title, unlinked (spec 006) |
 | A big one set aside while in the line | Its sittings still to come leave the line, as with Not tonight; a running one is untouched |
 | Not tonight on a split item | Every sitting of it still to come leaves, whatever lengths they now have |
-| The line fills while typing | The cursor closes and nothing takes the keyboard: the next key can't press DEAL. Anything typed past six is dropped |
+| The line fills while typing or pasting | Nothing is dropped. The cursor stays, and what doesn't fit stays in it as plain, quiet words, not things; no key there can press DEAL. Pressed elsewhere, the words wait at the end of the paragraph, and a press puts them back in the cursor. They land when there is room and they are entered, and go only when deleted or on Escape. Not stored |
+| The line fills by pressing a name | The cursor closes and nothing takes the keyboard |
 | Six items | "you're done" is plain text |
 | A two-sitting item at the front | The ticket holds its first sitting; "After that" starts "30 min more of History paper," |
 | Tonight changed on another device | The line follows the server's; an edit that loses the race is dropped and the screen shows the server's line |
@@ -171,13 +172,20 @@ Built from the council:
 
 Not built, and why:
 
-- Dropping one of the two finishing times on a desk (ticket and roll): the ticket's is the settled sentence and the roll's is spec 014. For Chris.
-- "OK" for the field's Done button (two primary users noticed "Done" above "you're done"): a wording call. For Chris.
-- "…, then 8 min of BIO 180 ch. 7. Then you're done." says "then" twice (three reviewers, flag only): the settled sentence. For Chris.
+- Keeping both finishing times on a desk, "Done" on the field and the doubled "then" were left for Chris, who settled all three on Nov 14 (below).
 - Keeping each "N min of Name" unbreakable on a desk (round 3) reverses round 2's fix (one thing per line read as a list). Reviewers were trading it back and forth; left as running text.
 - Hiding the strip at five things or more; an undo line after "Just this one" (every name is one press away at the open end); a larger finishing time (round 1 asked for it smaller).
 
 Stopped after three rounds, as the council's rules say, and shown to Chris.
+
+### Chris, Nov 14
+
+After seeing the built screens Chris ruled on the four open points:
+
+1. **One finishing time on a desk.** At home the ticket's sentence says it and the roll's header keeps only the focus total; while a block runs the roll says it.
+2. **The field's button is "OK".**
+3. **The close is "And you're done."** Three reviewers had flagged "…, then 8 min of BIO 180 ch. 7. Then you're done."
+4. **No silent drops past six** (the edge case above).
 
 ### Round 0: diagnosis and two directions
 

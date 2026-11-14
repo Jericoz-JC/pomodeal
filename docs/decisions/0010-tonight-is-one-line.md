@@ -10,7 +10,7 @@ Two flows were mocked from the prototype's own parts. A wrote the rest of tonigh
 
 ## Decision
 
-- **Tonight is one line. The ticket always holds its first item.** The ticket's paragraph is the deal, "After that, …" for the rest, and "Then you're done.", whose last words are where more is added. There is no second ticket, no draft and no printing.
+- **Tonight is one line. The ticket always holds its first item.** The ticket's paragraph is the deal, "After that, …" for the rest, and "And you're done.", whose last words are where more is added. There is no second ticket, no draft and no printing.
 - **Print goes.** Writing the line commits to nothing, so it is not a stamp. DEAL is the only stamp on home.
 - **Stop for now keeps your place.** A sitting counts when its deal runs its full time, not when it is dealt.
 - **One ladder out:** Not tonight (off the line), Set aside (kept, out of sight), Delete (gone). "Just this one" clears the rest of the line.

@@ -1030,13 +1030,16 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 
 /* ---------- spec 017: tonight is one line ----------
    The rest of tonight is written on the ticket as the deal's sentence carried on, a step smaller: "After that, 45 min
-   of Orgo problem set 4 and 20 min of BIO 180 ch. 7. Then you're done around 9:42pm." What is typed at the open end
+   of Orgo problem set 4 and 20 min of BIO 180 ch. 7. And you're done around 9:42pm." What is typed at the open end
    closes into underlined words at each comma. The same paragraph is on the sheet raised over a running block. */
 .sentence.after { font-size: 1.25rem; line-height: 1.45; text-wrap: pretty; }
 /* on a phone each thing has a line of its own */
 .sentence.after .item::before { content: "\A"; white-space: pre; }
 .sentence.after .tok { font-size: 1.2em; text-decoration-thickness: .055em; text-underline-offset: .2em; }
 .sentence.after .nsz { white-space: nowrap; }
+/* words past six: in the cursor, or waiting at the end of the paragraph, they are plain and quiet, not things */
+.nightin.over { color: var(--soft); font-weight: 600; }
+.sentence.after .over { font: inherit; font-size: 1.2em; font-weight: 600; line-height: 1.2; color: var(--soft); background: none; border: none; padding: 0 2px; margin: 0; text-align: left; cursor: text; }
 /* the cursor waits on the last thing's line; what is typed there drops to a line of its own when it doesn't fit */
 .sentence.after .item:has(> .nightin:not(:placeholder-shown)) { white-space: normal; }
 /* the empty cursor at the open end is a place to write: a short baseline in the underline's green, the same width
@@ -1260,9 +1263,6 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
   :is(.ticket, .sheet) .sentence.after .item::before { content: none; }
   /* running text, not a list: a thing may break after its length, so six things fill their lines like a sentence */
   :is(.ticket, .sheet) .sentence.after .item.nowrap { white-space: normal; }
-  /* the ticket already says when you're done in full size: beside it the roll's own time is a caption */
-  body:has(#ticket .closing .at) .rhead .at b { font-size: 1.0625rem; line-height: 1; }
-  body:has(#ticket .closing .at) .rhead .at b small { font-size: .82em; }
   /* the hero: a ticket at desk scale, lying on the pad it was torn from */
   /* its vertical rhythm is tight (padding, the serial's line, the gaps between the paragraph's parts), not its type:
      three things at rest and the whole roll fit a 900 px window (spec 017 round 1) */
@@ -1940,7 +1940,7 @@ function focusPicker() {
 function ticketName(name, isBig, naming) {
   const names = naming ? [] : addable(true), all = !naming && (cards().length > 0 || asideKnown());
   const links = naming ? "" : nameLinks(false, lineRest().length > 0, isBig, all);
-  return `<div class="picker" id="deal-picker"><label class="vh" for="task">What you'll work on</label><input class="nightname" id="task" value="${esc(name)}" maxlength="80" autocomplete="off" enterkeyhint="done"><button class="chip" id="taskdone">Done</button>${names.length ? `<div class="nightadd" role="group" aria-label="Names you already use">${names.map((k, i) => `<button class="add" data-tname="${i}">${N(esc(k.name))}</button>`).join("")}</div>` : ""}${links}</div>`;
+  return `<div class="picker" id="deal-picker"><label class="vh" for="task">What you'll work on</label><input class="nightname" id="task" value="${esc(name)}" maxlength="80" autocomplete="off" enterkeyhint="done"><button class="chip" id="taskdone">OK</button>${names.length ? `<div class="nightadd" role="group" aria-label="Names you already use">${names.map((k, i) => `<button class="add" data-tname="${i}">${N(esc(k.name))}</button>`).join("")}</div>` : ""}${links}</div>`;
 }
 function ticket(peek) {
   const p = picker, home = mode !== "intercept";
@@ -2073,7 +2073,7 @@ function closeWeek(msg, to) {
   return key;
 }
 /* ---------- spec 017: tonight is one line, and the ticket holds its first item ----------
-   The ticket's paragraph is the deal, then "After that, …" for the rest of tonight, then "Then you're done.", whose
+   The ticket's paragraph is the deal, then "After that, …" for the rest of tonight, then "And you're done.", whose
    last words are the open end: where one thing or six are added. There is no second ticket, no draft and no printing.
    The line is kept only while tonight holds more than the ticket (or some of it is already done):
    { items: [{ name, n, min, taskId, piece }], taken }. `taken` counts the sittings dealt; a deal stopped before its
@@ -2250,7 +2250,7 @@ function lineOutFront() {
 /* Just this one: the rest leaves the line */
 function lineJust() {
   const f = nightNext(); if (!f) return;
-  night.items[f.i].n = f.k + 1; night.items.splice(f.i + 1).forEach(noteOut); lineSave();
+  night.items[f.i].n = f.k + 1; night.items.splice(f.i + 1).forEach(noteOut); lineOver = ""; lineSave();
 }
 /* the ticket's own length, picked while it is the front of a line: the front sitting takes it */
 function lineFrontLen(min) {
@@ -2287,9 +2287,11 @@ function nameTicket(v) {
 }
 /* typed text closes into items at each comma; what follows the last comma is still being typed */
 function lineTake(text) {
-  const parts = text.split(","), last = parts.pop(); let added = 0;
+  const parts = text.split(","), last = parts.pop(), over = []; let added = 0;
   parts.forEach(raw => {
-    if (!raw.trim() || lineFull()) return;
+    if (!raw.trim()) return;
+    /* no room: it stays as typed, in the cursor (spec 017: nothing is dropped) */
+    if (lineFull()) { over.push(raw.trim()); return; }
     lineBegin();
     const it = parseItem(raw, night.items); if (!it) return;
     /* typed differently but read as the same known name: neither takes it, each keeps what was typed */
@@ -2298,14 +2300,18 @@ function lineTake(text) {
     night.items.push(it); added++;
   });
   if (added) lineSave(); else lineTidy();
-  return lineFull() ? "" : last.replace(/^\s+/, "");
+  return [...over, last.replace(/^\s+/, "")].filter((x, i, a) => x || (i === a.length - 1 && !over.length)).join(", ");
 }
 /* when the cursor last took a key: keys that follow closely are still typing, not shortcuts */
 let typedAt = -1e9;
-/* after something is added: the cursor waits for the next. When the line is full it is gone and nothing takes the
-   focus, so what is still being typed can't land on a stamp (B1). */
-function lineAdded(draft) {
-  linePick = lineFull() ? null : { kind: "end", draft };
+/* what was typed or pasted and found no room (six things): it waits at the end of the paragraph as plain words until
+   it is deleted, dropped with Escape, or there is room and it is entered. Not stored. */
+let lineOver = "";
+/* after something is added: the cursor waits for the next. While typing or pasting, a full line keeps the cursor: what
+   comes next stays in it as words, so nothing is dropped and no key can land on a stamp (B1). A name pressed that
+   fills the line closes it, and nothing takes the focus. */
+function lineAdded(draft, typing = true) {
+  linePick = lineFull() && !(typing || draft.trim()) ? null : { kind: "end", draft, over: lineFull() };
   if (linePick) nextFocus = "#linein";
   render();
   if (linePick) return;
@@ -2326,7 +2332,7 @@ function lineAddKnown(k) {
   lineBegin();
   const [n, min] = snapSize(k.min || 20); night.items.push({ name: k.name, n, min, taskId: k.taskId || null, piece: k.piece || "" });
   lineSave();
-  lineAdded(""); say(`${k.name} is in tonight.`);
+  lineAdded("", false); say(`${k.name} is in tonight.`);
 }
 /* drag on the roll: a length moves among what's left (the ticket's sitting is the first of them at home) */
 function lineUnits() { const f = !S && nightNext(); return [...(f ? [{ g: night.taken, name: f.name }] : []), ...lineRest()]; }
@@ -2344,15 +2350,15 @@ function closePicks(keep = true) {
     const t = $("#task"), n = $("#lname");
     if (picker === "task" && t) nameTicket(t.value);
     if (linePick && linePick.kind === "name" && n) lineRename(linePick.g, n.value);
-    if (linePick && linePick.kind === "end" && linePick.draft.trim()) lineTake(linePick.draft + ",");
-  }
+    if (linePick && linePick.kind === "end" && linePick.draft.trim()) lineOver = lineTake(linePick.draft + ",");
+  } else if (linePick && linePick.kind === "end") lineOver = "";
   picker = null; linePick = null;
 }
 function setPicks(p, lp) { closePicks(); picker = p; linePick = lp; }
 /* a pick that points at nothing any more (the line changed under it) closes */
 function settlePicks() {
   if (!linePick) return;
-  if (linePick.kind === "end" ? lineFull() : !lineRest().some(e => e.g === linePick.g)) linePick = null;
+  if (linePick.kind === "end" ? lineFull() && !linePick.over : !lineRest().some(e => e.g === linePick.g)) linePick = null;
 }
 
 /* ----- Stop for now keeps your place (spec 017) -----
@@ -2408,31 +2414,33 @@ const nameLinks = (first, out, jobs, all) => first || out || jobs || all ? `<div
    and 20 min of BIO 180 ch. 7." Every length and name is a word you can change; the cursor waits at its end. */
 function afterPara() {
   const rest = lineRest(), p = linePick, end = !!p && p.kind === "end";
-  if (!rest.length && !end) return "";
+  if (!rest.length && !end && !lineOver) return "";
   /* each item holds together: "and" stays with its length, the comma or full stop with its name */
   const phrase = (e, j) => {
     const last = j === rest.length - 1, stop = end ? "," : last ? "." : j === rest.length - 2 ? "" : ",", size = sizeText(e);
     return `<span class="nowrap item"><span class="nowrap">${!end && last && j ? "and " : ""}<button class="tok nsz" data-lsize="${e.g}" aria-expanded="${!!p && p.kind === "size" && p.g === e.g}" aria-controls="night-picker" aria-label="${esc(size)}, length, change">${N(esc(size))}</button>${e.more ? " more" : ""}</span> <span class="nowrap">of <button class="tok" data-lname="${e.g}" aria-expanded="${!!p && p.kind === "name" && p.g === e.g}" aria-controls="night-picker" aria-label="${esc(e.name)}, change">${esc(tailOf(e.name))}</button>${stop}</span></span>`;
   };
   const body = rest.map(phrase).join(" ");
-  const field = end ? `<label class="vh" for="linein">After that</label><input class="nightin" id="linein" placeholder=" " value="${esc(p.draft)}" size="${p.draft.length + 1}" maxlength="120" autocomplete="off" enterkeyhint="done">` : "";
+  const field = end ? `<label class="vh" for="linein">After that</label><input class="nightin${lineFull() ? " over" : ""}" id="linein" placeholder=" " value="${esc(p.draft)}" size="${p.draft.length + 1}" maxlength="120" autocomplete="off" enterkeyhint="done">` : "";
   const e = p && !end ? rest.find(x => x.g === p.g) : null;
   const pk = !e ? "" : p.kind === "size"
     ? `<div class="picker" id="night-picker" role="radiogroup" aria-label="Length of ${esc(e.name)}">${ALL_LENGTHS.map(m => sizeChip(e, [1, m])).join("")}<div class="longrow">${MULTI_SIZES.map(s => sizeChip(e, s)).join("")}</div></div>`
-    : `<div class="picker" id="night-picker"><label class="vh" for="lname">Name</label><input class="nightname" id="lname" value="${esc(e.name)}" maxlength="80" autocomplete="off" enterkeyhint="done"><button class="chip" id="lnamedone">Done</button>${nameLinks(S ? rest.indexOf(e) > 0 : !e.more, true, !S && !!e.taskId && !!cardById(e.taskId))}</div>`;
-  const list = end ? addable() : [];
+    : `<div class="picker" id="night-picker"><label class="vh" for="lname">Name</label><input class="nightname" id="lname" value="${esc(e.name)}" maxlength="80" autocomplete="off" enterkeyhint="done"><button class="chip" id="lnamedone">OK</button>${nameLinks(S ? rest.indexOf(e) > 0 : !e.more, true, !S && !!e.taskId && !!cardById(e.taskId))}</div>`;
+  const list = end && !lineFull() ? addable() : [];
+  /* words that found no room, the cursor closed: pressed, they are back in the cursor */
+  const waits = !end && lineOver ? ` <button class="over" id="lineover" aria-label="${esc(lineOver)}, not in tonight yet, change">${esc(lineOver)}</button>` : "";
   const names = list.length ? `<div class="nightadd"${p.draft.trim() ? " hidden" : ""} role="group" aria-label="Names you already use">${list.map((k, i) => `<button class="add" data-ladd="${i}">${N(esc(k.name))}</button>`).join("")}</div>` : "";
   /* the cursor waits on the last item's line; once something is typed it has a line of its own */
-  return `<p class="sentence after">After that, ${end && (p.draft || !rest.length) ? `${body} ${field}` : end ? body.replace(/<\/span>$/, ` ${field}</span>`) : body}</p>${pk}${names}`;
+  return `<p class="sentence after">After that, ${end && (p.draft || !rest.length) ? `${body} ${field}` : end ? body.replace(/<\/span>$/, ` ${field}</span>`) : body}${waits}</p>${pk}${names}`;
 }
-/* the close: "Then you're done." Its last words are the open end; at six things they are plain. With a rest it
-   carries the finishing time, in the sentence: "Then you're done around 9:46pm." */
+/* the close: "And you're done." Its last words are the open end; at six things they are plain. With a rest it
+   carries the finishing time, in the sentence: "And you're done around 9:46pm." */
 function closing() {
   const end = !!linePick && linePick.kind === "end";
   const done = lineFull() ? "you’re done" : `<button class="tok" id="openend" aria-expanded="${end}">you’re done</button>`;
-  if (!lineRest().length) return `<p class="sentence after closing">Then ${done}.</p>`;
+  if (!lineRest().length) return `<p class="sentence after closing">And ${done}.</p>`;
   const at = N(clockStr(Date.now() + lineEndsIn()).replace(/([ap]m)$/, "<small>$1</small>"));
-  return `<p class="sentence after closing"><span class="nowrap fit">Then ${done}</span> <span class="nowrap fit">around <span class="at">${at}</span>.</span></p>`;
+  return `<p class="sentence after closing"><span class="nowrap fit">And ${done}</span> <span class="nowrap fit">around <span class="at">${at}</span>.</span></p>`;
 }
 /* the night as a shape, in the dial's language: a solid length per sitting, a hatched one per break between them;
    sittings already paid are green, the next one full ink. Nothing to press: it is tonight drawn to scale. */
@@ -2458,7 +2466,7 @@ function fitAfter() {
 /* the sheet over a running block (spec 017): the same paragraph and cursor, so tonight changes without stopping */
 function openLine(pick) {
   opener = document.activeElement; picker = null;
-  linePick = pick || (lineFull() ? null : { kind: "end", draft: "" });
+  linePick = pick || (lineFull() && !lineOver ? null : { kind: "end", draft: lineOver, over: lineFull() }); if (linePick && linePick.kind === "end") lineOver = "";
   sheet = { kind: "line", focusMe: true, openedAt: performance.now() }; render();
 }
 function closeLine(keep = true) { closePicks(keep); closeSheet(); render(); restoreFocus(); }
@@ -2470,7 +2478,7 @@ function bindLine() {
     inp.closest(".sentence").onclick = e => { if (!e.target.closest("button, input")) inp.focus(); };
     inp.oninput = () => {
       typedAt = performance.now();
-      if (inp.value.includes(",")) { lineAdded(lineTake(inp.value)); return; }
+      if (inp.value.includes(",") && !lineFull()) { lineAdded(lineTake(inp.value)); return; }
       linePick.draft = inp.value; inp.size = inp.value.length + 1;
       const na = $(".nightadd"); if (na) na.hidden = !!inp.value.trim();
     };
@@ -2482,8 +2490,8 @@ function bindLine() {
       if (e.key === "Enter") {
         e.preventDefault();
         typedAt = performance.now();
-        if (inp.value.trim()) lineAdded(lineTake(inp.value + ","));
-        else { linePick = null; nextFocus = "#openend"; render(); }
+        if (inp.value.trim() && !lineFull()) lineAdded(lineTake(inp.value + ","));
+        else if (!inp.value.trim()) { linePick = null; nextFocus = "#openend"; render(); }
       } else if (e.key === "Backspace" && !inp.value) {
         /* the last thing added comes back as text */
         const rest = lineRest(), last = rest[rest.length - 1]; if (!last) return;
@@ -2521,10 +2529,11 @@ function bindLine() {
   on("#openend", () => {
     if (S && !(sheet && sheet.kind === "line")) { openLine(); return; }
     const open = !(linePick && linePick.kind === "end");
-    setPicks(null, open ? { kind: "end", draft: "" } : null); nextFocus = open ? "#linein" : "#openend"; render();
+    const wait = lineOver; setPicks(null, open ? { kind: "end", draft: wait } : null); if (open) lineOver = ""; nextFocus = open ? "#linein" : "#openend"; render();
   });
   on("#onedeal", () => { closePicks(false); lineJust(); nextFocus = "#openend"; render(); say("Tonight is just this one."); });
   on("#lineclose", () => closeLine());
+  on("#lineover", () => { const wait = lineOver; setPicks(null, { kind: "end", draft: wait, over: lineFull() }); lineOver = ""; nextFocus = "#linein"; render(); });
   const scrim = sheet && sheet.kind === "line" ? $("#sheet-root .scrim:not(.leaving)") : null;
   if (scrim) scrim.onclick = e => { if (e.target === scrim) closeLine(); };
 }
@@ -2596,7 +2605,7 @@ function rollView() {
     const d = new Date(t), mi = d.getMinutes(), h = d.getHours();
     ticks.push(`<i class="${mi ? mi % 15 ? "" : "q" : "hr"}" style="left:${pct(m.nowAt + (t - now) / 60000)}%">${mi ? "" : `<b>${h % 12 || 12}</b>${h < 12 ? "am" : "pm"}`}</i>`);
   }
-  const head = `<p class="rhead"><span class="rh" style="flex:${m.total}"><span>${N(`${m.lead ? `${m.lead.min} min of ${esc(m.lead.name)}, then ` : ""}${hm(m.focus)} of focus`)}</span><span class="at">Done around <b>${clockStr(Date.now() + m.endIn).replace(/([ap]m)$/, "<small>$1</small>")}</b></span></span>${m.span > m.total ? `<i style="flex:${m.span - m.total}"></i>` : ""}</p>`;
+  const head = `<p class="rhead"><span class="rh" style="flex:${m.total}"><span>${N(`${m.lead ? `${m.lead.min} min of ${esc(m.lead.name)}, then ` : ""}${hm(m.focus)} of focus`)}</span>${!S && lineRest().length ? "" : `<span class="at">Done around <b>${clockStr(Date.now() + m.endIn).replace(/([ap]m)$/, "<small>$1</small>")}</b></span>`}</span>${m.span > m.total ? `<i style="flex:${m.span - m.total}"></i>` : ""}</p>`;
   /* the bare desk past the roll's end: while tonight has room, it is the open end */
   const rest = m.span <= m.total ? "" : m.tail ? `<button class="rest tail" id="rolltail" style="flex:${m.span - m.total}" aria-label="Add to tonight"></button>` : `<span class="rest" style="flex:${m.span - m.total}"></span>`;
   return `${head}<div class="rband">${m.segs.map(seg).join("")}${rest}</div><div class="rrule" aria-hidden="true">${ticks.join("")}</div>`;
@@ -2619,7 +2628,7 @@ function paintRoll(wide) {
     const tail = rl.querySelector("#rolltail"); if (tail) tail.onclick = () => {
       if (S) { openLine(); return; }
       if (tab !== "now") setTab("now");
-      setPicks(null, { kind: "end", draft: "" }); nextFocus = "#linein"; render();
+      const wait = lineOver; setPicks(null, { kind: "end", draft: wait }); lineOver = ""; nextFocus = "#linein"; render();
     };
     bindRollDrag(rl);
   }
@@ -2736,14 +2745,14 @@ function presence(still) {
   if (still) return `<button class="presence" id="toroom">${faces}<span>${S && S.with ? "Focusing with Maya" : "Maya’s focusing too"}</span><span class="see">See room</span></button>`;
   return `<button class="presence" id="toroom">${faces}<span>${N("Maya, 14 min left")}</span><span class="see">See room</span></button>`;
 }
-/* the close under the dial (spec 017): what comes after this deal, then "Then you're done", whose last words raise
+/* the close under the dial (spec 017): what comes after this deal, then "And you're done", whose last words raise
    the sheet where tonight is added to or changed without stopping */
 const runDone = () => lineFull() ? "you’re done" : `<button class="tok" id="openend" aria-haspopup="dialog">you’re done</button>`;
 function runClose(clock = true) {
   const names = lineRest().map(e => `<span class="nowrap">${e.more ? "more " : ""}${esc(tailOf(e.name))}</span>`);
   const said = names.length > 1 ? `${names.slice(0, -1).join(", ")} <span class="nowrap">and ${names[names.length - 1]}.</span>` : `${names[0]}.`;
   const done = runDone();
-  return `${names.length ? `<span class="nl">After that, ${said}</span> ` : ""}<span class="nl nowrap">Then ${done}${names.length && clock ? ` around <span class="at">${clockStr(Date.now() + lineEndsIn()).replace(/([ap]m)$/, "<small>$1</small>")}</span>` : ""}.</span>`;
+  return `${names.length ? `<span class="nl">After that, ${said}</span> ` : ""}<span class="nl nowrap">And ${done}${names.length && clock ? ` around <span class="at">${clockStr(Date.now() + lineEndsIn()).replace(/([ap]m)$/, "<small>$1</small>")}</span>` : ""}.</span>`;
 }
 function runningView() {
   const b = cur(), isB = b.type === "break", r = remaining(), m = minsLeft();
