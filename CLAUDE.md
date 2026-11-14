@@ -40,6 +40,7 @@ Every push to `main` deploys the site **and** the production Convex backend (Clo
 - Copy follows `docs/specs/003-voice-and-copy.md` once it exists: no labels, no shame, no streaks.
 - Any new stored user-behavior field updates `docs/specs/006-privacy-inventory.md` in the same change.
 - Decisions go in `docs/decisions/NNNN-title.md` (context, decision, consequences).
+- Adding and removing tasks is one flow ([spec 017](docs/specs/017-and-then.md)): tonight is one line, the ticket holds its first item, and the open end ("you're done") is the only place things are added. Don't add a second way in, a second ticket or another stamp on home.
 - Design council: run the `design-council` skill (`.claude/skills/design-council`, adapted from tstack's `council`) on every user-visible change before committing it, in small rounds. Members: a product designer and "the primary user" (a capable student who studies with it nightly) on Claude Opus 5.5, an art director for taste on Claude Fable 5.2. Reviewers get `.claude/skills/design-council/settled.md`; check every fix against it before building.
 - Pomodeal is built for Chris's taste; he is the primary user. Accessibility is not a design driver.
 - No copy that explains basic UI ("Tap an underlined word…", "Drag the line…", "One tap."), and no keyboard-key badges on controls. Users are people like Chris.

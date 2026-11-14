@@ -36,8 +36,8 @@ Phase 1 of the [roadmap](docs/03-roadmap.md), in a closed beta with friends.
 - Synced across phone and laptop; installable as an app, with a Keep screen on option
 - Light and dark, with a dark mode that dims the paper instead of putting pale tickets on black
 
-**In review (not on `main` yet)**
-- Tonight in a line: plan several assignments as one sentence and take them one deal at a time. Tonight's plan lives in the open page until it's stored per day.
+**Merged Nov 14, being checked in the beta**
+- One way to add and remove tasks ([spec 017](docs/specs/017-and-then.md)): the ticket's sentence ends "And you're done", and those words are where you add one thing or six. Tonight is that one line, stored per day. Press any name to change it, take it out ("Not tonight") or do it first; "Just this one" clears the rest; Stop for now keeps your place.
 - The desk: on a laptop, tonight lies along the front edge as a roll drawn to scale over a clock, which you can drag to reorder and which fills in green as you study
 
 **Built, still being checked**
