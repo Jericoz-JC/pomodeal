@@ -187,6 +187,8 @@ After seeing the built screens Chris ruled on the four open points:
 3. **The close is "And you're done."** Three reviewers had flagged "…, then 8 min of BIO 180 ch. 7. Then you're done."
 4. **No silent drops past six** (the edge case above).
 
+Council on how the four were carried out (one small round, Nov 14): designer 8/10, primary user 8/10, taste 8/10, nothing worse. Built from it: the words past six start flush with the things above them and are set in the light weight of "After that,", so they differ from a thing by weight and underline, not colour alone. Not built: unifying how short lengths are cut on the roll at six (older than this change).
+
 ### Round 0: diagnosis and two directions
 
 Phone walk and desk walk (Opus 5.5), model audit and three storyboarded directions (Fable 5.2). All four proposed the same core (one line, the ticket holds its front, one place to add, DEAL the only stamp). Two directions were mocked from the prototype's own parts at 375 and 1440 by 900:
