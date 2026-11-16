@@ -2029,7 +2029,7 @@ const sittingInner = (r, i) => !r.end ? stubInner(r.e, i)
 const stubInner = (e, i) => `<span class="t"><b>${clockHtml(e.t)}</b>${e.till ? `<span class="till">to ${N(e.till)}</span>` : ""}${e.kind === "deal" || e.kind === "done" ? "" : `<span class="stamp${PLAIN[e.kind] ? " plain" : ""}" style="--tilt:${TILTS[i % TILTS.length]}deg">${MARK[e.kind]}</span>`}</span><span class="what"><span class="row"><span class="title">${esc(stubTitle(e))}</span></span><em>${N(esc(e.sub || TERMS[e.kind]))}</em>${e.note ? `<em>First thing: ${N(esc(lower(e.note)))}${/[.?!]$/.test(e.note) ? "" : "."}</em>` : ""}</span>`;
 /* tonight's sample ledger. The intercept's "Last Reels deal" reads from it, so every screen tells the same story:
    an hour on the history paper, stopped partway; a reading deal with its Reels break ended early, done; the next
-   round, kept going 10 more, done; then a TikTok deal. */
+   round, kept going 10 more, done; then a TikTok deal, stopped in its break a minute ago. */
 const SEED = [
   ["8:12pm", { kind: "deal", blockLabel: "History paper", minutes: 60, taskId: "paper" }],
   ["8:53pm", { kind: "end_early", blockLabel: "History paper", minutes: 41, taskId: "paper" }],
@@ -2043,7 +2043,7 @@ const SEED = [
   ["10:26pm", { kind: "deal", blockLabel: "Reading, BIO 180 ch. 7", minutes: 15 }],
   ["10:31pm", { kind: "borrow", blockLabel: "TikTok", minutes: 5 }],
   ["10:37pm", { kind: "trade", blockLabel: "TikTok", minutes: 5, intention: "Open the chapter" }],
-  ["10:56pm", { kind: "done", blockLabel: "Reading, BIO 180 ch. 7", minutes: 20 }],
+  ["10:40pm", { kind: "end_early", blockLabel: "Reading, BIO 180 ch. 7", minutes: 0 }],
 ].map(([t, e]) => stubOf(e, t));
 /* the newest ask for more time, optionally on one activity ("Last Reels deal") */
 const newest = (list, act) => [...list].reverse().find(e => ASKS[e.kind] && e.kind !== "override" && (!act || e.text.endsWith(" " + act)));
@@ -4066,7 +4066,7 @@ function tick() {
 /* ---------- hash entry points (for interviews and screenshots) ---------- */
 function seedLedger() {
   ledger = SEED.map(e => ({ ...e }));
-  studied = 91;
+  studied = 71;
 }
 /* spec 008 day 2: sample big ones, in the order the server sends them (comeback first, then newest worked) */
 const DEMO_CARDS = [
