@@ -129,7 +129,7 @@ const CSS = `
 @keyframes pd-sheet-in { from { transform: translateY(100%); } }
 @media (min-width: 820px) {
   #pd-gate.pd-sheet { padding: 6vh 24px; }
-  #pd-gate.pd-sheet .wrap { margin: auto; border: none; border-radius: 20px; padding: 30px 28px 14px; box-shadow: 0 30px 60px -30px rgba(0,0,0,.45); }
+  #pd-gate.pd-sheet .wrap { margin: auto; border: none; border-radius: 20px; padding: 30px 28px 22px; box-shadow: 0 30px 60px -30px rgba(0,0,0,.45); }
   @keyframes pd-sheet-in { from { transform: translateY(18px); opacity: 0; } }
 }
 @media (prefers-reduced-motion: reduce) { #pd-gate.pd-rise, #pd-gate.pd-rise .wrap { animation: none; } }
@@ -190,8 +190,8 @@ export function mountGate(actions: GateActions) {
   }
 
   function signupsView(): string {
-    const back = `<div class="foot"><button class="textbtn" id="pd-close">Back to Pomodeal</button></div>`;
-    if (!overview) return `<div class="wrap">${MARK}<h1>Sign-ups</h1><p class="soft" role="status">Loading…</p>${back}</div>`;
+    const back = `<div class="foot"><button class="textbtn" id="pd-close">Close</button></div>`;
+    if (!overview) return `<div class="wrap"><h1>Sign-ups</h1><p class="soft" role="status">Loading…</p>${back}</div>`;
     const o = overview, open = o.signups === "open";
     // the time alone when it was today, the day too when it wasn't
     const when = (at: number) => new Date(at).toDateString() === new Date().toDateString()
@@ -215,7 +215,7 @@ export function mountGate(actions: GateActions) {
       .map((n) => `<button class="chip" role="radio" aria-checked="${n === o[picking!]}" data-val="${n}">${n}</button>`).join("")}</div>` : "";
     const row = (label: string, n: number, of?: number) =>
       `<div><dt>${label}</dt><dd>${n}${of !== undefined ? ` <small>of ${of}</small>` : ""}</dd></div>`;
-    return `<div class="wrap">${MARK}
+    return `<div class="wrap">
       <h1>Sign-ups</h1>
       <section class="ticket${open ? "" : " closed"}" aria-label="Sign-ups are ${open ? "open" : "invite only"}">
         <div class="body"><span class="big">${open ? "Open to anyone" : "Invite only"}</span>
@@ -232,14 +232,14 @@ export function mountGate(actions: GateActions) {
         ${row("Waiting to get in", o.waiting)}
         ${row("Ready for the WorkOS move", o.readyForProduction, o.members)}
       </dl>
-      <div class="foot"><a class="su-usage" href="${esc(o.usageUrl)}" target="_blank" rel="noopener">Convex usage</a><button class="textbtn" id="pd-close">Back to Pomodeal</button></div></div>`;
+      <div class="foot"><a class="su-usage" href="${esc(o.usageUrl)}" target="_blank" rel="noopener">Convex usage</a><button class="textbtn" id="pd-close">Close</button></div></div>`;
   }
 
   function view(): string {
     if (signupsOpen && state.kind === "member") return signupsView();
     if (invitesOpen && state.kind === "member") {
       const link = (c: string) => `${location.origin}/?invite=${c}`;
-      return `<div class="wrap">${MARK}
+      return `<div class="wrap">
         <h1>Invite friends</h1>
         <p class="soft">${invitesLeft === null ? "You can invite as many people as you like." : `You have ${invitesLeft} ${invitesLeft === 1 ? "invite" : "invites"} left. Each ticket works for one person.`}</p>
         <button class="primary" id="pd-new" ${invitesLeft === 0 ? "disabled" : ""}>Make an invite ticket</button>
@@ -248,7 +248,7 @@ export function mountGate(actions: GateActions) {
           <div class="stub"><div class="row"><span class="soft">${t.uses >= t.maxUses ? (t.usedBy ? `${esc(t.usedBy)} joined${t.usedAt ? ` ${new Date(t.usedAt).toLocaleDateString([], { month: "short", day: "numeric" })}` : ""}` : "Used") : "Not used yet"}</span>
             ${t.uses >= t.maxUses ? "" : `<button class="copy" data-copy="${esc(link(t.code))}">Copy link</button>`}</div></div>
           ${t.uses >= t.maxUses ? `<span class="stamp" aria-hidden="true">USED</span>` : ""}</section>`).join("")}</div>
-        <div class="foot"><button class="textbtn" id="pd-close">Back to Pomodeal</button></div></div>`;
+        <div class="foot"><button class="textbtn" id="pd-close">Close</button></div></div>`;
     }
     switch (state.kind) {
       case "loading":

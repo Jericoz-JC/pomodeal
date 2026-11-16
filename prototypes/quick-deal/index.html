@@ -860,6 +860,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 /* a sitting's end under its start ("to 11:42am", "to now"): the same clock, quieter */
 .stubcard .t .till { font-size: .875rem; line-height: 1.1; color: var(--soft); white-space: nowrap; margin-top: -3px; }
 .stubcard .t .till .num { font-weight: 600; }
+.stubcard .t .till.paying { color: var(--deal-ink); font-weight: 600; }
 .tape .stubcard .t .stamp { font-size: .8125rem; padding: 1px 5px 2px; margin-left: -1px; }
 /* a receipt totals at the bottom: one line each, a dotted leader, the figure on the right */
 .totals { margin: 0; padding-top: 12px; border-top: 3px double var(--edge); display: flex; flex-direction: column; gap: 6px; }
@@ -1505,7 +1506,7 @@ function stubOf(e, t = clockStr(e.at)) {
     : e.kind === "end_early" ? (m ? (big ? `${m} min done on this big one` : `${m} min of focus done`) : TERMS.end_early)
     : e.kind === "skip" ? (m ? `After ${m} min` : "Right at the start")
     : "";
-  return { t, kind: e.kind, text, sub, note: e.intention || "", m, sid: e.sessionId };
+  return { t, kind: e.kind, text, sub, note: e.intention || "", m, big, sid: e.sessionId };
 }
 
 /* ---------- state ---------- */
@@ -1603,7 +1604,7 @@ const gutSpoken = m => m === 240 ? "4 hours or more" : m === 60 ? "1 hour" : `${
 const TYPE_PHRASE = { writing: "writing", problems: "problems & code", exam: "exam study", project: "building something" };
 /* the big-one half of the ticket: off until the student ticks "Bigger than one block?" (never pre-selected).
    move is the first move; edited stops a type change from overwriting what they wrote. namedAt is the first tick. */
-const newBig = () => ({ on: false, type: null, gut: null, move: "", edited: false, namedAt: null });
+const newBig = () => ({ on: false, type: null, gut: null, move: "", edited: false, was: null, namedAt: null });
 /* the big one is named exactly as typed (commas kept), cut to 80 characters counted as the core counts them */
 const bigTitle = () => [...String(deal.task).trim()].slice(0, 80).join("");
 function fresh() { nudged = false; deal = { act: "Reels", breakMin: 10, task: "Reading, BIO 180 ch. 7", focusMin: 8 }; big = newBig(); ledger = []; S = null; sheet = null; picker = null; toast = null; unseen = 0; studied = 0; fromCard = null; panel = null; lastRepay = null; night = null; linePick = null; outNames = []; }
@@ -2022,7 +2023,9 @@ function sittingRows() {
 }
 /* what the tape totals: in the demo the screen's own count; live, the sittings the server has closed today */
 const studiedMin = () => BE ? ledger.reduce((a, e) => a + (CLOSES[e.kind] ? e.m || 0 : 0), 0) : studied;
-const sittingInner = (r, i) => !r.end ? stubInner(r.e, i) : stubInner({ ...r.end, t: r.e.t, till: r.end.t, note: r.e.note }, i);
+const stoppedSub = e => !e.m ? TERMS.end_early : `Stopped after ${e.m} min${e.big ? " on this big one" : ""}`;
+const sittingInner = (r, i) => !r.end ? stubInner(r.e, i)
+  : stubInner({ ...r.end, kind: "done", t: r.e.t, till: r.end.t, note: r.e.note, sub: r.end.kind === "end_early" ? stoppedSub(r.end) : r.end.sub }, i);
 const stubInner = (e, i) => `<span class="t"><b>${clockHtml(e.t)}</b>${e.till ? `<span class="till">to ${N(e.till)}</span>` : ""}${e.kind === "deal" || e.kind === "done" ? "" : `<span class="stamp${PLAIN[e.kind] ? " plain" : ""}" style="--tilt:${TILTS[i % TILTS.length]}deg">${MARK[e.kind]}</span>`}</span><span class="what"><span class="row"><span class="title">${esc(stubTitle(e))}</span></span><em>${N(esc(e.sub || TERMS[e.kind]))}</em>${e.note ? `<em>First thing: ${N(esc(lower(e.note)))}${/[.?!]$/.test(e.note) ? "" : "."}</em>` : ""}</span>`;
 /* tonight's sample ledger. The intercept's "Last Reels deal" reads from it, so every screen tells the same story:
    an hour on the history paper, stopped partway; a reading deal with its Reels break ended early, done; the next
@@ -2040,6 +2043,7 @@ const SEED = [
   ["10:26pm", { kind: "deal", blockLabel: "Reading, BIO 180 ch. 7", minutes: 15 }],
   ["10:31pm", { kind: "borrow", blockLabel: "TikTok", minutes: 5 }],
   ["10:37pm", { kind: "trade", blockLabel: "TikTok", minutes: 5, intention: "Open the chapter" }],
+  ["10:56pm", { kind: "done", blockLabel: "Reading, BIO 180 ch. 7", minutes: 20 }],
 ].map(([t, e]) => stubOf(e, t));
 /* the newest ask for more time, optionally on one activity ("Last Reels deal") */
 const newest = (list, act) => [...list].reverse().find(e => ASKS[e.kind] && e.kind !== "override" && (!act || e.text.endsWith(" " + act)));
@@ -3545,7 +3549,7 @@ function ledgerView() {
   const any = ledger.length || studied;
   return `<div class="tapehead"><h2 id="tapeh" tabindex="-1">Today's deals</h2><span class="tapeval" id="tapeval"></span></div>${toComeView()}
   ${!any && !nightLeft().length ? `<p class="soft">Nothing yet. Every deal you make lands here, with its terms.</p>` : ""}
-  ${ledger.length || S ? `<ul class="stubs" aria-label="Deals, newest first">${S ? `<li class="stubcard live${live ? freshStub(live.e) : ""}"><span class="t">${live ? `<b>${clockHtml(live.e.t)}</b><span class="till">to now</span>` : `<b>now</b>`}${remaining() <= 0 ? `<span class="stamp plain">Time's up</span>` : ""}</span><span class="what"><span class="row"><span class="title">${esc(title(cur().label))}</span></span><em>${N(cur().type === "focus" ? (sp => sp ? `${cur().min} min, ${partOf(sp)}` : `${cur().min} min of focus`)(runningPart()) : `${cur().min} min break`)}</em></span></li>` : ""}${rows.map((r, i) => `<li class="stubcard${freshStub(r.end || r.e)}">${sittingInner(r, i)}</li>`).reverse().join("")}</ul>` : ""}
+  ${ledger.length || S ? `<ul class="stubs" aria-label="Deals, newest first">${S ? `<li class="stubcard live${live ? freshStub(live.e) : ""}"><span class="t">${live ? `<b>${clockHtml(live.e.t)}</b><span class="till paying">to now</span>` : `<b>now</b>`}${remaining() <= 0 ? `<span class="stamp plain">Time's up</span>` : ""}</span><span class="what"><span class="row"><span class="title">${esc(title(cur().label))}</span></span><em>${N(cur().type === "focus" ? (sp => sp ? `${cur().min} min, ${partOf(sp)}` : `${cur().min} min of focus`)(runningPart()) : `${cur().min} min break`)}</em></span></li>` : ""}${rows.map((r, i) => `<li class="stubcard${freshStub(r.end || r.e)}">${sittingInner(r, i)}</li>`).reverse().join("")}</ul>` : ""}
   ${any ? `<dl class="totals">
     <div class="go"><dt>Studied</dt><dd>${N(studied)} min</dd></div>
     <div><dt>Deals made</dt><dd>${deals}</dd></div>
@@ -3625,6 +3629,8 @@ function bind() {
   /* spec 008: the big one. Ticking the box keeps the time of the first tick (server clock in live mode). */
   on("#bigchip", () => {
     big.on = !big.on; if (big.on && big.namedAt == null) big.namedAt = Date.now() + clockOffset;
+    if (big.on && deal.focusMin < 15) { big.was = deal.focusMin; deal.focusMin = 15; }
+    else if (!big.on && big.was != null) { if (deal.focusMin === 15) deal.focusMin = big.was; big.was = null; }
     /* R40: the ticket is drawn again, so focus is put back on the box you pressed (Safari doesn't focus a tapped button) */
     nextFocus = "#bigchip"; render(); say(big.on ? `First sitting on ${bigTitle()}: ${deal.focusMin} minutes. Size and kind are optional.` : "Back to one deal.");
   });
@@ -4060,7 +4066,7 @@ function tick() {
 /* ---------- hash entry points (for interviews and screenshots) ---------- */
 function seedLedger() {
   ledger = SEED.map(e => ({ ...e }));
-  studied = 71;
+  studied = 91;
 }
 /* spec 008 day 2: sample big ones, in the order the server sends them (comeback first, then newest worked) */
 const DEMO_CARDS = [
