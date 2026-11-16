@@ -861,7 +861,7 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 .stubcard .t .till { font-size: .8125rem; line-height: 1.1; color: var(--soft); white-space: nowrap; margin-top: -3px; }
 .stubcard .t .till .num { font-weight: 600; font-size: 1.08em; }
 .stubcard .t .till small { font-size: .9em; margin-left: 1px; }
-.stubcard .t .till.paying { color: var(--deal-ink); font-weight: 600; }
+.stubcard .t .till .paying { color: var(--deal-ink); font-weight: 700; }
 .tape .stubcard .t .stamp { font-size: .8125rem; padding: 1px 0 2px; margin-left: 0; }
 /* a receipt totals at the bottom: one line each, a dotted leader, the figure on the right */
 .totals { margin: 0; padding-top: 12px; border-top: 3px double var(--edge); display: flex; flex-direction: column; gap: 6px; }
@@ -2024,7 +2024,7 @@ function sittingRows() {
 }
 /* what the tape totals: in the demo the screen's own count; live, the sittings the server has closed today */
 const studiedMin = () => BE ? ledger.reduce((a, e) => a + (CLOSES[e.kind] ? e.m || 0 : 0), 0) : studied;
-const stoppedSub = e => !e.m ? TERMS.end_early : `Stopped after ${e.m} min`;
+const stoppedSub = e => !e.m ? "Stopped before the focus" : `Stopped after ${e.m} min`;
 const sittingInner = (r, i) => !r.end ? stubInner(r.e, i)
   : stubInner({ ...r.end, kind: "done", t: r.e.t, till: r.end.t, note: r.e.note, sub: r.end.kind === "end_early" ? stoppedSub(r.end) : r.end.sub }, i);
 const stubInner = (e, i) => `<span class="t"><b>${clockHtml(e.t)}</b>${e.till ? `<span class="till">to <span class="num">${e.till.replace(/[ap]m$/, "")}</span><small>${e.till.slice(-2)}</small></span>` : ""}${e.kind === "deal" || e.kind === "done" ? "" : `<span class="stamp${PLAIN[e.kind] ? " plain" : ""}" style="--tilt:${TILTS[i % TILTS.length]}deg">${MARK[e.kind]}</span>`}</span><span class="what"><span class="row"><span class="title">${esc(stubTitle(e))}</span></span><em>${N(esc(e.sub || TERMS[e.kind]))}</em>${e.note ? `<em>First thing: ${N(esc(lower(e.note)))}${/[.?!]$/.test(e.note) ? "" : "."}</em>` : ""}</span>`;
@@ -3550,7 +3550,7 @@ function ledgerView() {
   const any = ledger.length || studied;
   return `<div class="tapehead"><h2 id="tapeh" tabindex="-1">Today's deals</h2><span class="tapeval" id="tapeval"></span></div>${toComeView()}
   ${!any && !nightLeft().length ? `<p class="soft">Nothing yet. Every deal you make lands here, with its terms.</p>` : ""}
-  ${ledger.length || S ? `<ul class="stubs" aria-label="Deals, newest first">${S ? `<li class="stubcard live${live ? freshStub(live.e) : ""}"><span class="t">${live ? `<b>${clockHtml(live.e.t)}</b>${remaining() <= 0 ? "" : `<span class="till paying">to now</span>`}` : `<b>now</b>`}${remaining() <= 0 ? `<span class="stamp plain">Time's up</span>` : ""}</span><span class="what"><span class="row"><span class="title">${esc(title(cur().label))}</span></span><em>${N(cur().type === "focus" ? (sp => sp ? `${cur().min} min, ${partOf(sp)}` : `${cur().min} min of focus`)(runningPart()) : `${cur().min} min break`)}</em></span></li>` : ""}${rows.map((r, i) => `<li class="stubcard${freshStub(r.end || r.e)}">${sittingInner(r, i)}</li>`).reverse().join("")}</ul>` : ""}
+  ${ledger.length || S ? `<ul class="stubs" aria-label="Deals, newest first">${S ? `<li class="stubcard live${live ? freshStub(live.e) : ""}"><span class="t">${live ? `<b>${clockHtml(live.e.t)}</b>${remaining() <= 0 ? "" : `<span class="till">to <span class="num paying">now</span></span>`}` : `<b>now</b>`}${remaining() <= 0 ? `<span class="stamp plain">Time's up</span>` : ""}</span><span class="what"><span class="row"><span class="title">${esc(title(cur().label))}</span></span><em>${N(cur().type === "focus" ? (sp => sp ? `${cur().min} min, ${partOf(sp)}` : `${cur().min} min of focus`)(runningPart()) : `${cur().min} min break`)}</em></span></li>` : ""}${rows.map((r, i) => `<li class="stubcard${freshStub(r.end || r.e)}">${sittingInner(r, i)}</li>`).reverse().join("")}</ul>` : ""}
   ${any ? `<dl class="totals">
     <div class="go"><dt>Studied</dt><dd>${N(studied)} min</dd></div>
     <div><dt>Deals made</dt><dd>${deals}</dd></div>

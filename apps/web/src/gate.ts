@@ -119,10 +119,14 @@ const CSS = `
 /* Invite friends and Sign-ups are a sheet over the app, like the app's own sheets: the app shows dimmed around it, and a
    press there (or Escape) puts it away. A phone gets it from the bottom; a desk, in the middle. */
 #pd-gate.pd-sheet { background: var(--scrim); display: flex; flex-direction: column; padding: calc(40px + env(safe-area-inset-top, 0px)) 0 0; }
-#pd-gate.pd-sheet .wrap { width: 100%; max-width: 440px; min-height: 0; flex: none; margin: auto auto 0; gap: 20px; background: var(--sheet); border-top: 1px solid var(--rule); border-radius: 20px 20px 0 0;
+#pd-gate.pd-sheet .wrap { width: 100%; max-width: 440px; min-height: 0; max-height: 100%; flex: 0 1 auto; overflow-y: auto; margin: auto auto 0; gap: 20px; background: var(--sheet); border-top: 1px solid var(--rule); border-radius: 20px 20px 0 0;
   padding: 26px max(20px, env(safe-area-inset-right, 0px)) calc(8px + env(safe-area-inset-bottom, 0px)) max(20px, env(safe-area-inset-left, 0px)); }
 #pd-gate.pd-sheet .wrap .ticket .stub::before, #pd-gate.pd-sheet .wrap .ticket .stub::after { background: var(--sheet); }
 #pd-gate.pd-sheet .wrap .foot { margin-top: 0; }
+/* the sheet keeps its shape: it is never taller than the screen, and a long list of tickets scrolls inside it, under the
+   heading and above Close */
+#pd-gate.pd-sheet .wrap > * { flex: none; }
+#pd-gate.pd-sheet .wrap .list { flex: 0 1 auto; min-height: 150px; overflow-y: auto; margin-inline: -6px; padding-inline: 6px; }
 #pd-gate.pd-rise { animation: pd-fade .34s ease-out backwards; }
 #pd-gate.pd-rise .wrap { animation: pd-sheet-in .34s cubic-bezier(.2, .8, .2, 1) backwards; }
 @keyframes pd-fade { from { background-color: transparent; } }
