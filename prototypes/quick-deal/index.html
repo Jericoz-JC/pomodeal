@@ -857,7 +857,12 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 /* council c5: like a receipt's margin mark, the tag is stamped under the time; title and details keep the whole line */
 .tape .stubcard { grid-template-columns: 5.25em 1fr; }
 .tape .stubcard .t { gap: 7px; }
-.tape .stubcard .t .stamp { font-size: .8125rem; padding: 1px 5px 2px; margin-left: -1px; }
+/* a sitting's end under its start ("to 11:42am", "to now"): the same clock, quieter */
+.stubcard .t .till { font-size: .8125rem; line-height: 1.1; color: var(--soft); white-space: nowrap; margin-top: -3px; }
+.stubcard .t .till .num { font-weight: 600; font-size: 1.08em; }
+.stubcard .t .till small { font-size: .9em; margin-left: 1px; }
+.stubcard .t .till .paying { color: var(--deal-ink); font-weight: 700; }
+.tape .stubcard .t .stamp { font-size: .8125rem; padding: 1px 0 2px; margin-left: 0; }
 /* a receipt totals at the bottom: one line each, a dotted leader, the figure on the right */
 .totals { margin: 0; padding-top: 12px; border-top: 3px double var(--edge); display: flex; flex-direction: column; gap: 6px; }
 .totals div { display: flex; align-items: baseline; gap: 8px; }
@@ -1502,7 +1507,7 @@ function stubOf(e, t = clockStr(e.at)) {
     : e.kind === "end_early" ? (m ? (big ? `${m} min done on this big one` : `${m} min of focus done`) : TERMS.end_early)
     : e.kind === "skip" ? (m ? `After ${m} min` : "Right at the start")
     : "";
-  return { t, kind: e.kind, text, sub, note: e.intention || "" };
+  return { t, kind: e.kind, text, sub, note: e.intention || "", m, sid: e.sessionId };
 }
 
 /* ---------- state ---------- */
@@ -1600,7 +1605,7 @@ const gutSpoken = m => m === 240 ? "4 hours or more" : m === 60 ? "1 hour" : `${
 const TYPE_PHRASE = { writing: "writing", problems: "problems & code", exam: "exam study", project: "building something" };
 /* the big-one half of the ticket: off until the student ticks "Bigger than one block?" (never pre-selected).
    move is the first move; edited stops a type change from overwriting what they wrote. namedAt is the first tick. */
-const newBig = () => ({ on: false, type: null, gut: null, move: "", edited: false, pay: 15, namedAt: null });
+const newBig = () => ({ on: false, type: null, gut: null, move: "", edited: false, was: null, namedAt: null });
 /* the big one is named exactly as typed (commas kept), cut to 80 characters counted as the core counts them */
 const bigTitle = () => [...String(deal.task).trim()].slice(0, 80).join("");
 function fresh() { nudged = false; deal = { act: "Reels", breakMin: 10, task: "Reading, BIO 180 ch. 7", focusMin: 8 }; big = newBig(); ledger = []; S = null; sheet = null; picker = null; toast = null; unseen = 0; studied = 0; fromCard = null; panel = null; lastRepay = null; night = null; linePick = null; outNames = []; }
@@ -1956,12 +1961,11 @@ function ticket(peek) {
   const serial = String(412 + ledger.length).padStart(4, "0");
   /* a big one's name is a word like the others, with the full stop riding on its last line */
   const named = fc ? `<button class="tok named" data-pick="task" aria-controls="deal-picker" aria-expanded="${p === "task"}" aria-label="${esc(fc.title)}, task, change">${esc(fc.title)}${DOT}</button>` : "";
-  /* a new big one's ticket: the break as ever, then the first payment, whose length flips 15 ↔ 30 in one tap */
+  /* a new big one's ticket: the break as ever, then the first sitting, whose length is picked like any deal's */
   const tokName = `<button class="tok named" data-pick="task" aria-controls="deal-picker" aria-expanded="${p === "task"}" aria-label="${esc(bigTitle())}, the big one, change">${esc(bigTitle())}${DOT}</button>`;
-  const tokPay = `<button class="tok" id="paytok" aria-label="${big.pay} minutes, first payment, switch to ${big.pay === 15 ? 30 : 15}">${big.pay} min</button>`;
   const lead = deal.act ? `<span class="nowrap">${tokB(p)} of ${tokA(p)},</span>` : `${tokA(p)}.`;
   const sentence = fc ? (direct ? `<span class="nowrap">${tokF(p)} of</span> ${named}` : `${lead} then <span class="nowrap">${tokF(p)} of</span> ${named}`)
-    : isBig ? `${lead} <span class="payline">${deal.act ? "then" : "Straight into"} the first <span class="nowrap">${tokPay} of</span> ${tokName}</span>`
+    : isBig ? `${lead} <span class="payline">${deal.act ? "then" : "Straight into"} the first <span class="nowrap">${tokF(p)} of</span> ${tokName}</span>`
     : `${lead} ${deal.act ? "then" : "Straight into"} <span class="nowrap">${tokF(p)} of</span> ${tokT(p)}`;
   /* what a big one's card used to say, as notes under its name */
   const sw = fc ? startOf(live) : "", prog = fc && !live.comeback ? progressText(live.progress) : "";
@@ -2002,10 +2006,31 @@ const dealCount = () => ledger.filter(e => !NOT_DEALS[e.kind]).length;
 /* a sentence read on mid-line loses the capital that only started it ("First thing: open the chapter"), never an acronym's */
 const lower = t => t.replace(/^([A-Z])(?=[a-z]*\b)/, c => c.toLowerCase());
 const stubTitle = e => ASKS[e.kind] ? e.text.replace(/ more min of /, " min of ").replace(/^(\d)/, "+$1") : e.text;
-const stubInner = (e, i) => `<span class="t"><b>${e.t.replace(/[ap]m$/, "")}<small>${e.t.slice(-2)}</small></b>${e.kind === "deal" || e.kind === "done" ? "" : `<span class="stamp${PLAIN[e.kind] ? " plain" : ""}" style="--tilt:${TILTS[i % TILTS.length]}deg">${MARK[e.kind]}</span>`}</span><span class="what"><span class="row"><span class="title">${esc(stubTitle(e))}</span></span><em>${N(esc(e.sub || TERMS[e.kind]))}</em>${e.note ? `<em>First thing: ${N(esc(lower(e.note)))}${/[.?!]$/.test(e.note) ? "" : "."}</em>` : ""}</span>`;
+const clockHtml = t => `${t.replace(/[ap]m$/, "")}<small>${t.slice(-2)}</small>`;
+/* a deal and the row that closed it (done, or Stop for now) are one sitting on the tape: one stub, from its start to its
+   end ("10:57am to 11:42am"). The running deal is the "now" stub ("2:12pm to now"). Asks and early ends stay their own. */
+const CLOSES = { done: 1, end_early: 1 };
+function sittingRows() {
+  const rows = [], open = new Map(), key = e => e.sid ?? "";
+  for (const e of ledger) {
+    if (e.kind === "deal") { const r = { e, end: null }; rows.push(r); open.set(key(e), r); continue; }
+    const r = CLOSES[e.kind] ? open.get(key(e)) : null;
+    if (r) { r.end = e; open.delete(key(e)); continue; }
+    rows.push({ e, end: null });
+  }
+  /* the running deal's own row is the "now" stub */
+  const live = S ? open.get(S.id ?? "") || null : null;
+  return { rows: live ? rows.filter(r => r !== live) : rows, live };
+}
+/* what the tape totals: in the demo the screen's own count; live, the sittings the server has closed today */
+const studiedMin = () => BE ? ledger.reduce((a, e) => a + (CLOSES[e.kind] ? e.m || 0 : 0), 0) : studied;
+const stoppedSub = e => !e.m ? "Stopped before the focus" : `Stopped after ${e.m} min`;
+const sittingInner = (r, i) => !r.end ? stubInner(r.e, i)
+  : stubInner({ ...r.end, kind: "done", t: r.e.t, till: r.end.t, note: r.e.note, sub: r.end.kind === "end_early" ? stoppedSub(r.end) : r.end.sub }, i);
+const stubInner = (e, i) => `<span class="t"><b>${clockHtml(e.t)}</b>${e.till ? `<span class="till">to <span class="num">${e.till.replace(/[ap]m$/, "")}</span><small>${e.till.slice(-2)}</small></span>` : ""}${e.kind === "deal" || e.kind === "done" ? "" : `<span class="stamp${PLAIN[e.kind] ? " plain" : ""}" style="--tilt:${TILTS[i % TILTS.length]}deg">${MARK[e.kind]}</span>`}</span><span class="what"><span class="row"><span class="title">${esc(stubTitle(e))}</span></span><em>${N(esc(e.sub || TERMS[e.kind]))}</em>${e.note ? `<em>First thing: ${N(esc(lower(e.note)))}${/[.?!]$/.test(e.note) ? "" : "."}</em>` : ""}</span>`;
 /* tonight's sample ledger. The intercept's "Last Reels deal" reads from it, so every screen tells the same story:
    an hour on the history paper, stopped partway; a reading deal with its Reels break ended early, done; the next
-   round, kept going 10 more, done; then a TikTok deal. */
+   round, kept going 10 more, done; then a TikTok deal, stopped in its break a minute ago. */
 const SEED = [
   ["8:12pm", { kind: "deal", blockLabel: "History paper", minutes: 60, taskId: "paper" }],
   ["8:53pm", { kind: "end_early", blockLabel: "History paper", minutes: 41, taskId: "paper" }],
@@ -2019,6 +2044,7 @@ const SEED = [
   ["10:26pm", { kind: "deal", blockLabel: "Reading, BIO 180 ch. 7", minutes: 15 }],
   ["10:31pm", { kind: "borrow", blockLabel: "TikTok", minutes: 5 }],
   ["10:37pm", { kind: "trade", blockLabel: "TikTok", minutes: 5, intention: "Open the chapter" }],
+  ["10:40pm", { kind: "end_early", blockLabel: "Reading, BIO 180 ch. 7", minutes: 0 }],
 ].map(([t, e]) => stubOf(e, t));
 /* the newest ask for more time, optionally on one activity ("Last Reels deal") */
 const newest = (list, act) => [...list].reverse().find(e => ASKS[e.kind] && e.kind !== "override" && (!act || e.text.endsWith(" " + act)));
@@ -3520,11 +3546,11 @@ function closeSheet() { sheet = null; }
 const runningPart = () => { const sp = S && night && S.fromNight != null ? sittingsOf(night)[S.fromNight] : null; return sp && sp.of > 1 ? sp : null; };
 function ledgerView() {
   const n = k => ledger.filter(e => e.kind === k).length;
-  const deals = dealCount();
+  const deals = dealCount(), studied = studiedMin(), { rows, live } = sittingRows();
   const any = ledger.length || studied;
   return `<div class="tapehead"><h2 id="tapeh" tabindex="-1">Today's deals</h2><span class="tapeval" id="tapeval"></span></div>${toComeView()}
   ${!any && !nightLeft().length ? `<p class="soft">Nothing yet. Every deal you make lands here, with its terms.</p>` : ""}
-  ${ledger.length || S ? `<ul class="stubs" aria-label="Deals, newest first">${S ? `<li class="stubcard live"><span class="t"><b>now</b>${remaining() <= 0 ? `<span class="stamp plain">Time's up</span>` : ""}</span><span class="what"><span class="row"><span class="title">${esc(title(cur().label))}</span></span><em>${N(cur().type === "focus" ? (sp => sp ? `${cur().min} min, ${partOf(sp)}` : `${cur().min} min of focus`)(runningPart()) : `${cur().min} min break`)}</em></span></li>` : ""}${ledger.map((e, i) => `<li class="stubcard${freshStub(e)}">${stubInner(e, i)}</li>`).reverse().join("")}</ul>` : ""}
+  ${ledger.length || S ? `<ul class="stubs" aria-label="Deals, newest first">${S ? `<li class="stubcard live${live ? freshStub(live.e) : ""}"><span class="t">${live ? `<b>${clockHtml(live.e.t)}</b>${remaining() <= 0 ? "" : `<span class="till">to <span class="num paying">now</span></span>`}` : `<b>now</b>`}${remaining() <= 0 ? `<span class="stamp plain">Time's up</span>` : ""}</span><span class="what"><span class="row"><span class="title">${esc(title(cur().label))}</span></span><em>${N(cur().type === "focus" ? (sp => sp ? `${cur().min} min, ${partOf(sp)}` : `${cur().min} min of focus`)(runningPart()) : `${cur().min} min break`)}</em></span></li>` : ""}${rows.map((r, i) => `<li class="stubcard${freshStub(r.end || r.e)}">${sittingInner(r, i)}</li>`).reverse().join("")}</ul>` : ""}
   ${any ? `<dl class="totals">
     <div class="go"><dt>Studied</dt><dd>${N(studied)} min</dd></div>
     <div><dt>Deals made</dt><dd>${deals}</dd></div>
@@ -3604,9 +3630,10 @@ function bind() {
   /* spec 008: the big one. Ticking the box keeps the time of the first tick (server clock in live mode). */
   on("#bigchip", () => {
     big.on = !big.on; if (big.on && big.namedAt == null) big.namedAt = Date.now() + clockOffset;
-    if (picker === "focus") picker = null;
+    if (big.on && deal.focusMin < 15) { big.was = deal.focusMin; deal.focusMin = 15; }
+    else if (!big.on && big.was != null) { if (deal.focusMin === 15) deal.focusMin = big.was; big.was = null; }
     /* R40: the ticket is drawn again, so focus is put back on the box you pressed (Safari doesn't focus a tapped button) */
-    nextFocus = "#bigchip"; render(); say(big.on ? `First sitting on ${bigTitle()}: ${big.pay} minutes. Size and kind are optional.` : "Back to one deal.");
+    nextFocus = "#bigchip"; render(); say(big.on ? `First sitting on ${bigTitle()}: ${deal.focusMin} minutes. Size and kind are optional.` : "Back to one deal.");
   });
   document.querySelectorAll("[data-type]").forEach(b => b.onclick = () => {
     const k = b.dataset.type; big.type = big.type === k ? null : k;
@@ -3618,7 +3645,6 @@ function bind() {
     const m = +b.dataset.gut; big.gut = big.gut === m ? null : m;
     nextFocus = `[data-gut="${m}"]`; render(); say(big.gut ? `About ${gutSpoken(m)}` : "No size picked");
   });
-  on("#paytok", () => { big.pay = big.pay === 15 ? 30 : 15; render(); say(`First sitting, ${big.pay} minutes.`); });
   const fm = $("#firstmove"); if (fm) {
     fitLine(fm);
     fm.oninput = e => { big.move = e.target.value; big.edited = !!e.target.value.trim(); fitLine(fm, false); };
@@ -3742,10 +3768,10 @@ function stampDeal(skip) {
   closePicks(); if (mode !== "intercept") settleTicket();
   t.classList.add("stamped"); btn.classList.add("pressed"); btn.disabled = true; buzz(14, reduce ? 0 : 200); stamping = true;
   const serial = String(412 + ledger.length).padStart(4, "0");
-  /* a big one on the ticket starts as its next sitting; a new big one runs as an ordinary deal whose focus block is the first payment (15 or 30) */
+  /* a big one on the ticket starts as its next sitting; a new big one runs as an ordinary deal whose focus block is its first sitting */
   const fc = mode !== "intercept" ? fromCard : null;
   const bg = !fc && mode !== "intercept" && big.on ? { ...big } : null;
-  const d0 = fc ? { ...deal, task: fc.title } : bg ? { ...deal, focusMin: bg.pay } : { ...deal };
+  const d0 = fc ? { ...deal, task: fc.title } : { ...deal };
   const d = skip || fcDirect() ? { ...d0, act: null } : d0;
   /* the sitting on the ticket is the line's next one: this deal takes it (live, in the same transaction as the start) */
   const at = mode !== "intercept" && nightNext() ? night.taken : undefined;
@@ -3763,7 +3789,7 @@ function stampDeal(skip) {
       else BE.start(d, at);
     }
     /* the demo has no server: its big one is a sample card, so the block-end notes have something to ask about */
-    if (bg && !BE) { S.taskId = "demo"; bigOneCards = [{ id: "demo", title: bigTitle(), startWith: bg.move.trim(), progress: null, minutes: bg.pay, comeback: false, offerRespread: false, ...(bg.type ? { taskType: bg.type } : {}) }, ...cards().filter(c => c.id !== "demo")]; }
+    if (bg && !BE) { S.taskId = "demo"; bigOneCards = [{ id: "demo", title: bigTitle(), startWith: bg.move.trim(), progress: null, minutes: d.focusMin, comeback: false, offerRespread: false, ...(bg.type ? { taskType: bg.type } : {}) }, ...cards().filter(c => c.id !== "demo")]; }
     /* the deal itself goes on the tape (signed in, the server files it) */
     file(stubOf({ kind: "deal", blockLabel: fc ? fc.title : bg ? bigTitle() : d.task, minutes: d.focusMin, taskId: S.taskId }));
     if (bg) big = newBig();
