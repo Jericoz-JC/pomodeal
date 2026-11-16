@@ -53,6 +53,9 @@ const CSS = `
 #pd-gate .wrap .ticket { position: relative; background: var(--card); border-radius: 6px; box-shadow: 0 1px 0 var(--rule), 0 18px 34px -26px rgba(27,33,29,.6); }
 #pd-gate .wrap .ticket .body { padding: 22px 20px 18px; display: flex; flex-direction: column; gap: 6px; }
 #pd-gate .wrap .ticket .stub { position: relative; border-top: 2px dashed var(--rule); padding: 16px 20px 18px; display: flex; flex-direction: column; gap: 10px; }
+/* the deal ticket's desk layout (stub on the right, centred) is the app's: a gate ticket keeps its stub underneath */
+#pd-gate .wrap .ticket { display: block; }
+#pd-gate .wrap .ticket .stub { justify-content: flex-start; align-items: stretch; text-align: left; background: none; }
 #pd-gate .wrap .ticket .stub::before, #pd-gate .wrap .ticket .stub::after { content: ""; position: absolute; top: -11px; width: 20px; height: 20px; border-radius: 50%; background: var(--paper); }
 #pd-gate .wrap .ticket .stub::before { left: -10px; } #pd-gate .wrap .ticket .stub::after { right: -10px; }
 #pd-gate .wrap .big { font-family: var(--font-head); font-stretch: var(--wd-display); font-weight: 750; font-size: 30px; line-height: 1.1; }
@@ -113,6 +116,23 @@ const CSS = `
 #pd-gate .wrap .su-usage { color: var(--soft); font-size: 15px; text-underline-offset: 3px; padding: 10px 16px; }
 #pd-gate .wrap .ticket .body .picker .chip { padding-inline: 12px; min-width: 56px; justify-content: center; }
 #pd-gate .wrap .ticket p { text-wrap: pretty; }
+/* Invite friends and Sign-ups are a sheet over the app, like the app's own sheets: the app shows dimmed around it, and a
+   press there (or Escape) puts it away. A phone gets it from the bottom; a desk, in the middle. */
+#pd-gate.pd-sheet { background: var(--scrim); display: flex; flex-direction: column; padding: calc(40px + env(safe-area-inset-top, 0px)) 0 0; }
+#pd-gate.pd-sheet .wrap { width: 100%; max-width: 440px; min-height: 0; margin: auto auto 0; gap: 20px; background: var(--sheet); border-top: 1px solid var(--rule); border-radius: 20px 20px 0 0;
+  padding: 26px max(20px, env(safe-area-inset-right, 0px)) calc(8px + env(safe-area-inset-bottom, 0px)) max(20px, env(safe-area-inset-left, 0px)); }
+#pd-gate.pd-sheet .wrap .ticket .stub::before, #pd-gate.pd-sheet .wrap .ticket .stub::after { background: var(--sheet); }
+#pd-gate.pd-sheet .wrap .foot { margin-top: 0; }
+#pd-gate.pd-rise { animation: pd-fade .34s ease-out backwards; }
+#pd-gate.pd-rise .wrap { animation: pd-sheet-in .34s cubic-bezier(.2, .8, .2, 1) backwards; }
+@keyframes pd-fade { from { background-color: transparent; } }
+@keyframes pd-sheet-in { from { transform: translateY(100%); } }
+@media (min-width: 820px) {
+  #pd-gate.pd-sheet { padding: 6vh 24px; }
+  #pd-gate.pd-sheet .wrap { margin: auto; border: none; border-radius: 20px; padding: 30px 28px 14px; box-shadow: 0 30px 60px -30px rgba(0,0,0,.45); }
+  @keyframes pd-sheet-in { from { transform: translateY(18px); opacity: 0; } }
+}
+@media (prefers-reduced-motion: reduce) { #pd-gate.pd-rise, #pd-gate.pd-rise .wrap { animation: none; } }
 #pd-account { position: fixed; z-index: 15; top: calc(8px + env(safe-area-inset-top, 0px)); right: max(10px, env(safe-area-inset-right, 0px));
   width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid var(--edge); background: var(--card); color: var(--ink);
   font-family: var(--font-head); font-weight: 800; font-size: 17px; cursor: pointer; }
@@ -258,8 +278,22 @@ export function mountGate(actions: GateActions) {
     }
   }
 
+  /** Invite friends or Sign-ups is up over the app (a member's sheet, not a gate screen). */
+  const sheetUp = () => (invitesOpen || signupsOpen) && state.kind === "member";
+  function closeSheet() {
+    if (!sheetUp()) return;
+    if (signupsOpen) actions.watchSignups(false);
+    invitesOpen = false; signupsOpen = false; actions.closeInvites(); render();
+    acct.focus({ preventScroll: true });
+  }
+  // a press on the dimmed app around the sheet puts it away (the sheet itself is .wrap)
+  gate.addEventListener("click", (e) => { if (e.target === gate) closeSheet(); });
+
   function render() {
     const show = invitesOpen || signupsOpen || state.kind !== "member";
+    const wasSheet = gate.classList.contains("pd-sheet") && !gate.hidden;
+    gate.classList.toggle("pd-sheet", sheetUp());
+    if (sheetUp() && !wasSheet) gate.classList.add("pd-rise");
     gate.hidden = !show;
     setAppInert(show);
     document.body.style.overflow = show ? "hidden" : "";
@@ -275,10 +309,7 @@ export function mountGate(actions: GateActions) {
     gate.querySelectorAll<HTMLButtonElement>("[data-prov]").forEach((b) => b.addEventListener("click", () => { b.disabled = true; actions.signInWith(b.dataset.prov as Provider); }));
     gate.querySelector<HTMLElement>("#pd-signup")?.addEventListener("click", actions.signUp);
     gate.querySelector<HTMLElement>("#pd-signout")?.addEventListener("click", actions.signOut);
-    gate.querySelector<HTMLElement>("#pd-close")?.addEventListener("click", () => {
-      if (signupsOpen) actions.watchSignups(false);
-      invitesOpen = false; signupsOpen = false; actions.closeInvites(); render();
-    });
+    gate.querySelector<HTMLElement>("#pd-close")?.addEventListener("click", closeSheet);
     gate.querySelector<HTMLButtonElement>("#pd-su-mode")?.addEventListener("click", async (e) => {
       const b = e.currentTarget as HTMLButtonElement; b.disabled = true;
       try { await actions.setSignups(overview?.signups === "open" ? "inviteOnly" : "open"); }
@@ -317,10 +348,17 @@ export function mountGate(actions: GateActions) {
   (window as unknown as { pomodealTheme?: { paint(b: HTMLElement): void } }).pomodealTheme?.paint(sw);
   document.body.append(acct, menu);
   acct.addEventListener("click", () => { menu.hidden = !menu.hidden; acct.setAttribute("aria-expanded", String(!menu.hidden)); });
-  menu.querySelector("#pd-m-invite")!.addEventListener("click", () => { menu.hidden = true; openInvites(); });
-  menu.querySelector("#pd-m-signups")!.addEventListener("click", () => { menu.hidden = true; openSignups(); });
-  menu.querySelector("#pd-m-out")!.addEventListener("click", () => { menu.hidden = true; actions.signOut(); });
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape") menu.hidden = true; });
+  menu.querySelector("#pd-m-invite")!.addEventListener("click", () => { closeMenu(); openInvites(); });
+  menu.querySelector("#pd-m-signups")!.addEventListener("click", () => { closeMenu(); openSignups(); });
+  menu.querySelector("#pd-m-out")!.addEventListener("click", () => { closeMenu(); actions.signOut(); });
+  gate.addEventListener("animationend", (e) => { if (e.target === gate) gate.classList.remove("pd-rise"); });
+  const closeMenu = () => { if (menu.hidden) return; menu.hidden = true; acct.setAttribute("aria-expanded", "false"); };
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    if (!menu.hidden) { closeMenu(); acct.focus({ preventScroll: true }); } else closeSheet();
+  });
+  // a press anywhere but the menu (or the button that opened it) closes the menu
+  document.addEventListener("pointerdown", (e) => { const t = e.target as Node; if (!menu.contains(t) && !acct.contains(t)) closeMenu(); });
 
   function openInvites() { invitesOpen = true; history.replaceState(null, "", "/invite"); render(); }
   function openSignups() {

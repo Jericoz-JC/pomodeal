@@ -45,7 +45,7 @@ Never in the UI: "contract", "overdue", "late", "missed", "behind", "streak", "f
 3. The ticket reads: **"First payment on Paper: 15 min."** with the first-move line under it: **"When I sit down, I'll first: open the doc and write one ugly sentence."** The first move is prefilled from the type (table below) or blank-with-placeholder if no type, and fully editable. One tap switches 15 to **30**. The break the student plans before it works exactly as today.
 4. Stamp. The block runs. **No split, plan, due-date or piece screen exists before this point.** Nothing else is asked.
 
-A big one's sessions are ordinary Quick Deal sessions with a `taskId`. The first payment uses the existing 15 min length and the existing ramp, so later blocks in that session grow 15 → 19 → 23 as usual and are offered, not owed.
+A big one's sessions are ordinary Quick Deal sessions with a `taskId`. The first payment uses the existing 15 min length and the existing ramp, so later blocks in that session grow 15 → 19 → 23 as usual and are offered, not owed. (Nov 16, Chris: the first sitting's length is now picked from the deal's own eight lengths, the same picker as every deal, not a 15 ↔ 30 switch.)
 
 ### End of a focus block that belongs to a big one
 
