@@ -858,10 +858,11 @@ button.stubcard:hover { background: linear-gradient(var(--deal-tint), var(--deal
 .tape .stubcard { grid-template-columns: 5.25em 1fr; }
 .tape .stubcard .t { gap: 7px; }
 /* a sitting's end under its start ("to 11:42am", "to now"): the same clock, quieter */
-.stubcard .t .till { font-size: .875rem; line-height: 1.1; color: var(--soft); white-space: nowrap; margin-top: -3px; }
-.stubcard .t .till .num { font-weight: 600; }
+.stubcard .t .till { font-size: .8125rem; line-height: 1.1; color: var(--soft); white-space: nowrap; margin-top: -3px; }
+.stubcard .t .till .num { font-weight: 600; font-size: 1.08em; }
+.stubcard .t .till small { font-size: .9em; margin-left: 1px; }
 .stubcard .t .till.paying { color: var(--deal-ink); font-weight: 600; }
-.tape .stubcard .t .stamp { font-size: .8125rem; padding: 1px 5px 2px; margin-left: -1px; }
+.tape .stubcard .t .stamp { font-size: .8125rem; padding: 1px 0 2px; margin-left: 0; }
 /* a receipt totals at the bottom: one line each, a dotted leader, the figure on the right */
 .totals { margin: 0; padding-top: 12px; border-top: 3px double var(--edge); display: flex; flex-direction: column; gap: 6px; }
 .totals div { display: flex; align-items: baseline; gap: 8px; }
@@ -1506,7 +1507,7 @@ function stubOf(e, t = clockStr(e.at)) {
     : e.kind === "end_early" ? (m ? (big ? `${m} min done on this big one` : `${m} min of focus done`) : TERMS.end_early)
     : e.kind === "skip" ? (m ? `After ${m} min` : "Right at the start")
     : "";
-  return { t, kind: e.kind, text, sub, note: e.intention || "", m, big, sid: e.sessionId };
+  return { t, kind: e.kind, text, sub, note: e.intention || "", m, sid: e.sessionId };
 }
 
 /* ---------- state ---------- */
@@ -2023,10 +2024,10 @@ function sittingRows() {
 }
 /* what the tape totals: in the demo the screen's own count; live, the sittings the server has closed today */
 const studiedMin = () => BE ? ledger.reduce((a, e) => a + (CLOSES[e.kind] ? e.m || 0 : 0), 0) : studied;
-const stoppedSub = e => !e.m ? TERMS.end_early : `Stopped after ${e.m} min${e.big ? " on this big one" : ""}`;
+const stoppedSub = e => !e.m ? TERMS.end_early : `Stopped after ${e.m} min`;
 const sittingInner = (r, i) => !r.end ? stubInner(r.e, i)
   : stubInner({ ...r.end, kind: "done", t: r.e.t, till: r.end.t, note: r.e.note, sub: r.end.kind === "end_early" ? stoppedSub(r.end) : r.end.sub }, i);
-const stubInner = (e, i) => `<span class="t"><b>${clockHtml(e.t)}</b>${e.till ? `<span class="till">to ${N(e.till)}</span>` : ""}${e.kind === "deal" || e.kind === "done" ? "" : `<span class="stamp${PLAIN[e.kind] ? " plain" : ""}" style="--tilt:${TILTS[i % TILTS.length]}deg">${MARK[e.kind]}</span>`}</span><span class="what"><span class="row"><span class="title">${esc(stubTitle(e))}</span></span><em>${N(esc(e.sub || TERMS[e.kind]))}</em>${e.note ? `<em>First thing: ${N(esc(lower(e.note)))}${/[.?!]$/.test(e.note) ? "" : "."}</em>` : ""}</span>`;
+const stubInner = (e, i) => `<span class="t"><b>${clockHtml(e.t)}</b>${e.till ? `<span class="till">to <span class="num">${e.till.replace(/[ap]m$/, "")}</span><small>${e.till.slice(-2)}</small></span>` : ""}${e.kind === "deal" || e.kind === "done" ? "" : `<span class="stamp${PLAIN[e.kind] ? " plain" : ""}" style="--tilt:${TILTS[i % TILTS.length]}deg">${MARK[e.kind]}</span>`}</span><span class="what"><span class="row"><span class="title">${esc(stubTitle(e))}</span></span><em>${N(esc(e.sub || TERMS[e.kind]))}</em>${e.note ? `<em>First thing: ${N(esc(lower(e.note)))}${/[.?!]$/.test(e.note) ? "" : "."}</em>` : ""}</span>`;
 /* tonight's sample ledger. The intercept's "Last Reels deal" reads from it, so every screen tells the same story:
    an hour on the history paper, stopped partway; a reading deal with its Reels break ended early, done; the next
    round, kept going 10 more, done; then a TikTok deal, stopped in its break a minute ago. */
@@ -3549,7 +3550,7 @@ function ledgerView() {
   const any = ledger.length || studied;
   return `<div class="tapehead"><h2 id="tapeh" tabindex="-1">Today's deals</h2><span class="tapeval" id="tapeval"></span></div>${toComeView()}
   ${!any && !nightLeft().length ? `<p class="soft">Nothing yet. Every deal you make lands here, with its terms.</p>` : ""}
-  ${ledger.length || S ? `<ul class="stubs" aria-label="Deals, newest first">${S ? `<li class="stubcard live${live ? freshStub(live.e) : ""}"><span class="t">${live ? `<b>${clockHtml(live.e.t)}</b><span class="till paying">to now</span>` : `<b>now</b>`}${remaining() <= 0 ? `<span class="stamp plain">Time's up</span>` : ""}</span><span class="what"><span class="row"><span class="title">${esc(title(cur().label))}</span></span><em>${N(cur().type === "focus" ? (sp => sp ? `${cur().min} min, ${partOf(sp)}` : `${cur().min} min of focus`)(runningPart()) : `${cur().min} min break`)}</em></span></li>` : ""}${rows.map((r, i) => `<li class="stubcard${freshStub(r.end || r.e)}">${sittingInner(r, i)}</li>`).reverse().join("")}</ul>` : ""}
+  ${ledger.length || S ? `<ul class="stubs" aria-label="Deals, newest first">${S ? `<li class="stubcard live${live ? freshStub(live.e) : ""}"><span class="t">${live ? `<b>${clockHtml(live.e.t)}</b>${remaining() <= 0 ? "" : `<span class="till paying">to now</span>`}` : `<b>now</b>`}${remaining() <= 0 ? `<span class="stamp plain">Time's up</span>` : ""}</span><span class="what"><span class="row"><span class="title">${esc(title(cur().label))}</span></span><em>${N(cur().type === "focus" ? (sp => sp ? `${cur().min} min, ${partOf(sp)}` : `${cur().min} min of focus`)(runningPart()) : `${cur().min} min break`)}</em></span></li>` : ""}${rows.map((r, i) => `<li class="stubcard${freshStub(r.end || r.e)}">${sittingInner(r, i)}</li>`).reverse().join("")}</ul>` : ""}
   ${any ? `<dl class="totals">
     <div class="go"><dt>Studied</dt><dd>${N(studied)} min</dd></div>
     <div><dt>Deals made</dt><dd>${deals}</dd></div>
